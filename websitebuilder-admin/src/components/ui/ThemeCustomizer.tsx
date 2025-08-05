@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
 import { Card, CardHeader, CardTitle, CardContent } from './Card';
+import { useI18n } from '@/contexts/I18nContext';
 
 interface UISettings {
   language: 'es' | 'en';
@@ -58,6 +59,7 @@ interface ThemeCustomizerProps {
 export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCustomizerProps) {
   const [settings, setSettings] = useState<UISettings>(defaultSettings);
   const [mounted, setMounted] = useState(false);
+  const { t, language, setLanguage } = useI18n();
 
   // Handle hydration
   useEffect(() => {
@@ -69,15 +71,15 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
-        setSettings({ ...defaultSettings, ...parsed });
+        setSettings({ ...defaultSettings, ...parsed, language });
       } catch (error) {
         console.error('Error parsing saved settings:', error);
       }
     } else if (savedTheme) {
       // Fallback: apply saved theme even if no full settings
-      setSettings(prev => ({ ...prev, theme: savedTheme as 'light' | 'dark' }));
+      setSettings(prev => ({ ...prev, theme: savedTheme as 'light' | 'dark', language }));
     }
-  }, []);
+  }, [language]);
 
   // Save settings to localStorage whenever they change
   useEffect(() => {
@@ -104,6 +106,9 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
   }, [settings, mounted, onSettingsChange]);
 
   const updateSettings = (updates: Partial<UISettings>) => {
+    if (updates.language) {
+      setLanguage(updates.language);
+    }
     setSettings(prev => ({ ...prev, ...updates }));
   };
 
@@ -136,7 +141,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              🔧 Personalización
+              🔧 {t('theme.customization', 'Personalización')}
             </h2>
             <button
               onClick={onClose}
@@ -154,7 +159,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
           {/* Language Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>🌍 Idioma</CardTitle>
+              <CardTitle>🌍 {t('theme.language', 'Idioma')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
@@ -168,7 +173,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
                   )}
                 >
                   <span className="text-lg">🇩🇴</span>
-                  <span className="font-medium">Español</span>
+                  <span className="font-medium">{t('theme.spanish', 'Español')}</span>
                 </button>
                 <button
                   onClick={() => updateSettings({ language: 'en' })}
@@ -180,7 +185,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
                   )}
                 >
                   <span className="text-lg">🇺🇸</span>
-                  <span className="font-medium">English</span>
+                  <span className="font-medium">{t('theme.english', 'English')}</span>
                 </button>
               </div>
             </CardContent>
@@ -189,7 +194,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
           {/* Theme Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>🎨 Tema</CardTitle>
+              <CardTitle>🎨 {t('theme.theme', 'Tema')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
@@ -203,7 +208,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
                   )}
                 >
                   <span className="text-lg">🌞</span>
-                  <span className="font-medium">Light</span>
+                  <span className="font-medium">{t('theme.light', 'Light')}</span>
                 </button>
                 <button
                   onClick={() => updateSettings({ theme: 'dark' })}
@@ -215,7 +220,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
                   )}
                 >
                   <span className="text-lg">🌙</span>
-                  <span className="font-medium">Dark</span>
+                  <span className="font-medium">{t('theme.dark', 'Dark')}</span>
                 </button>
               </div>
             </CardContent>
@@ -224,7 +229,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
           {/* Primary Color */}
           <Card>
             <CardHeader>
-              <CardTitle>🎯 Color Principal</CardTitle>
+              <CardTitle>🎯 {t('theme.primaryColor', 'Color Principal')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-4 gap-2 mb-4">
@@ -246,7 +251,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
               
               <div className="flex items-center gap-2">
                 <label htmlFor="custom-color" className="text-sm font-medium text-gray-700">
-                  Color personalizado:
+                  {t('theme.customColor', 'Color personalizado')}:
                 </label>
                 <input
                   id="custom-color"
@@ -262,13 +267,13 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
           {/* Sidebar Customization */}
           <Card>
             <CardHeader>
-              <CardTitle>📱 Panel Lateral</CardTitle>
+              <CardTitle>📱 {t('theme.sidebar', 'Panel Lateral')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Sidebar Presets */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Presets de colores:
+                  {t('theme.colorPresets', 'Presets de colores')}:
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {sidebarPresets.map((preset) => (
@@ -299,7 +304,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Color de fondo:
+                    {t('theme.backgroundColor', 'Color de fondo')}:
                   </label>
                   <input
                     type="color"
@@ -310,7 +315,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Color de texto:
+                    {t('theme.textColor', 'Color de texto')}:
                   </label>
                   <input
                     type="color"
@@ -324,7 +329,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
               {/* Sidebar State */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Estado por defecto:
+                  {t('theme.defaultState', 'Estado por defecto')}:
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -336,7 +341,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
                         : 'border-gray-200 hover:border-gray-300'
                     )}
                   >
-                    <span className="text-sm">🔓 Expandido</span>
+                    <span className="text-sm">🔓 {t('theme.expanded', 'Expandido')}</span>
                   </button>
                   <button
                     onClick={() => updateSidebarSettings({ collapsed: true })}
@@ -347,7 +352,7 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
                         : 'border-gray-200 hover:border-gray-300'
                     )}
                   >
-                    <span className="text-sm">🔒 Colapsado</span>
+                    <span className="text-sm">🔒 {t('theme.collapsed', 'Colapsado')}</span>
                   </button>
                 </div>
               </div>
@@ -357,12 +362,12 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
           {/* Notifications */}
           <Card>
             <CardHeader>
-              <CardTitle>🔔 Notificaciones</CardTitle>
+              <CardTitle>🔔 {t('theme.notifications', 'Notificaciones')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">
-                  Habilitar notificaciones
+                  {t('theme.enableNotifications', 'Habilitar notificaciones')}
                 </span>
                 <button
                   onClick={() => updateSettings({ notifications: !settings.notifications })}
@@ -389,14 +394,14 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
               onClick={resetToDefaults}
               className="flex-1"
             >
-              Restaurar por defecto
+              {t('theme.resetDefaults', 'Restaurar por defecto')}
             </Button>
             <Button
               variant="primary"
               onClick={onClose}
               className="flex-1"
             >
-              Guardar cambios
+              {t('common.save', 'Guardar cambios')}
             </Button>
           </div>
         </div>

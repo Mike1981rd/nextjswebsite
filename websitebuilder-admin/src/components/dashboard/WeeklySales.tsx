@@ -1,24 +1,30 @@
+'use client';
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
+import { useI18n } from '@/contexts/I18nContext';
 
-const mockWeeklySales = {
+const getMockWeeklySales = (t: (key: string, fallback?: string) => string) => ({
   total: 28450,
   change: 15.2,
   categories: [
-    { name: 'Habitaciones', count: 18, percentage: 45 },
-    { name: 'Productos', count: 43, percentage: 35 },
-    { name: 'Servicios', count: 25, percentage: 20 }
+    { name: t('dashboard.rooms', 'Habitaciones'), count: 18, percentage: 45 },
+    { name: t('dashboard.products', 'Productos'), count: 43, percentage: 35 },
+    { name: t('dashboard.services', 'Servicios'), count: 25, percentage: 20 }
   ]
-};
+});
 
 export function WeeklySales() {
+  const { t } = useI18n();
+  const mockWeeklySales = getMockWeeklySales(t);
+  
   return (
     <Card variant="gradient" color="primary" className="h-full">
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-6">
           <div>
             <h3 className="text-white/80 text-sm font-medium mb-1">
-              Weekly Sales
+              {t('dashboard.weeklySales', 'Weekly Sales')}
             </h3>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold text-white">

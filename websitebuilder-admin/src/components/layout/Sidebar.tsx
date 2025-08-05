@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/contexts/I18nContext';
 import {
   DashboardIcon,
   CompanyIcon,
@@ -23,102 +24,102 @@ import {
   ChevronRightIcon
 } from '@/components/ui/Icons';
 
-// Define menu items with our 14 options
+// Define menu items with translation keys
 const menuItems = [
   {
     id: 'dashboard',
-    name: 'Dashboard',
+    nameKey: 'navigation.dashboard',
     href: '/dashboard',
     icon: DashboardIcon,
     permission: 'dashboard.view'
   },
   {
     id: 'empresa',
-    name: 'Empresa',
+    nameKey: 'navigation.empresa',
     href: '/empresa',
     icon: CompanyIcon,
     permission: 'company.view'
   },
   {
     id: 'usuarios',
-    name: 'Usuarios',
+    nameKey: 'navigation.rolesUsuarios',
     href: '/usuarios',
     icon: UsersIcon,
     permission: 'users.view'
   },
   {
     id: 'roles',
-    name: 'Roles',
+    nameKey: 'navigation.rolesUsuarios',
     href: '/roles',
     icon: RolesIcon,
     permission: 'roles.view'
   },
   {
     id: 'clientes',
-    name: 'Clientes',
+    nameKey: 'navigation.clientes',
     href: '/clientes',
     icon: ClientsIcon,
     permission: 'clients.view'
   },
   {
     id: 'habitaciones',
-    name: 'Habitaciones',
+    nameKey: 'navigation.reservaciones',
     href: '/habitaciones',
     icon: RoomsIcon,
     permission: 'rooms.view'
   },
   {
     id: 'reservaciones',
-    name: 'Reservaciones',
+    nameKey: 'navigation.reservaciones',
     href: '/reservaciones',
     icon: ReservationsIcon,
     permission: 'reservations.view'
   },
   {
     id: 'productos',
-    name: 'Productos',
+    nameKey: 'navigation.productos',
     href: '/productos',
     icon: ProductsIcon,
     permission: 'products.view'
   },
   {
     id: 'colecciones',
-    name: 'Colecciones',
+    nameKey: 'navigation.colecciones',
     href: '/colecciones',
     icon: CollectionsIcon,
     permission: 'collections.view'
   },
   {
     id: 'paginas',
-    name: 'Páginas',
+    nameKey: 'navigation.paginas',
     href: '/paginas',
     icon: PagesIcon,
     permission: 'pages.view'
   },
   {
     id: 'sitio-web',
-    name: 'Sitio Web',
+    nameKey: 'navigation.websiteBuilder',
     href: '/sitio-web',
     icon: WebsiteIcon,
     permission: 'website.view'
   },
   {
     id: 'metodos-pago',
-    name: 'Métodos de Pago',
+    nameKey: 'navigation.metodosPago',
     href: '/metodos-pago',
     icon: PaymentIcon,
     permission: 'payments.view'
   },
   {
     id: 'dominios',
-    name: 'Dominios',
+    nameKey: 'navigation.dominios',
     href: '/dominios',
     icon: DomainsIcon,
     permission: 'domains.view'
   },
   {
     id: 'politicas',
-    name: 'Políticas',
+    nameKey: 'navigation.politicas',
     href: '/politicas',
     icon: PoliciesIcon,
     permission: 'policies.view'
@@ -134,6 +135,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const { t } = useI18n();
   
   // Handle hydration
   useEffect(() => {
@@ -237,7 +239,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                         ? 'bg-sidebar-active text-white shadow-lg'
                         : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
                     )}
-                    title={collapsed ? item.name : undefined}
+                    title={collapsed ? t(item.nameKey) : undefined}
                   >
                     {/* Icon */}
                     <Icon
@@ -251,14 +253,14 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                     {/* Label */}
                     {!collapsed && (
                       <span className="flex-1 truncate">
-                        {item.name}
+                        {t(item.nameKey)}
                       </span>
                     )}
 
                     {/* Tooltip for collapsed state */}
                     {collapsed && (
                       <div className="absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-800 px-3 py-2 text-xs text-white opacity-0 shadow-xl transition-all duration-200 group-hover:opacity-100 pointer-events-none">
-                        {item.name}
+                        {t(item.nameKey)}
                         <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-800"></div>
                       </div>
                     )}
@@ -360,7 +362,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                         )}
                       />
                       <span className="flex-1 truncate">
-                        {item.name}
+                        {t(item.nameKey)}
                       </span>
                     </Link>
                   </li>

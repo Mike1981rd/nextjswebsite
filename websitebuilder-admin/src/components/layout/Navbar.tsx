@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useI18n } from '@/contexts/I18nContext';
 import {
   MenuToggleIcon,
   TranslationIcon,
@@ -15,7 +16,6 @@ import {
 interface NavbarProps {
   onSidebarToggle?: () => void;
   onThemeChange?: () => void;
-  onLanguageChange?: (lang: 'es' | 'en') => void;
   onCustomizeOpen?: () => void;
   sidebarCollapsed?: boolean;
   className?: string;
@@ -24,7 +24,6 @@ interface NavbarProps {
 export function Navbar({ 
   onSidebarToggle, 
   onThemeChange, 
-  onLanguageChange,
   onCustomizeOpen,
   sidebarCollapsed = false,
   className 
@@ -38,8 +37,9 @@ export function Navbar({
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  // Get real user data from auth context
+  // Get contexts
   const { user: authUser, logout } = useAuth();
+  const { t, language, setLanguage } = useI18n();
   
   // Use real user data or fallback to mock data
   const user = authUser ? {
@@ -117,7 +117,7 @@ export function Navbar({
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search [Ctrl + K]"
+                placeholder={t('common.search', 'Search [Ctrl + K]')}
                 className="w-64 h-10 px-4 pl-10 pr-4 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white dark:focus:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -136,7 +136,7 @@ export function Navbar({
             <button
               onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              title="Change language"
+              title={t('theme.language', 'Change language')}
             >
               <TranslationIcon size={20} />
             </button>
@@ -146,23 +146,23 @@ export function Navbar({
               <div className="absolute right-0 top-12 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-2 z-50">
                 <button
                   onClick={() => {
-                    onLanguageChange?.('es');
+                    setLanguage('es');
                     setLanguageMenuOpen(false);
                   }}
                   className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-lg">🇩🇴</span>
-                  <span>Español</span>
+                  <span>{t('theme.spanish', 'Español')}</span>
                 </button>
                 <button
                   onClick={() => {
-                    onLanguageChange?.('en');
+                    setLanguage('en');
                     setLanguageMenuOpen(false);
                   }}
                   className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-lg">🇺🇸</span>
-                  <span>English</span>
+                  <span>{t('theme.english', 'English')}</span>
                 </button>
               </div>
             )}
@@ -172,7 +172,7 @@ export function Navbar({
           <button
             onClick={onThemeChange}
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
-            title="Toggle theme"
+            title={t('theme.theme', 'Toggle theme')}
           >
             <ThemeIcon size={20} />
           </button>
@@ -182,7 +182,7 @@ export function Navbar({
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
               className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
-              title="Notifications"
+              title={t('common.notifications', 'Notifications')}
             >
               <NotificationIcon size={20} />
               {unreadCount > 0 && (
@@ -196,8 +196,8 @@ export function Navbar({
             {notificationsOpen && (
               <div className="absolute right-0 top-12 w-80 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
                 <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
-                  <h3 className="font-semibold text-gray-900">Notificaciones</h3>
-                  <span className="text-xs text-gray-500">{unreadCount} nuevas</span>
+                  <h3 className="font-semibold text-gray-900">{t('common.notifications', 'Notifications')}</h3>
+                  <span className="text-xs text-gray-500">{unreadCount} {t('common.new', 'new')}</span>
                 </div>
                 
                 <div className="max-h-80 overflow-y-auto">
@@ -226,7 +226,7 @@ export function Navbar({
                 
                 <div className="border-t border-gray-100 px-4 py-2">
                   <button className="text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors">
-                    Ver todas las notificaciones
+                    {t('common.viewAll', 'View All')}
                   </button>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export function Navbar({
           <button
             onClick={onCustomizeOpen}
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
-            title="Customize sidebar"
+            title={t('theme.customization', 'Customize sidebar')}
           >
             <SettingsIcon size={20} />
           </button>
@@ -247,7 +247,7 @@ export function Navbar({
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              title="User menu"
+              title={t('common.profile', 'User menu')}
             >
               <Avatar
                 name={user.name}
@@ -256,7 +256,7 @@ export function Navbar({
               />
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                <p className="text-xs text-gray-500">Administrador</p>
+                <p className="text-xs text-gray-500">{t('common.admin', 'Administrator')}</p>
               </div>
               <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -276,7 +276,7 @@ export function Navbar({
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    Ver perfil
+                    {t('common.profile', 'View Profile')}
                   </button>
                   
                   <button className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
@@ -284,7 +284,7 @@ export function Navbar({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    Configuraciones
+                    {t('common.settings', 'Settings')}
                   </button>
                 </div>
                 
@@ -301,7 +301,7 @@ export function Navbar({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
                     )}
-                    {loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
+                    {loggingOut ? t('auth.loggingOut', 'Logging out...') : t('common.logout', 'Logout')}
                   </button>
                 </div>
               </div>

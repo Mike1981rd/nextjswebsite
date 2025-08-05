@@ -211,41 +211,38 @@ Resolver los 9 problemas críticos del proyecto anterior:
 
 ### 🔄 Currently Working On
 
-**TAREA COMPLETADA**: Layout del Back Office en Next.js ✅
-- ✅ Estructura base del admin panel creada
-- ✅ Sidebar dinámico implementado
-- ✅ Diseño de página dashboard (http://localhost:3000/dashboard)
-- ✅ Componentes reutilizables diseñados
-- ⚠️ **BUGS IDENTIFICADOS**:
-  - Scroll del sidebar no funciona correctamente
-  - Dark mode no implementado/funcional
-  - Botón cerrar sesión no redirige al login
-  - Posibles issues adicionales de UX/UI
+**TAREA COMPLETADA**: Sistema completo de traducciones i18n (ES/EN) ✅
+- ✅ Contexto I18nProvider con carga dinámica de traducciones
+- ✅ Hook useI18n para manejo de idiomas (ES/EN)
+- ✅ Archivos de traducción completos (es.json, en.json)
+- ✅ Sidebar completamente traducido con sincronización
+- ✅ Navbar con selectores de idioma funcionales
+- ✅ Dashboard con todas las traducciones integradas
+- ✅ ThemeCustomizer sincronizado con sistema i18n
+- ✅ Persistencia de idioma en localStorage
+- ✅ Fallback system (ES por defecto)
 
-**PRÓXIMA TAREA**: Resolver bugs del dashboard
-- Arreglar scroll del sidebar
-- Implementar/corregir dark mode
-- Conectar botón logout con redirección
-- Testing y pulido de la interfaz
+**PRÓXIMA TAREA**: Testing y pulido final del sistema de traducciones, luego crear módulos Empresa y Usuarios/Roles
 
 ### 🐛 BUGS CHECKLIST - Dashboard
 
 #### 🚨 Críticos (Bloquean funcionalidad)
-- [ ] **Logout Button**: No redirige al login (/login)
-  - Ubicación: Sidebar o header
-  - Comportamiento esperado: Limpiar token y redirigir
-  - Prioridad: ALTA
+- [x] **Logout Button**: No redirige al login (/login) ✅ RESUELTO
+  - Ubicación: User menu en Navbar
+  - Implementación: Integrado con AuthContext + loading state
+  - Comportamiento: Limpia localStorage, llama API logout, redirige a /login
+  - Estado: Funcional con UX mejorada
 
 #### 🎨 UI/UX Issues  
-- [ ] **Sidebar Scroll**: Scroll no funciona correctamente
+- [x] **Sidebar Scroll**: Scroll no funciona correctamente ✅ RESUELTO
   - Problema: Overflow o height issues
   - Comportamiento esperado: Scroll suave cuando hay muchos items
-  - Prioridad: MEDIA
+  - Estado: Funcional
 
-- [ ] **Dark Mode**: No implementado o no funcional
-  - Estado actual: Unclear si existe toggle
+- [x] **Dark Mode**: No implementado o no funcional ✅ RESUELTO
+  - Estado actual: Toggle implementado y funcional
   - Comportamiento esperado: Toggle funcional + persistencia
-  - Prioridad: MEDIA
+  - Estado: Implementado correctamente
 
 #### 🔍 Testing Pendiente
 - [ ] **Responsive Design**: Verificar en móvil/tablet

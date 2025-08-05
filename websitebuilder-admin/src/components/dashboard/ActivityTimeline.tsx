@@ -1,6 +1,9 @@
+'use client';
+
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
+import { useI18n } from '@/contexts/I18nContext';
 
 interface ActivityItem {
   id: number;
@@ -12,49 +15,49 @@ interface ActivityItem {
   status?: 'success' | 'warning' | 'error';
 }
 
-const mockActivities: ActivityItem[] = [
+const getMockActivities = (t: (key: string, fallback?: string) => string): ActivityItem[] => [
   {
     id: 1,
     type: 'reservation',
-    title: 'Nueva reservación confirmada',
-    description: 'Habitación Deluxe para 3 noches',
+    title: t('dashboard.newReservationConfirmed', 'Nueva reservación confirmada'),
+    description: t('dashboard.deluxeRoomDescription', 'Habitación Deluxe para 3 noches'),
     user: 'Ana García',
-    time: '5 minutos',
+    time: '5 ' + t('common.minutes', 'minutos'),
     status: 'success'
   },
   {
     id: 2,
     type: 'order',
-    title: 'Pedido completado',
-    description: '2 productos vendidos - $150.00',
+    title: t('dashboard.orderCompleted', 'Pedido completado'),
+    description: t('dashboard.productsOrderDescription', '2 productos vendidos - $150.00'),
     user: 'Carlos Martínez',
-    time: '12 minutos',
+    time: '12 ' + t('common.minutes', 'minutos'),
     status: 'success'
   },
   {
     id: 3,
     type: 'client',
-    title: 'Nuevo cliente registrado',
-    description: 'Cliente se registró desde el sitio web',
+    title: t('dashboard.newClientRegistered', 'Nuevo cliente registrado'),
+    description: t('dashboard.clientWebsiteDescription', 'Cliente se registró desde el sitio web'),
     user: 'María López',
-    time: '25 minutos',
+    time: '25 ' + t('common.minutes', 'minutos'),
     status: 'success'
   },
   {
     id: 4,
     type: 'cancellation',
-    title: 'Reserva cancelada',
-    description: 'Cliente canceló reserva de habitación estándar',
+    title: t('dashboard.reservationCancelled', 'Reserva cancelada'),
+    description: t('dashboard.standardRoomCancellation', 'Cliente canceló reserva de habitación estándar'),
     user: 'José Rodríguez',
-    time: '1 hora',
+    time: '1 ' + t('common.hour', 'hora'),
     status: 'error'
   },
   {
     id: 5,
     type: 'order',
-    title: 'Producto agotado',
-    description: 'Stock bajo en producto #123',
-    time: '2 horas',
+    title: t('dashboard.productOutOfStock', 'Producto agotado'),
+    description: t('dashboard.lowStockDescription', 'Stock bajo en producto #123'),
+    time: '2 ' + t('common.hours', 'horas'),
     status: 'warning'
   }
 ];
@@ -113,10 +116,13 @@ const getStatusDot = (status?: ActivityItem['status']) => {
 };
 
 export function ActivityTimeline() {
+  const { t } = useI18n();
+  const mockActivities = getMockActivities(t);
+  
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle>Activity Timeline</CardTitle>
+        <CardTitle>{t('dashboard.recentActivity', 'Activity Timeline')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -150,7 +156,7 @@ export function ActivityTimeline() {
                       <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
                     </>
                   )}
-                  <span className="text-xs text-gray-500 dark:text-gray-400">hace {activity.time}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.ago', 'hace')} {activity.time}</span>
                 </div>
               </div>
             </div>
@@ -159,7 +165,7 @@ export function ActivityTimeline() {
         
         <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
           <button className="text-primary-600 dark:text-primary-400 text-sm font-medium hover:text-primary-700 dark:hover:text-primary-300 transition-colors">
-            Ver toda la actividad
+            {t('dashboard.viewAllActivity', 'Ver toda la actividad')}
           </button>
         </div>
       </CardContent>

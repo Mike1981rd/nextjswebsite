@@ -61,12 +61,7 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
     localStorage.setItem('theme', newTheme);
   };
 
-  const handleLanguageChange = (lang: 'es' | 'en') => {
-    // Handle language change
-    localStorage.setItem('language', lang);
-    console.log('Language changed to:', lang);
-    // TODO: Integrate with i18n system
-  };
+  // Remove handleLanguageChange since it's now handled by i18n context
 
   const handleCustomizerOpen = () => {
     setCustomizerOpen(true);
@@ -114,7 +109,6 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
         <Navbar
           onSidebarToggle={handleSidebarToggle}
           onThemeChange={handleThemeChange}
-          onLanguageChange={handleLanguageChange}
           onCustomizeOpen={handleCustomizerOpen}
           sidebarCollapsed={sidebarCollapsed}
         />

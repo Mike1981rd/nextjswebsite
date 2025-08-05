@@ -21,6 +21,7 @@ Core business logic implementations including multi-tenancy, e-commerce, and hot
 
 **Recent Implementations:**
 - [2025-08 UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - Complete Materialize design clone
+- [2025-08 i18n System Implementation](./features/2025-08-i18n-system.md) - Complete translation system with dynamic language switching
 
 ### 🔧 [Infrastructure](./infrastructure/infrastructure-00-index.md)
 Database setup, Docker configuration, CI/CD pipelines, and performance optimizations.

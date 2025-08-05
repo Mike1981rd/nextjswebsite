@@ -1,32 +1,37 @@
+'use client';
+
 import React from 'react';
 import { StatsGrid } from '@/components/dashboard/StatsGrid';
 import { ActivityTimeline } from '@/components/dashboard/ActivityTimeline';
 import { WeeklySales } from '@/components/dashboard/WeeklySales';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { MiniMetricCard } from '@/components/ui/MetricCard';
+import { useI18n } from '@/contexts/I18nContext';
 
 export default function DashboardPage() {
+  const { t } = useI18n();
+  
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            Sales Overview
+            {t('dashboard.title', 'Sales Overview')}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Total 42.5k Sales +18% from yesterday
+            {t('dashboard.subtitle', 'Total 42.5k Sales +18% from yesterday')}
           </p>
         </div>
         
         <div className="flex items-center gap-2">
           <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-            <option>Últimos 7 días</option>
-            <option>Últimos 30 días</option>
-            <option>Últimos 3 meses</option>
+            <option>{t('dashboard.thisWeek', 'Últimos 7 días')}</option>
+            <option>{t('dashboard.thisMonth', 'Últimos 30 días')}</option>
+            <option>{t('common.last3Months', 'Últimos 3 meses')}</option>
           </select>
           <button className="px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
-            Exportar
+            {t('common.export', 'Exportar')}
           </button>
         </div>
       </div>
@@ -44,7 +49,7 @@ export default function DashboardPage() {
         {/* Total Visits Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Total Visits</CardTitle>
+            <CardTitle>{t('dashboard.totalVisits', 'Total Visits')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center mb-6">
@@ -86,8 +91,8 @@ export default function DashboardPage() {
         {/* Sessions Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Sessions</CardTitle>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Last Month</p>
+            <CardTitle>{t('dashboard.sessions', 'Sessions')}</CardTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.lastMonth', 'Last Month')}</p>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 mb-4">
@@ -99,7 +104,7 @@ export default function DashboardPage() {
                 <div className="text-success-500 text-sm font-medium">-25.5%</div>
               </div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Sessions last month</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.sessionsLastMonth', 'Sessions last month')}</p>
           </CardContent>
         </Card>
       </div>
@@ -112,16 +117,16 @@ export default function DashboardPage() {
         {/* Top Products */}
         <Card>
           <CardHeader>
-            <CardTitle>Top Referral Sources</CardTitle>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Number of Sales</p>
+            <CardTitle>{t('dashboard.topProducts', 'Top Referral Sources')}</CardTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.numberOfSales', 'Number of Sales')}</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {[
-                { name: 'Samsung s22', image: '📱', status: 'Out of Stock', revenue: '$12.5k', profit: '+24%', profitColor: 'text-success-500' },
-                { name: 'iPhone 14 Pro', image: '📱', status: 'In Stock', revenue: '$45k', profit: '-18%', profitColor: 'text-error-500' },
-                { name: 'Oneplus 9 Pro', image: '📱', status: 'Upcoming', revenue: '$98.2k', profit: '+55%', profitColor: 'text-success-500' },
-                { name: 'Google Pixel 6', image: '📱', status: 'In Stock', revenue: '$210k', profit: '+8%', profitColor: 'text-success-500' },
+                { name: 'Samsung s22', image: '📱', status: t('forms.outOfStock', 'Out of Stock'), revenue: '$12.5k', profit: '+24%', profitColor: 'text-success-500' },
+                { name: 'iPhone 14 Pro', image: '📱', status: t('forms.inStock', 'In Stock'), revenue: '$45k', profit: '-18%', profitColor: 'text-error-500' },
+                { name: 'Oneplus 9 Pro', image: '📱', status: t('forms.upcoming', 'Upcoming'), revenue: '$98.2k', profit: '+55%', profitColor: 'text-success-500' },
+                { name: 'Google Pixel 6', image: '📱', status: t('forms.inStock', 'In Stock'), revenue: '$210k', profit: '+8%', profitColor: 'text-success-500' },
               ].map((product, index) => (
                 <div key={index} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                   <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
@@ -131,8 +136,8 @@ export default function DashboardPage() {
                   <div className="flex-1">
                     <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
                     <div className={`text-sm ${
-                      product.status === 'Out of Stock' ? 'text-error-500' :
-                      product.status === 'Upcoming' ? 'text-warning-500' :
+                      product.status === t('forms.outOfStock', 'Out of Stock') ? 'text-error-500' :
+                      product.status === t('forms.upcoming', 'Upcoming') ? 'text-warning-500' :
                       'text-success-500'
                     }`}>
                       {product.status}
@@ -157,8 +162,8 @@ export default function DashboardPage() {
         {/* Marketing & Sales */}
         <Card>
           <CardHeader>
-            <CardTitle>Marketing & Sales</CardTitle>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total 245.8k Sales +25%</p>
+            <CardTitle>{t('dashboard.marketingSales', 'Marketing & Sales')}</CardTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.totalSalesInfo', 'Total 245.8k Sales +25%')}</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -176,47 +181,47 @@ export default function DashboardPage() {
               </div>
 
               <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">Total Impression</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('dashboard.totalImpression', 'Total Impression')}</div>
                 <div className="text-error-500 text-sm font-medium">-24%</div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Sales Overview</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.title', 'Sales Overview')}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">68</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Open</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.open', 'Open')}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Conversions</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.conversions', 'Conversions')}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">52</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Converted</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard.converted', 'Converted')}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Total Orders</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.totalOrders', 'Total Orders')}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">04</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Lost</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.lost', 'Lost')}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Revenue</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.revenue', 'Revenue')}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">12</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Quotations</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard.quotations', 'Quotations')}</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-2">
                 <button className="flex-1 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                  Details
+                  {t('common.details', 'Details')}
                 </button>
                 <button className="flex-1 py-2 px-4 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600">
-                  Report
+                  {t('common.report', 'Report')}
                 </button>
               </div>
             </div>
@@ -228,8 +233,8 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Live Visitors</CardTitle>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total 890 Visitors Are Live</p>
+                <CardTitle>{t('dashboard.liveVisitors', 'Live Visitors')}</CardTitle>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('dashboard.totalVisitorsLive', 'Total 890 Visitors Are Live')}</p>
               </div>
               <div className="flex items-center gap-1 text-success-500 text-sm font-medium">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -253,8 +258,8 @@ export default function DashboardPage() {
 
             <div className="mt-6">
               <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">Visits by Day</div>
-                <div className="font-semibold text-gray-900 dark:text-white">Total 248.5k Visits on Thursday</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('dashboard.visitsByDay', 'Visits by Day')}</div>
+                <div className="font-semibold text-gray-900 dark:text-white">{t('dashboard.totalVisitsThursday', 'Total 248.5k Visits on Thursday')}</div>
               </div>
             </div>
           </CardContent>
