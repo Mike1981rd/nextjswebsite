@@ -29,8 +29,8 @@ namespace WebsiteBuilderAPI.Data
                 },
                 new Role
                 {
-                    Name = Role.HotelAdmin,
-                    Description = "Administrador de hotel con acceso completo a su hotel",
+                    Name = Role.CompanyAdmin,
+                    Description = "Administrador de company con acceso completo a su company",
                     IsSystemRole = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -44,7 +44,7 @@ namespace WebsiteBuilderAPI.Data
                 new Role
                 {
                     Name = "Receptionist",
-                    Description = "Recepcionista del hotel",
+                    Description = "Recepcionista del company",
                     IsSystemRole = true,
                     CreatedAt = DateTime.UtcNow
                 },
@@ -137,7 +137,7 @@ namespace WebsiteBuilderAPI.Data
                 new Permission { Resource = "customers", Action = "update", Description = "Editar clientes" },
                 new Permission { Resource = "customers", Action = "delete", Description = "Eliminar clientes" },
 
-                // Company/Hotel
+                // Company/Company
                 new Permission { Resource = "company", Action = "view", Description = "Ver empresa en el menú" },
                 new Permission { Resource = "company", Action = "read", Description = "Ver información de la empresa" },
                 new Permission { Resource = "company", Action = "update", Description = "Editar información de la empresa" },
@@ -162,7 +162,7 @@ namespace WebsiteBuilderAPI.Data
 
             // Obtener todos los roles para asignar permisos
             var superAdminRole = await context.Roles.FirstAsync(r => r.Name == Role.SuperAdmin);
-            var hotelAdminRole = await context.Roles.FirstAsync(r => r.Name == Role.HotelAdmin);
+            var companyAdminRole = await context.Roles.FirstAsync(r => r.Name == Role.CompanyAdmin);
             var editorRole = await context.Roles.FirstAsync(r => r.Name == "Editor");
             var receptionistRole = await context.Roles.FirstAsync(r => r.Name == "Receptionist");
             var viewerRole = await context.Roles.FirstAsync(r => r.Name == "Viewer");
@@ -179,16 +179,16 @@ namespace WebsiteBuilderAPI.Data
                 });
             }
 
-            // HotelAdmin - Todo excepto gestión de usuarios y roles del sistema
-            var hotelAdminPermissions = allPermissions.Where(p => 
+            // CompanyAdmin - Todo excepto gestión de usuarios y roles del sistema
+            var companyAdminPermissions = allPermissions.Where(p => 
                 !(p.Resource == "users" && (p.Action == "create" || p.Action == "delete")) &&
                 !(p.Resource == "roles")).ToList();
             
-            foreach (var permission in hotelAdminPermissions)
+            foreach (var permission in companyAdminPermissions)
             {
                 context.RolePermissions.Add(new RolePermission
                 {
-                    RoleId = hotelAdminRole.Id,
+                    RoleId = companyAdminRole.Id,
                     PermissionId = permission.Id,
                     GrantedAt = DateTime.UtcNow
                 });
@@ -245,10 +245,10 @@ namespace WebsiteBuilderAPI.Data
 
             await context.SaveChangesAsync();
 
-            // Crear hotel de prueba
-            var defaultHotel = new Hotel
+            // Crear company de prueba
+            var defaultCompany = new Company
             {
-                Name = "Hotel Demo",
+                Name = "Company Demo",
                 Domain = "demo",
                 Subdomain = "demo",
                 Logo = "/images/logo-demo.png",
@@ -259,7 +259,7 @@ namespace WebsiteBuilderAPI.Data
                 UpdatedAt = DateTime.UtcNow
             };
 
-            await context.Hotels.AddAsync(defaultHotel);
+            await context.Companies.AddAsync(defaultCompany);
             await context.SaveChangesAsync();
 
             // Crear usuario admin
@@ -273,7 +273,7 @@ namespace WebsiteBuilderAPI.Data
                 EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                HotelId = null // SuperAdmin no pertenece a ningún hotel específico
+                CompanyId = null // SuperAdmin no pertenece a ningún company específico
             };
 
             await context.Users.AddAsync(adminUser);
@@ -287,28 +287,28 @@ namespace WebsiteBuilderAPI.Data
                 AssignedAt = DateTime.UtcNow
             });
 
-            // Crear usuario admin del hotel
-            var hotelAdmin = new User
+            // Crear usuario admin del company
+            var companyAdmin = new User
             {
-                Email = "admin@hotel.com",
+                Email = "admin@company.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("123456"),
                 FirstName = "Admin",
-                LastName = "Hotel",
+                LastName = "Company",
                 IsActive = true,
                 EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                HotelId = defaultHotel.Id
+                CompanyId = defaultCompany.Id
             };
 
-            await context.Users.AddAsync(hotelAdmin);
+            await context.Users.AddAsync(companyAdmin);
             await context.SaveChangesAsync();
 
-            // Asignar rol HotelAdmin
+            // Asignar rol CompanyAdmin
             context.UserRoles.Add(new UserRole
             {
-                UserId = hotelAdmin.Id,
-                RoleId = hotelAdminRole.Id,
+                UserId = companyAdmin.Id,
+                RoleId = companyAdminRole.Id,
                 AssignedAt = DateTime.UtcNow
             });
 

@@ -22,6 +22,109 @@ namespace WebsiteBuilderAPI.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.Company", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Apartment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("City")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomDomain")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Domain")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LegalBusinessName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Logo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetricSystem")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("OrderIdPrefix")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OrderIdSuffix")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrimaryColor")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SecondaryColor")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SenderEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("State")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Subdomain")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TimeZone")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("WeightUnit")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Domain")
+                        .IsUnique();
+
+                    b.ToTable("Companies");
+                });
+
             modelBuilder.Entity("WebsiteBuilderAPI.Models.EditorHistory", b =>
                 {
                     b.Property<int>("Id")
@@ -56,58 +159,6 @@ namespace WebsiteBuilderAPI.Migrations
                     b.ToTable("EditorHistories");
                 });
 
-            modelBuilder.Entity("WebsiteBuilderAPI.Models.Hotel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("CustomDomain")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Domain")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Logo")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("PrimaryColor")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SecondaryColor")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Subdomain")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Domain")
-                        .IsUnique();
-
-                    b.ToTable("Hotels");
-                });
-
             modelBuilder.Entity("WebsiteBuilderAPI.Models.NavigationMenu", b =>
                 {
                     b.Property<int>("Id")
@@ -116,7 +167,7 @@ namespace WebsiteBuilderAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("HotelId")
+                    b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
@@ -131,7 +182,7 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HotelId");
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("NavigationMenus");
                 });
@@ -172,6 +223,93 @@ namespace WebsiteBuilderAPI.Migrations
                     b.HasIndex("PageId");
 
                     b.ToTable("PageSections");
+                });
+
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.PaymentProvider", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApiKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Auth1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Auth2")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CertificatePath")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClientId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClientSecret")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsManual")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsTestMode")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Logo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PrivateKeyPath")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("SecretKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StoreId")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TransactionFee")
+                        .HasPrecision(5, 4)
+                        .HasColumnType("numeric(5,4)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("WebhookSecret")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("CompanyId", "Provider")
+                        .IsUnique();
+
+                    b.ToTable("PaymentProviders");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.Permission", b =>
@@ -217,6 +355,9 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -228,9 +369,6 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<bool>("HasVariants")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("HotelId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -241,7 +379,7 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HotelId");
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("Products");
                 });
@@ -254,13 +392,13 @@ namespace WebsiteBuilderAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("HotelId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Items")
                         .HasColumnType("jsonb");
@@ -272,7 +410,7 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HotelId");
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("ProductShoppingCarts");
                 });
@@ -379,6 +517,9 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -386,9 +527,6 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
-
-                    b.Property<int>("HotelId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Images")
                         .HasColumnType("jsonb");
@@ -406,7 +544,7 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HotelId");
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("Rooms");
                 });
@@ -419,13 +557,13 @@ namespace WebsiteBuilderAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("HotelId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Items")
                         .HasColumnType("jsonb");
@@ -437,7 +575,7 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HotelId");
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("RoomReservationCarts");
                 });
@@ -453,13 +591,13 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<string>("ColorScheme")
                         .HasColumnType("jsonb");
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("HotelId")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -469,7 +607,7 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HotelId")
+                    b.HasIndex("CompanyId")
                         .IsUnique();
 
                     b.ToTable("ThemeSettings");
@@ -482,6 +620,9 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CompanyId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -500,9 +641,6 @@ namespace WebsiteBuilderAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<int?>("HotelId")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -529,10 +667,10 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.HasIndex("Email")
                         .IsUnique();
-
-                    b.HasIndex("HotelId");
 
                     b.ToTable("Users");
                 });
@@ -570,13 +708,13 @@ namespace WebsiteBuilderAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("HotelId")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -601,7 +739,7 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HotelId");
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("WebsitePages");
                 });
@@ -619,13 +757,13 @@ namespace WebsiteBuilderAPI.Migrations
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.NavigationMenu", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.Hotel", "Hotel")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
                         .WithMany("NavigationMenus")
-                        .HasForeignKey("HotelId")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hotel");
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.PageSection", b =>
@@ -639,26 +777,37 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Navigation("Page");
                 });
 
-            modelBuilder.Entity("WebsiteBuilderAPI.Models.Product", b =>
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.PaymentProvider", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.Hotel", "Hotel")
-                        .WithMany("Products")
-                        .HasForeignKey("HotelId")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
+                        .WithMany("PaymentProviders")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hotel");
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.Product", b =>
+                {
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
+                        .WithMany("Products")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.ProductShoppingCart", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.Hotel", "Hotel")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("HotelId")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hotel");
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.ProductVariant", b =>
@@ -693,44 +842,44 @@ namespace WebsiteBuilderAPI.Migrations
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.Room", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.Hotel", "Hotel")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
                         .WithMany("Rooms")
-                        .HasForeignKey("HotelId")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hotel");
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.RoomReservationCart", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.Hotel", "Hotel")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("HotelId")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hotel");
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.ThemeSettings", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.Hotel", "Hotel")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
                         .WithOne("ThemeSettings")
-                        .HasForeignKey("WebsiteBuilderAPI.Models.ThemeSettings", "HotelId")
+                        .HasForeignKey("WebsiteBuilderAPI.Models.ThemeSettings", "CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hotel");
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.User", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.Hotel", "Hotel")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("HotelId");
+                        .HasForeignKey("CompanyId");
 
-                    b.Navigation("Hotel");
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.UserRole", b =>
@@ -760,18 +909,20 @@ namespace WebsiteBuilderAPI.Migrations
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.WebsitePage", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.Hotel", "Hotel")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
                         .WithMany("WebsitePages")
-                        .HasForeignKey("HotelId")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Hotel");
+                    b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("WebsiteBuilderAPI.Models.Hotel", b =>
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.Company", b =>
                 {
                     b.Navigation("NavigationMenus");
+
+                    b.Navigation("PaymentProviders");
 
                     b.Navigation("Products");
 

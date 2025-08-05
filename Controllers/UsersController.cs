@@ -13,21 +13,18 @@ namespace WebsiteBuilderAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly ITenantService _tenantService;
         private readonly ILogger<UsersController> _logger;
 
         public UsersController(
-            IUserService userService, 
-            ITenantService tenantService,
+            IUserService userService,
             ILogger<UsersController> logger)
         {
             _userService = userService;
-            _tenantService = tenantService;
             _logger = logger;
         }
 
         /// <summary>
-        /// Obtiene todos los usuarios (filtrado por hotel actual)
+        /// Obtiene todos los usuarios
         /// </summary>
         [HttpGet]
         [RequirePermission("users.read")]
@@ -35,11 +32,8 @@ namespace WebsiteBuilderAPI.Controllers
         {
             try
             {
-                var currentHotelId = _tenantService.GetCurrentTenantId();
-                var isSuperAdmin = User.IsInRole("SuperAdmin");
-
-                // SuperAdmin ve todos, otros solo de su hotel
-                var users = await _userService.GetAllAsync(isSuperAdmin ? null : currentHotelId);
+                // Ya no necesitamos filtrar por hotel porque solo hay una empresa
+                var users = await _userService.GetAllAsync(null);
                 return Ok(users);
             }
             catch (Exception ex)
@@ -65,10 +59,10 @@ namespace WebsiteBuilderAPI.Controllers
                 }
 
                 // Verificar que el usuario pertenece al hotel actual
-                var currentHotelId = _tenantService.GetCurrentTenantId();
+                // Ya no necesitamos el hotel id porque solo hay una empresa
                 var isSuperAdmin = User.IsInRole("SuperAdmin");
                 
-                if (!isSuperAdmin && user.HotelId != currentHotelId)
+                // Ya no validamos hotel porque solo hay una empresa
                 {
                     return Forbid("No tiene permisos para ver este usuario");
                 }
@@ -96,8 +90,8 @@ namespace WebsiteBuilderAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var currentHotelId = _tenantService.GetCurrentTenantId();
-                var user = await _userService.CreateAsync(dto, currentHotelId);
+                // Ya no necesitamos el hotel id porque solo hay una empresa
+                var user = await _userService.CreateAsync(dto, null);
                 
                 return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
             }
@@ -133,10 +127,10 @@ namespace WebsiteBuilderAPI.Controllers
                     return NotFound(new { message = $"Usuario con id {id} no encontrado" });
                 }
 
-                var currentHotelId = _tenantService.GetCurrentTenantId();
+                // Ya no necesitamos el hotel id porque solo hay una empresa
                 var isSuperAdmin = User.IsInRole("SuperAdmin");
                 
-                if (!isSuperAdmin && existingUser.HotelId != currentHotelId)
+                // Ya no validamos hotel porque solo hay una empresa
                 {
                     return Forbid("No tiene permisos para actualizar este usuario");
                 }
@@ -175,10 +169,10 @@ namespace WebsiteBuilderAPI.Controllers
                     return NotFound(new { message = $"Usuario con id {id} no encontrado" });
                 }
 
-                var currentHotelId = _tenantService.GetCurrentTenantId();
+                // Ya no necesitamos el hotel id porque solo hay una empresa
                 var isSuperAdmin = User.IsInRole("SuperAdmin");
                 
-                if (!isSuperAdmin && existingUser.HotelId != currentHotelId)
+                // Ya no validamos hotel porque solo hay una empresa
                 {
                     return Forbid("No tiene permisos para eliminar este usuario");
                 }
@@ -220,10 +214,10 @@ namespace WebsiteBuilderAPI.Controllers
                     return NotFound(new { message = $"Usuario con id {id} no encontrado" });
                 }
 
-                var currentHotelId = _tenantService.GetCurrentTenantId();
+                // Ya no necesitamos el hotel id porque solo hay una empresa
                 var isSuperAdmin = User.IsInRole("SuperAdmin");
                 
-                if (!isSuperAdmin && user.HotelId != currentHotelId)
+                // Ya no validamos hotel porque solo hay una empresa
                 {
                     return Forbid("No tiene permisos para ver los permisos de este usuario");
                 }

@@ -10,9 +10,16 @@ namespace WebsiteBuilderAPI.Attributes
     {
         private readonly string _permission;
 
+        // Constructor que acepta un solo parámetro (backward compatibility)
         public RequirePermissionAttribute(string permission)
         {
             _permission = permission;
+        }
+
+        // Constructor que acepta resource y action (nuevo)
+        public RequirePermissionAttribute(string resource, string action)
+        {
+            _permission = $"{resource}.{action}";
         }
 
         public void OnAuthorization(AuthorizationFilterContext context)

@@ -52,20 +52,72 @@ builder.Services.AddCors(options =>
 });
 
 // Registrar servicios
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 
-builder.Services.AddControllers();
+// Servicios de empresa
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IPaymentProviderService, PaymentProviderService>();
+builder.Services.AddScoped<WebsiteBuilderAPI.Services.Encryption.IEncryptionService, WebsiteBuilderAPI.Services.Encryption.EncryptionService>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Evitar referencias circulares
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "WebsiteBuilder API",
+        Version = "v1",
+        Description = "API para el sistema de hotel + e-commerce + website builder"
+    });
+
+    // Configurar JWT en Swagger
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebsiteBuilder API v1");
+    });
 }
 
 // Usar CORS
@@ -76,22 +128,29 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Aplicar migraciones automáticamente en desarrollo
-if (app.Environment.IsDevelopment())
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        try
-        {
-            dbContext.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "Error al aplicar migraciones");
-        }
-    }
-}
+// Inicializar base de datos
+await InitializeDatabaseAsync(app);
 
 app.Run();
+
+async Task InitializeDatabaseAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        // Aplicar migraciones
+        await dbContext.Database.MigrateAsync();
+        logger.LogInformation("Migraciones aplicadas exitosamente");
+        
+        // Ejecutar seed data
+        await SeedData.InitializeAsync(scope.ServiceProvider);
+        logger.LogInformation("Datos semilla creados exitosamente");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error al inicializar la base de datos");
+    }
+}

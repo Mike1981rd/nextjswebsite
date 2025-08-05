@@ -100,7 +100,6 @@ public class ProductCartService : IProductCartService
 
 **10:00-12:00 AM: Autenticación y estructura base**
 - Sistema de login
-- Middleware multi-tenant
 - Layout del back office
 
 **12:00-3:00 AM: Primeros módulos**
@@ -239,7 +238,7 @@ Generar reporte con métricas antes/después.
 export const colors = {
   primary: {
     50: '#f0fdf4',
-    500: '#22c55e', // Verde farmacia/hotel
+    500: '#22c55e', // Verde farmacia/empresa
     600: '#16a34a',
     700: '#15803d',
     900: '#14532d'
@@ -329,7 +328,7 @@ export function Button({ variant, size, children, ...props }: ButtonProps) {
 - ✅ Themes light/dark con personalización de colores
 - ✅ Sistema de variantes de productos con atributos flexibles
 - ✅ Auto-save cada 30 segundos con historial persistente
-- ✅ Arquitectura multi-tenant con dominios personalizados
+- ✅ Sistema single-tenant (una empresa por base de datos)
 - ✅ 12 módulos completos del back office
 
 ### TECNOLOGÍAS Y HERRAMIENTAS:
@@ -348,7 +347,7 @@ Este blueprint resuelve **TODOS** los 9 problemas críticos identificados y crea
 - ⚡ **Performance superior** (cache optimizado)
 - 🎨 **UX moderna** (drag & drop, undo/redo, preview)
 - 🔧 **Fácil mantenimiento** (archivos pequeños, código organizado)
-- 📈 **Escalable** (multi-tenant, separación de conceptos)
+- 📈 **Escalable** (single-tenant, separación de conceptos)
 - 🌍 **Internacional** (multi-idioma, multi-timezone)
 
 **¡LISTO PARA IMPLEMENTACIÓN EL 11 DE AGOSTO 2025!** 🎯

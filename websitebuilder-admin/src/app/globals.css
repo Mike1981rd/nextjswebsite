@@ -10,7 +10,10 @@
     /* Custom theme properties for dynamic theming */
     --sidebar-bg: #1a1b2e;
     --sidebar-text: #ffffff;
-    --primary-color: #6366f1;
+    --sidebar-text-secondary: rgba(255, 255, 255, 0.7);
+    --sidebar-bg-hover: rgba(255, 255, 255, 0.1);
+    --sidebar-active: var(--primary-color);
+    --primary-color: #22c55e;
     
     /* Card light mode styles */
     --card-bg: #ffffff;
@@ -25,6 +28,9 @@
     /* Dark mode overrides */
     --sidebar-bg: #0f1419;
     --sidebar-text: #ffffff;
+    --sidebar-text-secondary: rgba(255, 255, 255, 0.7);
+    --sidebar-bg-hover: rgba(255, 255, 255, 0.1);
+    --sidebar-active: var(--primary-color);
     
     /* Card dark mode styles */
     --card-bg: #374151;
@@ -88,6 +94,121 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  /* Sidebar utility classes */
+  .text-sidebar-text {
+    color: var(--sidebar-text);
+  }
+  
+  .text-sidebar-textSecondary {
+    color: var(--sidebar-text-secondary);
+  }
+  
+  .bg-sidebar-bgHover {
+    background-color: var(--sidebar-bg-hover);
+  }
+  
+  .bg-sidebar-active {
+    background-color: var(--sidebar-active);
+  }
+  
+  /* Dynamic primary color utilities */
+  .bg-primary-50 {
+    background-color: color-mix(in srgb, var(--primary-color) 10%, white);
+  }
+  
+  .bg-primary-100 {
+    background-color: color-mix(in srgb, var(--primary-color) 20%, white);
+  }
+  
+  .bg-primary-500 {
+    background-color: var(--primary-color);
+  }
+  
+  .bg-primary-600 {
+    background-color: color-mix(in srgb, var(--primary-color) 100%, black 10%);
+  }
+  
+  .bg-primary-700 {
+    background-color: color-mix(in srgb, var(--primary-color) 100%, black 20%);
+  }
+  
+  .bg-primary-900 {
+    background-color: color-mix(in srgb, var(--primary-color) 100%, black 60%);
+  }
+  
+  .text-primary-400 {
+    color: color-mix(in srgb, var(--primary-color) 80%, white 20%);
+  }
+  
+  .text-primary-500 {
+    color: var(--primary-color);
+  }
+  
+  .text-primary-600 {
+    color: color-mix(in srgb, var(--primary-color) 100%, black 10%);
+  }
+  
+  .text-primary-700 {
+    color: color-mix(in srgb, var(--primary-color) 100%, black 20%);
+  }
+  
+  .border-primary-500 {
+    border-color: var(--primary-color);
+  }
+  
+  .ring-primary-500 {
+    --tw-ring-color: var(--primary-color);
+  }
+  
+  .ring-primary-600 {
+    --tw-ring-color: color-mix(in srgb, var(--primary-color) 100%, black 10%);
+  }
+  
+  /* Focus ring colors */
+  .focus\:ring-primary-500:focus {
+    --tw-ring-color: var(--primary-color);
+  }
+  
+  .focus\:ring-primary-600:focus {
+    --tw-ring-color: color-mix(in srgb, var(--primary-color) 100%, black 10%);
+  }
+  
+  /* Checkbox and form control colors */
+  .text-primary-600[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  .dark .focus\:ring-primary-600:focus {
+    --tw-ring-color: color-mix(in srgb, var(--primary-color) 80%, white 20%);
+  }
+  
+  /* Dark mode specific colors */
+  .dark .bg-primary-900\/20 {
+    background-color: color-mix(in srgb, var(--primary-color) 20%, black 80%);
+  }
+  
+  .dark .text-primary-300 {
+    color: color-mix(in srgb, var(--primary-color) 60%, white 40%);
+  }
+  
+  .dark .text-primary-400 {
+    color: color-mix(in srgb, var(--primary-color) 80%, white 20%);
+  }
+  
+  /* Hover states */
+  .hover\:bg-primary-700:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 100%, black 20%);
+  }
+  
+  .hover\:text-primary-700:hover {
+    color: color-mix(in srgb, var(--primary-color) 100%, black 20%);
+  }
+  
+  .hover\:text-primary-300:hover {
+    color: color-mix(in srgb, var(--primary-color) 60%, white 40%);
   }
   
   /* Animation classes */

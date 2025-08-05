@@ -87,8 +87,8 @@ namespace WebsiteBuilderAPI.Controllers
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 FullName = user.FullName,
-                HotelId = user.HotelId,
-                HotelName = user.Hotel?.Name,
+                CompanyId = user.CompanyId,
+                CompanyName = user.Company?.Name,
                 Permissions = permissions,
                 Roles = roles
             };

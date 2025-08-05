@@ -19,8 +19,8 @@ export interface UserDto {
   firstName: string;
   lastName: string;
   fullName: string;
-  hotelId?: number;
-  hotelName?: string;
+  companyId?: number;
+  companyName?: string;
   roles?: string[];
   permissions?: string[];
 }

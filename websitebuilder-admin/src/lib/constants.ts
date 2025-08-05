@@ -1,5 +1,5 @@
 // Configuración de la API
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7224/api';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
 
 // Tipos de secciones del website builder
 export enum SectionType {
@@ -29,7 +29,7 @@ export enum PageType {
 export const colors = {
   primary: {
     50: '#f0fdf4',
-    500: '#22c55e', // Verde farmacia/hotel
+    500: '#22c55e', // Verde farmacia/empresa
     600: '#16a34a',
     700: '#15803d',
     900: '#14532d'

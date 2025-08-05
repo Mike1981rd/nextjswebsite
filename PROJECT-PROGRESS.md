@@ -37,7 +37,7 @@ Resolver los 9 problemas críticos del proyecto anterior:
 - ✅ Instalar paquetes Entity Framework y Npgsql
 - ✅ Crear ApplicationDbContext
 - ✅ Crear todas las entidades (11 modelos):
-  - ✅ Hotel (multi-tenant)
+  - ✅ Company (single-tenant)
   - ✅ Room (separado de productos)
   - ✅ Product con ProductVariant
   - ✅ WebsitePage y PageSection
@@ -57,10 +57,11 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - ✅ AuthService con BCrypt y generación de tokens
   - ✅ Configuración JWT en Program.cs
   - ✅ DTOs de autenticación creados
-- ✅ Middleware multi-tenant
-  - ✅ ITenantService y TenantService implementados
-  - ✅ TenantMiddleware creado
-  - ✅ Resolución por dominio/subdomain
+- ✅ Sistema single-tenant
+  - ✅ Arquitectura simplificada sin multi-tenancy
+  - ✅ Una empresa por base de datos
+  - ✅ CompanyService implementado
+  - ✅ Rutas públicas configuradas (auth, swagger, health)
 - ⏳ Layout del back office
 - ✅ Modelos de Usuario y Roles
 - ✅ Sistema de permisos
@@ -82,7 +83,7 @@ Resolver los 9 problemas críticos del proyecto anterior:
 ### FASE 2: MÓDULOS CORE (DÍA 2)
 
 #### 🏨 2.1 Módulo Habitaciones
-- ⏳ HotelsController + Service + Repository
+- ⏳ RoomsController + Service + Repository
 - ⏳ RoomsController + Service + Repository
 - ⏳ DTOs y validaciones
 - ⏳ Frontend: páginas de gestión
@@ -185,26 +186,38 @@ Resolver los 9 problemas críticos del proyecto anterior:
    - Frontend Next.js 14 con TypeScript y Tailwind CSS
    - Configuración de GitHub con primer push
 
-2. **Base de Datos**
+2. **Refactorización Hotel → Company (Single-Tenant)**
+   - Removido completamente el sistema multi-tenant
+   - Renombrado modelo Hotel → Company en toda la aplicación
+   - Actualizado HotelService → CompanyService
+   - Actualizado HotelController → CompanyController
+   - Actualizado todos los DTOs relacionados
+   - Actualizado HotelId → CompanyId en todos los modelos
+   - Migración AddRenameHotelToCompany aplicada exitosamente
+   - Frontend actualizado: useHotel → useCompany
+   - Actualizado API endpoints: /api/hotel/* → /api/company/*
+   - Actualizado blueprints para reflejar arquitectura single-tenant
+
+3. **Base de Datos**
    - PostgreSQL configurado (database: websitebuilder, user: postgres)
    - Entity Framework Core con Npgsql instalado
    - ApplicationDbContext con todas las relaciones
    - 11 entidades creadas respetando la separación de conceptos
 
-3. **Frontend Base**
+4. **Frontend Base**
    - Estructura de carpetas según blueprint
    - Dependencias instaladas (axios, react-query, zustand, etc.)
    - Archivos de configuración (api.ts, constants.ts, utils.ts)
    - 12 carpetas de rutas para los módulos
 
-4. **Sistema de Autenticación JWT**
+5. **Sistema de Autenticación JWT**
    - AuthController con 4 endpoints (login, register, me, logout)
    - AuthService con BCrypt para hash de contraseñas
    - Generación de tokens JWT con claims
    - Sistema de roles y permisos implementado
    - Configuración completa en Program.cs
 
-5. **Base de Datos Migrada**
+6. **Base de Datos Migrada**
    - Migración InitialCreate ejecutada exitosamente
    - Base de datos PostgreSQL creada con todas las tablas
    - Esquema completo con relaciones configuradas
@@ -254,7 +267,7 @@ Resolver los 9 problemas críticos del proyecto anterior:
 1. ~~**Migraciones Pendientes**: Las migraciones se aplicarán automáticamente al ejecutar el proyecto~~ ✅ RESUELTO - Base de datos creada
 2. **Puerto API**: Verificar puerto HTTPS (7224) para configurar correctamente en Next.js
 3. ~~**Autenticación**: Decidir si usar Identity o implementación custom~~ ✅ RESUELTO - Implementación custom con JWT
-4. **Multi-tenancy**: Definir estrategia (subdominios vs dominios custom)
+4. ~~**Multi-tenancy**: Definir estrategia~~ ✅ RESUELTO - Sistema single-tenant (una empresa por DB)
 
 ### 🔗 Related Files
 
@@ -281,16 +294,16 @@ Resolver los 9 problemas críticos del proyecto anterior:
 
 ## 🎯 Next Steps Priority
 
-1. **INMEDIATO**: Implementar middleware multi-tenant
-2. **SIGUIENTE**: Crear layout del back office en Next.js
-3. **DESPUÉS**: Crear primeros módulos (Empresa, Usuarios)
+1. **INMEDIATO**: Crear layout del back office en Next.js
+2. **SIGUIENTE**: Implementar módulo Empresa (Controller + Service + Repository + Frontend)
+3. **DESPUÉS**: Implementar módulo Usuarios/Roles (Controller + Service + Repository + Frontend)
 
 ---
 
 ## 📊 Overall Progress
 
-**Fase 1**: 70% completado (Setup, modelos, auth y roles listos, falta multi-tenant y módulos UI)
-**Proyecto Total**: ~25% completado
+**Fase 1**: 80% completado (Setup, modelos, auth, roles listos, migración Hotel→Company completada, falta layout UI y módulos)
+**Proyecto Total**: ~30% completado
 
 **Horas trabajadas**: ~6 horas
 **Horas estimadas restantes**: ~14 horas

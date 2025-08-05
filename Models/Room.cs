@@ -1,13 +1,12 @@
 using System;
 using System.Text.Json;
-using WebsiteBuilderAPI.Data.Filters;
 
 namespace WebsiteBuilderAPI.Models
 {
-    public class Room : ITenantEntity
+    public class Room
     {
         public int Id { get; set; }
-        public int HotelId { get; set; }
+        public int CompanyId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public decimal BasePrice { get; set; }
@@ -17,7 +16,7 @@ namespace WebsiteBuilderAPI.Models
         public DateTime CreatedAt { get; set; }
 
         // Navegación
-        public Hotel Hotel { get; set; } = null!;
+        public Company Company { get; set; } = null!;
 
         // Propiedad helper para trabajar con imágenes
         public List<string> GetImagesList()

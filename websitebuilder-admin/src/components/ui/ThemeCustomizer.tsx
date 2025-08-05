@@ -27,7 +27,7 @@ const defaultSettings: UISettings = {
     textColor: '#ffffff',
     collapsed: false,
   },
-  primaryColor: '#6366f1',
+  primaryColor: '#22c55e', // Hotel Green según blueprint
 };
 
 const predefinedColors = [
@@ -91,7 +91,14 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
       const root = document.documentElement;
       root.style.setProperty('--sidebar-bg', settings.sidebar.color);
       root.style.setProperty('--sidebar-text', settings.sidebar.textColor);
+      root.style.setProperty('--sidebar-text-secondary', settings.sidebar.textColor === '#ffffff' 
+        ? 'rgba(255, 255, 255, 0.7)' 
+        : 'rgba(0, 0, 0, 0.7)');
+      root.style.setProperty('--sidebar-bg-hover', settings.sidebar.textColor === '#ffffff' 
+        ? 'rgba(255, 255, 255, 0.1)' 
+        : 'rgba(0, 0, 0, 0.1)');
       root.style.setProperty('--primary-color', settings.primaryColor);
+      root.style.setProperty('--sidebar-active', settings.primaryColor);
       
       // Apply dark mode class
       if (settings.theme === 'dark') {

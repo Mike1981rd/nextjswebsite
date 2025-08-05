@@ -26,7 +26,7 @@ namespace WebsiteBuilderAPI.DTOs.Auth
 
         public string? PhoneNumber { get; set; }
         
-        // Para registro de usuarios de hotel específico
-        public int? HotelId { get; set; }
+        // Para registro de usuarios de empresa específica
+        public int? CompanyId { get; set; }
     }
 }

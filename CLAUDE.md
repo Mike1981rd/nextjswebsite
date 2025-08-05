@@ -505,3 +505,31 @@ Track in PROJECT-PROGRESS.md:
 - Troubleshooting issues documented
 - Documentation coverage percentage
 - Last documentation update date
+
+## 🖼️ IMAGEN READING PROTOCOL - WSL ENVIRONMENT
+
+### 📁 Ruta de Imágenes - Windows to Linux Mapping
+**IMPORTANTE**: Este proyecto funciona en WSL (Windows Subsystem for Linux).
+
+**Cuando el usuario proporciona rutas de Windows:**
+- Usuario da: `C:\Users\hp\Desktop\imagen.png`
+- **SIEMPRE convertir a**: `/mnt/c/Users/hp/Desktop/imagen.png`
+- **NO cuestionar** la ruta o decir que "no se puede leer"
+- **APLICAR directamente** la conversión y usar Read tool
+
+### 🔧 Protocolo de Lectura
+1. **Conversión automática**: `C:\` → `/mnt/c/`
+2. **Leer inmediatamente** con la ruta convertida
+3. **Si falla**, entonces buscar el archivo con bash/ls
+4. **Nunca asumir** que la ruta es incorrecta por ser de Windows
+
+### ✅ Ejemplos Correctos
+```bash
+# Usuario: C:\Users\hp\Desktop\calendario.png
+# Claude: /mnt/c/Users/hp/Desktop/calendario.png ✅
+
+# Usuario: C:\Users\hp\Documents\imagen.jpg  
+# Claude: /mnt/c/Users/hp/Documents/imagen.jpg ✅
+```
+
+**RECORDATORIO**: Hemos leído cientos de imágenes de esta manera exitosamente. Mantener consistencia.

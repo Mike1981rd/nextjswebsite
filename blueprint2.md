@@ -134,7 +134,7 @@ export function useEditorHistory() {
 - Notificaciones importantes
 
 #### 🏢 Empresa
-- Configuración del hotel
+- Configuración de la empresa
 - Información de contacto
 - Configuraciones generales
 

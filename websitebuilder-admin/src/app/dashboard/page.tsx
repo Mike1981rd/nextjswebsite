@@ -19,20 +19,6 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
             {t('dashboard.title', 'Sales Overview')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {t('dashboard.subtitle', 'Total 42.5k Sales +18% from yesterday')}
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
-            <option>{t('dashboard.thisWeek', 'Últimos 7 días')}</option>
-            <option>{t('dashboard.thisMonth', 'Últimos 30 días')}</option>
-            <option>{t('common.last3Months', 'Últimos 3 meses')}</option>
-          </select>
-          <button className="px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
-            {t('common.export', 'Exportar')}
-          </button>
         </div>
       </div>
 

@@ -36,7 +36,7 @@ const menuItems = [
   {
     id: 'empresa',
     nameKey: 'navigation.empresa',
-    href: '/empresa',
+    href: '/dashboard/empresa',
     icon: CompanyIcon,
     permission: 'company.view'
   },

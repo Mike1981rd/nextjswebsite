@@ -16,7 +16,7 @@ namespace WebsiteBuilderAPI.Services
             _context = context;
         }
 
-        public async Task<List<UserDto>> GetAllAsync(int? hotelId = null)
+        public async Task<List<UserDto>> GetAllAsync(int? companyId = null)
         {
             var query = _context.Users
                 .Include(u => u.UserRoles)
@@ -25,10 +25,10 @@ namespace WebsiteBuilderAPI.Services
                             .ThenInclude(rp => rp.Permission)
                 .AsQueryable();
 
-            // Filtrar por hotel para multi-tenancy
-            if (hotelId.HasValue)
+            // Filtrar por company para multi-tenancy
+            if (companyId.HasValue)
             {
-                query = query.Where(u => u.HotelId == hotelId.Value);
+                query = query.Where(u => u.CompanyId == companyId.Value);
             }
 
             var users = await query.OrderBy(u => u.Email).ToListAsync();
@@ -48,7 +48,7 @@ namespace WebsiteBuilderAPI.Services
             return user != null ? MapToDto(user) : null;
         }
 
-        public async Task<UserDto> CreateAsync(CreateUserDto dto, int? hotelId = null)
+        public async Task<UserDto> CreateAsync(CreateUserDto dto, int? companyId = null)
         {
             // Verificar si el usuario ya existe
             if (await UserExistsAsync(dto.Email))
@@ -66,6 +66,13 @@ namespace WebsiteBuilderAPI.Services
                 throw new InvalidOperationException("One or more specified roles do not exist.");
             }
 
+            // Si no se especifica company, obtener el único que existe
+            if (!companyId.HasValue)
+            {
+                var company = await _context.Companies.FirstOrDefaultAsync();
+                companyId = company?.Id;
+            }
+
             var user = new User
             {
                 Email = dto.Email,
@@ -73,7 +80,7 @@ namespace WebsiteBuilderAPI.Services
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 PhoneNumber = dto.PhoneNumber,
-                HotelId = hotelId,
+                CompanyId = companyId,
                 IsActive = true,
                 EmailConfirmed = false,
                 CreatedAt = DateTime.UtcNow,
@@ -226,7 +233,7 @@ namespace WebsiteBuilderAPI.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
-                HotelId = user.HotelId,
+                CompanyId = user.CompanyId,
                 IsActive = user.IsActive,
                 EmailConfirmed = user.EmailConfirmed,
                 LastLoginAt = user.LastLoginAt,

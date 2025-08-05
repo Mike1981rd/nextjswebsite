@@ -11,7 +11,7 @@ namespace WebsiteBuilderAPI.Data
         }
 
         // DbSets para todas las entidades
-        public DbSet<Hotel> Hotels { get; set; }
+        public DbSet<Company> Companies { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductVariant> ProductVariants { get; set; }
@@ -29,13 +29,16 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
+        
+        // Entidades de empresa
+        public DbSet<PaymentProvider> PaymentProviders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuración de Hotel
-            modelBuilder.Entity<Hotel>(entity =>
+            // Configuración de Company
+            modelBuilder.Entity<Company>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
@@ -52,9 +55,9 @@ namespace WebsiteBuilderAPI.Data
                 entity.Property(e => e.BasePrice).HasPrecision(10, 2);
                 entity.Property(e => e.Images).HasColumnType("jsonb");
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne(e => e.Hotel)
+                entity.HasOne(e => e.Company)
                     .WithMany(h => h.Rooms)
-                    .HasForeignKey(e => e.HotelId);
+                    .HasForeignKey(e => e.CompanyId);
             });
 
             // Configuración de Product
@@ -64,9 +67,9 @@ namespace WebsiteBuilderAPI.Data
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.BasePrice).HasPrecision(10, 2);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne(e => e.Hotel)
+                entity.HasOne(e => e.Company)
                     .WithMany(h => h.Products)
-                    .HasForeignKey(e => e.HotelId);
+                    .HasForeignKey(e => e.CompanyId);
             });
 
             // Configuración de ProductVariant
@@ -89,9 +92,9 @@ namespace WebsiteBuilderAPI.Data
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne(e => e.Hotel)
+                entity.HasOne(e => e.Company)
                     .WithMany(h => h.WebsitePages)
-                    .HasForeignKey(e => e.HotelId);
+                    .HasForeignKey(e => e.CompanyId);
             });
 
             // Configuración de PageSection
@@ -113,9 +116,9 @@ namespace WebsiteBuilderAPI.Data
                 entity.Property(e => e.ColorScheme).HasColumnType("jsonb");
                 entity.Property(e => e.Typography).HasColumnType("jsonb");
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne(e => e.Hotel)
+                entity.HasOne(e => e.Company)
                     .WithOne(h => h.ThemeSettings)
-                    .HasForeignKey<ThemeSettings>(e => e.HotelId);
+                    .HasForeignKey<ThemeSettings>(e => e.CompanyId);
             });
 
             // Configuración de NavigationMenu
@@ -124,9 +127,9 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.MenuType).HasMaxLength(50);
                 entity.Property(e => e.Items).HasColumnType("jsonb");
-                entity.HasOne(e => e.Hotel)
+                entity.HasOne(e => e.Company)
                     .WithMany(h => h.NavigationMenus)
-                    .HasForeignKey(e => e.HotelId);
+                    .HasForeignKey(e => e.CompanyId);
             });
 
             // Configuración de EditorHistory
@@ -148,9 +151,9 @@ namespace WebsiteBuilderAPI.Data
                 entity.Property(e => e.SessionId).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Items).HasColumnType("jsonb");
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne(e => e.Hotel)
+                entity.HasOne(e => e.Company)
                     .WithMany()
-                    .HasForeignKey(e => e.HotelId);
+                    .HasForeignKey(e => e.CompanyId);
             });
 
             // Configuración de ProductShoppingCart
@@ -160,9 +163,9 @@ namespace WebsiteBuilderAPI.Data
                 entity.Property(e => e.SessionId).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Items).HasColumnType("jsonb");
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne(e => e.Hotel)
+                entity.HasOne(e => e.Company)
                     .WithMany()
-                    .HasForeignKey(e => e.HotelId);
+                    .HasForeignKey(e => e.CompanyId);
             });
 
             // Configuración de User
@@ -176,9 +179,9 @@ namespace WebsiteBuilderAPI.Data
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-                entity.HasOne(e => e.Hotel)
+                entity.HasOne(e => e.Company)
                     .WithMany()
-                    .HasForeignKey(e => e.HotelId)
+                    .HasForeignKey(e => e.CompanyId)
                     .IsRequired(false);
             });
 
@@ -230,6 +233,24 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasOne(e => e.Permission)
                     .WithMany(p => p.RolePermissions)
                     .HasForeignKey(e => e.PermissionId);
+            });
+
+            // Configuración de PaymentProvider
+            modelBuilder.Entity<PaymentProvider>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Provider).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.TransactionFee).HasPrecision(5, 4); // 99.9999%
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Company)
+                    .WithMany(h => h.PaymentProviders)
+                    .HasForeignKey(e => e.CompanyId);
+                
+                // Índices para optimización
+                entity.HasIndex(e => new { e.CompanyId, e.Provider }).IsUnique();
+                entity.HasIndex(e => e.IsActive);
             });
         }
     }

@@ -68,8 +68,8 @@ namespace WebsiteBuilderAPI.Services
                         FirstName = user.FirstName,
                         LastName = user.LastName,
                         FullName = user.FullName,
-                        HotelId = user.HotelId,
-                        HotelName = user.Hotel?.Name,
+                        CompanyId = user.CompanyId,
+                        CompanyName = user.Company?.Name,
                         Roles = roles,
                         Permissions = permissions
                     }
@@ -102,7 +102,7 @@ namespace WebsiteBuilderAPI.Services
                     FirstName = registerDto.FirstName,
                     LastName = registerDto.LastName,
                     PhoneNumber = registerDto.PhoneNumber,
-                    HotelId = registerDto.HotelId,
+                    CompanyId = registerDto.CompanyId,
                     IsActive = true,
                     EmailConfirmed = false,
                     CreatedAt = DateTime.UtcNow,
@@ -146,14 +146,14 @@ namespace WebsiteBuilderAPI.Services
         public async Task<User?> GetUserByEmailAsync(string email)
         {
             return await _context.Users
-                .Include(u => u.Hotel)
+                .Include(u => u.Company)
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<User?> GetUserByIdAsync(int userId)
         {
             return await _context.Users
-                .Include(u => u.Hotel)
+                .Include(u => u.Company)
                 .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
@@ -167,7 +167,7 @@ namespace WebsiteBuilderAPI.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.FullName),
-                new Claim("hotelId", user.HotelId?.ToString() ?? "")
+                new Claim("companyId", user.CompanyId?.ToString() ?? "")
             };
 
             // Agregar roles al token

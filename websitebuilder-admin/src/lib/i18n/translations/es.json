@@ -36,11 +36,16 @@
     "hour": "hora",
     "hours": "horas",
     "ago": "hace",
-    "apply": "Aplicar"
+    "apply": "Aplicar",
+    "saving": "Guardando",
+    "saved": "Guardado",
+    "saveChanges": "Guardar Cambios",
+    "lastSaved": "Guardado por última vez"
   },
   "navigation": {
     "dashboard": "Dashboard",
     "empresa": "Empresa",
+    "configuracion": "Configuración",
     "rolesUsuarios": "Roles & Usuarios",
     "clientes": "Clientes",
     "reservaciones": "Reservaciones",
@@ -51,6 +56,132 @@
     "politicas": "Políticas",
     "websiteBuilder": "Sitio Web",
     "dominios": "Dominios"
+  },
+  "empresa": {
+    "configuracion": {
+      "title": "Configuración de Empresa",
+      "subtitle": "Administra la información y configuración de tu empresa",
+      "infoTitle": "Información Importante",
+      "infoDescription": "Los cambios se guardan automáticamente. Asegúrate de completar toda la información para un funcionamiento óptimo."
+    },
+    "storeDetails": {
+      "title": "Detalles de la Tienda",
+      "description": "Configura la información básica de tu empresa y tienda"
+    },
+    "profile": {
+      "title": "Perfil",
+      "description": "Información básica de contacto de tu empresa",
+      "storeName": "Nombre de la Tienda",
+      "storeNamePlaceholder": "Mi Tienda Online",
+      "phoneNumber": "Número de Teléfono",
+      "contactEmail": "Email de Contacto",
+      "senderEmail": "Email de Envío",
+      "senderEmailWarning": {
+        "title": "Confirma que tienes acceso al email de envío",
+        "description": "Se enviará confirmación a {email} en la configuración del remitente."
+      }
+    },
+    "billing": {
+      "title": "Información de Facturación",
+      "description": "Datos fiscales y de dirección para facturación",
+      "legalBusinessName": "Nombre Legal de la Empresa",
+      "legalBusinessNamePlaceholder": "Empresa S.R.L.",
+      "country": "País/Región",
+      "selectCountry": "Seleccionar país",
+      "address": "Dirección",
+      "addressPlaceholder": "Calle Principal 123",
+      "apartment": "Apartamento, suite, etc.",
+      "apartmentPlaceholder": "Apt 4B",
+      "city": "Ciudad",
+      "cityPlaceholder": "Santo Domingo",
+      "state": "Provincia/Estado",
+      "statePlaceholder": "Distrito Nacional",
+      "postalCode": "Código Postal",
+      "postalCodePlaceholder": "10001",
+      "region": "Región",
+      "regionPlaceholder": "Región Metropolitana",
+      "regionHelp": "Campo opcional para especificar la región geográfica"
+    },
+    "timeZone": {
+      "title": "Zona Horaria y Unidades de Medida",
+      "description": "Configura la zona horaria y unidades para cálculos de precios, pesos y horarios de pedidos",
+      "timeZone": "Zona Horaria",
+      "selectTimeZone": "Seleccionar zona horaria",
+      "timeZoneHelp": "Se usa para calcular precios de productos, pesos de envío y horarios de pedidos",
+      "metricSystem": "Sistema de Medidas",
+      "selectMetricSystem": "Seleccionar sistema",
+      "metricSystemHelp": "Sistema de unidades para medidas generales",
+      "metric": "Métrico",
+      "imperial": "Imperial",
+      "weightUnit": "Unidad de Peso",
+      "selectWeightUnit": "Seleccionar unidad",
+      "weightUnitHelp": "Unidad para pesos de productos y envíos",
+      "kilograms": "Kilogramos",
+      "pounds": "Libras",
+      "grams": "Gramos",
+      "ounces": "Onzas",
+      "infoTitle": "Se usa para calcular:",
+      "infoProduct": "Precios de productos, pesos de envío y horarios de pedidos",
+      "infoShipping": "Costos de envío basados en peso",
+      "infoOrders": "Horarios de procesamiento de pedidos"
+    },
+    "currency": {
+      "title": "Moneda de la Tienda",
+      "description": "La moneda en la que se venden tus productos",
+      "storeCurrency": "Moneda de la Tienda",
+      "selectCurrency": "Seleccionar moneda",
+      "storeCurrencyHelp": "La moneda en la que se venden tus productos",
+      "popularCurrencies": "Monedas Populares",
+      "otherCurrencies": "Otras Monedas",
+      "selectedCurrency": "Moneda seleccionada",
+      "priceExample": "Ejemplo de precio",
+      "importantNote": "Nota Importante",
+      "noteProducts": "Todos los precios de productos se mostrarán en esta moneda",
+      "notePayments": "Los métodos de pago deben soportar esta moneda",
+      "noteReports": "Los reportes y estadísticas se generarán en esta moneda"
+    },
+    "orderId": {
+      "title": "Formato de ID de Pedido",
+      "description": "Personaliza cómo aparecen los IDs de tus pedidos",
+      "prefix": "Prefijo",
+      "prefixHelp": "Texto que aparece antes del número de pedido",
+      "suffix": "Sufijo",
+      "suffixPlaceholder": "Ej: -2025",
+      "suffixHelp": "Texto que aparece después del número de pedido",
+      "preview": "Vista Previa",
+      "previewDescription": "Así se verán los IDs de tus pedidos:",
+      "formatExplanation": "Formato del ID de pedido:",
+      "format": "Formato",
+      "number": "Número",
+      "bestPractices": "Mejores Prácticas",
+      "practice1": "Usa prefijos cortos y fáciles de recordar (ej: #, ORD-, PED-)",
+      "practice2": "Los sufijos pueden incluir el año para mejor organización",
+      "practice3": "Evita caracteres especiales que puedan causar problemas",
+      "practice4": "Mantén el formato consistente una vez establecido"
+    },
+    "sections": {
+      "profileCompleted": "Perfil completado",
+      "billingCompleted": "Facturación completada",
+      "timeZoneCompleted": "Zona horaria y unidades configuradas",
+      "currencyCompleted": "Moneda configurada",
+      "orderIdCompleted": "Formato de ID configurado"
+    },
+    "form": {
+      "autoSave": "Guardar automáticamente",
+      "lastSaved": "Guardado por última vez"
+    }
+  },
+  "countries": {
+    "unitedStates": "Estados Unidos",
+    "dominicanRepublic": "República Dominicana",
+    "mexico": "México",
+    "canada": "Canadá",
+    "spain": "España",
+    "france": "Francia",
+    "germany": "Alemania",
+    "italy": "Italia",
+    "brazil": "Brasil",
+    "argentina": "Argentina"
   },
   "dashboard": {
     "title": "Panel de Control",

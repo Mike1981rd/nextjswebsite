@@ -16,8 +16,8 @@ namespace WebsiteBuilderAPI.Models
 
         // Roles predefinidos del sistema
         public const string SuperAdmin = "SuperAdmin";
-        public const string HotelAdmin = "HotelAdmin";
-        public const string HotelStaff = "HotelStaff";
+        public const string CompanyAdmin = "CompanyAdmin";
+        public const string CompanyStaff = "CompanyStaff";
         public const string Customer = "Customer";
     }
 }

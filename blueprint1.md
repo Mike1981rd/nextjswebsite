@@ -1,7 +1,7 @@
 # 🚀 BLUEPRINT COMPLETO - SISTEMA WEBSITE BUILDER NEXT GENERATION
 
 ## 📋 RESUMEN EJECUTIVO
-- **Proyecto**: Sistema multi-tenant hotel + e-commerce + website builder
+- **Proyecto**: Sistema de empresa única + e-commerce + website builder
 - **Tecnologías**: ASP.NET Core 8 API + Next.js 14 + PostgreSQL
 - **Objetivo**: Resolver los 9 problemas críticos identificados y crear arquitectura limpia y escalable
 - **Inicio**: 11 de agosto 2025, 7:00 PM RD
@@ -36,7 +36,7 @@
 ```
 WebsiteBuilderAPI/
 ├── Controllers/
-│   ├── HotelsController.cs
+│   ├── CompanyController.cs
 │   ├── RoomsController.cs  
 │   ├── ProductsController.cs
 │   ├── WebsiteController.cs
@@ -45,18 +45,18 @@ WebsiteBuilderAPI/
 │   ├── ThemeController.cs
 │   └── DomainController.cs
 ├── Services/
-│   ├── IHotelService.cs
+│   ├── ICompanyService.cs
 │   ├── IWebsiteBuilderService.cs
 │   ├── ICacheService.cs
 │   ├── IDomainService.cs
 │   └── IHistoryService.cs
 ├── Repositories/
-│   ├── IHotelRepository.cs
+│   ├── ICompanyRepository.cs
 │   ├── IWebsiteRepository.cs
 │   ├── IProductRepository.cs
 │   └── IRoomRepository.cs
 └── Models/
-    ├── Hotel.cs
+    ├── Company.cs
     ├── Room.cs
     ├── Product.cs
     ├── ProductVariant.cs
@@ -107,8 +107,8 @@ websitebuilder-admin/
 ### ENTIDADES PRINCIPALES
 
 ```sql
--- HOTELES Y CONFIGURACIÓN MULTI-TENANT
-CREATE TABLE Hotels (
+-- EMPRESA Y CONFIGURACIÓN (SINGLE-TENANT)
+CREATE TABLE Companies (
     Id SERIAL PRIMARY KEY,
     Name VARCHAR(255) NOT NULL,
     Domain VARCHAR(255) UNIQUE,
@@ -121,7 +121,7 @@ CREATE TABLE Hotels (
 -- HABITACIONES (SEPARADAS DE PRODUCTOS)
 CREATE TABLE Rooms (
     Id SERIAL PRIMARY KEY,
-    HotelId INT REFERENCES Hotels(Id),
+    CompanyId INT REFERENCES Companies(Id),
     Name VARCHAR(255) NOT NULL,
     Description TEXT,
     BasePrice DECIMAL(10,2),
@@ -134,7 +134,7 @@ CREATE TABLE Rooms (
 -- PRODUCTOS E-COMMERCE (SEPARADOS DE HABITACIONES)
 CREATE TABLE Products (
     Id SERIAL PRIMARY KEY,
-    HotelId INT REFERENCES Hotels(Id),
+    CompanyId INT REFERENCES Companies(Id),
     Name VARCHAR(255) NOT NULL,
     Description TEXT,
     BasePrice DECIMAL(10,2),
@@ -157,7 +157,7 @@ CREATE TABLE ProductVariants (
 -- PÁGINAS DEL WEBSITE (MODULAR - SOLUCIONA PROBLEMA #2)
 CREATE TABLE WebsitePages (
     Id SERIAL PRIMARY KEY,
-    HotelId INT REFERENCES Hotels(Id),
+    CompanyId INT REFERENCES Companies(Id),
     PageType VARCHAR(50) NOT NULL, -- home, product, cart, checkout, custom
     Name VARCHAR(255) NOT NULL,
     Slug VARCHAR(255),
@@ -180,7 +180,7 @@ CREATE TABLE PageSections (
 -- CONFIGURACIONES DE TEMA (SEPARADAS DEL JSON)
 CREATE TABLE ThemeSettings (
     Id SERIAL PRIMARY KEY,
-    HotelId INT REFERENCES Hotels(Id),
+    CompanyId INT REFERENCES Companies(Id),
     ColorScheme JSONB, -- {primary: "#123", secondary: "#456"}
     Typography JSONB,  -- {fontFamily: "Inter", sizes: {...}}
     IsActive BOOLEAN DEFAULT true,
@@ -190,7 +190,7 @@ CREATE TABLE ThemeSettings (
 -- MENÚS DE NAVEGACIÓN
 CREATE TABLE NavigationMenus (
     Id SERIAL PRIMARY KEY,
-    HotelId INT REFERENCES Hotels(Id),
+    CompanyId INT REFERENCES Companies(Id),
     MenuType VARCHAR(50), -- header, footer
     Items JSONB, -- [{name: "Home", url: "/", order: 1}]
     IsActive BOOLEAN DEFAULT true
@@ -210,7 +210,7 @@ CREATE TABLE EditorHistory (
 CREATE TABLE RoomReservationCarts (
     Id SERIAL PRIMARY KEY,
     SessionId VARCHAR(255),
-    HotelId INT REFERENCES Hotels(Id),
+    CompanyId INT REFERENCES Companies(Id),
     Items JSONB, -- [{roomId: 1, checkIn: "...", checkOut: "..."}]
     CreatedAt TIMESTAMP DEFAULT NOW()
 );
@@ -218,7 +218,7 @@ CREATE TABLE RoomReservationCarts (
 CREATE TABLE ProductShoppingCarts (
     Id SERIAL PRIMARY KEY,
     SessionId VARCHAR(255),
-    HotelId INT REFERENCES Hotels(Id),
+    CompanyId INT REFERENCES Companies(Id),
     Items JSONB, -- [{productId: 1, variantId: 2, quantity: 1}]
     CreatedAt TIMESTAMP DEFAULT NOW()
 );

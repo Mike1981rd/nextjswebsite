@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { I18nProvider } from '@/contexts/I18nContext';
+import { ThemeLoader } from '@/components/ui/ThemeLoader';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -25,7 +26,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <I18nProvider>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        <ThemeLoader />
+        {children}
+      </AuthProvider>
     </I18nProvider>
   );
 }

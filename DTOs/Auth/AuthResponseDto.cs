@@ -15,8 +15,8 @@ namespace WebsiteBuilderAPI.DTOs.Auth
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-        public int? HotelId { get; set; }
-        public string? HotelName { get; set; }
+        public int? CompanyId { get; set; }
+        public string? CompanyName { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
         public List<string> Permissions { get; set; } = new List<string>();
     }

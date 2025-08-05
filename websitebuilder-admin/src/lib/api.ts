@@ -2,7 +2,7 @@ import axios from 'axios';
 import authService from '@/services/auth.service';
 
 // Base URL de la API - se ajustará en producción
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7224/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
 
 // Crear instancia de axios con configuración base
 export const api = axios.create({

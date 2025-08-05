@@ -11,7 +11,7 @@ namespace WebsiteBuilderAPI.Models
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
-        public int? HotelId { get; set; } // Para multi-tenancy
+        public int? CompanyId { get; set; } // Para multi-tenancy
         public bool IsActive { get; set; } = true;
         public bool EmailConfirmed { get; set; } = false;
         public DateTime? LastLoginAt { get; set; }
@@ -19,7 +19,7 @@ namespace WebsiteBuilderAPI.Models
         public DateTime UpdatedAt { get; set; }
 
         // Navegación
-        public Hotel? Hotel { get; set; }
+        public Company? Company { get; set; }
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
         // Propiedades computadas
