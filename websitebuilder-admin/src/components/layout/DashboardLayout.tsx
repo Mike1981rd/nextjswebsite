@@ -25,6 +25,14 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
     if (savedCollapsed) {
       setSidebarCollapsed(JSON.parse(savedCollapsed));
     }
+    
+    // Load and apply theme from localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
   // Save sidebar state to localStorage
@@ -72,10 +80,12 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
     // Handle settings changes
     console.log('Settings changed:', settings);
     
+    // DISABLED: Don't let ThemeCustomizer override sidebar toggle
+    // This was causing the flash issue where sidebar would collapse then immediately expand
     // Apply sidebar state if it changed
-    if (settings.sidebar.collapsed !== sidebarCollapsed) {
-      setSidebarCollapsed(settings.sidebar.collapsed);
-    }
+    // if (settings.sidebar.collapsed !== sidebarCollapsed) {
+    //   setSidebarCollapsed(settings.sidebar.collapsed);
+    // }
   };
 
   if (!mounted) {
@@ -84,7 +94,7 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
@@ -96,8 +106,8 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
         className={cn(
           'flex-1 flex flex-col transition-all duration-300',
           // On desktop, account for sidebar width
-          'md:ml-sidebar',
-          sidebarCollapsed && 'md:ml-sidebar-collapsed'
+          'md:ml-[320px]',
+          sidebarCollapsed && 'md:ml-[80px]'
         )}
       >
         {/* Navbar */}
@@ -106,12 +116,13 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
           onThemeChange={handleThemeChange}
           onLanguageChange={handleLanguageChange}
           onCustomizeOpen={handleCustomizerOpen}
+          sidebarCollapsed={sidebarCollapsed}
         />
 
         {/* Page Content */}
         <main 
           className={cn(
-            'flex-1 overflow-auto pt-navbar p-6',
+            'flex-1 overflow-auto pt-16 p-6',
             className
           )}
         >

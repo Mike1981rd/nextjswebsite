@@ -55,7 +55,7 @@ export function MetricCard({
   const getChangeColor = (changeVal: number) => {
     if (changeVal > 0) return 'text-success-500';
     if (changeVal < 0) return 'text-error-500';
-    return 'text-text-secondary';
+    return 'text-gray-500 dark:text-gray-400';
   };
 
   // Get color classes
@@ -83,7 +83,7 @@ export function MetricCard({
                   'p-2 rounded-lg',
                   variant === 'gradient' 
                     ? 'bg-white/20' 
-                    : 'bg-gray-50 text-text-secondary'
+                    : 'bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                 )}>
                   {icon}
                 </div>
@@ -91,14 +91,14 @@ export function MetricCard({
               <div>
                 <p className={cn(
                   'text-sm font-medium',
-                  variant === 'gradient' ? 'text-white/80' : 'text-text-secondary'
+                  variant === 'gradient' ? 'text-white/80' : 'text-gray-600 dark:text-gray-300'
                 )}>
                   {title}
                 </p>
                 {description && (
                   <p className={cn(
                     'text-xs',
-                    variant === 'gradient' ? 'text-white/60' : 'text-text-muted'
+                    variant === 'gradient' ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
                   )}>
                     {description}
                   </p>
@@ -109,7 +109,7 @@ export function MetricCard({
             <div className="flex items-end gap-2">
               <span className={cn(
                 'text-2xl font-bold',
-                variant === 'gradient' ? 'text-white' : 'text-text-primary'
+                variant === 'gradient' ? 'text-white' : 'text-gray-900 dark:text-white'
               )}>
                 {formatValue(value)}
               </span>
@@ -175,9 +175,9 @@ export function MiniMetricCard({
   };
 
   return (
-    <div className={cn('p-4 bg-white rounded-lg border border-card-border', className)}>
-      <p className="text-xs text-text-secondary font-medium mb-1">{title}</p>
-      <p className="text-lg font-bold text-text-primary">{formatValue(value)}</p>
+    <div className={cn('p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600', className)}>
+      <p className="text-xs text-gray-600 dark:text-gray-300 font-medium mb-1">{title}</p>
+      <p className="text-lg font-bold text-gray-900 dark:text-white">{formatValue(value)}</p>
     </div>
   );
 }

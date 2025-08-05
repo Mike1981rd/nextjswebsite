@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/Avatar';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   MenuToggleIcon,
   TranslationIcon,
@@ -16,6 +17,7 @@ interface NavbarProps {
   onThemeChange?: () => void;
   onLanguageChange?: (lang: 'es' | 'en') => void;
   onCustomizeOpen?: () => void;
+  sidebarCollapsed?: boolean;
   className?: string;
 }
 
@@ -24,21 +26,30 @@ export function Navbar({
   onThemeChange, 
   onLanguageChange,
   onCustomizeOpen,
+  sidebarCollapsed = false,
   className 
 }: NavbarProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   
   const userMenuRef = useRef<HTMLDivElement>(null);
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
-  // Mock data - replace with real data from auth context
-  const user = {
+  // Get real user data from auth context
+  const { user: authUser, logout } = useAuth();
+  
+  // Use real user data or fallback to mock data
+  const user = authUser ? {
+    name: authUser.fullName || `${authUser.firstName} ${authUser.lastName}`,
+    email: authUser.email,
+    avatar: null // Will show initials from fullName
+  } : {
     name: 'Admin User',
     email: 'admin@websitebuilder.com',
-    avatar: null // Will show initials
+    avatar: null
   };
 
   const notifications = [
@@ -48,6 +59,19 @@ export function Navbar({
   ];
 
   const unreadCount = notifications.filter(n => n.unread).length;
+
+  // Handle logout with loading state
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      setLoggingOut(false);
+      setUserMenuOpen(false);
+    }
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -70,8 +94,9 @@ export function Navbar({
   return (
     <header 
       className={cn(
-        'fixed top-0 right-0 z-30 h-navbar bg-white border-b border-gray-200 shadow-navbar transition-all duration-300',
-        'left-0 md:left-sidebar', // Full width on mobile, offset by sidebar on desktop
+        'fixed top-0 right-0 z-30 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-all duration-300',
+        'left-0', // Full width on mobile
+        sidebarCollapsed ? 'md:left-[80px]' : 'md:left-[320px]', // Adjust based on sidebar state
         className
       )}
     >
@@ -81,7 +106,7 @@ export function Navbar({
           {/* Mobile Sidebar Toggle */}
           <button
             onClick={onSidebarToggle}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 transition-colors md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden"
             title="Toggle sidebar"
           >
             <MenuToggleIcon size={20} />
@@ -93,7 +118,7 @@ export function Navbar({
               <input
                 type="text"
                 placeholder="Search [Ctrl + K]"
-                className="w-64 h-10 px-4 pl-10 pr-4 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors"
+                className="w-64 h-10 px-4 pl-10 pr-4 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white dark:focus:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,7 +135,7 @@ export function Navbar({
           <div className="relative" ref={languageMenuRef}>
             <button
               onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               title="Change language"
             >
               <TranslationIcon size={20} />
@@ -118,7 +143,7 @@ export function Navbar({
 
             {/* Language Dropdown */}
             {languageMenuOpen && (
-              <div className="absolute right-0 top-12 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+              <div className="absolute right-0 top-12 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-2 z-50">
                 <button
                   onClick={() => {
                     onLanguageChange?.('es');
@@ -264,11 +289,19 @@ export function Navbar({
                 </div>
                 
                 <div className="border-t border-gray-100 py-2">
-                  <button className="flex items-center gap-3 w-full px-4 py-2 text-sm text-error-600 hover:bg-error-50 transition-colors">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    Cerrar sesión
+                  <button 
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-error-600 hover:bg-error-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loggingOut ? (
+                      <div className="animate-spin h-4 w-4 border-2 border-error-600 border-t-transparent rounded-full" />
+                    ) : (
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    )}
+                    {loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
                   </button>
                 </div>
               </div>

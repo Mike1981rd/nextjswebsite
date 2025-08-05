@@ -37,7 +37,7 @@ const predefinedColors = [
   { name: 'Rose', value: '#f43f5e' },
   { name: 'Orange', value: '#f97316' },
   { name: 'Emerald', value: '#10b981' },
-  { name: 'Indigo', value: '#6366f1' },
+  { name: 'Indigo', value: '#4f46e5' }, // Changed from #6366f1 to fix duplicate key
 ];
 
 const sidebarPresets = [
@@ -64,6 +64,8 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
     setMounted(true);
     // Load settings from localStorage
     const savedSettings = localStorage.getItem('ui-settings');
+    const savedTheme = localStorage.getItem('theme');
+    
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
@@ -71,6 +73,9 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
       } catch (error) {
         console.error('Error parsing saved settings:', error);
       }
+    } else if (savedTheme) {
+      // Fallback: apply saved theme even if no full settings
+      setSettings(prev => ({ ...prev, theme: savedTheme as 'light' | 'dark' }));
     }
   }, []);
 
@@ -85,6 +90,16 @@ export function ThemeCustomizer({ isOpen, onClose, onSettingsChange }: ThemeCust
       root.style.setProperty('--sidebar-bg', settings.sidebar.color);
       root.style.setProperty('--sidebar-text', settings.sidebar.textColor);
       root.style.setProperty('--primary-color', settings.primaryColor);
+      
+      // Apply dark mode class
+      if (settings.theme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+      
+      // Save theme to localStorage for persistence
+      localStorage.setItem('theme', settings.theme);
     }
   }, [settings, mounted, onSettingsChange]);
 

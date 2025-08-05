@@ -128,13 +128,13 @@ export function ActivityTimeline() {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="font-medium text-gray-900 text-sm">
+                  <p className="font-medium text-gray-900 dark:text-white text-sm">
                     {activity.title}
                   </p>
                   {getStatusDot(activity.status)}
                 </div>
                 
-                <p className="text-gray-600 text-sm mb-2">
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
                   {activity.description}
                 </p>
                 
@@ -146,19 +146,19 @@ export function ActivityTimeline() {
                         size="sm"
                         className="w-5 h-5 text-xs"
                       />
-                      <span className="text-xs text-gray-500">{activity.user}</span>
-                      <span className="text-xs text-gray-400">•</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{activity.user}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
                     </>
                   )}
-                  <span className="text-xs text-gray-500">hace {activity.time}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">hace {activity.time}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
         
-        <div className="mt-6 pt-4 border-t border-gray-100">
-          <button className="text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors">
+        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+          <button className="text-primary-600 dark:text-primary-400 text-sm font-medium hover:text-primary-700 dark:hover:text-primary-300 transition-colors">
             Ver toda la actividad
           </button>
         </div>

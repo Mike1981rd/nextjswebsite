@@ -13,8 +13,10 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          // Base styles
-          'rounded-card bg-card-bg border border-card-border shadow-card',
+          // Base styles with dark mode support
+          'rounded-card shadow-card transition-colors duration-300',
+          'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600',
+          'text-gray-900 dark:text-white font-medium',
           // Padding variants
           {
             'p-4': padding === 'sm',
@@ -47,7 +49,7 @@ const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
     return (
       <div
         ref={ref}
-        className={cn('mb-4 pb-2 border-b border-card-border', className)}
+        className={cn('mb-4 pb-2 border-b border-gray-200 dark:border-gray-600', className)}
         {...props}
       >
         {children}
@@ -70,7 +72,7 @@ const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
       <Comp
         ref={ref}
         className={cn(
-          'text-lg font-semibold text-text-primary leading-tight',
+          'text-lg font-bold text-gray-900 dark:text-white leading-tight',
           className
         )}
         {...props}
@@ -93,7 +95,7 @@ const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
     return (
       <p
         ref={ref}
-        className={cn('text-sm text-text-secondary mt-1', className)}
+        className={cn('text-sm font-medium text-gray-600 dark:text-white mt-1', className)}
         {...props}
       >
         {children}
@@ -112,7 +114,7 @@ interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
 const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
   ({ children, className, ...props }, ref) => {
     return (
-      <div ref={ref} className={cn('', className)} {...props}>
+      <div ref={ref} className={cn('text-gray-900 dark:text-white', className)} {...props}>
         {children}
       </div>
     );

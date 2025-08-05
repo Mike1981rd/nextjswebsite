@@ -11,10 +11,10 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
             Sales Overview
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Total 42.5k Sales +18% from yesterday
           </p>
         </div>
@@ -48,7 +48,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-center mb-6">
-              <div className="text-2xl font-bold text-gray-900 mb-1">$42.5k</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">$42.5k</div>
               <div className="flex items-center justify-center gap-1 text-success-500 text-sm font-medium">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
@@ -61,22 +61,22 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-warning-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Mobile</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Mobile</span>
                 </div>
                 <div className="text-right">
-                  <div className="font-medium text-gray-900">23.5%</div>
-                  <div className="text-xs text-gray-500">2,890</div>
+                  <div className="font-medium text-gray-900 dark:text-white">23.5%</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">2,890</div>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Desktop</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Desktop</span>
                 </div>
                 <div className="text-right">
-                  <div className="font-medium text-gray-900">76.5%</div>
-                  <div className="text-xs text-gray-500">22,465</div>
+                  <div className="font-medium text-gray-900 dark:text-white">76.5%</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">22,465</div>
                 </div>
               </div>
             </div>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Sessions</CardTitle>
-            <p className="text-sm text-gray-500">Last Month</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Last Month</p>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 mb-4">
@@ -95,11 +95,11 @@ export default function DashboardPage() {
                 <span className="text-lg">👤</span>
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">12.2k</div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">12.2k</div>
                 <div className="text-success-500 text-sm font-medium">-25.5%</div>
               </div>
             </div>
-            <p className="text-sm text-gray-600">Sessions last month</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Sessions last month</p>
           </CardContent>
         </Card>
       </div>
@@ -113,7 +113,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Top Referral Sources</CardTitle>
-            <p className="text-sm text-gray-500">Number of Sales</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Number of Sales</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900">{product.name}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
                     <div className={`text-sm ${
                       product.status === 'Out of Stock' ? 'text-error-500' :
                       product.status === 'Upcoming' ? 'text-warning-500' :
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="text-right">
-                    <div className="font-medium text-gray-900">{product.revenue}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{product.revenue}</div>
                     <div className={`text-sm font-medium ${product.profitColor}`}>
                       {product.profit}
                     </div>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Marketing & Sales</CardTitle>
-            <p className="text-sm text-gray-500">Total 245.8k Sales +25%</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Total 245.8k Sales +25%</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -170,49 +170,49 @@ export default function DashboardPage() {
                     <circle cx="48" cy="48" r="40" stroke="#6366f1" strokeWidth="8" strokeDasharray="251" strokeDashoffset="60" fill="none" strokeLinecap="round" />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-bold text-gray-900">84k</span>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">84k</span>
                   </div>
                 </div>
               </div>
 
               <div className="text-center">
-                <div className="text-sm text-gray-600 mb-1">Total Impression</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">Total Impression</div>
                 <div className="text-error-500 text-sm font-medium">-24%</div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Sales Overview</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Sales Overview</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">68</span>
-                    <span className="text-xs text-gray-500">Open</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Open</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Conversions</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Conversions</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">52</span>
-                    <span className="text-xs text-gray-500">Converted</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Converted</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Total Orders</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Total Orders</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">04</span>
-                    <span className="text-xs text-gray-500">Lost</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Lost</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Revenue</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Revenue</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">12</span>
-                    <span className="text-xs text-gray-500">Quotations</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Quotations</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-2">
-                <button className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <button className="flex-1 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                   Details
                 </button>
                 <button className="flex-1 py-2 px-4 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600">
@@ -229,7 +229,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Live Visitors</CardTitle>
-                <p className="text-sm text-gray-500 mt-1">Total 890 Visitors Are Live</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total 890 Visitors Are Live</p>
               </div>
               <div className="flex items-center gap-1 text-success-500 text-sm font-medium">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -253,8 +253,8 @@ export default function DashboardPage() {
 
             <div className="mt-6">
               <div className="text-center">
-                <div className="text-sm text-gray-600 mb-1">Visits by Day</div>
-                <div className="font-semibold text-gray-900">Total 248.5k Visits on Thursday</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">Visits by Day</div>
+                <div className="font-semibold text-gray-900 dark:text-white">Total 248.5k Visits on Thursday</div>
               </div>
             </div>
           </CardContent>

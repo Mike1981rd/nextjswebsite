@@ -134,7 +134,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-
+  
   // Handle hydration
   useEffect(() => {
     setMounted(true);
@@ -153,23 +153,33 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
   // Filter menu items based on permissions
   const visibleMenuItems = menuItems.filter(item => hasPermission(item.permission));
 
+  // Debug log (cleaned up)
+  // console.log('Sidebar collapsed state:', collapsed);
+  // console.log('Visible menu items count:', visibleMenuItems.length);
+
   return (
     <>
       {/* Desktop Sidebar */}
       <aside
         className={cn(
           'fixed left-0 top-0 z-40 h-screen shadow-sidebar transition-all duration-300 ease-in-out',
-          collapsed ? 'w-sidebar-collapsed' : 'w-sidebar',
+          collapsed ? 'w-20' : 'w-72',
           'hidden md:block',
           className
         )}
         style={{
           backgroundColor: 'var(--sidebar-bg)',
-          color: 'var(--sidebar-text)'
+          color: 'var(--sidebar-text)',
+          width: collapsed ? '80px' : '320px', // Better width for collapsed state
+          minWidth: collapsed ? '80px' : '320px', // Ensure minimum width
+          maxWidth: collapsed ? '80px' : '320px'  // Ensure maximum width
         }}
       >
         {/* Logo and Toggle */}
-        <div className="flex h-navbar items-center justify-between px-4">
+        <div className={cn(
+          "flex h-16 items-center justify-between transition-all duration-300",
+          collapsed ? "px-3" : "px-4"
+        )}>
           <div className="flex items-center gap-3">
             {/* Logo */}
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500 text-white font-bold text-sm">
@@ -178,28 +188,39 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
             
             {/* Brand Name */}
             {!collapsed && (
-              <span className="font-semibold text-lg text-sidebar-text">
+              <span className="font-semibold text-lg text-sidebar-text transition-opacity duration-300">
                 WebsiteBuilder
               </span>
             )}
           </div>
 
           {/* Toggle Button */}
-          <button
-            onClick={onToggle}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-bgHover text-sidebar-text hover:bg-sidebar-active transition-colors"
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {collapsed ? (
-              <ChevronRightIcon size={16} />
-            ) : (
+          {!collapsed && (
+            <button
+              onClick={onToggle}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-bgHover text-sidebar-text hover:bg-sidebar-active transition-colors"
+              title="Collapse sidebar"
+            >
               <ChevronLeftIcon size={16} />
-            )}
-          </button>
+            </button>
+          )}
+          
+          {collapsed && (
+            <button
+              onClick={onToggle}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-bgHover text-sidebar-text hover:bg-sidebar-active transition-colors"
+              title="Expand sidebar"
+            >
+              <ChevronRightIcon size={16} />
+            </button>
+          )}
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 px-4 py-6">
+        <nav className={cn(
+          "py-6 overflow-y-auto sidebar-scroll transition-all duration-300",
+          collapsed ? "px-2" : "px-4"
+        )} style={{ height: 'calc(100vh - 64px - 80px)' }}>
           <ul className="space-y-2">
             {visibleMenuItems.map((item) => {
               const Icon = item.icon;
@@ -210,7 +231,8 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 group relative',
+                      'flex items-center rounded-lg py-2.5 text-sm font-medium transition-all duration-200 group relative',
+                      collapsed ? 'justify-center px-0' : 'gap-3 px-3',
                       isActive
                         ? 'bg-sidebar-active text-white shadow-lg'
                         : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
@@ -235,9 +257,9 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
 
                     {/* Tooltip for collapsed state */}
                     {collapsed && (
-                      <div className="absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 pointer-events-none">
+                      <div className="absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-800 px-3 py-2 text-xs text-white opacity-0 shadow-xl transition-all duration-200 group-hover:opacity-100 pointer-events-none">
                         {item.name}
-                        <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-900"></div>
+                        <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-800"></div>
                       </div>
                     )}
                   </Link>
@@ -292,7 +314,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
           }}
         >
           {/* Mobile Header */}
-          <div className="flex h-navbar items-center justify-between px-4 border-b border-sidebar-bgHover">
+          <div className="flex h-16 items-center justify-between px-4 border-b border-sidebar-bgHover">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500 text-white font-bold text-sm">
                 WB
@@ -312,7 +334,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
           </div>
 
           {/* Mobile Navigation */}
-          <nav className="flex-1 px-4 py-6">
+          <nav className="px-4 py-6 overflow-y-auto sidebar-scroll" style={{ height: 'calc(100vh - 64px - 80px)' }}>
             <ul className="space-y-2">
               {visibleMenuItems.map((item) => {
                 const Icon = item.icon;
