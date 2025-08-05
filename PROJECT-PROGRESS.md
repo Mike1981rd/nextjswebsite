@@ -53,8 +53,8 @@ Resolver los 9 problemas críticos del proyecto anterior:
 - ⏳ Sistema de login JWT
 - ⏳ Middleware multi-tenant
 - ⏳ Layout del back office
-- ⏳ Modelos de Usuario y Roles
-- ⏳ Sistema de permisos
+- ✅ Modelos de Usuario y Roles
+- ✅ Sistema de permisos
 
 #### 🏢 1.4 Primeros Módulos (12:00-3:00 AM)
 - ⏳ Módulo Empresa

@@ -22,6 +22,13 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<EditorHistory> EditorHistories { get; set; }
         public DbSet<RoomReservationCart> RoomReservationCarts { get; set; }
         public DbSet<ProductShoppingCart> ProductShoppingCarts { get; set; }
+        
+        // Entidades de autenticación
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<RolePermission> RolePermissions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -156,6 +163,74 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasOne(e => e.Hotel)
                     .WithMany()
                     .HasForeignKey(e => e.HotelId);
+            });
+
+            // Configuración de User
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.PasswordHash).IsRequired();
+                entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Hotel)
+                    .WithMany()
+                    .HasForeignKey(e => e.HotelId)
+                    .IsRequired(false);
+            });
+
+            // Configuración de Role
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.Property(e => e.Description).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            // Configuración de UserRole (tabla de unión)
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.RoleId });
+                entity.Property(e => e.AssignedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.UserRoles)
+                    .HasForeignKey(e => e.UserId);
+                entity.HasOne(e => e.Role)
+                    .WithMany(r => r.UserRoles)
+                    .HasForeignKey(e => e.RoleId);
+                entity.HasOne(e => e.AssignedByUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.AssignedByUserId)
+                    .IsRequired(false);
+            });
+
+            // Configuración de Permission
+            modelBuilder.Entity<Permission>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Module).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Description).IsRequired().HasMaxLength(255);
+                entity.HasIndex(e => new { e.Module, e.Action, e.Name }).IsUnique();
+            });
+
+            // Configuración de RolePermission (tabla de unión)
+            modelBuilder.Entity<RolePermission>(entity =>
+            {
+                entity.HasKey(e => new { e.RoleId, e.PermissionId });
+                entity.Property(e => e.GrantedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Role)
+                    .WithMany(r => r.RolePermissions)
+                    .HasForeignKey(e => e.RoleId);
+                entity.HasOne(e => e.Permission)
+                    .WithMany(p => p.RolePermissions)
+                    .HasForeignKey(e => e.PermissionId);
             });
         }
     }
