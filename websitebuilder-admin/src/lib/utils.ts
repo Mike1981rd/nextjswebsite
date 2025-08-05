@@ -109,3 +109,19 @@ export function generateAvatarColor(name: string): string {
   const index = name.charCodeAt(0) % colors.length;
   return colors[index];
 }
+
+// Format number with commas (for metrics)
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat('en-US').format(num);
+}
+
+// Calculate percentage change (for dashboard metrics)
+export function calculatePercentageChange(current: number, previous: number): number {
+  if (previous === 0) return 0;
+  return ((current - previous) / previous) * 100;
+}
+
+// Generate random ID
+export function generateId(): string {
+  return Math.random().toString(36).substr(2, 9);
+}

@@ -1,137 +1,265 @@
-'use client';
-
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import React from 'react';
+import { StatsGrid } from '@/components/dashboard/StatsGrid';
+import { ActivityTimeline } from '@/components/dashboard/ActivityTimeline';
+import { WeeklySales } from '@/components/dashboard/WeeklySales';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { MiniMetricCard } from '@/components/ui/MetricCard';
 
 export default function DashboardPage() {
-  const { user, loading, isAuthenticated } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [loading, isAuthenticated, router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando...</p>
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            Sales Overview
+          </h1>
+          <p className="text-gray-600">
+            Total 42.5k Sales +18% from yesterday
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+            <option>Últimos 7 días</option>
+            <option>Últimos 30 días</option>
+            <option>Últimos 3 meses</option>
+          </select>
+          <button className="px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
+            Exportar
+          </button>
         </div>
       </div>
-    );
-  }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+      {/* Main Stats Grid */}
+      <StatsGrid />
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header temporal */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
-                Bienvenido, {user?.fullName || user?.email}
-              </span>
-              <button
-                onClick={() => router.push('/login')}
-                className="text-sm text-red-600 hover:text-red-800"
-              >
-                Cerrar sesión
-              </button>
-            </div>
-          </div>
+      {/* Secondary Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Weekly Sales Chart */}
+        <div className="xl:col-span-1">
+          <WeeklySales />
         </div>
-      </header>
 
-      {/* Contenido principal */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Bienvenido al Panel de Administración
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                {/* Card ejemplo - Empresa */}
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-base font-medium text-gray-900">Empresa</h3>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Configura la información de tu empresa
-                  </p>
-                  <button
-                    onClick={() => router.push('/empresa')}
-                    className="mt-4 text-sm text-green-600 hover:text-green-700 font-medium"
-                  >
-                    Ir a configuración →
-                  </button>
+        {/* Total Visits Breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Visits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center mb-6">
+              <div className="text-2xl font-bold text-gray-900 mb-1">$42.5k</div>
+              <div className="flex items-center justify-center gap-1 text-success-500 text-sm font-medium">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                +8.45%
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-warning-500 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Mobile</span>
                 </div>
-
-                {/* Card ejemplo - Productos */}
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-base font-medium text-gray-900">Productos</h3>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Gestiona tu catálogo de productos
-                  </p>
-                  <button
-                    onClick={() => router.push('/productos')}
-                    className="mt-4 text-sm text-green-600 hover:text-green-700 font-medium"
-                  >
-                    Ver productos →
-                  </button>
-                </div>
-
-                {/* Card ejemplo - Website Builder */}
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-base font-medium text-gray-900">Website Builder</h3>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Diseña y personaliza tu sitio web
-                  </p>
-                  <button
-                    onClick={() => router.push('/website-builder')}
-                    className="mt-4 text-sm text-green-600 hover:text-green-700 font-medium"
-                  >
-                    Abrir editor →
-                  </button>
+                <div className="text-right">
+                  <div className="font-medium text-gray-900">23.5%</div>
+                  <div className="text-xs text-gray-500">2,890</div>
                 </div>
               </div>
 
-              {/* Información del usuario */}
-              <div className="mt-8 border-t pt-6">
-                <h3 className="text-sm font-medium text-gray-900">Información del usuario</h3>
-                <dl className="mt-2 text-sm text-gray-600">
-                  <div className="mt-1">
-                    <dt className="inline font-medium">Email:</dt>
-                    <dd className="inline ml-2">{user?.email}</dd>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Desktop</span>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium text-gray-900">76.5%</div>
+                  <div className="text-xs text-gray-500">22,465</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sessions Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Sessions</CardTitle>
+            <p className="text-sm text-gray-500">Last Month</p>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <span className="text-lg">👤</span>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">12.2k</div>
+                <div className="text-success-500 text-sm font-medium">-25.5%</div>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">Sessions last month</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Activity Timeline */}
+        <ActivityTimeline />
+
+        {/* Top Products */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Referral Sources</CardTitle>
+            <p className="text-sm text-gray-500">Number of Sales</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                { name: 'Samsung s22', image: '📱', status: 'Out of Stock', revenue: '$12.5k', profit: '+24%', profitColor: 'text-success-500' },
+                { name: 'iPhone 14 Pro', image: '📱', status: 'In Stock', revenue: '$45k', profit: '-18%', profitColor: 'text-error-500' },
+                { name: 'Oneplus 9 Pro', image: '📱', status: 'Upcoming', revenue: '$98.2k', profit: '+55%', profitColor: 'text-success-500' },
+                { name: 'Google Pixel 6', image: '📱', status: 'In Stock', revenue: '$210k', profit: '+8%', profitColor: 'text-success-500' },
+              ].map((product, index) => (
+                <div key={index} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
+                    {product.image}
                   </div>
-                  <div className="mt-1">
-                    <dt className="inline font-medium">Nombre:</dt>
-                    <dd className="inline ml-2">{user?.fullName}</dd>
-                  </div>
-                  <div className="mt-1">
-                    <dt className="inline font-medium">Rol:</dt>
-                    <dd className="inline ml-2">{user?.roles?.join(', ') || 'Sin rol'}</dd>
-                  </div>
-                  {user?.hotelName && (
-                    <div className="mt-1">
-                      <dt className="inline font-medium">Empresa:</dt>
-                      <dd className="inline ml-2">{user.hotelName}</dd>
+                  
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">{product.name}</div>
+                    <div className={`text-sm ${
+                      product.status === 'Out of Stock' ? 'text-error-500' :
+                      product.status === 'Upcoming' ? 'text-warning-500' :
+                      'text-success-500'
+                    }`}>
+                      {product.status}
                     </div>
-                  )}
-                </dl>
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="font-medium text-gray-900">{product.revenue}</div>
+                    <div className={`text-sm font-medium ${product.profitColor}`}>
+                      {product.profit}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Live Visitors and Marketing Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Marketing & Sales */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Marketing & Sales</CardTitle>
+            <p className="text-sm text-gray-500">Total 245.8k Sales +25%</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Circular progress */}
+              <div className="flex items-center justify-center">
+                <div className="relative w-24 h-24">
+                  <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
+                    <circle cx="48" cy="48" r="40" stroke="#e5e7eb" strokeWidth="8" fill="none" />
+                    <circle cx="48" cy="48" r="40" stroke="#6366f1" strokeWidth="8" strokeDasharray="251" strokeDashoffset="60" fill="none" strokeLinecap="round" />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold text-gray-900">84k</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <div className="text-sm text-gray-600 mb-1">Total Impression</div>
+                <div className="text-error-500 text-sm font-medium">-24%</div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Sales Overview</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">68</span>
+                    <span className="text-xs text-gray-500">Open</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Conversions</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">52</span>
+                    <span className="text-xs text-gray-500">Converted</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Total Orders</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">04</span>
+                    <span className="text-xs text-gray-500">Lost</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Revenue</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">12</span>
+                    <span className="text-xs text-gray-500">Quotations</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                  Details
+                </button>
+                <button className="flex-1 py-2 px-4 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600">
+                  Report
+                </button>
               </div>
             </div>
-          </div>
-        </div>
-      </main>
+          </CardContent>
+        </Card>
+
+        {/* Live Visitors */}
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Live Visitors</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">Total 890 Visitors Are Live</p>
+              </div>
+              <div className="flex items-center gap-1 text-success-500 text-sm font-medium">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                +78.2%
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Bar chart representation */}
+            <div className="h-48 flex items-end gap-2">
+              {[20, 45, 65, 80, 35, 90, 55, 75, 40, 85, 60, 95, 70, 50, 88, 45, 75, 65].map((height, index) => (
+                <div
+                  key={index}
+                  className="flex-1 bg-success-500 rounded-t transition-all hover:bg-success-600"
+                  style={{ height: `${height}%` }}
+                />
+              ))}
+            </div>
+
+            <div className="mt-6">
+              <div className="text-center">
+                <div className="text-sm text-gray-600 mb-1">Visits by Day</div>
+                <div className="font-semibold text-gray-900">Total 248.5k Visits on Thursday</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -6,11 +6,20 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
+    
+    /* Custom theme properties for dynamic theming */
+    --sidebar-bg: #1a1b2e;
+    --sidebar-text: #ffffff;
+    --primary-color: #6366f1;
   }
 
   .dark {
     --background: 222 47% 11%;
     --foreground: 0 0% 98%;
+    
+    /* Dark mode overrides */
+    --sidebar-bg: #0f1419;
+    --sidebar-text: #ffffff;
   }
   
   html {

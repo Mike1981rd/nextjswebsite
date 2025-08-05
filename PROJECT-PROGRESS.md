@@ -211,21 +211,46 @@ Resolver los 9 problemas críticos del proyecto anterior:
 
 ### 🔄 Currently Working On
 
-**TAREA COMPLETADA**: Sistema de Roles y Permisos ✅
-- Implementado sistema RBAC completo con 5 niveles de permisos
-- 3 Controllers (Roles, Users, Permissions) con CRUD completo
-- 3 Services con interfaces y lógica de negocio
-- RequirePermission attribute para proteger endpoints
-- 5 roles predefinidos, 67 permisos para 15 recursos
-- Multi-tenant support en gestión de usuarios
-- JWT actualizado para incluir roles y permisos
-- Seed data con usuarios de prueba
+**TAREA COMPLETADA**: Layout del Back Office en Next.js ✅
+- ✅ Estructura base del admin panel creada
+- ✅ Sidebar dinámico implementado
+- ✅ Diseño de página dashboard (http://localhost:3000/dashboard)
+- ✅ Componentes reutilizables diseñados
+- ⚠️ **BUGS IDENTIFICADOS**:
+  - Scroll del sidebar no funciona correctamente
+  - Dark mode no implementado/funcional
+  - Botón cerrar sesión no redirige al login
+  - Posibles issues adicionales de UX/UI
 
-**PRÓXIMA TAREA**: Layout del Back Office en Next.js
-- Crear estructura base del admin panel
-- Implementar sidebar dinámico basado en permisos
-- Diseñar componentes reutilizables
-- Integrar con AuthContext
+**PRÓXIMA TAREA**: Resolver bugs del dashboard
+- Arreglar scroll del sidebar
+- Implementar/corregir dark mode
+- Conectar botón logout con redirección
+- Testing y pulido de la interfaz
+
+### 🐛 BUGS CHECKLIST - Dashboard
+
+#### 🚨 Críticos (Bloquean funcionalidad)
+- [ ] **Logout Button**: No redirige al login (/login)
+  - Ubicación: Sidebar o header
+  - Comportamiento esperado: Limpiar token y redirigir
+  - Prioridad: ALTA
+
+#### 🎨 UI/UX Issues  
+- [ ] **Sidebar Scroll**: Scroll no funciona correctamente
+  - Problema: Overflow o height issues
+  - Comportamiento esperado: Scroll suave cuando hay muchos items
+  - Prioridad: MEDIA
+
+- [ ] **Dark Mode**: No implementado o no funcional
+  - Estado actual: Unclear si existe toggle
+  - Comportamiento esperado: Toggle funcional + persistencia
+  - Prioridad: MEDIA
+
+#### 🔍 Testing Pendiente
+- [ ] **Responsive Design**: Verificar en móvil/tablet
+- [ ] **Navegación**: Verificar todas las rutas funcionen
+- [ ] **Performance**: Verificar carga inicial del dashboard
 
 ### ⚠️ Issues & Decisions
 
