@@ -6,6 +6,7 @@ This directory contains implementation documentation for major business features
 
 ### UI & Design System
 - **[UI Dashboard Implementation](./2025-08-ui-dashboard-implementation.md)** - Complete Materialize clone with responsive sidebar, dashboard metrics, and customization system
+- **[Empresa UI Design Implementation](./2025-08-empresa-ui-design.md)** - Modern company configuration interface with Materialize design, dark mode support, and enhanced form interactions
 - **[Dual Calendar Implementation](./2025-08-dual-calendar-implementation.md)** - Advanced date range selector with dual-month view, quick options, and cross-month selection support
 
 ### Internationalization

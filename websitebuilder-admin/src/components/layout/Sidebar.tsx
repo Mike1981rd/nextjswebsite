@@ -226,7 +226,10 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
           <ul className="space-y-2">
             {visibleMenuItems.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              // More specific active check to avoid false positives
+              const isActive = pathname === item.href || 
+                (item.href !== '/dashboard' && pathname.startsWith(item.href + '/')) ||
+                (item.href === '/dashboard' && pathname === '/dashboard');
 
               return (
                 <li key={item.id}>
@@ -340,7 +343,10 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
             <ul className="space-y-2">
               {visibleMenuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                // More specific active check to avoid false positives
+                const isActive = pathname === item.href || 
+                  (item.href !== '/dashboard' && pathname.startsWith(item.href + '/')) ||
+                  (item.href === '/dashboard' && pathname === '/dashboard');
 
                 return (
                   <li key={item.id}>

@@ -36,7 +36,11 @@
     "hour": "hour",
     "hours": "hours",
     "ago": "ago",
-    "apply": "Apply"
+    "apply": "Apply",
+    "discard": "Discard",
+    "saveChanges": "Save Changes",
+    "saving": "Saving",
+    "saved": "Saved"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -50,7 +54,139 @@
     "paginas": "Pages",
     "politicas": "Policies",
     "websiteBuilder": "Website",
-    "dominios": "Domains"
+    "dominios": "Domains",
+    "configuracion": "Settings"
+  },
+  "empresa": {
+    "configuracion": {
+      "title": "Company Settings",
+      "subtitle": "Manage your company information and settings",
+      "infoTitle": "Important Information",
+      "infoDescription": "Changes are saved automatically. Make sure to complete all information for optimal operation."
+    },
+    "storeDetails": {
+      "title": "Store Details",
+      "description": "Configure your company and store basic information"
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "Basic contact information for your company",
+      "storeName": "Store Name",
+      "storeNamePlaceholder": "My Online Store",
+      "phoneNumber": "Phone Number",
+      "contactEmail": "Store contact email",
+      "senderEmail": "Sender email",
+      "emailWarning": "Confirm that you have access to johndoe@gmail.com in sender email settings.",
+      "senderEmailWarning": {
+        "title": "Confirm you have access to the sender email",
+        "description": "Confirmation will be sent to {email} in sender settings."
+      }
+    },
+    "billing": {
+      "title": "Billing Information",
+      "description": "Tax and address data for billing",
+      "legalName": "Legal business name",
+      "legalBusinessName": "Legal business name",
+      "legalBusinessNamePlaceholder": "Company LLC",
+      "countryPlaceholder": "Country/region",
+      "country": "Country/Region",
+      "selectCountry": "Select country",
+      "address": "Address",
+      "addressPlaceholder": "123 Main Street",
+      "apartment": "Apartment, suite, etc.",
+      "apartmentPlaceholder": "Apt 4B",
+      "city": "City",
+      "cityPlaceholder": "New York",
+      "state": "State",
+      "statePlaceholder": "New York",
+      "postalCode": "PIN Code",
+      "postalCodePlaceholder": "10001",
+      "region": "Region",
+      "regionPlaceholder": "Metropolitan Region",
+      "regionHelp": "Optional field to specify geographic region"
+    },
+    "timeZone": {
+      "title": "Time zone and units of measurement",
+      "description": "Used to calculate product prices, shipping weights, and order times.",
+      "label": "Time Zone",
+      "timeZone": "Time Zone",
+      "selectTimeZone": "Select time zone",
+      "timeZoneHelp": "Used to calculate product prices, shipping weights, and order times",
+      "metricSystem": "Measurement System",
+      "selectMetricSystem": "Select system",
+      "metricSystemHelp": "Unit system for general measurements",
+      "metric": "Metric",
+      "metricOption": "Metric",
+      "imperial": "Imperial",
+      "imperialOption": "Imperial",
+      "weight": "Weight",
+      "weightUnit": "Weight Unit",
+      "selectWeightUnit": "Select unit",
+      "weightUnitHelp": "Unit for product and shipping weights",
+      "kilograms": "Kilograms",
+      "pounds": "Pounds",
+      "grams": "Grams",
+      "ounces": "Ounces",
+      "infoTitle": "Used to calculate:",
+      "infoProduct": "Product prices, shipping weights, and order times",
+      "infoShipping": "Weight-based shipping costs",
+      "infoOrders": "Order processing times"
+    },
+    "currency": {
+      "title": "Store currency",
+      "description": "The currency your products are sold in.",
+      "label": "Store currency",
+      "storeCurrency": "Store Currency",
+      "selectCurrency": "Select currency",
+      "storeCurrencyHelp": "The currency your products are sold in",
+      "popularCurrencies": "Popular Currencies",
+      "otherCurrencies": "Other Currencies",
+      "selectedCurrency": "Selected currency",
+      "priceExample": "Price example",
+      "importantNote": "Important Note",
+      "noteProducts": "All product prices will be displayed in this currency",
+      "notePayments": "Payment methods must support this currency",
+      "noteReports": "Reports and statistics will be generated in this currency"
+    },
+    "tabs": {
+      "storeDetails": "Store Details",
+      "payments": "Payments",
+      "checkout": "Checkout",
+      "shippingDelivery": "Shipping & Delivery",
+      "locations": "Locations",
+      "notifications": "Notifications"
+    },
+    "orderId": {
+      "title": "Order id format",
+      "description": "Shown on the Orders page, customer pages, and customer order notifications to identify orders.",
+      "prefix": "Prefix",
+      "prefixHelp": "Text that appears before the order number",
+      "suffix": "Suffix",
+      "suffixPlaceholder": "Ex: -2025",
+      "preview": "Your order ID will appear as",
+      "suffixHelp": "Text that appears after the order number",
+      "previewDescription": "This is how your order IDs will look:",
+      "formatExplanation": "Order ID format:",
+      "format": "Format",
+      "number": "Number",
+      "bestPractices": "Best Practices",
+      "practice1": "Use short, easy-to-remember prefixes (e.g., #, ORD-, PED-)",
+      "practice2": "Suffixes can include the year for better organization",
+      "practice3": "Avoid special characters that might cause problems",
+      "practice4": "Keep the format consistent once established"
+    }
+  },
+  "countries": {
+    "unitedStates": "United States",
+    "dominicanRepublic": "Dominican Republic",
+    "mexico": "Mexico",
+    "canada": "Canada",
+    "spain": "Spain",
+    "france": "France",
+    "germany": "Germany",
+    "italy": "Italy",
+    "brazil": "Brazil",
+    "argentina": "Argentina"
   },
   "dashboard": {
     "title": "Sales Overview",

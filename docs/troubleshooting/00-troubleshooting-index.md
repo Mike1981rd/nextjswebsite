@@ -13,6 +13,7 @@
 
 **Authentication**: JWT, login, token, authorization, roles, permissions, cookies, session
 **API**: CORS, 404, 500, connection refused, network error, axios, fetch
+**Features**: UI components, forms, dark mode, select dropdown, country flags, calendar, i18n
 **General**: hot reload, npm errors, migration, database, Visual Studio
 
 ---
@@ -34,6 +35,14 @@
 - Port configuration issues
 - Request/Response errors
 - Middleware conflicts
+
+### Features Issues
+[📂 View Features Index](./features/features-00-index.md)
+- UI component problems
+- Form element issues
+- Calendar and date components
+- Internationalization (i18n) problems
+- Dark mode implementation
 
 ### General Issues
 [📂 View General Index](./general/general-00-index.md)
@@ -71,6 +80,16 @@
 **Symptoms**: "More than one DbContext was found"
 **Quick Fix**: Use `-Context ApplicationDbContext`
 **Full Solution**: [General-01: Database Issues](./general/general-01-database-issues.md)
+
+### 6. **Country Flags Not Showing in Select Dropdown**
+**Symptoms**: HTML select shows text-only options without flag icons
+**Quick Fix**: Replace with Radix UI Select component
+**Full Solution**: [Features-04: Country Flags Select](./features/features-04-country-flags-select.md)
+
+### 7. **Dark Mode Not Applying to Form Elements**
+**Symptoms**: Form elements remain white/light in dark mode
+**Quick Fix**: Add `dark:` CSS classes to all elements
+**Full Solution**: [Features-05: Dark Mode Not Applying](./features/features-05-dark-mode-not-applying.md)
 
 ---
 

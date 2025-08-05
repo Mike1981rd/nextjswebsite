@@ -71,10 +71,13 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - ✅ JWT con roles y permisos
 
 #### 🏢 1.4 Primeros Módulos (12:00-3:00 AM)
-- ⏳ Módulo Empresa
-  - ⏳ Controller + Service + Repository
-  - ⏳ CRUD completo
-  - ⏳ Frontend pages y forms
+- ✅ Módulo Empresa
+  - ✅ CompanyController con endpoints CRUD
+  - ✅ CompanyService (sin Repository pattern)
+  - ✅ Frontend pages completas (/empresa/configuracion)
+  - ✅ StoreDetailsForm con auto-save
+  - ✅ Upload de logo funcional
+  - ✅ Secciones modulares (Profile, Billing, TimeZone, Currency, OrderId)
 - ⏳ Módulo Usuarios/Roles
   - ⏳ Controller + Service + Repository
   - ⏳ Gestión de permisos
@@ -224,18 +227,16 @@ Resolver los 9 problemas críticos del proyecto anterior:
 
 ### 🔄 Currently Working On
 
-**TAREA COMPLETADA**: Sistema completo de traducciones i18n (ES/EN) ✅
-- ✅ Contexto I18nProvider con carga dinámica de traducciones
-- ✅ Hook useI18n para manejo de idiomas (ES/EN)
-- ✅ Archivos de traducción completos (es.json, en.json)
-- ✅ Sidebar completamente traducido con sincronización
-- ✅ Navbar con selectores de idioma funcionales
-- ✅ Dashboard con todas las traducciones integradas
-- ✅ ThemeCustomizer sincronizado con sistema i18n
-- ✅ Persistencia de idioma en localStorage
-- ✅ Fallback system (ES por defecto)
+**TAREA ACTUAL**: Módulo Usuarios/Roles
+- ⏳ UsersController + Service (en progreso)
+- ⏳ RolesController + Service  
+- ⏳ Frontend pages para gestión de usuarios
+- ⏳ Frontend pages para gestión de roles
+- ⏳ Asignación de permisos UI
 
-**PRÓXIMA TAREA**: Testing y pulido final del sistema de traducciones, luego crear módulos Empresa y Usuarios/Roles
+**TAREAS COMPLETADAS RECIENTEMENTE**:
+1. ✅ Sistema completo de traducciones i18n (ES/EN)
+2. ✅ Módulo Empresa completo (Controller, Service, Frontend)
 
 ### 🐛 BUGS CHECKLIST - Dashboard
 
@@ -281,6 +282,10 @@ Resolver los 9 problemas críticos del proyecto anterior:
 - ✅ **Login Implementation**: `/docs/implementations/auth/2025-08-login-implementation.md`
 - ✅ **Roles & Permissions**: `/docs/implementations/auth/2025-08-roles-permissions-implementation.md`
 - ✅ **Dual Calendar Implementation**: `/docs/implementations/features/2025-08-dual-calendar-implementation.md`
+- ✅ **Empresa UI Design Implementation**: `/docs/implementations/features/2025-08-empresa-ui-design.md`
+  - Complete UI redesign with Materialize-inspired design
+  - Dark mode support implementation
+  - Radix UI Select integration for dropdowns
 - ✅ **Troubleshooting Docs**: 
   - Database issues: `/docs/troubleshooting/general/general-01-database-issues.md`
   - Next.js auth: `/docs/troubleshooting/auth/auth-03-nextjs-integration.md`
@@ -289,21 +294,23 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - Calendar positioning: `/docs/troubleshooting/features/features-01-calendar-positioning.md`
   - Date highlighting logic: `/docs/troubleshooting/features/features-02-date-highlighting-logic.md`
   - Calendar state management: `/docs/troubleshooting/features/features-03-calendar-state-management.md`
+  - Country flags in select: `/docs/troubleshooting/features/features-04-country-flags-select.md`
+  - Dark mode CSS issues: `/docs/troubleshooting/features/features-05-dark-mode-not-applying.md`
 
 ---
 
 ## 🎯 Next Steps Priority
 
-1. **INMEDIATO**: Crear layout del back office en Next.js
-2. **SIGUIENTE**: Implementar módulo Empresa (Controller + Service + Repository + Frontend)
-3. **DESPUÉS**: Implementar módulo Usuarios/Roles (Controller + Service + Repository + Frontend)
+1. **INMEDIATO**: Implementar módulo Usuarios/Roles (Controller + Service + Repository + Frontend)
+2. **SIGUIENTE**: Implementar módulo Habitaciones (Rooms)
+3. **DESPUÉS**: Implementar módulo Productos con variantes
 
 ---
 
 ## 📊 Overall Progress
 
-**Fase 1**: 80% completado (Setup, modelos, auth, roles listos, migración Hotel→Company completada, falta layout UI y módulos)
-**Proyecto Total**: ~30% completado
+**Fase 1**: 85% completado (Setup, modelos, auth, roles, módulo Empresa listo, falta módulo Usuarios/Roles)
+**Proyecto Total**: ~35% completado
 
-**Horas trabajadas**: ~6 horas
-**Horas estimadas restantes**: ~14 horas
+**Horas trabajadas**: ~7 horas
+**Horas estimadas restantes**: ~13 horas
