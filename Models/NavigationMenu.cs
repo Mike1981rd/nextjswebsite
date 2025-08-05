@@ -1,6 +1,8 @@
+using WebsiteBuilderAPI.Data.Filters;
+
 namespace WebsiteBuilderAPI.Models
 {
-    public class NavigationMenu
+    public class NavigationMenu : ITenantEntity
     {
         public int Id { get; set; }
         public int HotelId { get; set; }

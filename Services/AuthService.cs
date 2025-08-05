@@ -61,7 +61,7 @@ namespace WebsiteBuilderAPI.Services
                     Token = token,
                     RefreshToken = GenerateRefreshToken(), // Implementar si es necesario
                     ExpiresAt = DateTime.UtcNow.AddDays(7),
-                    User = new UserDto
+                    User = new AuthUserDto
                     {
                         Id = user.Id,
                         Email = user.Email,
@@ -170,6 +170,20 @@ namespace WebsiteBuilderAPI.Services
                 new Claim("hotelId", user.HotelId?.ToString() ?? "")
             };
 
+            // Agregar roles al token
+            var roles = GetUserRolesAsync(user.Id).Result;
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            // Agregar permisos al token
+            var permissions = GetUserPermissionsAsync(user.Id).Result;
+            foreach (var permission in permissions)
+            {
+                claims.Add(new Claim("permissions", permission));
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -191,14 +205,14 @@ namespace WebsiteBuilderAPI.Services
             var permissions = await _context.UserRoles
                 .Where(ur => ur.UserId == userId)
                 .SelectMany(ur => ur.Role.RolePermissions)
-                .Select(rp => $"{rp.Permission.Module}:{rp.Permission.Action}")
+                .Select(rp => $"{rp.Permission.Resource}.{rp.Permission.Action}")
                 .Distinct()
                 .ToListAsync();
 
             return permissions;
         }
 
-        private async Task<List<string>> GetUserRolesAsync(int userId)
+        public async Task<List<string>> GetUserRolesAsync(int userId)
         {
             return await _context.UserRoles
                 .Where(ur => ur.UserId == userId)

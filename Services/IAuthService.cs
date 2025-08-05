@@ -11,5 +11,6 @@ namespace WebsiteBuilderAPI.Services
         Task<User?> GetUserByIdAsync(int userId);
         string GenerateJwtToken(User user);
         Task<List<string>> GetUserPermissionsAsync(int userId);
+        Task<List<string>> GetUserRolesAsync(int userId);
     }
 }

@@ -5,10 +5,10 @@ namespace WebsiteBuilderAPI.DTOs.Auth
         public string Token { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
         public DateTime ExpiresAt { get; set; }
-        public UserDto User { get; set; } = null!;
+        public AuthUserDto User { get; set; } = null!;
     }
 
-    public class UserDto
+    public class AuthUserDto
     {
         public int Id { get; set; }
         public string Email { get; set; } = string.Empty;

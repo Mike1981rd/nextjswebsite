@@ -78,10 +78,22 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Logo")
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<string>("PrimaryColor")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SecondaryColor")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Subdomain")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -180,19 +192,14 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<string>("Module")
+                    b.Property<string>("Resource")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("Module", "Action", "Name")
+                    b.HasIndex("Resource", "Action")
                         .IsUnique();
 
                     b.ToTable("Permissions");

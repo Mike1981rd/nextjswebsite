@@ -1,8 +1,9 @@
 using System;
+using WebsiteBuilderAPI.Data.Filters;
 
 namespace WebsiteBuilderAPI.Models
 {
-    public class ThemeSettings
+    public class ThemeSettings : ITenantEntity
     {
         public int Id { get; set; }
         public int HotelId { get; set; }

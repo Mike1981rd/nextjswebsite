@@ -1,7 +1,8 @@
 import axios from 'axios';
+import authService from '@/services/auth.service';
 
 // Base URL de la API - se ajustará en producción
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7224/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7224/api';
 
 // Crear instancia de axios con configuración base
 export const api = axios.create({
@@ -9,13 +10,13 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Para manejar cookies de sesión
+  withCredentials: false, // Cambiado a false para evitar problemas CORS
 });
 
 // Interceptor para agregar token de autenticación
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = authService.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -32,8 +33,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expirado o no válido
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      authService.clearAuth();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

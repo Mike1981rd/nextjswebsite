@@ -9,6 +9,10 @@ namespace WebsiteBuilderAPI.Models
         public string Name { get; set; } = string.Empty;
         public string? Domain { get; set; }
         public string? CustomDomain { get; set; }
+        public string? Subdomain { get; set; }
+        public string? Logo { get; set; }
+        public string? PrimaryColor { get; set; }
+        public string? SecondaryColor { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

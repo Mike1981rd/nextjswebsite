@@ -57,10 +57,17 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - ✅ AuthService con BCrypt y generación de tokens
   - ✅ Configuración JWT en Program.cs
   - ✅ DTOs de autenticación creados
-- ⏳ Middleware multi-tenant
+- ✅ Middleware multi-tenant
+  - ✅ ITenantService y TenantService implementados
+  - ✅ TenantMiddleware creado
+  - ✅ Resolución por dominio/subdomain
 - ⏳ Layout del back office
 - ✅ Modelos de Usuario y Roles
 - ✅ Sistema de permisos
+  - ✅ RBAC con 5 niveles (view, read, create, update, delete)
+  - ✅ RequirePermission attribute
+  - ✅ 67 permisos para 15 recursos
+  - ✅ JWT con roles y permisos
 
 #### 🏢 1.4 Primeros Módulos (12:00-3:00 AM)
 - ⏳ Módulo Empresa
@@ -204,12 +211,21 @@ Resolver los 9 problemas críticos del proyecto anterior:
 
 ### 🔄 Currently Working On
 
-**PRÓXIMA TAREA**: Middleware Multi-tenant
-- Crear TenantMiddleware para identificar hotel por dominio/subdomain
-- Implementar ITenantService para resolver el tenant actual
-- Configurar filtros globales en Entity Framework
-- Agregar validaciones de acceso cross-tenant
-- Probar aislamiento de datos entre hoteles
+**TAREA COMPLETADA**: Sistema de Roles y Permisos ✅
+- Implementado sistema RBAC completo con 5 niveles de permisos
+- 3 Controllers (Roles, Users, Permissions) con CRUD completo
+- 3 Services con interfaces y lógica de negocio
+- RequirePermission attribute para proteger endpoints
+- 5 roles predefinidos, 67 permisos para 15 recursos
+- Multi-tenant support en gestión de usuarios
+- JWT actualizado para incluir roles y permisos
+- Seed data con usuarios de prueba
+
+**PRÓXIMA TAREA**: Layout del Back Office en Next.js
+- Crear estructura base del admin panel
+- Implementar sidebar dinámico basado en permisos
+- Diseñar componentes reutilizables
+- Integrar con AuthContext
 
 ### ⚠️ Issues & Decisions
 
@@ -226,6 +242,15 @@ Resolver los 9 problemas críticos del proyecto anterior:
 - `/Models/*` - Todas las entidades del sistema
 - `/websitebuilder-admin/src/lib/*` - Configuración frontend
 
+### 📚 Documentation
+- ✅ **Login Implementation**: `/docs/implementations/auth/2025-08-login-implementation.md`
+- ✅ **Roles & Permissions**: `/docs/implementations/auth/2025-08-roles-permissions-implementation.md`
+- ✅ **Troubleshooting Docs**: 
+  - Database issues: `/docs/troubleshooting/general/general-01-database-issues.md`
+  - Next.js auth: `/docs/troubleshooting/auth/auth-03-nextjs-integration.md`
+  - Login problems: `/docs/troubleshooting/auth/auth-04-login-problems.md`
+  - DTO conflicts: `/docs/troubleshooting/auth/auth-05-dto-naming-conflicts.md`
+
 ---
 
 ## 🎯 Next Steps Priority
@@ -238,8 +263,8 @@ Resolver los 9 problemas críticos del proyecto anterior:
 
 ## 📊 Overall Progress
 
-**Fase 1**: 60% completado (Setup, modelos y auth listos, falta middleware y módulos)
-**Proyecto Total**: ~20% completado
+**Fase 1**: 70% completado (Setup, modelos, auth y roles listos, falta multi-tenant y módulos UI)
+**Proyecto Total**: ~25% completado
 
-**Horas trabajadas**: ~3 horas
-**Horas estimadas restantes**: ~17 horas
+**Horas trabajadas**: ~6 horas
+**Horas estimadas restantes**: ~14 horas

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using WebsiteBuilderAPI.Data.Filters;
 
 namespace WebsiteBuilderAPI.Models
 {
-    public class Product
+    public class Product : ITenantEntity
     {
         public int Id { get; set; }
         public int HotelId { get; set; }

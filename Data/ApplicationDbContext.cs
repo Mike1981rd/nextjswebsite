@@ -213,11 +213,10 @@ namespace WebsiteBuilderAPI.Data
             modelBuilder.Entity<Permission>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Module).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Resource).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Description).IsRequired().HasMaxLength(255);
-                entity.HasIndex(e => new { e.Module, e.Action, e.Name }).IsUnique();
+                entity.HasIndex(e => new { e.Resource, e.Action }).IsUnique();
             });
 
             // Configuración de RolePermission (tabla de unión)

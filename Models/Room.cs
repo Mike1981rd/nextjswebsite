@@ -1,9 +1,10 @@
 using System;
 using System.Text.Json;
+using WebsiteBuilderAPI.Data.Filters;
 
 namespace WebsiteBuilderAPI.Models
 {
-    public class Room
+    public class Room : ITenantEntity
     {
         public int Id { get; set; }
         public int HotelId { get; set; }

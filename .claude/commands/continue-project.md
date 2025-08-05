@@ -32,7 +32,12 @@ Follow these rules strictly:
 ### 5. Safety Checks
 Before any critical operations:
 - Git commits: Ask "Ready to commit these changes to GitHub? [Y/N]"
-- Database migrations: Ask "Ready to apply database migration? [Y/N]"
+- Database migrations: Follow workflow:
+  1. Prepare migration with descriptive name
+  2. Show EXACT migration name generated
+  3. Provide command: `Update-Database -Migration [EXACT_NAME]`
+  4. Ask: "Migration [EXACT_NAME] prepared. Execute in Visual Studio: `Update-Database -Migration [EXACT_NAME]`. Confirm when completed? [Y/N]"
+  5. Wait for confirmation before continuing
 - System changes: Ask for explicit permission
 
 ### 6. Task Completion
@@ -41,7 +46,15 @@ Before any critical operations:
   - Files created/modified
   - Key decisions made
   - Any issues encountered
+  - For database tasks: Include exact migration name and status
 - Note any follow-up tasks discovered
+- If migration was involved:
+  ```markdown
+  - ✅ [Task Name]
+    - Migration: [EXACT_MIGRATION_NAME] 
+    - Status: Applied successfully
+    - Command used: Update-Database -Migration [EXACT_MIGRATION_NAME]
+  ```
 
 ### 7. Stop Point
 After completing ONE task:
@@ -68,8 +81,23 @@ After completing ONE task:
 ### For Database Changes:
 1. Update models as needed
 2. Modify DbContext if required
-3. Note migration requirements
-4. DO NOT run migrations without permission
+3. Prepare migration files using:
+   ```bash
+   dotnet ef migrations add [DescriptiveName]
+   ```
+4. Show migration summary with tables/columns affected
+5. Provide EXACT migration name and command:
+   ```
+   Update-Database -Migration [EXACT_MIGRATION_NAME]
+   ```
+6. Ask for confirmation:
+   ```
+   Migration [EXACT_MIGRATION_NAME] prepared. 
+   Execute in Visual Studio: `Update-Database -Migration [EXACT_MIGRATION_NAME]`
+   Confirm when completed? [Y/N]
+   ```
+7. Wait for human confirmation before proceeding
+8. Update PROJECT-PROGRESS.md with migration details
 
 ## Error Recovery
 If task fails:

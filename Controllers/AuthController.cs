@@ -58,7 +58,7 @@ namespace WebsiteBuilderAPI.Controllers
 
         [HttpGet("me")]
         [Authorize]
-        public async Task<ActionResult<UserDto>> GetCurrentUser()
+        public async Task<ActionResult<AuthUserDto>> GetCurrentUser()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
@@ -78,8 +78,9 @@ namespace WebsiteBuilderAPI.Controllers
             }
 
             var permissions = await _authService.GetUserPermissionsAsync(userId);
+            var roles = await _authService.GetUserRolesAsync(userId);
             
-            var userDto = new UserDto
+            var userDto = new AuthUserDto
             {
                 Id = user.Id,
                 Email = user.Email,
@@ -88,7 +89,8 @@ namespace WebsiteBuilderAPI.Controllers
                 FullName = user.FullName,
                 HotelId = user.HotelId,
                 HotelName = user.Hotel?.Name,
-                Permissions = permissions
+                Permissions = permissions,
+                Roles = roles
             };
 
             return Ok(userDto);

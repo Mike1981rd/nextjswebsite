@@ -1,3 +1,6 @@
+// Configuración de la API
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7224/api';
+
 // Tipos de secciones del website builder
 export enum SectionType {
   ImageWithText = 'image_with_text',

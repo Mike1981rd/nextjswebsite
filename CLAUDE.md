@@ -221,6 +221,30 @@ fontFamily: 'Inter, system-ui, sans-serif'
 - `create-module [nombre]` - Crear módulo completo back office
 - `debug-builder [error]` - Debuggear website builder
 - `optimize-performance [área]` - Optimizar performance
+- `/document-implementation [feature]` - Documentar implementación y troubleshooting
+
+## 🗄️ MIGRACIONES DE BASE DE DATOS
+**IMPORTANTE**: El proyecto tiene múltiples DbContext (ApplicationDbContext y TenantAwareDbContext).
+
+### Comandos de migración en Package Manager Console:
+```powershell
+# SIEMPRE especificar el contexto
+Add-Migration NombreMigracion -Context ApplicationDbContext
+Update-Database -Context ApplicationDbContext
+
+# Para revertir
+Update-Database NombreMigracionAnterior -Context ApplicationDbContext
+
+# Para eliminar última migración
+Remove-Migration -Context ApplicationDbContext
+```
+
+### Comandos de migración en CLI:
+```bash
+# SIEMPRE especificar el contexto
+dotnet ef migrations add NombreMigracion --context ApplicationDbContext
+dotnet ef database update --context ApplicationDbContext
+```
 
 ## 📝 CHECKLIST ANTES DE CADA CAMBIO
 - [ ] ¿Estoy separando correctamente habitaciones de productos?
@@ -314,3 +338,170 @@ fontFamily: 'Inter, system-ui, sans-serif'
 - Always ask before making system-level changes
 
 Remember: Quality and safety over speed. Better to complete one task perfectly with proper approvals than rush through multiple risky operations.
+
+## 📚 DOCUMENTATION STANDARDS
+
+### 🗂️ Documentation Structure
+```
+docs/
+├── implementations/          # Implementation documentation
+│   ├── auth/                # Authentication implementations
+│   ├── api/                 # API feature implementations
+│   ├── features/            # Business feature implementations
+│   └── infrastructure/     # Infrastructure setup docs
+├── troubleshooting/         # Problem-solution documentation
+│   ├── auth/               # Authentication issues
+│   ├── api/                # API integration issues
+│   ├── database/           # Database & migration issues
+│   ├── frontend/           # Next.js & UI issues
+│   └── general/            # General development issues
+└── documentation-templates/ # Standard templates
+```
+
+### 📋 Troubleshooting Documentation Rules
+1. **File size limit**: Maximum 800 lines per .md file
+2. **Structure**: Use modular approach in `/docs/troubleshooting/`
+3. **Naming convention**: `category-##-descriptive-name.md`
+4. **Required sections**:
+   - Problem Summary (affects, frequency, severity)
+   - Symptoms (checklist format with exact errors)
+   - Root Causes (numbered with verification steps)
+   - Solutions (Quick Fix < 5min, Step-by-Step, Alternatives)
+   - Prevention (best practices, configuration templates)
+   - Related Issues (cross-references)
+   - Search Keywords
+5. **Navigation**: Always include breadcrumb navigation and cross-references
+6. **Indices**: Update ALL relevant index files when adding new problems:
+   - Master index (`00-troubleshooting-index.md`)
+   - Category index (`category-00-index.md`)
+
+### 📄 Implementation Documentation Rules
+1. **Create implementation docs** for major features in `/docs/implementations/`
+2. **Naming convention**: `YYYY-MM-feature-name.md` (e.g., `2025-08-login-implementation.md`)
+3. **Required sections**:
+   ```markdown
+   # Feature Name Implementation
+   
+   ## Overview
+   - **Purpose**: Why this feature exists
+   - **Scope**: What it includes/excludes
+   - **Dependencies**: Required packages/services
+   - **Date Implemented**: YYYY-MM-DD
+   
+   ## Architecture Decisions
+   - **Pattern Used**: (e.g., Repository, Service Layer)
+   - **Technology Choices**: Why X over Y
+   - **Security Considerations**: Auth, validation, etc.
+   
+   ## Implementation Details
+   ### Backend
+   - Models created/modified
+   - API endpoints
+   - Services & repositories
+   - Database changes
+   
+   ### Frontend
+   - Components created
+   - State management
+   - API integration
+   - UI/UX decisions
+   
+   ## Configuration
+   - Environment variables
+   - appsettings.json changes
+   - Package installations
+   
+   ## Testing
+   - Unit tests location
+   - Integration test approach
+   - Manual testing checklist
+   
+   ## Known Issues & Limitations
+   - Current limitations
+   - Future improvements
+   - Performance considerations
+   
+   ## Troubleshooting
+   - Common problems (link to troubleshooting docs)
+   - Debug tips
+   
+   ## References
+   - Related documentation
+   - External resources
+   ```
+
+### 📝 When to Document
+1. **Always document** when:
+   - Implementation took >30 minutes to solve
+   - Multiple attempts were needed
+   - Non-obvious solution was required
+   - Architecture decision was made
+
+2. **Major features requiring docs**:
+   - Authentication & Authorization
+   - API integrations (payment, email, etc.)
+   - Complex business logic (multi-tenancy, etc.)
+   - Infrastructure setup (Docker, CI/CD)
+   - Database design decisions
+
+3. **Complex debugging** requiring troubleshooting docs:
+   - Any error that took >15 minutes to resolve
+   - Configuration issues
+   - Integration problems
+   - Performance bottlenecks
+
+### 🔄 Documentation Workflow
+1. **During Implementation**:
+   - Take notes of decisions and problems
+   - Capture exact error messages
+   - Note configuration changes
+
+2. **After Completion**:
+   - Run `/document-implementation [feature-name]`
+   - Follow prompts for:
+     - Implementation type (auth/api/feature/infra)
+     - Problems encountered (Y/N)
+     - Key decisions made
+     - Testing approach
+
+3. **Documentation Creation**:
+   - Creates implementation doc in correct folder
+   - Creates troubleshooting docs if problems occurred
+   - Updates all index files automatically
+   - Adds references to PROJECT-PROGRESS.md
+
+4. **Quality Check**:
+   - Verify all sections completed
+   - Check cross-references work
+   - Ensure code examples are accurate
+   - Confirm file size < 800 lines
+
+### 📐 Documentation Templates Usage
+- **Implementation**: Use `/docs/documentation-templates/implementation-template.md`
+- **Troubleshooting**: Use `/docs/documentation-templates/troubleshooting-template.md`
+- **Quick Reference**: Check `/docs/documentation-templates/documentation-checklist.md`
+
+### 🎯 Documentation Examples
+When I say:
+- "Document the login implementation" → Create full implementation doc + any troubleshooting docs
+- "Document this error" → Create troubleshooting doc with full problem-solution format
+- "Update documentation" → Check what's missing and complete it
+
+### ⚡ Quick Documentation Commands
+```bash
+# Full implementation + troubleshooting
+/document-implementation login
+
+# Just troubleshooting for current issue
+/document-troubleshooting auth network-error
+
+# Update indices after manual doc creation
+/update-doc-indices
+```
+
+### 📊 Documentation Metrics
+Track in PROJECT-PROGRESS.md:
+- Features with complete documentation
+- Troubleshooting issues documented
+- Documentation coverage percentage
+- Last documentation update date
