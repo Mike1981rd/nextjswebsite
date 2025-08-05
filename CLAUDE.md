@@ -251,3 +251,46 @@ fontFamily: 'Inter, system-ui, sans-serif'
 - Cobertura de tests > 80%
 - Documentación actualizada
 - Deploy automatizado funcionando
+
+# 📋 PROJECT WORKFLOW RULES
+
+## Blueprint & Progress Management
+- Always use PROJECT-PROGRESS.md as the single source of truth for project status
+- Before starting any task, read both the original blueprint and PROJECT-PROGRESS.md
+- Update PROJECT-PROGRESS.md before and after each task completion
+
+## Task Execution Rules
+- **CRITICAL**: Work on only ONE task at a time from the progress tracker
+- When you complete a single task, STOP immediately and say "TASK COMPLETED - Ready for next instruction"
+- This allows for context window management and work review between tasks
+- Wait for explicit instruction before proceeding to the next task
+
+## Git & Database Safety Rules
+- **NEVER commit to GitHub without explicit permission**
+- Before any git commit, ask: "Ready to commit these changes to GitHub? [Y/N]"
+- **NEVER run database migrations without explicit permission**
+- Before any migration command (dotnet ef database update, etc.), ask: "Ready to apply database migration? [Y/N]"
+- Always show what will be committed/migrated before asking for permission
+- If permission denied, continue with other tasks and note pending changes in PROJECT-PROGRESS.md
+
+## Documentation Standards
+- Always document completed tasks with:
+  - Files created/modified
+  - Commands executed
+  - Decisions made
+  - Any blockers encountered
+  - Pending commits/migrations awaiting approval
+- Keep implementation notes detailed but concise
+
+## Session Handoff
+- At session start, read PROJECT-PROGRESS.md and give status summary
+- Always identify the next logical task before beginning work
+- Check for any pending commits or migrations from previous sessions
+- Maintain continuity between sessions using the progress tracker
+
+## Error Handling
+- If any command fails, document the error in PROJECT-PROGRESS.md
+- Suggest solutions but don't auto-retry critical operations
+- Always ask before making system-level changes
+
+Remember: Quality and safety over speed. Better to complete one task perfectly with proper approvals than rush through multiple risky operations.
