@@ -273,6 +273,26 @@ fontFamily: 'Inter, system-ui, sans-serif'
 - Always show what will be committed/migrated before asking for permission
 - If permission denied, continue with other tasks and note pending changes in PROJECT-PROGRESS.md
 
+## Database Migration Workflow Rules
+- **Claude Code PREPARES migrations only** - analyze changes, generate migration code, create migration files
+- **Human EXECUTES migrations manually** - user runs migrations through Visual Studio or command line
+- **Claude Code NEVER executes** `dotnet ef database update` or equivalent database update commands
+- **After preparing migration, Claude MUST provide:**
+  1. Exact migration name created
+  2. Specific command to execute: `Update-Database -Migration [MigrationName]`
+  3. Alternative command if needed: `dotnet ef database update`
+- **Workflow steps:**
+  1. Claude prepares migration files and shows what will be migrated
+  2. Claude provides exact migration name and execution command
+  3. Claude asks: "Migration [MigrationName] prepared. Execute in Visual Studio: `Update-Database -Migration [MigrationName]`. Confirm when completed? [Y/N]"
+  4. Wait for human confirmation before updating PROJECT-PROGRESS.md
+
+## Modified Permission Rules
+- Remove any automatic database update permissions
+- Claude can create migration files but cannot apply them
+- Always provide exact migration name and execution command
+- Document migration preparation vs execution separately in progress tracker
+
 ## Documentation Standards
 - Always document completed tasks with:
   - Files created/modified
