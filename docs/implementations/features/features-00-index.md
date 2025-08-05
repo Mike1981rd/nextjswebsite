@@ -6,6 +6,7 @@ This directory contains implementation documentation for major business features
 
 ### UI & Design System
 - **[UI Dashboard Implementation](./2025-08-ui-dashboard-implementation.md)** - Complete Materialize clone with responsive sidebar, dashboard metrics, and customization system
+- **[Dual Calendar Implementation](./2025-08-dual-calendar-implementation.md)** - Advanced date range selector with dual-month view, quick options, and cross-month selection support
 
 ### Internationalization
 - **[i18n System Implementation](./2025-08-i18n-system.md)** - Complete translation system with dynamic language switching (ES/EN), Context API, and component integration

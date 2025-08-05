@@ -35,7 +35,8 @@
     "minutes": "minutos",
     "hour": "hora",
     "hours": "horas",
-    "ago": "hace"
+    "ago": "hace",
+    "apply": "Aplicar"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -136,6 +137,17 @@
     "collapsed": "Colapsado",
     "enableNotifications": "Habilitar notificaciones",
     "resetDefaults": "Restaurar por defecto"
+  },
+  "dateRange": {
+    "today": "Hoy",
+    "yesterday": "Ayer", 
+    "last7days": "Últimos 7 días",
+    "last30days": "Últimos 30 días",
+    "last90days": "Últimos 90 días",
+    "last365days": "Últimos 365 días",
+    "lastMonth": "Mes pasado",
+    "last12months": "Últimos 12 meses",
+    "lastYear": "Año pasado"
   },
   "forms": {
     "required": "Este campo es requerido",

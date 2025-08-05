@@ -8,6 +8,11 @@ This directory contains troubleshooting documentation for business features and 
 - **[features-01-i18n-hydration-issues.md](./features-01-i18n-hydration-issues.md)** - Hydration mismatch errors when using translations in React components
 - **[features-02-i18n-persistence-sync.md](./features-02-i18n-persistence-sync.md)** - Language selector synchronization and persistence issues
 
+### Calendar & Date Components
+- **[features-01-calendar-positioning.md](./features-01-calendar-positioning.md)** - Calendar modal positioning issues with sidebar overlap
+- **[features-02-date-highlighting-logic.md](./features-02-date-highlighting-logic.md)** - "Three dates problem" - incorrect date range highlighting in dual calendar
+- **[features-03-calendar-state-management.md](./features-03-calendar-state-management.md)** - State synchronization issues in complex calendar interactions
+
 ## Coming Soon
 
 ### UI Components

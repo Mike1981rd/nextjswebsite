@@ -267,11 +267,15 @@ Resolver los 9 problemas críticos del proyecto anterior:
 ### 📚 Documentation
 - ✅ **Login Implementation**: `/docs/implementations/auth/2025-08-login-implementation.md`
 - ✅ **Roles & Permissions**: `/docs/implementations/auth/2025-08-roles-permissions-implementation.md`
+- ✅ **Dual Calendar Implementation**: `/docs/implementations/features/2025-08-dual-calendar-implementation.md`
 - ✅ **Troubleshooting Docs**: 
   - Database issues: `/docs/troubleshooting/general/general-01-database-issues.md`
   - Next.js auth: `/docs/troubleshooting/auth/auth-03-nextjs-integration.md`
   - Login problems: `/docs/troubleshooting/auth/auth-04-login-problems.md`
   - DTO conflicts: `/docs/troubleshooting/auth/auth-05-dto-naming-conflicts.md`
+  - Calendar positioning: `/docs/troubleshooting/features/features-01-calendar-positioning.md`
+  - Date highlighting logic: `/docs/troubleshooting/features/features-02-date-highlighting-logic.md`
+  - Calendar state management: `/docs/troubleshooting/features/features-03-calendar-state-management.md`
 
 ---
 
