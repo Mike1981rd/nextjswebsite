@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { TabsNavigation } from '@/components/empresa/TabsNavigation';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, 
@@ -351,18 +352,6 @@ export default function ConfigureProviderPage() {
     }
   };
 
-  if (!config) {
-    return null;
-  }
-
-  if (loadingData) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
-    );
-  }
-
   const handleInputChange = (name: string, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     setErrors(prev => ({ ...prev, [name]: '' }));
@@ -457,99 +446,136 @@ export default function ConfigureProviderPage() {
     }
   };
 
+  if (!config) {
+    return null;
+  }
+
+  if (loadingData) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
-      {/* Spacer for navbar */}
-      <div className="h-16" />
-      
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between py-4 gap-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/empresa/payments')}
-                className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="relative h-10 w-20">
-                  <Image
-                    src={config.logo}
-                    alt={config.name}
-                    fill
-                    className="object-contain"
-                  />
+    <div className="w-full min-h-screen overflow-x-hidden">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 lg:px-6">
+        {/* Breadcrumbs */}
+        <nav className="flex mb-4 text-xs sm:text-sm overflow-x-auto" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 whitespace-nowrap">
+            <li>
+              <a href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                {t('navigation.dashboard')}
+              </a>
+            </li>
+            <li className="text-gray-400 dark:text-gray-500">/</li>
+            <li>
+              <a href="/empresa/payments" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                {t('empresa.tabs.payments')}
+              </a>
+            </li>
+            <li className="text-gray-400 dark:text-gray-500">/</li>
+            <li className="text-gray-700 font-medium dark:text-gray-300">
+              Configurar {config.name}
+            </li>
+          </ol>
+        </nav>
+        
+        {/* Tabs Navigation */}
+        <TabsNavigation />
+        
+        {/* Configuration Content */}
+        <div className="mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+          {/* Header */}
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <div className="px-3 sm:px-6 lg:px-8">
+              <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between py-4 gap-4">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => router.push('/empresa/payments')}
+                    className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-10 w-20">
+                      <Image
+                        src={config.logo}
+                        alt={config.name}
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                    <div>
+                      <h1 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white">
+                        Configurar {config.name}
+                      </h1>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        Configure las credenciales y ajustes del proveedor
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white">
-                    Configurar {config.name}
-                  </h1>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    Configure las credenciales y ajustes del proveedor
-                  </p>
-                </div>
+                
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="w-[75%] sm:w-auto flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-white font-medium bg-primary-600 hover:bg-primary-700 transition-all disabled:opacity-50"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 sm:h-5 sm:w-5" />
+                  )}
+                  <span className="hidden sm:inline">Guardar Configuración</span>
+                  <span className="sm:hidden">Guardar</span>
+                </button>
               </div>
             </div>
-            
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-[75%] sm:w-auto flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-white font-medium bg-primary-600 hover:bg-primary-700 transition-all disabled:opacity-50"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 sm:h-5 sm:w-5" />
+          </div>
+
+          {/* Content */}
+          <div className="px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
+            <div className="flex flex-col items-center sm:items-stretch">
+              {/* Existing Provider Notice */}
+              {existingProvider && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="w-[75%] sm:w-full mb-6 rounded-xl bg-green-50 dark:bg-green-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
+                >
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-green-800 dark:text-green-300">
+                    <p className="font-semibold mb-1">Proveedor configurado anteriormente</p>
+                    <p>
+                      Este proveedor ya tiene credenciales guardadas. Los campos sensibles no se muestran por seguridad.
+                      {existingProvider.hasCertificate && existingProvider.hasPrivateKey && (
+                        <span className="block mt-1">✓ Certificados SSL configurados</span>
+                      )}
+                    </p>
+                  </div>
+                </motion.div>
               )}
-              <span className="hidden sm:inline">Guardar Configuración</span>
-              <span className="sm:hidden">Guardar</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-4xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8 flex flex-col items-center sm:items-stretch">
-        {/* Existing Provider Notice */}
-        {existingProvider && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-[75%] sm:w-full mb-6 rounded-xl bg-green-50 dark:bg-green-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
-          >
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-green-800 dark:text-green-300">
-              <p className="font-semibold mb-1">Proveedor configurado anteriormente</p>
-              <p>
-                Este proveedor ya tiene credenciales guardadas. Los campos sensibles no se muestran por seguridad.
-                {existingProvider.hasCertificate && existingProvider.hasPrivateKey && (
-                  <span className="block mt-1">✓ Certificados SSL configurados</span>
-                )}
-              </p>
-            </div>
-          </motion.div>
-        )}
+              {/* Security Notice */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-[75%] sm:w-full mb-6 sm:mb-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
+              >
+                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800 dark:text-blue-300">
+                  <p className="font-semibold mb-1">Sus credenciales están seguras</p>
+                  <p>
+                    Todas las credenciales se encriptan con AES-256 antes de almacenarse. 
+                    Los certificados SSL se guardan en un directorio seguro fuera del alcance público.
+                  </p>
+                </div>
+              </motion.div>
 
-        {/* Security Notice */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-[75%] sm:w-full mb-6 sm:mb-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
-        >
-          <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-blue-800 dark:text-blue-300">
-            <p className="font-semibold mb-1">Sus credenciales están seguras</p>
-            <p>
-              Todas las credenciales se encriptan con AES-256 antes de almacenarse. 
-              Los certificados SSL se guardan en un directorio seguro fuera del alcance público.
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Form Fields */}
-        <div className="space-y-6 w-full flex flex-col items-center sm:items-stretch">
+              {/* Form Fields */}
+              <div className="space-y-6 w-full flex flex-col items-center sm:items-stretch">
           {config.fields.map((field, index) => (
             <motion.div
               key={field.name}
@@ -687,25 +713,28 @@ export default function ConfigureProviderPage() {
               </label>
             </motion.div>
           ))}
-        </div>
+              </div>
 
-        {/* Test Mode Warning */}
-        {formData.isTestMode && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="w-[75%] sm:w-full mt-6 rounded-xl bg-amber-50 dark:bg-amber-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
-          >
-            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-amber-800 dark:text-amber-300">
-              <p className="font-semibold mb-1">Modo de Prueba Activado</p>
-              <p>
-                Las transacciones no serán procesadas realmente. 
-                Desactive el modo de prueba cuando esté listo para procesar pagos reales.
-              </p>
+              {/* Test Mode Warning */}
+              {formData.isTestMode && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="w-[75%] sm:w-full mt-6 rounded-xl bg-amber-50 dark:bg-amber-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
+                >
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-amber-800 dark:text-amber-300">
+                    <p className="font-semibold mb-1">Modo de Prueba Activado</p>
+                    <p>
+                      Las transacciones no serán procesadas realmente. 
+                      Desactive el modo de prueba cuando esté listo para procesar pagos reales.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
             </div>
-          </motion.div>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -19,12 +19,6 @@ export default function PaymentsPage() {
               </a>
             </li>
             <li className="text-gray-400 dark:text-gray-500">/</li>
-            <li>
-              <a href="/empresa/configuracion" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                {t('navigation.empresa')}
-              </a>
-            </li>
-            <li className="text-gray-400 dark:text-gray-500">/</li>
             <li className="text-gray-700 font-medium dark:text-gray-300">
               {t('empresa.tabs.payments')}
             </li>

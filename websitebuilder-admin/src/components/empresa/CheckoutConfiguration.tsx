@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/contexts/I18nContext';
 import { AlertCircle, Phone, Mail, Building2, MapPin, Home, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -158,17 +159,25 @@ export function CheckoutConfiguration() {
   return (
     <div className="space-y-3 sm:space-y-6 pb-32 sm:pb-20 w-full overflow-x-hidden">
       {/* Header Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 pl-3 pr-3 py-4 sm:p-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 pl-3 pr-3 py-4 sm:p-6">
         <h2 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white mb-2 leading-tight">
           {t('empresa.checkout.title', 'Checkout Configuration')}
         </h2>
         <p className="text-xs sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
           {t('empresa.checkout.description', 'Customize your checkout form fields and requirements')}
         </p>
-      </div>
+      </motion.div>
 
       {/* Customer Contact Method */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 pl-3 pr-2 py-4 sm:p-6 overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 pl-3 pr-2 py-4 sm:p-6 overflow-hidden">
         <div className="mb-4 sm:mb-6 max-w-full">
           <h3 className="text-sm sm:text-lg font-medium text-gray-900 dark:text-white mb-1 sm:mb-2 leading-tight">
             {t('empresa.checkout.contactMethod.title', 'Customer contact method')}
@@ -207,10 +216,14 @@ export function CheckoutConfiguration() {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Customer Information */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 pl-3 pr-2 py-4 sm:p-6 overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 pl-3 pr-2 py-4 sm:p-6 overflow-hidden">
         <div className="mb-4 sm:mb-6 max-w-full">
           <h3 className="text-sm sm:text-lg font-medium text-gray-900 dark:text-white mb-1 sm:mb-2 leading-tight">
             {t('empresa.checkout.customerInfo.title', 'Customer information')}
@@ -333,10 +346,14 @@ export function CheckoutConfiguration() {
             />
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Action Buttons - Mobile responsive */}
-      <div className="fixed bottom-0 left-0 right-0 lg:sticky lg:bottom-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 bg-white dark:bg-gray-900 p-3 sm:p-4 shadow-lg lg:shadow-none border-t border-gray-200 dark:border-gray-700 z-20">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="fixed bottom-0 left-0 right-0 lg:sticky lg:bottom-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 bg-white dark:bg-gray-900 p-3 sm:p-4 shadow-lg lg:shadow-none border-t border-gray-200 dark:border-gray-700 z-20">
         <button
           onClick={handleDiscard}
           disabled={!hasChanges || loading}
@@ -376,7 +393,7 @@ export function CheckoutConfiguration() {
             t('common.saveChanges', 'Save Changes')
           )}
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 }

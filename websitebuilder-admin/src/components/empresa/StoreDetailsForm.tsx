@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { motion } from 'framer-motion';
 import { useI18n } from '@/contexts/I18nContext';
 import { useCompany } from '@/hooks/useCompany';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -221,7 +222,11 @@ export function StoreDetailsForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-0 overflow-hidden">
       {/* Profile Section */}
-      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
         <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.profile.title', 'Profile')}</h2>
         
         {/* Logo Upload Section */}
@@ -295,10 +300,14 @@ export function StoreDetailsForm() {
             {t('empresa.profile.emailWarning', 'Confirm that you have access to johndoe@gmail.com in sender email settings.')}
           </span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Billing Information */}
-      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
         <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.billing.title', 'Billing Information')}</h2>
         <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
           <div className="w-full">
@@ -479,10 +488,14 @@ export function StoreDetailsForm() {
             />
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Time zone and units */}
-      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
         <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.timeZone.title', 'Time zone and units of measurement')}</h2>
         <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400 mb-4">{t('empresa.timeZone.description', 'Used to calculate product prices, shipping weights, and order times.')}</p>
         
@@ -531,10 +544,14 @@ export function StoreDetailsForm() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Store currency */}
-      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
         <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.currency.title', 'Store currency')}</h2>
         <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400 mb-4">{t('empresa.currency.description', 'The currency your products are sold in.')}</p>
         
@@ -664,10 +681,14 @@ export function StoreDetailsForm() {
             </Select.Portal>
           </Select.Root>
         </div>
-      </div>
+      </motion.div>
 
       {/* Order ID format */}
-      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.4 }}
+        className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
         <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.orderId.title', 'Order id format')}</h2>
         <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400 mb-4">
           {t('empresa.orderId.description', 'Shown on the Orders page, customer pages, and customer order notifications to identify orders.')}
@@ -697,10 +718,14 @@ export function StoreDetailsForm() {
         <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400">
           {t('empresa.orderId.preview', 'Your order ID will appear as')} {orderIdPrefix || '#'}1001, {orderIdPrefix || '#'}1002, {orderIdPrefix || '#'}1003 ...
         </p>
-      </div>
+      </motion.div>
 
       {/* Action buttons */}
-      <div className="pl-4 pr-6 py-4 sm:p-6 flex flex-col-reverse sm:flex-row sm:justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 border-t dark:border-gray-700">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.5 }}
+        className="pl-4 pr-6 py-4 sm:p-6 flex flex-col-reverse sm:flex-row sm:justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 border-t dark:border-gray-700">
         <button
           type="button"
           onClick={() => reset()}
@@ -734,7 +759,7 @@ export function StoreDetailsForm() {
             t('common.saveChanges', 'Save Changes')
           )}
         </button>
-      </div>
+      </motion.div>
     </form>
   );
 }

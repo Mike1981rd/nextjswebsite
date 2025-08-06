@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Settings, Check, X, AlertCircle, Loader2, Trash2 } from 'lucide-react';
 import Image from 'next/image';
@@ -52,6 +53,7 @@ const providerMetadata: Record<string, { logo: string; accentColor: string; comm
 
 export default function PaymentsTab() {
   const { t } = useI18n();
+  const router = useRouter();
   const { company } = useCompany();
   const [providers, setProviders] = useState<PaymentProviderUI[]>([]);
   // Remove modal states - now using navigation
@@ -128,8 +130,8 @@ export default function PaymentsTab() {
   };
 
   const handleConfigureProvider = (providerId: string) => {
-    // Navigate to configuration page
-    window.location.href = `/empresa/payments/configure/${providerId}`;
+    // Navigate to configuration page using Next.js router
+    router.push(`/empresa/payments/configure/${providerId}`);
   };
 
   const handleDeleteProvider = async (providerId: number) => {
@@ -327,7 +329,7 @@ export default function PaymentsTab() {
           className="group relative w-[70vw] sm:w-full max-w-sm sm:max-w-none"
         >
           <button
-            onClick={() => window.location.href = '/empresa/payments/add'}
+            onClick={() => router.push('/empresa/payments/add')}
             className="flex h-full w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white/50 p-6 sm:p-8 transition-all hover:border-gray-400 hover:bg-white/80 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:border-gray-500 dark:hover:bg-gray-800/80"
           >
             <div className="text-center">
