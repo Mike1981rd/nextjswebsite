@@ -3,11 +3,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/contexts/I18nContext';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Eye, EyeOff, Languages } from 'lucide-react';
 import { FaFacebookF, FaTwitter, FaGithub, FaGoogle } from 'react-icons/fa';
+import { api } from '@/lib/api';
+import { buildAssetUrl } from '@/lib/utils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,7 +24,23 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
+  const [companyConfig, setCompanyConfig] = useState<{ name?: string; logo?: string; logoSize?: number } | null>(null);
 
+
+  // Load company configuration
+  useEffect(() => {
+    const loadCompanyConfig = async () => {
+      try {
+        const response = await api.get('/company/config');
+        setCompanyConfig(response.data);
+      } catch (error) {
+        console.error('Error loading company config:', error);
+        // Continue without company config
+      }
+    };
+    
+    loadCompanyConfig();
+  }, []);
 
   // Close language menu when clicking outside
   useEffect(() => {
@@ -110,11 +129,42 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm mx-4">
         <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 space-y-4 transition-all duration-300">
           
-          {/* Logo Placeholder */}
+          {/* Logo */}
           <div className="flex justify-center">
-            <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
-              <div className="w-8 h-8 bg-primary-500 rounded-lg"></div>
-            </div>
+            {companyConfig?.logo && buildAssetUrl(companyConfig.logo) ? (
+              <div 
+                className="relative rounded-xl overflow-hidden"
+                style={{ 
+                  // Scale logo size for login page (slightly larger than sidebar)
+                  width: `${Math.round((companyConfig.logoSize || 120) * 0.5)}px`, 
+                  height: `${Math.round((companyConfig.logoSize || 120) * 0.5)}px` 
+                }}
+              >
+                <Image 
+                  src={buildAssetUrl(companyConfig.logo)!} 
+                  alt={companyConfig.name || 'Company Logo'} 
+                  fill
+                  className="object-contain"
+                  sizes={`${Math.round((companyConfig.logoSize || 120) * 0.5)}px`}
+                />
+              </div>
+            ) : (
+              <div 
+                className="bg-primary-100 dark:bg-primary-900/20 rounded-xl flex items-center justify-center"
+                style={{ 
+                  width: '60px', 
+                  height: '60px' 
+                }}
+              >
+                {companyConfig?.name ? (
+                  <span className="text-primary-600 dark:text-primary-400 font-bold text-2xl">
+                    {companyConfig.name.charAt(0).toUpperCase()}
+                  </span>
+                ) : (
+                  <div className="w-10 h-10 bg-primary-500 rounded-lg"></div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Welcome Text */}

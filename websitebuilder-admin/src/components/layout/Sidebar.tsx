@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { cn, buildAssetUrl } from '@/lib/utils';
 import { useI18n } from '@/contexts/I18nContext';
+import { useCompany } from '@/hooks/useCompany';
+import Image from 'next/image';
 import {
   DashboardIcon,
   CompanyIcon,
@@ -136,6 +138,23 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const { t } = useI18n();
+  const { company } = useCompany();
+  
+  // Calculate logo size for sidebar based on logoSize (scale from 120px default to sidebar size)
+  const calculateSidebarLogoSize = (originalSize: number = 120): number => {
+    // Original range: 80-160px, Sidebar range: 24-48px
+    const minOriginal = 80;
+    const maxOriginal = 160;
+    const minSidebar = 24;
+    const maxSidebar = 48;
+    
+    // Normalize to 0-1 range
+    const normalized = (originalSize - minOriginal) / (maxOriginal - minOriginal);
+    // Scale to sidebar range
+    return Math.round(minSidebar + normalized * (maxSidebar - minSidebar));
+  };
+  
+  const sidebarLogoSize = calculateSidebarLogoSize(company?.logoSize);
   
   // Handle hydration
   useEffect(() => {
@@ -184,14 +203,39 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
         )}>
           <div className="flex items-center gap-3">
             {/* Logo */}
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500 text-white font-bold text-sm">
-              WB
-            </div>
+            {company?.logo && buildAssetUrl(company.logo) ? (
+              <div 
+                className="relative overflow-hidden rounded-lg"
+                style={{ 
+                  width: `${sidebarLogoSize}px`, 
+                  height: `${sidebarLogoSize}px` 
+                }}
+              >
+                <Image 
+                  src={buildAssetUrl(company.logo)!} 
+                  alt={company.name || 'Company Logo'} 
+                  fill
+                  className="object-contain"
+                  sizes={`${sidebarLogoSize}px`}
+                />
+              </div>
+            ) : (
+              <div 
+                className="flex items-center justify-center rounded-lg bg-primary-500 text-white font-bold"
+                style={{ 
+                  width: `${sidebarLogoSize}px`, 
+                  height: `${sidebarLogoSize}px`,
+                  fontSize: `${sidebarLogoSize * 0.4}px`
+                }}
+              >
+                {company?.name ? company.name.charAt(0).toUpperCase() : 'WB'}
+              </div>
+            )}
             
             {/* Brand Name */}
             {!collapsed && (
               <span className="font-semibold text-lg text-sidebar-text transition-opacity duration-300">
-                WebsiteBuilder
+                {company?.name || 'WebsiteBuilder'}
               </span>
             )}
           </div>
@@ -277,13 +321,38 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
         {/* Footer */}
         <div className="border-t border-sidebar-bgHover p-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-semibold">
-              WB
-            </div>
+            {company?.logo && buildAssetUrl(company.logo) ? (
+              <div 
+                className="relative overflow-hidden rounded-full"
+                style={{ 
+                  width: `${sidebarLogoSize}px`, 
+                  height: `${sidebarLogoSize}px` 
+                }}
+              >
+                <Image 
+                  src={buildAssetUrl(company.logo)!} 
+                  alt={company.name || 'Company Logo'} 
+                  fill
+                  className="object-contain"
+                  sizes={`${sidebarLogoSize}px`}
+                />
+              </div>
+            ) : (
+              <div 
+                className="rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold"
+                style={{ 
+                  width: `${sidebarLogoSize}px`, 
+                  height: `${sidebarLogoSize}px`,
+                  fontSize: `${sidebarLogoSize * 0.35}px`
+                }}
+              >
+                {company?.name ? company.name.charAt(0).toUpperCase() : 'WB'}
+              </div>
+            )}
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-sidebar-text font-medium truncate">
-                  Website Builder
+                  {company?.name || 'Website Builder'}
                 </p>
                 <p className="text-xs text-sidebar-textSecondary truncate">
                   v2.0.0
@@ -321,11 +390,36 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
           {/* Mobile Header */}
           <div className="flex h-16 items-center justify-between px-4 border-b border-sidebar-bgHover">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500 text-white font-bold text-sm">
-                WB
-              </div>
+              {company?.logo && buildAssetUrl(company.logo) ? (
+                <div 
+                  className="relative overflow-hidden rounded-lg"
+                  style={{ 
+                    width: `${sidebarLogoSize}px`, 
+                    height: `${sidebarLogoSize}px` 
+                  }}
+                >
+                  <Image 
+                    src={buildAssetUrl(company.logo)!} 
+                    alt={company.name || 'Company Logo'} 
+                    fill
+                    className="object-contain"
+                    sizes={`${sidebarLogoSize}px`}
+                  />
+                </div>
+              ) : (
+                <div 
+                  className="flex items-center justify-center rounded-lg bg-primary-500 text-white font-bold"
+                  style={{ 
+                    width: `${sidebarLogoSize}px`, 
+                    height: `${sidebarLogoSize}px`,
+                    fontSize: `${sidebarLogoSize * 0.4}px`
+                  }}
+                >
+                  {company?.name ? company.name.charAt(0).toUpperCase() : 'WB'}
+                </div>
+              )}
               <span className="font-semibold text-lg text-sidebar-text">
-                WebsiteBuilder
+                {company?.name || 'WebsiteBuilder'}
               </span>
             </div>
 

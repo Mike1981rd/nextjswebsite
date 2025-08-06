@@ -125,3 +125,24 @@ export function calculatePercentageChange(current: number, previous: number): nu
 export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
+
+// Build full asset URL from relative path
+export function buildAssetUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  
+  // If already a full URL, return as is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // Get API URL from environment or default
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+  
+  // Extract base URL (remove /api suffix if present)
+  const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+  
+  // Remove leading slash from path if present
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  
+  return `${baseUrl}${cleanPath}`;
+}

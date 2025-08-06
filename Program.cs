@@ -124,11 +124,19 @@ if (app.Environment.IsDevelopment())
 // Usar CORS
 app.UseCors("AllowNextJsApp");
 
+// Servir archivos estáticos desde wwwroot (si existe)
+app.UseStaticFiles();
+
 // Servir archivos estáticos (para las imágenes subidas)
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
     RequestPath = "/uploads"
 });
 

@@ -116,7 +116,7 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
         {/* Page Content */}
         <main 
           className={cn(
-            'flex-1 overflow-auto pt-16 p-6',
+            'flex-1 overflow-auto pt-16 p-6 dashboard-scroll',
             className
           )}
         >
