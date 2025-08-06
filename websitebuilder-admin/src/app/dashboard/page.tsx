@@ -14,9 +14,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+      <div className="flex items-center justify-center sm:justify-between">
+        <div className="text-center sm:text-left">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-1">
             {t('dashboard.title', 'Sales Overview')}
           </h1>
         </div>

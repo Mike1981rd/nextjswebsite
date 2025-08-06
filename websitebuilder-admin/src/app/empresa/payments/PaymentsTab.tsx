@@ -160,12 +160,12 @@ export default function PaymentsTab() {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-pink-500/5 p-6 backdrop-blur-sm dark:from-violet-500/10 dark:via-purple-500/10 dark:to-pink-500/10">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-pink-500/5 p-4 sm:p-6 backdrop-blur-sm dark:from-violet-500/10 dark:via-purple-500/10 dark:to-pink-500/10">
         <div className="relative z-10">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
             {t('payments.title')}
           </h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+          <p className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
             {t('payments.subtitle')}
           </p>
         </div>
@@ -174,7 +174,7 @@ export default function PaymentsTab() {
       </div>
 
       {/* Payment Providers Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-col items-start ml-[5vw] sm:ml-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <AnimatePresence>
           {providers.map((provider) => (
             <motion.div
@@ -196,7 +196,7 @@ export default function PaymentsTab() {
               />
 
               {/* Card Content */}
-              <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white/80 p-5 backdrop-blur-sm transition-all duration-300 dark:border-gray-700 dark:bg-gray-800/80">
+              <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white/80 p-4 sm:p-5 backdrop-blur-sm transition-all duration-300 dark:border-gray-700 dark:bg-gray-800/80 w-[70vw] sm:w-full max-w-sm sm:max-w-none">
                 {/* Status Badge */}
                 <div className="absolute right-3 top-3">
                   <span
@@ -226,8 +226,8 @@ export default function PaymentsTab() {
                 </div>
 
                 {/* Provider Logo */}
-                <div className="mb-4 flex items-center">
-                  <div className="relative h-16 w-32">
+                <div className="mb-4 flex items-center justify-start">
+                  <div className="relative h-12 w-24 sm:h-16 sm:w-32">
                     <Image
                       src={provider.logo}
                       alt={provider.name}
@@ -239,13 +239,13 @@ export default function PaymentsTab() {
                 </div>
 
                 {/* Provider Name */}
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white text-left">
                   {provider.name}
                 </h3>
 
                 {/* Commission Rate */}
                 {provider.commission && (
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  <p className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-left">
                     {t('payments.commission')}: <span className="font-medium">{provider.commission}</span>
                   </p>
                 )}
@@ -259,11 +259,11 @@ export default function PaymentsTab() {
                 )}
 
                 {/* Action Buttons */}
-                <div className="mt-4 flex gap-2">
+                <div className="mt-4 flex flex-col sm:flex-row gap-2">
                   {provider.status === 'inactive' && (
                     <button
                       onClick={() => handleConfigureProvider(provider.providerId)}
-                      className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                      className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
                       <Settings className="mr-1.5 inline h-4 w-4" />
                       {t('payments.configure.title')}
@@ -274,12 +274,12 @@ export default function PaymentsTab() {
                     <>
                       <button
                         onClick={() => toggleProviderStatus(provider.id)}
-                        className="flex-1 rounded-lg px-3 py-2 text-sm font-medium text-white transition-all bg-primary-600 hover:bg-primary-700"
+                        className="flex-1 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-white transition-all bg-primary-600 hover:bg-primary-700"
                       >
                         <Check className="mr-1.5 inline h-4 w-4" />
                         {t('payments.activate')}
                       </button>
-                      <div className="flex gap-1">
+                      <div className="flex flex-row justify-start gap-1">
                         <button
                           onClick={() => handleConfigureProvider(provider.providerId)}
                           className="rounded-lg border border-gray-300 bg-white p-2 text-gray-700 transition-all hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
@@ -300,7 +300,7 @@ export default function PaymentsTab() {
                     <>
                       <button
                         onClick={() => toggleProviderStatus(provider.id)}
-                        className="flex-1 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition-all hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+                        className="flex-1 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs sm:text-sm font-medium text-red-700 transition-all hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
                       >
                         <X className="mr-1.5 inline h-4 w-4" />
                         {t('payments.deactivate')}
@@ -324,11 +324,11 @@ export default function PaymentsTab() {
           layout
           whileHover={{ y: -4 }}
           transition={{ duration: 0.2 }}
-          className="group relative"
+          className="group relative w-[70vw] sm:w-full max-w-sm sm:max-w-none"
         >
           <button
             onClick={() => window.location.href = '/empresa/payments/add'}
-            className="flex h-full w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white/50 p-8 transition-all hover:border-gray-400 hover:bg-white/80 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:border-gray-500 dark:hover:bg-gray-800/80"
+            className="flex h-full w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white/50 p-6 sm:p-8 transition-all hover:border-gray-400 hover:bg-white/80 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:border-gray-500 dark:hover:bg-gray-800/80"
           >
             <div className="text-center">
               <Plus className="mx-auto h-12 w-12 text-gray-400" />

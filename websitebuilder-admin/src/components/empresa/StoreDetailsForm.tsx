@@ -194,7 +194,7 @@ export function StoreDetailsForm() {
   };
 
   // Input styles with primary color focus and dark mode support
-  const inputClassName = `w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-500 dark:placeholder-gray-400`;
+  const inputClassName = `w-[68%] sm:w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-500 dark:placeholder-gray-400 text-ellipsis`;
   const inputFocusStyle = {
     '--tw-ring-color': primaryColor,
   } as React.CSSProperties;
@@ -219,10 +219,10 @@ export function StoreDetailsForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-0">
+    <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-0 overflow-hidden">
       {/* Profile Section */}
-      <div className="p-6 border-b dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 dark:text-white">{t('empresa.profile.title', 'Profile')}</h2>
+      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.profile.title', 'Profile')}</h2>
         
         {/* Logo Upload Section */}
         <div className="mb-6 relative">
@@ -244,8 +244,8 @@ export function StoreDetailsForm() {
           )}
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+          <div className="w-full">
             <input
               {...register('name')}
               placeholder={t('empresa.profile.storeName', 'Store Name')}
@@ -256,7 +256,7 @@ export function StoreDetailsForm() {
               <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
-          <div>
+          <div className="w-full">
             <input
               {...register('phoneNumber')}
               placeholder={t('empresa.profile.phoneNumber', 'Phone Number')}
@@ -264,7 +264,7 @@ export function StoreDetailsForm() {
               style={inputFocusStyle}
             />
           </div>
-          <div>
+          <div className="w-full">
             <input
               {...register('contactEmail')}
               placeholder={t('empresa.profile.contactEmail', 'Store contact email')}
@@ -275,7 +275,7 @@ export function StoreDetailsForm() {
               <p className="text-red-500 text-sm mt-1">{errors.contactEmail.message}</p>
             )}
           </div>
-          <div>
+          <div className="w-full">
             <input
               {...register('senderEmail')}
               placeholder={t('empresa.profile.senderEmail', 'Sender email')}
@@ -289,7 +289,7 @@ export function StoreDetailsForm() {
         </div>
         
         {/* Warning message */}
-        <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded flex items-start">
+        <div className="w-[68%] sm:w-full mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded flex items-start">
           <span className="text-yellow-600 dark:text-yellow-400 mr-2">⚠️</span>
           <span className="text-sm text-yellow-800 dark:text-yellow-200">
             {t('empresa.profile.emailWarning', 'Confirm that you have access to johndoe@gmail.com in sender email settings.')}
@@ -298,10 +298,10 @@ export function StoreDetailsForm() {
       </div>
 
       {/* Billing Information */}
-      <div className="p-6 border-b dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 dark:text-white">{t('empresa.billing.title', 'Billing Information')}</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.billing.title', 'Billing Information')}</h2>
+        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+          <div className="w-full">
             <input
               {...register('legalBusinessName')}
               placeholder={t('empresa.billing.legalName', 'Legal business name')}
@@ -309,12 +309,12 @@ export function StoreDetailsForm() {
               style={inputFocusStyle}
             />
           </div>
-          <div>
+          <div className="w-full">
             <Select.Root value={watch('country') || ''} onValueChange={(value) => { 
               setValue('country', value, { shouldDirty: true });
             }}>
               <Select.Trigger
-                className={`${inputClassName} flex items-center justify-between`}
+                className={`${inputClassName} flex items-center justify-between overflow-hidden`}
                 style={inputFocusStyle}
               >
                 <Select.Value>
@@ -442,7 +442,7 @@ export function StoreDetailsForm() {
               </Select.Portal>
             </Select.Root>
           </div>
-          <div>
+          <div className="w-full">
             <input
               {...register('address')}
               placeholder={t('empresa.billing.address', 'Address')}
@@ -450,7 +450,7 @@ export function StoreDetailsForm() {
               style={inputFocusStyle}
             />
           </div>
-          <div>
+          <div className="w-full">
             <input
               {...register('apartment')}
               placeholder={t('empresa.billing.apartment', 'Apartment, suite, etc.')}
@@ -458,7 +458,7 @@ export function StoreDetailsForm() {
               style={inputFocusStyle}
             />
           </div>
-          <div className="grid grid-cols-3 gap-2 col-span-2">
+          <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-2 col-span-1 sm:col-span-2">
             <input
               {...register('city')}
               placeholder={t('empresa.billing.city', 'City')}
@@ -482,12 +482,12 @@ export function StoreDetailsForm() {
       </div>
 
       {/* Time zone and units */}
-      <div className="p-6 border-b dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 dark:text-white">{t('empresa.timeZone.title', 'Time zone and units of measurement')}</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t('empresa.timeZone.description', 'Used to calculate product prices, shipping weights, and order times.')}</p>
+      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.timeZone.title', 'Time zone and units of measurement')}</h2>
+        <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400 mb-4">{t('empresa.timeZone.description', 'Used to calculate product prices, shipping weights, and order times.')}</p>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+          <div className="w-full">
             <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.timeZone.label', 'Time Zone')}</label>
             <select
               {...register('timeZone')}
@@ -506,8 +506,8 @@ export function StoreDetailsForm() {
               <option value="America/Santiago">(GMT-03:00) Santiago</option>
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
+          <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-2">
+            <div className="w-full">
               <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.timeZone.metric', 'Metric')}</label>
               <select
                 {...register('metricSystem')}
@@ -518,7 +518,7 @@ export function StoreDetailsForm() {
                 <option value="Imperial">{t('empresa.timeZone.imperialOption', 'Imperial')}</option>
               </select>
             </div>
-            <div>
+            <div className="w-full">
               <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.timeZone.weight', 'Weight')}</label>
               <select
                 {...register('weightUnit')}
@@ -534,9 +534,9 @@ export function StoreDetailsForm() {
       </div>
 
       {/* Store currency */}
-      <div className="p-6 border-b dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 dark:text-white">{t('empresa.currency.title', 'Store currency')}</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t('empresa.currency.description', 'The currency your products are sold in.')}</p>
+      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.currency.title', 'Store currency')}</h2>
+        <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400 mb-4">{t('empresa.currency.description', 'The currency your products are sold in.')}</p>
         
         <div className="max-w-sm">
           <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.currency.label', 'Store currency')}</label>
@@ -667,14 +667,14 @@ export function StoreDetailsForm() {
       </div>
 
       {/* Order ID format */}
-      <div className="p-6 border-b dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 dark:text-white">{t('empresa.orderId.title', 'Order id format')}</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <div className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.orderId.title', 'Order id format')}</h2>
+        <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400 mb-4">
           {t('empresa.orderId.description', 'Shown on the Orders page, customer pages, and customer order notifications to identify orders.')}
         </p>
         
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
+        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4 mb-4">
+          <div className="w-full">
             <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.orderId.prefix', 'Prefix')}</label>
             <input
               {...register('orderIdPrefix')}
@@ -683,7 +683,7 @@ export function StoreDetailsForm() {
               style={inputFocusStyle}
             />
           </div>
-          <div>
+          <div className="w-full">
             <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.orderId.suffix', 'Suffix')}</label>
             <input
               {...register('orderIdSuffix')}
@@ -694,24 +694,24 @@ export function StoreDetailsForm() {
           </div>
         </div>
         
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400">
           {t('empresa.orderId.preview', 'Your order ID will appear as')} {orderIdPrefix || '#'}1001, {orderIdPrefix || '#'}1002, {orderIdPrefix || '#'}1003 ...
         </p>
       </div>
 
       {/* Action buttons */}
-      <div className="p-6 flex justify-end space-x-3 border-t dark:border-gray-700">
+      <div className="pl-4 pr-6 py-4 sm:p-6 flex flex-col-reverse sm:flex-row sm:justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 border-t dark:border-gray-700">
         <button
           type="button"
           onClick={() => reset()}
-          className="px-4 py-2 text-white bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded transition-colors"
+          className="w-[68%] sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-white bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded transition-colors"
         >
           {t('common.discard', 'Discard')}
         </button>
         <button
           type="submit"
           disabled={!isDirty || isSaving}
-          className="px-6 py-2 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+          className="w-[68%] sm:w-auto px-4 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base text-white rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           style={{ 
             backgroundColor: primaryColor,
             opacity: !isDirty || isSaving ? 0.5 : 1,

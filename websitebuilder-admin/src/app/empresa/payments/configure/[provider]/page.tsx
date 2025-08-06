@@ -458,14 +458,14 @@ export default function ConfigureProviderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
       {/* Spacer for navbar */}
       <div className="h-16" />
       
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between py-4 gap-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/empresa/payments')}
@@ -483,10 +483,10 @@ export default function ConfigureProviderPage() {
                   />
                 </div>
                 <div>
-                  <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  <h1 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white">
                     Configurar {config.name}
                   </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Configure las credenciales y ajustes del proveedor
                   </p>
                 </div>
@@ -496,27 +496,28 @@ export default function ConfigureProviderPage() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="flex items-center gap-2 rounded-lg px-4 py-2 text-white font-medium bg-primary-600 hover:bg-primary-700 transition-all disabled:opacity-50"
+              className="w-[75%] sm:w-auto flex items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-white font-medium bg-primary-600 hover:bg-primary-700 transition-all disabled:opacity-50"
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
               ) : (
-                <Save className="h-5 w-5" />
+                <Save className="h-4 w-4 sm:h-5 sm:w-5" />
               )}
-              Guardar Configuración
+              <span className="hidden sm:inline">Guardar Configuración</span>
+              <span className="sm:hidden">Guardar</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8 flex flex-col items-center sm:items-stretch">
         {/* Existing Provider Notice */}
         {existingProvider && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 rounded-xl bg-green-50 dark:bg-green-900/20 p-4 flex items-start gap-3"
+            className="w-[75%] sm:w-full mb-6 rounded-xl bg-green-50 dark:bg-green-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
           >
             <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-green-800 dark:text-green-300">
@@ -535,7 +536,7 @@ export default function ConfigureProviderPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 flex items-start gap-3"
+          className="w-[75%] sm:w-full mb-6 sm:mb-8 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
         >
           <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-blue-800 dark:text-blue-300">
@@ -548,14 +549,14 @@ export default function ConfigureProviderPage() {
         </motion.div>
 
         {/* Form Fields */}
-        <div className="space-y-6">
+        <div className="space-y-6 w-full flex flex-col items-center sm:items-stretch">
           {config.fields.map((field, index) => (
             <motion.div
               key={field.name}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700"
+              className="w-[75%] sm:w-full bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mx-auto sm:mx-0"
             >
               <label className="block">
                 <div className="flex items-center gap-2 mb-2">
@@ -603,7 +604,7 @@ export default function ConfigureProviderPage() {
                         ? '••••••••'
                         : field.placeholder
                     }
-                    className={`w-full rounded-lg border px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 transition-colors ${
+                    className={`w-full rounded-lg border px-2 sm:px-4 py-1.5 sm:py-3 text-sm sm:text-base text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 transition-colors ${
                       errors[field.name]
                         ? 'border-red-500 focus:border-red-500'
                         : 'border-gray-300 dark:border-gray-600 focus:border-blue-500'
@@ -616,7 +617,7 @@ export default function ConfigureProviderPage() {
                     value={formData[field.name] || ''}
                     onChange={(e) => handleInputChange(field.name, parseFloat(e.target.value))}
                     placeholder={field.placeholder}
-                    className={`w-full rounded-lg border px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 transition-colors ${
+                    className={`w-full rounded-lg border px-2 sm:px-4 py-1.5 sm:py-3 text-sm sm:text-base text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 transition-colors ${
                       errors[field.name]
                         ? 'border-red-500 focus:border-red-500'
                         : 'border-gray-300 dark:border-gray-600 focus:border-blue-500'
@@ -633,7 +634,7 @@ export default function ConfigureProviderPage() {
                     />
                     <label
                       htmlFor={field.name}
-                      className={`flex items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-4 py-8 cursor-pointer transition-colors ${
+                      className={`flex flex-col sm:flex-row items-center justify-center gap-2 w-full rounded-lg border-2 border-dashed px-3 sm:px-4 py-6 sm:py-8 cursor-pointer transition-colors ${
                         errors[field.name]
                           ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
                           : existingProvider && 
@@ -693,7 +694,7 @@ export default function ConfigureProviderPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-6 rounded-xl bg-amber-50 dark:bg-amber-900/20 p-4 flex items-start gap-3"
+            className="w-[75%] sm:w-full mt-6 rounded-xl bg-amber-50 dark:bg-amber-900/20 p-3 sm:p-4 flex items-start gap-3 mx-auto sm:mx-0"
           >
             <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-amber-800 dark:text-amber-300">

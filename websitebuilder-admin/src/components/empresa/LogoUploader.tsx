@@ -24,7 +24,18 @@ export function LogoUploader({
   const [logoSize, setLogoSize] = useState(currentSize);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Actualizar preview cuando cambie currentLogo (cuando se carga desde DB)
   useEffect(() => {
@@ -188,7 +199,7 @@ export function LogoUploader({
           onClick={() => fileInputRef.current?.click()}
           className={cn(
             "relative flex flex-col items-center justify-center",
-            "w-full h-64 rounded-xl border-2 border-dashed",
+            "w-[70%] sm:w-full h-32 sm:h-48 md:h-64 rounded-xl border-2 border-dashed",
             "transition-all duration-200 cursor-pointer",
             "hover:bg-gray-50 dark:hover:bg-gray-800/50",
             isDragging ? "border-primary bg-primary/5 dark:bg-primary/10" : "border-gray-300 dark:border-gray-600",
@@ -201,7 +212,10 @@ export function LogoUploader({
               <img
                 src={displayPreview}
                 alt="Logo"
-                style={{ maxWidth: logoSize, maxHeight: logoSize }}
+                style={{ 
+                  maxWidth: isMobile ? Math.min(logoSize * 0.6, 80) : logoSize, 
+                  maxHeight: isMobile ? Math.min(logoSize * 0.6, 80) : logoSize 
+                }}
                 className="object-contain rounded-lg shadow-lg"
               />
               
@@ -259,17 +273,17 @@ export function LogoUploader({
                 </div>
               ) : (
                 <>
-                  <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                    <Image className="w-8 h-8 text-gray-400" />
+                  <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-2 sm:mb-4">
+                    <Image className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
                   </div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-                    {isDragging ? 'Suelta la imagen aquí' : 'Arrastra una imagen aquí'}
+                  <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                    {isDragging ? 'Suelta aquí' : (isMobile ? 'Toca para subir' : 'Arrastra una imagen aquí')}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    o <span className="text-primary font-medium">selecciona un archivo</span>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    {!isMobile && <>o <span className="text-primary font-medium">selecciona un archivo</span></>}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                    JPEG, PNG, GIF, WebP hasta 5MB
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 sm:mt-2">
+                    JPEG, PNG, GIF, WebP • 5MB
                   </p>
                 </>
               )}
@@ -303,7 +317,7 @@ export function LogoUploader({
 
       {/* Size Control */}
       {displayPreview && (
-        <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+        <div className="w-[70%] sm:w-full space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
           <div className="flex items-center justify-between">
             <label htmlFor="logo-size" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Tamaño del logo

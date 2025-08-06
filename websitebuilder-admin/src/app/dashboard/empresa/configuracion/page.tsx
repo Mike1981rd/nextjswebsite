@@ -29,12 +29,6 @@ export default function EmpresaConfiguracionPage() {
               </a>
             </li>
             <li className="text-gray-400 dark:text-gray-600">/</li>
-            <li>
-              <a href="/configuracion" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                {t('navigation.configuracion')}
-              </a>
-            </li>
-            <li className="text-gray-400 dark:text-gray-600">/</li>
             <li className="text-gray-700 dark:text-gray-300 font-medium">
               {t('navigation.empresa')}
             </li>
