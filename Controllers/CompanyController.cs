@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebsiteBuilderAPI.Attributes;
 using WebsiteBuilderAPI.DTOs.Company;
+using WebsiteBuilderAPI.DTOs.CheckoutSettings;
 using WebsiteBuilderAPI.Services;
 
 namespace WebsiteBuilderAPI.Controllers
@@ -180,5 +181,80 @@ namespace WebsiteBuilderAPI.Controllers
                 return StatusCode(500, new { message = "Internal server error" });
             }
         }
+
+        #region Checkout Settings
+
+        /// <summary>
+        /// Obtiene la configuración de checkout del company
+        /// </summary>
+        [HttpGet("checkout-settings")]
+        [RequirePermission("company", "read")]
+        public async Task<ActionResult<CheckoutSettingsDto>> GetCheckoutSettings()
+        {
+            try
+            {
+                var settings = await _companyService.GetCheckoutSettingsAsync();
+                if (settings == null)
+                {
+                    // Si no existe, devolver configuración por defecto
+                    settings = await _companyService.CreateDefaultCheckoutSettingsAsync();
+                }
+                return Ok(settings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting checkout settings");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        /// <summary>
+        /// Actualiza la configuración de checkout del company
+        /// </summary>
+        [HttpPut("checkout-settings")]
+        [RequirePermission("company", "update")]
+        public async Task<ActionResult<CheckoutSettingsDto>> UpdateCheckoutSettings([FromBody] UpdateCheckoutSettingsDto request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var updatedSettings = await _companyService.UpdateCheckoutSettingsAsync(request);
+                return Ok(updatedSettings);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating checkout settings");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        /// <summary>
+        /// Restablece la configuración de checkout a los valores por defecto
+        /// </summary>
+        [HttpPost("checkout-settings/reset")]
+        [RequirePermission("company", "update")]
+        public async Task<ActionResult<CheckoutSettingsDto>> ResetCheckoutSettings()
+        {
+            try
+            {
+                var defaultSettings = await _companyService.ResetCheckoutSettingsAsync();
+                return Ok(defaultSettings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting checkout settings");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        #endregion
     }
 }

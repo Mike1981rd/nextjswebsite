@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebsiteBuilderAPI.Data;
 using WebsiteBuilderAPI.DTOs.Company;
+using WebsiteBuilderAPI.DTOs.CheckoutSettings;
 using WebsiteBuilderAPI.Models;
 
 namespace WebsiteBuilderAPI.Services
@@ -307,5 +308,172 @@ namespace WebsiteBuilderAPI.Services
                 _logger.LogInformation("Logo updated for company {CompanyId}: {LogoUrl}", currentCompany.Id, logoUrl);
             }
         }
+
+        #region Checkout Settings Methods
+
+        public async Task<CheckoutSettingsDto?> GetCheckoutSettingsAsync()
+        {
+            var currentCompany = await _context.Companies.FirstOrDefaultAsync();
+            if (currentCompany == null)
+            {
+                return null;
+            }
+
+            var settings = await _context.CheckoutSettings
+                .FirstOrDefaultAsync(cs => cs.CompanyId == currentCompany.Id);
+
+            if (settings == null)
+            {
+                return null;
+            }
+
+            return MapToDto(settings);
+        }
+
+        public async Task<CheckoutSettingsDto> CreateDefaultCheckoutSettingsAsync()
+        {
+            var currentCompany = await _context.Companies.FirstOrDefaultAsync();
+            if (currentCompany == null)
+            {
+                throw new InvalidOperationException("No company found in the system");
+            }
+
+            // Check if settings already exist
+            var existingSettings = await _context.CheckoutSettings
+                .FirstOrDefaultAsync(cs => cs.CompanyId == currentCompany.Id);
+            
+            if (existingSettings != null)
+            {
+                return MapToDto(existingSettings);
+            }
+
+            // Create default settings
+            var defaultSettings = new CheckoutSettings
+            {
+                CompanyId = currentCompany.Id,
+                ContactMethod = "email",
+                FullNameOption = "firstAndLast",
+                CompanyNameField = "optional",
+                AddressLine2Field = "optional",
+                PhoneNumberField = "optional",
+                RequireShippingAddress = true,
+                RequireBillingAddress = true,
+                AllowGuestCheckout = true,
+                CollectMarketingConsent = false,
+                ShowTermsAndConditions = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.CheckoutSettings.Add(defaultSettings);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Default checkout settings created for company {CompanyId}", currentCompany.Id);
+            return MapToDto(defaultSettings);
+        }
+
+        public async Task<CheckoutSettingsDto> UpdateCheckoutSettingsAsync(UpdateCheckoutSettingsDto request)
+        {
+            var currentCompany = await _context.Companies.FirstOrDefaultAsync();
+            if (currentCompany == null)
+            {
+                throw new InvalidOperationException("No company found in the system");
+            }
+
+            var settings = await _context.CheckoutSettings
+                .FirstOrDefaultAsync(cs => cs.CompanyId == currentCompany.Id);
+
+            if (settings == null)
+            {
+                // Create new settings if they don't exist
+                settings = new CheckoutSettings
+                {
+                    CompanyId = currentCompany.Id,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.CheckoutSettings.Add(settings);
+            }
+
+            // Update settings from request
+            settings.ContactMethod = request.ContactMethod;
+            settings.FullNameOption = request.FullNameOption;
+            settings.CompanyNameField = request.CompanyNameField;
+            settings.AddressLine2Field = request.AddressLine2Field;
+            settings.PhoneNumberField = request.PhoneNumberField;
+            settings.RequireShippingAddress = request.RequireShippingAddress;
+            settings.RequireBillingAddress = request.RequireBillingAddress;
+            settings.AllowGuestCheckout = request.AllowGuestCheckout;
+            settings.CollectMarketingConsent = request.CollectMarketingConsent;
+            settings.ShowTermsAndConditions = request.ShowTermsAndConditions;
+            settings.TermsAndConditionsUrl = request.TermsAndConditionsUrl;
+            settings.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Checkout settings updated for company {CompanyId}", currentCompany.Id);
+            return MapToDto(settings);
+        }
+
+        public async Task<CheckoutSettingsDto> ResetCheckoutSettingsAsync()
+        {
+            var currentCompany = await _context.Companies.FirstOrDefaultAsync();
+            if (currentCompany == null)
+            {
+                throw new InvalidOperationException("No company found in the system");
+            }
+
+            var settings = await _context.CheckoutSettings
+                .FirstOrDefaultAsync(cs => cs.CompanyId == currentCompany.Id);
+
+            if (settings != null)
+            {
+                // Reset to default values
+                settings.ContactMethod = "email";
+                settings.FullNameOption = "firstAndLast";
+                settings.CompanyNameField = "optional";
+                settings.AddressLine2Field = "optional";
+                settings.PhoneNumberField = "optional";
+                settings.RequireShippingAddress = true;
+                settings.RequireBillingAddress = true;
+                settings.AllowGuestCheckout = true;
+                settings.CollectMarketingConsent = false;
+                settings.ShowTermsAndConditions = true;
+                settings.TermsAndConditionsUrl = null;
+                settings.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Checkout settings reset for company {CompanyId}", currentCompany.Id);
+                return MapToDto(settings);
+            }
+            else
+            {
+                // Create default settings if they don't exist
+                return await CreateDefaultCheckoutSettingsAsync();
+            }
+        }
+
+        private CheckoutSettingsDto MapToDto(CheckoutSettings settings)
+        {
+            return new CheckoutSettingsDto
+            {
+                Id = settings.Id,
+                CompanyId = settings.CompanyId,
+                ContactMethod = settings.ContactMethod,
+                FullNameOption = settings.FullNameOption,
+                CompanyNameField = settings.CompanyNameField,
+                AddressLine2Field = settings.AddressLine2Field,
+                PhoneNumberField = settings.PhoneNumberField,
+                RequireShippingAddress = settings.RequireShippingAddress,
+                RequireBillingAddress = settings.RequireBillingAddress,
+                AllowGuestCheckout = settings.AllowGuestCheckout,
+                CollectMarketingConsent = settings.CollectMarketingConsent,
+                ShowTermsAndConditions = settings.ShowTermsAndConditions,
+                TermsAndConditionsUrl = settings.TermsAndConditionsUrl,
+                CreatedAt = settings.CreatedAt,
+                UpdatedAt = settings.UpdatedAt
+            };
+        }
+
+        #endregion
     }
 }

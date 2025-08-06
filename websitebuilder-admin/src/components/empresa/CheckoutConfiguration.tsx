@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/contexts/I18nContext';
 import { AlertCircle, Phone, Mail, Building2, MapPin, Home, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'react-hot-toast';
-import api from '@/lib/api';
+import toast from 'react-hot-toast';
+import { api } from '@/lib/api';
 
 interface CheckoutField {
   id: string;
@@ -26,9 +26,10 @@ export function CheckoutConfiguration() {
   // Estado para los campos de configuración
   const [contactMethod, setContactMethod] = useState<'phone' | 'email'>('email');
   const [fullNameOption, setFullNameOption] = useState<'lastOnly' | 'firstAndLast'>('firstAndLast');
-  const [companyName, setCompanyName] = useState<'hidden' | 'optional' | 'required'>('optional');
-  const [addressLine2, setAddressLine2] = useState<'hidden' | 'optional' | 'required'>('optional');
-  const [phoneNumber, setPhoneNumber] = useState<'hidden' | 'optional' | 'required'>('optional');
+  const [companyNameField, setCompanyNameField] = useState<'hidden' | 'optional' | 'required'>('optional');
+  const [addressLine2Field, setAddressLine2Field] = useState<'hidden' | 'optional' | 'required'>('optional');
+  const [phoneNumberField, setPhoneNumberField] = useState<'hidden' | 'optional' | 'required'>('optional');
+  const [initialSettings, setInitialSettings] = useState<any>(null);
   
   // Get primary color from localStorage
   useEffect(() => {
@@ -46,31 +47,50 @@ export function CheckoutConfiguration() {
 
   const loadCheckoutSettings = async () => {
     try {
-      // TODO: Cargar configuración desde el backend
-      // const response = await api.get('/api/company/checkout-settings');
-      // Aplicar configuración cargada
+      const response = await api.get('/company/checkout-settings');
+      const settings = response.data;
+      
+      // Apply loaded settings
+      setContactMethod(settings.contactMethod || 'email');
+      setFullNameOption(settings.fullNameOption || 'firstAndLast');
+      setCompanyNameField(settings.companyNameField || 'optional');
+      setAddressLine2Field(settings.addressLine2Field || 'optional');
+      setPhoneNumberField(settings.phoneNumberField || 'optional');
+      
+      // Save initial settings for reset
+      setInitialSettings(settings);
+      setHasChanges(false);
     } catch (error) {
       console.error('Error loading checkout settings:', error);
+      toast.error(t('empresa.checkout.loadFailed', 'Failed to load checkout settings'));
     }
   };
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      // TODO: Enviar configuración al backend
       const settings = {
         contactMethod,
         fullNameOption,
-        companyName,
-        addressLine2,
-        phoneNumber
+        companyNameField,
+        addressLine2Field,
+        phoneNumberField,
+        requireShippingAddress: true,
+        requireBillingAddress: true,
+        allowGuestCheckout: true,
+        collectMarketingConsent: false,
+        showTermsAndConditions: true,
+        termsAndConditionsUrl: null
       };
       
-      // await api.put('/api/company/checkout-settings', settings);
+      await api.put('/company/checkout-settings', settings);
+      
+      // Update initial settings after successful save
+      setInitialSettings(settings);
+      setHasChanges(false);
       
       toast.success(t('empresa.checkout.settingsSaved', 'Checkout settings saved successfully'));
-      setHasChanges(false);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(t('empresa.checkout.saveFailed', 'Failed to save checkout settings'));
       console.error('Error saving checkout settings:', error);
     } finally {
@@ -269,8 +289,8 @@ export function CheckoutConfiguration() {
             </div>
             <RadioGroup
               name="companyName"
-              value={companyName}
-              onChange={setCompanyName}
+              value={companyNameField}
+              onChange={setCompanyNameField}
               options={[
                 {
                   value: 'hidden',
@@ -298,8 +318,8 @@ export function CheckoutConfiguration() {
             </div>
             <RadioGroup
               name="addressLine2"
-              value={addressLine2}
-              onChange={setAddressLine2}
+              value={addressLine2Field}
+              onChange={setAddressLine2Field}
               options={[
                 {
                   value: 'hidden',
@@ -327,8 +347,8 @@ export function CheckoutConfiguration() {
             </div>
             <RadioGroup
               name="phoneNumber"
-              value={phoneNumber}
-              onChange={setPhoneNumber}
+              value={phoneNumberField}
+              onChange={setPhoneNumberField}
               options={[
                 {
                   value: 'hidden',

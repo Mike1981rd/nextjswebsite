@@ -32,6 +32,7 @@ namespace WebsiteBuilderAPI.Data
         
         // Entidades de empresa
         public DbSet<PaymentProvider> PaymentProviders { get; set; }
+        public DbSet<CheckoutSettings> CheckoutSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -251,6 +252,26 @@ namespace WebsiteBuilderAPI.Data
                 // Índices para optimización
                 entity.HasIndex(e => new { e.CompanyId, e.Provider }).IsUnique();
                 entity.HasIndex(e => e.IsActive);
+            });
+
+            // Configuración de CheckoutSettings
+            modelBuilder.Entity<CheckoutSettings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ContactMethod).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.FullNameOption).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.CompanyNameField).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.AddressLine2Field).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.PhoneNumberField).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.TermsAndConditionsUrl).HasMaxLength(500);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Company)
+                    .WithOne()
+                    .HasForeignKey<CheckoutSettings>(e => e.CompanyId);
+                
+                // Índice único para asegurar una configuración por empresa
+                entity.HasIndex(e => e.CompanyId).IsUnique();
             });
         }
     }

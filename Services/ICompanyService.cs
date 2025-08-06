@@ -1,4 +1,5 @@
 using WebsiteBuilderAPI.DTOs.Company;
+using WebsiteBuilderAPI.DTOs.CheckoutSettings;
 
 namespace WebsiteBuilderAPI.Services
 {
@@ -10,5 +11,11 @@ namespace WebsiteBuilderAPI.Services
         Task UpdateLogoSizeAsync(int size);
         Task<CompanyConfigDto?> GetCompanyConfigAsync();
         Task UpdateLogoAsync(string logoUrl);
+        
+        // Checkout Settings methods
+        Task<CheckoutSettingsDto?> GetCheckoutSettingsAsync();
+        Task<CheckoutSettingsDto> CreateDefaultCheckoutSettingsAsync();
+        Task<CheckoutSettingsDto> UpdateCheckoutSettingsAsync(UpdateCheckoutSettingsDto request);
+        Task<CheckoutSettingsDto> ResetCheckoutSettingsAsync();
     }
 }
