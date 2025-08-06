@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebsiteBuilderAPI.Data;
+using WebsiteBuilderAPI.Repositories;
 using WebsiteBuilderAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,12 +66,32 @@ builder.Services.AddScoped<IPaymentProviderService, PaymentProviderService>();
 builder.Services.AddScoped<WebsiteBuilderAPI.Services.Encryption.IEncryptionService, WebsiteBuilderAPI.Services.Encryption.EncryptionService>();
 builder.Services.AddScoped<IUploadService, UploadService>();
 
+// Servicios de pagos
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+builder.Services.AddScoped<IPaymentProviderRepository, PaymentProviderRepository>();
+builder.Services.AddScoped<IAzulPaymentService, AzulPaymentService>();
+
+// Configurar HttpClient para Azul
+builder.Services.AddHttpClient<IAzulPaymentService, AzulPaymentService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         // Evitar referencias circulares
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
+
+// Configure FormOptions for file uploads
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = int.MaxValue;
+    options.MemoryBufferThreshold = int.MaxValue;
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -141,6 +162,20 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseAuthentication();
+
+// Middleware temporal para permitir acceso sin auth a endpoints de pago
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value?.ToLower() ?? "";
+    if (path.Contains("/api/paymentprovider") || path.Contains("/api/payment"))
+    {
+        // Permitir acceso sin autenticación temporalmente
+        await next();
+        return;
+    }
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapControllers();

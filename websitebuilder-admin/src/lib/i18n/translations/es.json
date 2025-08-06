@@ -340,6 +340,98 @@
     "unauthorized": "No autorizado",
     "serverError": "Error del servidor"
   },
+  "payments": {
+    "title": "Métodos de Pago",
+    "subtitle": "Configura los proveedores de pago para tu tienda online",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "configured": "Configurado",
+    "commission": "Comisión",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "configure": "Configurar",
+    "testMode": "Modo Prueba",
+    "addProvider": "Agregar Proveedor",
+    "addProviderDescription": "Añade un nuevo método de pago",
+    "newProvider": "Agregar Nuevo Proveedor",
+    "newProviderDescription": "Añade un nuevo método de pago personalizado",
+    "providerName": "Nombre del Proveedor",
+    "providerNamePlaceholder": "Ej: MercadoPago",
+    "logoUrl": "Logo URL",
+    "logoUrlPlaceholder": "https://ejemplo.com/logo.png",
+    "cancel": "Cancelar",
+    "add": "Agregar Proveedor",
+    "error": {
+      "loading": "Error al cargar los proveedores de pago",
+      "toggle": "Error al cambiar el estado del proveedor",
+      "configure": "Error al configurar el proveedor",
+      "delete": "Error al eliminar el proveedor"
+    },
+    "success": {
+      "toggled": "Estado del proveedor actualizado",
+      "configured": "Proveedor configurado exitosamente",
+      "deleted": "Proveedor eliminado exitosamente"
+    },
+    "azul": {
+      "configure": "Configurar Azul Dominicana",
+      "success": "Azul configurado exitosamente",
+      "error": "Error al configurar Azul",
+      "info": {
+        "credentials": "Las credenciales son encriptadas antes de almacenarse en la base de datos",
+        "certificates": "Los certificados se almacenan de forma segura fuera del directorio público",
+        "production": "Asegúrate de usar las credenciales correctas según el modo (prueba/producción)",
+        "contact": "Para obtener tus credenciales, contacta a Azul al"
+      },
+      "credentials": {
+        "title": "Credenciales de API",
+        "username": "Usuario",
+        "password": "Contraseña"
+      },
+      "certificates": {
+        "title": "Certificados SSL",
+        "pem": "Certificado",
+        "key": "Llave Privada",
+        "select": "Seleccionar archivo",
+        "notRequiredInTestMode": "Los certificados no son requeridos en modo prueba"
+      },
+      "environment": {
+        "title": "Configuración del Entorno",
+        "testMode": "Modo de Prueba",
+        "fee": "Comisión de Transacción"
+      },
+      "validation": {
+        "required": "Todos los campos marcados con * son requeridos",
+        "storeIdRequired": "El Store ID es requerido",
+        "auth1Required": "El usuario (Auth1) es requerido",
+        "auth2Required": "La contraseña (Auth2) es requerida",
+        "certificateRequired": "El certificado .pem es requerido en modo producción",
+        "privateKeyRequired": "La llave privada .key es requerida en modo producción",
+        "certificates": "Los certificados SSL son requeridos"
+      }
+    },
+    "configure": {
+      "title": "Configurar",
+      "save": "Guardar Configuración",
+      "security": {
+        "title": "Sus credenciales están seguras",
+        "description": "Todas las credenciales se encriptan con AES-256 antes de almacenarse. Los certificados SSL se guardan en un directorio seguro fuera del alcance público."
+      },
+      "testMode": {
+        "title": "Modo de Prueba Activado",
+        "description": "Las transacciones no serán procesadas realmente. Desactive el modo de prueba cuando esté listo para procesar pagos reales."
+      },
+      "required": "requerido",
+      "selectFile": "Seleccionar archivo",
+      "completeFields": "Por favor complete todos los campos requeridos"
+    },
+    "add": {
+      "title": "Agregar Proveedor de Pago",
+      "subtitle": "Seleccione un proveedor para configurar",
+      "search": "Buscar proveedores...",
+      "noProviders": "No hay proveedores disponibles",
+      "noResults": "No se encontraron proveedores"
+    }
+  },
   "auth": {
     "loginTitle": "Iniciar Sesión",
     "loginSubtitle": "Ingresa a tu cuenta",

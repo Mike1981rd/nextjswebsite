@@ -89,7 +89,7 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
@@ -113,14 +113,16 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
           sidebarCollapsed={sidebarCollapsed}
         />
 
-        {/* Page Content */}
+        {/* Page Content - with top padding to account for fixed navbar */}
         <main 
           className={cn(
-            'flex-1 overflow-auto pt-16 p-6 dashboard-scroll',
+            'flex-1 pt-16 overflow-auto',
             className
           )}
         >
-          {children}
+          <div className="p-6">
+            {children}
+          </div>
         </main>
       </div>
 

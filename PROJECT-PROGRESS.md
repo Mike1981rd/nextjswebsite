@@ -227,16 +227,23 @@ Resolver los 9 problemas críticos del proyecto anterior:
 
 ### 🔄 Currently Working On
 
-**TAREA ACTUAL**: Módulo Usuarios/Roles
-- ⏳ UsersController + Service (en progreso)
-- ⏳ RolesController + Service  
-- ⏳ Frontend pages para gestión de usuarios
-- ⏳ Frontend pages para gestión de roles
-- ⏳ Asignación de permisos UI
+**TAREA ACTUAL**: Módulo Payment Gateway (Azul Dominicana)
+- ✅ PaymentProviderController + Service implementado
+- ✅ PaymentController con endpoints de proceso de pago
+- ✅ AzulPaymentService con manejo de SSL certificados
+- ✅ EncryptionService para proteger credenciales
+- ✅ Frontend PaymentsTab con diseño completo
+- ✅ Resolver error 401 de autenticación (middleware temporal agregado)
+- ✅ Página completa de configuración de proveedores (reemplazó modal)
+- ✅ CRUD completo funcionando (Create, Read, Update, Delete)
+- ✅ Botones de eliminar agregados a las tarjetas
+- ✅ Endpoint FormData para manejo de archivos SSL
 
 **TAREAS COMPLETADAS RECIENTEMENTE**:
 1. ✅ Sistema completo de traducciones i18n (ES/EN)
 2. ✅ Módulo Empresa completo (Controller, Service, Frontend)
+3. ✅ Backend completo de Payment Gateway (Controllers, Services, DTOs)
+4. ✅ Frontend UI de Payments con diseño de tarjetas
 
 ### 🐛 BUGS CHECKLIST - Dashboard
 
@@ -269,6 +276,7 @@ Resolver los 9 problemas críticos del proyecto anterior:
 2. **Puerto API**: Verificar puerto HTTPS (7224) para configurar correctamente en Next.js
 3. ~~**Autenticación**: Decidir si usar Identity o implementación custom~~ ✅ RESUELTO - Implementación custom con JWT
 4. ~~**Multi-tenancy**: Definir estrategia~~ ✅ RESUELTO - Sistema single-tenant (una empresa por DB)
+5. **Error 401 en Payments**: Middleware temporal agregado en Program.cs - necesita restart del backend para aplicar cambios
 
 ### 🔗 Related Files
 

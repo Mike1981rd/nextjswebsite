@@ -219,7 +219,7 @@ export function StoreDetailsForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-0">
       {/* Profile Section */}
       <div className="p-6 border-b dark:border-gray-700">
         <h2 className="text-lg font-semibold mb-4 dark:text-white">{t('empresa.profile.title', 'Profile')}</h2>
@@ -700,7 +700,7 @@ export function StoreDetailsForm() {
       </div>
 
       {/* Action buttons */}
-      <div className="p-6 flex justify-end space-x-3">
+      <div className="p-6 flex justify-end space-x-3 border-t dark:border-gray-700">
         <button
           type="button"
           onClick={() => reset()}

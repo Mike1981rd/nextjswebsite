@@ -325,6 +325,74 @@
     "unauthorized": "Unauthorized",
     "serverError": "Server error"
   },
+  "payments": {
+    "title": "Payment Methods",
+    "subtitle": "Configure payment providers for your online store",
+    "active": "Active",
+    "inactive": "Inactive",
+    "commission": "Commission",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "configure": "Configure",
+    "addProvider": "Add Provider",
+    "addProviderDescription": "Add a new payment method",
+    "newProvider": "Add New Provider",
+    "newProviderDescription": "Add a new custom payment method",
+    "providerName": "Provider Name",
+    "providerNamePlaceholder": "Ex: MercadoPago",
+    "logoUrl": "Logo URL",
+    "logoUrlPlaceholder": "https://example.com/logo.png",
+    "cancel": "Cancel",
+    "add": "Add Provider",
+    "configured": "Configured",
+    "testMode": "Test Mode",
+    "error": {
+      "loading": "Error loading payment providers",
+      "toggle": "Error toggling provider status",
+      "configure": "Error configuring provider"
+    },
+    "success": {
+      "toggled": "Provider status updated",
+      "configured": "Provider configured successfully"
+    },
+    "azul": {
+      "configure": "Configure Azul Dominicana",
+      "success": "Azul configured successfully",
+      "error": "Error configuring Azul",
+      "info": {
+        "credentials": "Credentials are encrypted before storing in the database",
+        "certificates": "Certificates are stored securely outside the public directory",
+        "production": "Make sure to use the correct credentials according to the mode (test/production)",
+        "contact": "To obtain your credentials, contact Azul at"
+      },
+      "credentials": {
+        "title": "API Credentials",
+        "username": "Username",
+        "password": "Password"
+      },
+      "certificates": {
+        "title": "SSL Certificates",
+        "pem": "Certificate",
+        "key": "Private Key",
+        "select": "Select file",
+        "notRequiredInTestMode": "Certificates are not required in test mode"
+      },
+      "environment": {
+        "title": "Environment Configuration",
+        "testMode": "Test Mode",
+        "fee": "Transaction Fee"
+      },
+      "validation": {
+        "required": "All fields marked with * are required",
+        "storeIdRequired": "Store ID is required",
+        "auth1Required": "Username (Auth1) is required",
+        "auth2Required": "Password (Auth2) is required",
+        "certificateRequired": "Certificate .pem is required in production mode",
+        "privateKeyRequired": "Private key .key is required in production mode",
+        "certificates": "SSL certificates are required"
+      }
+    }
+  },
   "auth": {
     "loginTitle": "Login",
     "loginSubtitle": "Sign in to your account",

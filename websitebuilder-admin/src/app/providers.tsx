@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { I18nProvider } from '@/contexts/I18nContext';
 import { ThemeLoader } from '@/components/ui/ThemeLoader';
+import { Toaster } from 'react-hot-toast';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -28,6 +29,29 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <I18nProvider>
       <AuthProvider>
         <ThemeLoader />
+        <Toaster 
+          position="top-right"
+          reverseOrder={false}
+          gutter={8}
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+              fontSize: '14px',
+            },
+            success: {
+              style: {
+                background: '#22c55e',
+              },
+            },
+            error: {
+              style: {
+                background: '#ef4444',
+              },
+            },
+          }}
+        />
         {children}
       </AuthProvider>
     </I18nProvider>

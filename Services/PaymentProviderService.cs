@@ -34,6 +34,15 @@ namespace WebsiteBuilderAPI.Services
                 return Enumerable.Empty<PaymentProviderResponseDto>();
             }
 
+            // Verificar si existen proveedores, si no, inicializar los predeterminados
+            var hasProviders = await _context.PaymentProviders
+                .AnyAsync(p => p.CompanyId == company.Id);
+                
+            if (!hasProviders)
+            {
+                await InitializeDefaultProvidersAsync(company.Id);
+            }
+
             var providers = await _context.PaymentProviders
                 .Where(p => p.CompanyId == company.Id)
                 .OrderBy(p => p.Name)
@@ -165,13 +174,15 @@ namespace WebsiteBuilderAPI.Services
                 provider.WebhookSecret = _encryptionService.Encrypt(request.WebhookSecret);
 
             // Credenciales específicas de Azul
+            // StoreId puede ser actualizado a vacío
             if (request.StoreId != null)
                 provider.StoreId = request.StoreId;
             
-            if (!string.IsNullOrEmpty(request.Auth1))
+            // Auth1 y Auth2 solo se actualizan si tienen valor (no null y no vacío)
+            if (!string.IsNullOrWhiteSpace(request.Auth1))
                 provider.Auth1 = _encryptionService.Encrypt(request.Auth1);
             
-            if (!string.IsNullOrEmpty(request.Auth2))
+            if (!string.IsNullOrWhiteSpace(request.Auth2))
                 provider.Auth2 = _encryptionService.Encrypt(request.Auth2);
 
             provider.UpdatedAt = DateTime.UtcNow;
@@ -432,16 +443,25 @@ namespace WebsiteBuilderAPI.Services
                     Provider = "cardnet",
                     Name = "Cardnet",
                     Logo = "/images/providers/cardnet.png",
-                    TransactionFee = 3.50m,
+                    TransactionFee = 3.25m,
                     IsManual = false,
                     Description = "Procesador de pagos con tarjetas de crédito"
+                },
+                new AvailableProviderDto
+                {
+                    Provider = "portal",
+                    Name = "Portal Pagos",
+                    Logo = "/images/providers/portal.png",
+                    TransactionFee = 2.75m,
+                    IsManual = false,
+                    Description = "Gateway de pagos moderno"
                 },
                 new AvailableProviderDto
                 {
                     Provider = "paypal",
                     Name = "PayPal",
                     Logo = "/images/providers/paypal.png",
-                    TransactionFee = 2.99m,
+                    TransactionFee = 3.49m,
                     IsManual = false,
                     Description = "Procesador de pagos internacional"
                 },
