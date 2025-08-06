@@ -7,6 +7,9 @@ namespace WebsiteBuilderAPI.DTOs.Company
         [StringLength(255)]
         public string? Name { get; set; }
 
+        [StringLength(500)]
+        public string? Logo { get; set; }
+
         [StringLength(7)]
         [RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "PrimaryColor must be a valid hex color")]
         public string? PrimaryColor { get; set; }

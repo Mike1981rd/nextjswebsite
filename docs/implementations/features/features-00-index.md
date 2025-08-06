@@ -12,6 +12,9 @@ This directory contains implementation documentation for major business features
 ### Internationalization
 - **[i18n System Implementation](./2025-08-i18n-system.md)** - Complete translation system with dynamic language switching (ES/EN), Context API, and component integration
 
+### Data Management
+- **[Company Data Save Implementation](./2025-08-company-data-save.md)** - Robust save system with separated endpoints for logo/data, auto-save functionality, and proper validation handling
+
 ## Coming Soon
 
 ### Business Features

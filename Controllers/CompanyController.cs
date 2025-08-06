@@ -78,6 +78,25 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         /// <summary>
+        /// Actualiza solo el logo del company
+        /// </summary>
+        [HttpPut("current/logo")]
+        [RequirePermission("company", "update")]
+        public async Task<ActionResult> UpdateLogo([FromBody] UpdateLogoDto request)
+        {
+            try
+            {
+                await _companyService.UpdateLogoAsync(request.Logo);
+                return Ok(new { message = "Logo updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating logo");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        /// <summary>
         /// Sube el logo del company
         /// </summary>
         [HttpPost("current/logo")]
@@ -110,6 +129,30 @@ namespace WebsiteBuilderAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading logo");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        /// <summary>
+        /// Actualiza el tamaño del logo del company
+        /// </summary>
+        [HttpPut("current/logo-size")]
+        [RequirePermission("company", "update")]
+        public async Task<ActionResult> UpdateLogoSize([FromBody] UpdateLogoSizeDto request)
+        {
+            try
+            {
+                if (request.Size < 60 || request.Size > 200)
+                {
+                    return BadRequest(new { message = "Logo size must be between 60 and 200 pixels" });
+                }
+
+                await _companyService.UpdateLogoSizeAsync(request.Size);
+                return Ok(new { message = "Logo size updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating logo size");
                 return StatusCode(500, new { message = "Internal server error" });
             }
         }

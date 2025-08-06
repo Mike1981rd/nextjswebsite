@@ -8,6 +8,7 @@ namespace WebsiteBuilderAPI.DTOs.Company
         public string? CustomDomain { get; set; }
         public string? Subdomain { get; set; }
         public string? Logo { get; set; }
+        public int LogoSize { get; set; }
         public string? PrimaryColor { get; set; }
         public string? SecondaryColor { get; set; }
         public bool IsActive { get; set; }

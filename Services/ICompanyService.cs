@@ -7,6 +7,8 @@ namespace WebsiteBuilderAPI.Services
         Task<CompanyResponseDto?> GetCurrentCompanyAsync();
         Task<CompanyResponseDto?> UpdateCurrentCompanyAsync(UpdateCompanyRequestDto request);
         Task<string> UploadLogoAsync(IFormFile file);
+        Task UpdateLogoSizeAsync(int size);
         Task<CompanyConfigDto?> GetCompanyConfigAsync();
+        Task UpdateLogoAsync(string logoUrl);
     }
 }

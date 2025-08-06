@@ -10,6 +10,8 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { CountryFlag, countries, currencies } from '@/components/ui/CountryFlag';
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, Check } from 'lucide-react';
+import { LogoUploader } from './LogoUploader';
+import { api } from '@/lib/api';
 
 // Validation Schema
 const storeDetailsSchema = z.object({
@@ -49,8 +51,11 @@ type StoreDetailsFormData = z.infer<typeof storeDetailsSchema>;
 
 export function StoreDetailsForm() {
   const { t } = useI18n();
-  const { company, updateCompany, isLoading, error } = useCompany();
+  const { company, updateCompany, isLoading, error, refetch } = useCompany();
   const [isSaving, setIsSaving] = useState(false);
+  const [logo, setLogo] = useState<string>('');
+  const [logoSize, setLogoSize] = useState<number>(120);
+  const [showLogoSuccess, setShowLogoSuccess] = useState(false);
   
   // Get primary color from localStorage (set by ThemeCustomizer)
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
@@ -107,6 +112,11 @@ export function StoreDetailsForm() {
   // Load company data
   useEffect(() => {
     if (company) {
+      // Set logo with proper URL handling
+      if (company.logo) {
+        setLogo(company.logo);
+      }
+      setLogoSize(company.logoSize || 120);
       reset({
         name: company.name || '',
         primaryColor: company.primaryColor || '#22c55e',
@@ -132,12 +142,52 @@ export function StoreDetailsForm() {
     }
   }, [company, reset]);
 
+  const handleLogoChange = async (newLogoUrl: string) => {
+    setLogo(newLogoUrl);
+    // Auto-save logo usando endpoint específico
+    try {
+      await api.put('/company/current/logo', { logo: newLogoUrl });
+      // Actualizar el company en el hook para reflejar el cambio
+      await refetch();
+      
+      // Mostrar notificación de éxito
+      setShowLogoSuccess(true);
+      setTimeout(() => setShowLogoSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error updating logo:', error);
+    }
+  };
+
+  const handleLogoSizeChange = async (newSize: number) => {
+    setLogoSize(newSize);
+    // Auto-save logo size
+    try {
+      await api.put('/company/current/logo-size', { size: newSize });
+    } catch (error) {
+      console.error('Error updating logo size:', error);
+    }
+  };
+
   const onSubmit = async (data: StoreDetailsFormData) => {
     try {
       setIsSaving(true);
-      await updateCompany(data);
-    } catch (error) {
+      
+      // Limpiar campos vacíos antes de enviar
+      const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
+        if (value !== '' && value !== null && value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as any);
+      
+      console.log('Sending data:', cleanedData);
+      await updateCompany(cleanedData);
+      
+      // Mostrar mensaje de éxito (puedes agregar un toast aquí)
+      console.log('Company updated successfully');
+    } catch (error: any) {
       console.error('Error saving company:', error);
+      console.error('Error details:', error.response?.data);
     } finally {
       setIsSaving(false);
     }
@@ -173,6 +223,27 @@ export function StoreDetailsForm() {
       {/* Profile Section */}
       <div className="p-6 border-b dark:border-gray-700">
         <h2 className="text-lg font-semibold mb-4 dark:text-white">{t('empresa.profile.title', 'Profile')}</h2>
+        
+        {/* Logo Upload Section */}
+        <div className="mb-6 relative">
+          <LogoUploader
+            currentLogo={logo}
+            currentSize={logoSize}
+            onLogoChange={handleLogoChange}
+            onSizeChange={handleLogoSizeChange}
+          />
+          
+          {/* Success notification */}
+          {showLogoSuccess && (
+            <div className="absolute top-0 right-0 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-right duration-300">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Logo guardado exitosamente
+            </div>
+          )}
+        </div>
+        
         <div className="grid grid-cols-2 gap-4">
           <div>
             <input

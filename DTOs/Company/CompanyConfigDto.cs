@@ -4,6 +4,7 @@ namespace WebsiteBuilderAPI.DTOs.Company
     {
         public string Name { get; set; } = string.Empty;
         public string? Logo { get; set; }
+        public int LogoSize { get; set; } = 120;
         public string PrimaryColor { get; set; } = "#22c55e";
         public string SecondaryColor { get; set; } = "#64748b";
         public string Currency { get; set; } = "USD";

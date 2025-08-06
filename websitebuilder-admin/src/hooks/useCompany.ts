@@ -10,6 +10,7 @@ export interface Company {
   customDomain?: string;
   subdomain?: string;
   logo?: string;
+  logoSize?: number;
   primaryColor?: string;
   secondaryColor?: string;
   isActive: boolean;
@@ -47,6 +48,7 @@ export interface Company {
 
 export interface UpdateCompanyRequest {
   name?: string;
+  logo?: string;
   primaryColor?: string;
   secondaryColor?: string;
   phoneNumber?: string;
@@ -101,7 +103,8 @@ export function useCompany() {
       return updatedCompany;
     } catch (err: any) {
       console.error('Error updating company:', err);
-      const errorMessage = err.response?.data?.message || 'Error updating company information';
+      console.error('Error response:', err.response?.data);
+      const errorMessage = err.response?.data?.message || err.response?.data?.errors || 'Error updating company information';
       setError(errorMessage);
       throw new Error(errorMessage);
     }

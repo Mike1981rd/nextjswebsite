@@ -63,6 +63,7 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IPaymentProviderService, PaymentProviderService>();
 builder.Services.AddScoped<WebsiteBuilderAPI.Services.Encryption.IEncryptionService, WebsiteBuilderAPI.Services.Encryption.EncryptionService>();
+builder.Services.AddScoped<IUploadService, UploadService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -122,6 +123,14 @@ if (app.Environment.IsDevelopment())
 
 // Usar CORS
 app.UseCors("AllowNextJsApp");
+
+// Servir archivos estáticos (para las imágenes subidas)
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+    RequestPath = "/uploads"
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

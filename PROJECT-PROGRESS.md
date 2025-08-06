@@ -286,6 +286,10 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - Complete UI redesign with Materialize-inspired design
   - Dark mode support implementation
   - Radix UI Select integration for dropdowns
+- ✅ **Company Data Save Implementation**: `/docs/implementations/features/2025-08-company-data-save.md`
+  - Separated endpoints for logo vs general data
+  - Auto-save functionality for logo and size
+  - Proper validation and conditional updates
 - ✅ **Troubleshooting Docs**: 
   - Database issues: `/docs/troubleshooting/general/general-01-database-issues.md`
   - Next.js auth: `/docs/troubleshooting/auth/auth-03-nextjs-integration.md`
@@ -296,6 +300,9 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - Calendar state management: `/docs/troubleshooting/features/features-03-calendar-state-management.md`
   - Country flags in select: `/docs/troubleshooting/features/features-04-country-flags-select.md`
   - Dark mode CSS issues: `/docs/troubleshooting/features/features-05-dark-mode-not-applying.md`
+  - Company save 400 error: `/docs/troubleshooting/features/features-06-company-save-400-error.md`
+  - Logo update data loss: `/docs/troubleshooting/features/features-07-logo-update-data-loss.md`
+  - Logo preview not loading: `/docs/troubleshooting/features/features-08-logo-preview-not-loading.md`
 
 ---
 

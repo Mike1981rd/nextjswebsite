@@ -17,6 +17,11 @@ This directory contains troubleshooting documentation for business features and 
 - **[features-04-country-flags-select.md](./features-04-country-flags-select.md)** - Country flags not displaying in native HTML select dropdown elements
 - **[features-05-dark-mode-not-applying.md](./features-05-dark-mode-not-applying.md)** - Dark mode CSS classes not applying to form elements and page layouts
 
+### Data Management & Forms
+- **[features-06-company-save-400-error.md](./features-06-company-save-400-error.md)** - Form requires all fields to save, returns 400 with only required fields
+- **[features-07-logo-update-data-loss.md](./features-07-logo-update-data-loss.md)** - Critical: Logo upload erases all company data when using general endpoint
+- **[features-08-logo-preview-not-loading.md](./features-08-logo-preview-not-loading.md)** - Logo preview doesn't show after page refresh despite data in database
+
 ## Coming Soon
 
 ### UI Components

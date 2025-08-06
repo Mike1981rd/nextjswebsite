@@ -49,6 +49,7 @@ namespace WebsiteBuilderAPI.Services
                 CustomDomain = currentCompany.CustomDomain,
                 Subdomain = currentCompany.Subdomain,
                 Logo = currentCompany.Logo,
+                LogoSize = currentCompany.LogoSize,
                 PrimaryColor = currentCompany.PrimaryColor,
                 SecondaryColor = currentCompany.SecondaryColor,
                 IsActive = currentCompany.IsActive,
@@ -95,42 +96,109 @@ namespace WebsiteBuilderAPI.Services
                 return null;
             }
 
-            // Actualizar campos básicos
+            // Actualizar campos básicos - SOLO si tienen valor
             if (!string.IsNullOrEmpty(request.Name))
                 company.Name = request.Name;
             
-            if (request.PrimaryColor != null)
+            if (request.Logo != null)
+                company.Logo = request.Logo;
+            
+            if (!string.IsNullOrEmpty(request.PrimaryColor))
                 company.PrimaryColor = request.PrimaryColor;
             
-            if (request.SecondaryColor != null)
+            if (!string.IsNullOrEmpty(request.SecondaryColor))
                 company.SecondaryColor = request.SecondaryColor;
 
-            // Profile Section
-            company.PhoneNumber = request.PhoneNumber;
-            company.ContactEmail = request.ContactEmail;
-            company.SenderEmail = request.SenderEmail;
+            // Profile Section - SOLO actualizar si se proporciona un valor (no null)
+            // NO actualizar con string vacío, mantener el valor actual
+            if (request.PhoneNumber != null && request.PhoneNumber != "")
+                company.PhoneNumber = request.PhoneNumber;
+            else if (request.PhoneNumber == "")
+                company.PhoneNumber = null;
+                
+            if (request.ContactEmail != null && request.ContactEmail != "")
+                company.ContactEmail = request.ContactEmail;
+            else if (request.ContactEmail == "")
+                company.ContactEmail = null;
+                
+            if (request.SenderEmail != null && request.SenderEmail != "")
+                company.SenderEmail = request.SenderEmail;
+            else if (request.SenderEmail == "")
+                company.SenderEmail = null;
 
-            // Billing Information
-            company.LegalBusinessName = request.LegalBusinessName;
-            company.Country = request.Country;
-            company.Region = request.Region;
-            company.Address = request.Address;
-            company.Apartment = request.Apartment;
-            company.City = request.City;
-            company.State = request.State;
-            company.PostalCode = request.PostalCode;
+            // Billing Information - NO actualizar si es null
+            if (request.LegalBusinessName != null && request.LegalBusinessName != "")
+                company.LegalBusinessName = request.LegalBusinessName;
+            else if (request.LegalBusinessName == "")
+                company.LegalBusinessName = null;
+                
+            if (request.Country != null && request.Country != "")
+                company.Country = request.Country;
+            else if (request.Country == "")
+                company.Country = null;
+                
+            if (request.Region != null && request.Region != "")
+                company.Region = request.Region;
+            else if (request.Region == "")
+                company.Region = null;
+                
+            if (request.Address != null && request.Address != "")
+                company.Address = request.Address;
+            else if (request.Address == "")
+                company.Address = null;
+                
+            if (request.Apartment != null && request.Apartment != "")
+                company.Apartment = request.Apartment;
+            else if (request.Apartment == "")
+                company.Apartment = null;
+                
+            if (request.City != null && request.City != "")
+                company.City = request.City;
+            else if (request.City == "")
+                company.City = null;
+                
+            if (request.State != null && request.State != "")
+                company.State = request.State;
+            else if (request.State == "")
+                company.State = null;
+                
+            if (request.PostalCode != null && request.PostalCode != "")
+                company.PostalCode = request.PostalCode;
+            else if (request.PostalCode == "")
+                company.PostalCode = null;
 
-            // Time Zone & Units
-            company.TimeZone = request.TimeZone;
-            company.MetricSystem = request.MetricSystem;
-            company.WeightUnit = request.WeightUnit;
+            // Time Zone & Units - NO actualizar si es null
+            if (request.TimeZone != null && request.TimeZone != "")
+                company.TimeZone = request.TimeZone;
+            else if (request.TimeZone == "")
+                company.TimeZone = null;
+                
+            if (request.MetricSystem != null && request.MetricSystem != "")
+                company.MetricSystem = request.MetricSystem;
+            else if (request.MetricSystem == "")
+                company.MetricSystem = null;
+                
+            if (request.WeightUnit != null && request.WeightUnit != "")
+                company.WeightUnit = request.WeightUnit;
+            else if (request.WeightUnit == "")
+                company.WeightUnit = null;
 
-            // Store Currency
-            company.Currency = request.Currency;
+            // Store Currency - NO actualizar si es null
+            if (request.Currency != null && request.Currency != "")
+                company.Currency = request.Currency;
+            else if (request.Currency == "")
+                company.Currency = null;
 
-            // Order ID Format
-            company.OrderIdPrefix = request.OrderIdPrefix;
-            company.OrderIdSuffix = request.OrderIdSuffix;
+            // Order ID Format - NO actualizar si es null
+            if (request.OrderIdPrefix != null && request.OrderIdPrefix != "")
+                company.OrderIdPrefix = request.OrderIdPrefix;
+            else if (request.OrderIdPrefix == "")
+                company.OrderIdPrefix = null;
+                
+            if (request.OrderIdSuffix != null && request.OrderIdSuffix != "")
+                company.OrderIdSuffix = request.OrderIdSuffix;
+            else if (request.OrderIdSuffix == "")
+                company.OrderIdSuffix = null;
 
             company.UpdatedAt = DateTime.UtcNow;
 
@@ -207,6 +275,7 @@ namespace WebsiteBuilderAPI.Services
             {
                 Name = currentCompany.Name,
                 Logo = currentCompany.Logo,
+                LogoSize = currentCompany.LogoSize,
                 PrimaryColor = currentCompany.PrimaryColor ?? "#22c55e",
                 SecondaryColor = currentCompany.SecondaryColor ?? "#64748b",
                 Currency = currentCompany.Currency ?? "USD",
@@ -214,6 +283,29 @@ namespace WebsiteBuilderAPI.Services
                 OrderIdPrefix = currentCompany.OrderIdPrefix ?? "#",
                 OrderIdSuffix = currentCompany.OrderIdSuffix ?? ""
             };
+        }
+
+        public async Task UpdateLogoSizeAsync(int size)
+        {
+            var currentCompany = await _context.Companies.FirstOrDefaultAsync();
+            if (currentCompany != null)
+            {
+                currentCompany.LogoSize = size;
+                currentCompany.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateLogoAsync(string logoUrl)
+        {
+            var currentCompany = await _context.Companies.FirstOrDefaultAsync();
+            if (currentCompany != null)
+            {
+                currentCompany.Logo = logoUrl;
+                currentCompany.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Logo updated for company {CompanyId}: {LogoUrl}", currentCompany.Id, logoUrl);
+            }
         }
     }
 }

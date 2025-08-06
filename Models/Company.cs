@@ -11,6 +11,7 @@ namespace WebsiteBuilderAPI.Models
         public string? CustomDomain { get; set; }
         public string? Subdomain { get; set; }
         public string? Logo { get; set; }
+        public int LogoSize { get; set; } = 120; // Tamaño del logo en píxeles (default 120px)
         public string? PrimaryColor { get; set; }
         public string? SecondaryColor { get; set; }
         public bool IsActive { get; set; } = true;
