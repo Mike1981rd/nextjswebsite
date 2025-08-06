@@ -160,6 +160,44 @@
       "locations": "Ubicaciones",
       "notifications": "Notificaciones"
     },
+    "checkout": {
+      "title": "Config. del Checkout",
+      "description": "Personaliza campos y requisitos del checkout",
+      "settingsSaved": "Configuración de checkout guardada exitosamente",
+      "saveFailed": "Error al guardar la configuración de checkout",
+      "contactMethod": {
+        "title": "Método de contacto",
+        "description": "Cómo contactarán los clientes al checkout.",
+        "phone": "Número de teléfono",
+        "phoneDesc": "Los clientes usarán su número de teléfono para el checkout",
+        "email": "Correo electrónico",
+        "emailDesc": "Los clientes usarán su correo electrónico para el checkout"
+      },
+      "smsAlert": "Para enviar actualizaciones por SMS, necesitas instalar una aplicación de SMS.",
+      "customerInfo": {
+        "title": "Info. del cliente",
+        "description": "Campos requeridos en el checkout"
+      },
+      "fullName": {
+        "title": "Nombre completo",
+        "lastOnly": "Solo requerir apellido",
+        "firstAndLast": "Requerir nombre y apellido"
+      },
+      "companyName": {
+        "title": "Nombre de la empresa"
+      },
+      "addressLine2": {
+        "title": "Dirección 2 (apto, etc.)"
+      },
+      "phoneNumber": {
+        "title": "Teléfono de envío"
+      },
+      "field": {
+        "dontInclude": "No incluir campo",
+        "optional": "Opcional",
+        "required": "Requerido"
+      }
+    },
     "orderId": {
       "title": "Formato de ID de Pedido",
       "description": "Se muestra en la página de Pedidos, páginas de clientes y notificaciones de pedidos para identificar pedidos.",

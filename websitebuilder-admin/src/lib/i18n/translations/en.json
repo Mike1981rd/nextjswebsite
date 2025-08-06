@@ -156,6 +156,44 @@
       "locations": "Locations",
       "notifications": "Notifications"
     },
+    "checkout": {
+      "title": "Checkout Config",
+      "description": "Customize checkout fields",
+      "settingsSaved": "Checkout settings saved successfully",
+      "saveFailed": "Failed to save checkout settings",
+      "contactMethod": {
+        "title": "Contact method",
+        "description": "How customers contact at checkout.",
+        "phone": "Phone number",
+        "phoneDesc": "Customers will use their phone number to checkout",
+        "email": "Email",
+        "emailDesc": "Customers will use their email address to checkout"
+      },
+      "smsAlert": "To send SMS updates, you need to install an SMS App.",
+      "customerInfo": {
+        "title": "Customer info",
+        "description": "Required checkout fields"
+      },
+      "fullName": {
+        "title": "Full name",
+        "lastOnly": "Only require last name",
+        "firstAndLast": "Require first and last name"
+      },
+      "companyName": {
+        "title": "Company name"
+      },
+      "addressLine2": {
+        "title": "Address 2 (apt, etc.)"
+      },
+      "phoneNumber": {
+        "title": "Shipping phone"
+      },
+      "field": {
+        "dontInclude": "Don't include field",
+        "optional": "Optional",
+        "required": "Required"
+      }
+    },
     "orderId": {
       "title": "Order id format",
       "description": "Shown on the Orders page, customer pages, and customer order notifications to identify orders.",

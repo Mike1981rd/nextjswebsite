@@ -13,17 +13,32 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, className }: DashboardLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [customizerOpen, setCustomizerOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Handle hydration
+  // Handle hydration and detect mobile
   useEffect(() => {
     setMounted(true);
     
-    // Load sidebar state from localStorage
+    // Check if mobile/tablet
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    // Load sidebar state from localStorage (only for desktop)
     const savedCollapsed = localStorage.getItem('sidebar-collapsed');
-    if (savedCollapsed) {
+    if (savedCollapsed && window.innerWidth >= 1024) { // lg breakpoint
       setSidebarCollapsed(JSON.parse(savedCollapsed));
+    }
+    
+    // On mobile, always start with menu closed
+    if (window.innerWidth < 1024) {
+      setMobileMenuOpen(false);
     }
     
     // Load and apply theme from localStorage
@@ -33,6 +48,8 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Save sidebar state to localStorage
@@ -43,7 +60,13 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
   }, [sidebarCollapsed, mounted]);
 
   const handleSidebarToggle = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+    // On mobile/tablet, toggle mobile menu
+    if (isMobile) {
+      setMobileMenuOpen(!mobileMenuOpen);
+    } else {
+      // On desktop, toggle sidebar collapse
+      setSidebarCollapsed(!sidebarCollapsed);
+    }
   };
 
   const handleThemeChange = () => {
@@ -89,10 +112,10 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
-      {/* Sidebar */}
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden relative">
+      {/* Sidebar - Use mobile state for mobile, collapsed state for desktop */}
       <Sidebar
-        collapsed={sidebarCollapsed}
+        collapsed={isMobile ? !mobileMenuOpen : sidebarCollapsed}
         onToggle={handleSidebarToggle}
       />
 
@@ -100,9 +123,9 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
       <div 
         className={cn(
           'flex-1 flex flex-col transition-all duration-300',
-          // On desktop, account for sidebar width
-          'md:ml-[320px]',
-          sidebarCollapsed && 'md:ml-[80px]'
+          // On desktop (lg+), account for sidebar width
+          'lg:ml-[320px]',
+          sidebarCollapsed && 'lg:ml-[80px]'
         )}
       >
         {/* Navbar */}
@@ -116,11 +139,11 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
         {/* Page Content - with top padding to account for fixed navbar */}
         <main 
           className={cn(
-            'flex-1 pt-16 overflow-auto',
+            'flex-1 pt-16 overflow-x-hidden overflow-y-auto',
             className
           )}
         >
-          <div className="p-6">
+          <div className="pl-1 pr-2 py-3 sm:p-4 md:p-6">
             {children}
           </div>
         </main>

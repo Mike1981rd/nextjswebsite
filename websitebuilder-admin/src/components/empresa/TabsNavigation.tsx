@@ -72,8 +72,8 @@ export function TabsNavigation() {
   };
 
   return (
-    <div className="border-b border-gray-200 dark:border-gray-700">
-      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+    <div className="border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
+      <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max" aria-label="Tabs">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
           return (
@@ -81,7 +81,7 @@ export function TabsNavigation() {
               key={tab.id}
               href={tab.href}
               className={cn(
-                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all',
+                'whitespace-nowrap py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm transition-all',
                 active
                   ? 'text-gray-900 dark:text-white border-current'
                   : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'

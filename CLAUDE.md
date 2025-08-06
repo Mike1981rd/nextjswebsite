@@ -216,6 +216,128 @@ fontFamily: 'Inter, system-ui, sans-serif'
 // Tamaños: xs(12px), sm(14px), base(16px), lg(18px), xl(20px)
 ```
 
+## 🎨 UI IMPLEMENTATION CHECKLIST - MANDATORY FOR ALL NEW PAGES
+**IMPORTANTE**: Toda nueva UI/página DEBE implementar estos 5 puntos obligatorios:
+
+### ✅ 1. TRADUCCIONES (i18n)
+```typescript
+// Usar siempre el hook useI18n
+const { t } = useI18n();
+
+// En el JSX:
+<h1>{t('section.title', 'Default Text')}</h1>
+
+// Agregar traducciones en:
+// - /src/lib/i18n/translations/en.json
+// - /src/lib/i18n/translations/es.json
+```
+
+### ✅ 2. COLOR PRIMARIO DINÁMICO
+```typescript
+// Obtener color primario del localStorage
+const [primaryColor, setPrimaryColor] = useState('#22c55e');
+
+useEffect(() => {
+  const settings = localStorage.getItem('ui-settings');
+  if (settings) {
+    const parsed = JSON.parse(settings);
+    setPrimaryColor(parsed.primaryColor || '#22c55e');
+  }
+}, []);
+
+// Aplicar en botones principales:
+<button style={{ backgroundColor: primaryColor }}>
+```
+
+### ✅ 3. DARK MODE
+```typescript
+// Usar clases Tailwind para dark mode
+<div className="bg-white dark:bg-gray-800">
+<p className="text-gray-900 dark:text-white">
+<border className="border-gray-200 dark:border-gray-700">
+
+// Colores comunes:
+// - Fondos: bg-white dark:bg-gray-800
+// - Textos: text-gray-900 dark:text-white
+// - Bordes: border-gray-200 dark:border-gray-700
+// - Hover: hover:bg-gray-50 dark:hover:bg-gray-700
+```
+
+### ✅ 4. RESPONSIVIDAD MÓVIL
+```typescript
+// Breakpoints obligatorios:
+// - Textos: text-sm sm:text-base lg:text-lg
+// - Padding: p-3 sm:p-4 md:p-6
+// - Gaps: gap-2 sm:gap-3 lg:gap-4
+
+// Ejemplo tarjeta responsiva:
+<div className="p-3 sm:p-6 rounded-lg sm:rounded-xl">
+  <h2 className="text-base sm:text-lg lg:text-xl">
+
+// Botones móvil:
+<div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+
+// Ocultar en móvil:
+<div className="hidden sm:block">
+```
+
+### ✅ 5. BOTONES CON ESTADOS
+```typescript
+// Botón primario con loading y disabled:
+<button
+  disabled={loading || !hasChanges}
+  className="disabled:opacity-50 disabled:cursor-not-allowed"
+  style={{ backgroundColor: hasChanges ? primaryColor : '#9ca3af' }}
+>
+  {loading ? (
+    <span className="flex items-center gap-2">
+      <svg className="animate-spin h-4 w-4">...</svg>
+      {t('common.saving', 'Saving...')}
+    </span>
+  ) : (
+    t('common.save', 'Save')
+  )}
+</button>
+```
+
+### 📋 EJEMPLO COMPLETO DE COMPONENTE
+```typescript
+export function NewComponent() {
+  const { t } = useI18n();
+  const [primaryColor, setPrimaryColor] = useState('#22c55e');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const settings = localStorage.getItem('ui-settings');
+    if (settings) {
+      const parsed = JSON.parse(settings);
+      setPrimaryColor(parsed.primaryColor || '#22c55e');
+    }
+  }, []);
+
+  return (
+    <div className="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg">
+      <h1 className="text-base sm:text-xl text-gray-900 dark:text-white">
+        {t('component.title', 'Title')}
+      </h1>
+      <button 
+        className="px-4 py-2 text-white rounded-lg"
+        style={{ backgroundColor: primaryColor }}
+      >
+        {t('common.save', 'Save')}
+      </button>
+    </div>
+  );
+}
+```
+
+### ⚠️ VALIDACIÓN ANTES DE ENTREGAR
+- [ ] ¿Todas las strings están traducidas con useI18n?
+- [ ] ¿Los botones principales usan el color primario?
+- [ ] ¿Funciona correctamente en dark mode?
+- [ ] ¿Se ve bien en móvil (320px) y desktop?
+- [ ] ¿Los botones tienen estados loading/disabled?
+
 ## 🛠️ COMANDOS CLAUDE CODE DISPONIBLES
 - `create-section [nombre]` - Crear nueva sección del builder
 - `create-module [nombre]` - Crear módulo completo back office

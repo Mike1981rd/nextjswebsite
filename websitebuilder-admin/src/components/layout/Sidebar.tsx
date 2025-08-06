@@ -180,20 +180,20 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar - Hidden on mobile */}
       <aside
         className={cn(
           'fixed left-0 top-0 z-40 h-screen shadow-sidebar transition-all duration-300 ease-in-out',
           collapsed ? 'w-20' : 'w-72',
-          'hidden md:block',
+          'hidden lg:block', // Changed from md:block to lg:block for better mobile experience
           className
         )}
         style={{
           backgroundColor: 'var(--sidebar-bg)',
           color: 'var(--sidebar-text)',
-          width: collapsed ? '80px' : '320px', // Better width for collapsed state
-          minWidth: collapsed ? '80px' : '320px', // Ensure minimum width
-          maxWidth: collapsed ? '80px' : '320px'  // Ensure maximum width
+          width: collapsed ? '80px' : '320px',
+          minWidth: collapsed ? '80px' : '320px',
+          maxWidth: collapsed ? '80px' : '320px'
         }}
       >
         {/* Logo and Toggle */}
@@ -363,10 +363,10 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
         </div>
       </aside>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Sidebar Overlay - Shows on tablets and mobile */}
       <div
         className={cn(
-          'fixed inset-0 z-50 md:hidden',
+          'fixed inset-0 z-50 lg:hidden', // Changed from md:hidden to lg:hidden
           collapsed ? 'invisible opacity-0' : 'visible opacity-100'
         )}
       >

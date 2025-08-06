@@ -147,18 +147,18 @@ export function Navbar({
     <header 
       className={cn(
         'fixed top-0 right-0 z-30 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-all duration-300',
-        'left-0', // Full width on mobile
-        sidebarCollapsed ? 'md:left-[80px]' : 'md:left-[320px]', // Adjust based on sidebar state
+        'left-0', // Always full width on mobile and tablets
+        sidebarCollapsed ? 'lg:left-[80px]' : 'lg:left-[320px]', // Only adjust on desktop (lg+)
         className
       )}
     >
       <div className="flex h-full items-center justify-between px-4 md:px-6">
         {/* Left Section - Mobile menu toggle + Search */}
         <div className="flex items-center gap-4">
-          {/* Mobile Sidebar Toggle */}
+          {/* Mobile/Tablet Sidebar Toggle - Always visible on mobile and tablets */}
           <button
             onClick={onSidebarToggle}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors lg:hidden"
             title="Toggle sidebar"
           >
             <MenuToggleIcon size={20} />
