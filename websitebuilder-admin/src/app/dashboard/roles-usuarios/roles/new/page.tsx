@@ -330,8 +330,8 @@ export default function NewRolePage() {
                       <div key={resource} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-medium text-gray-900 dark:text-white capitalize">
-                              {resource}
+                            <h3 className="font-medium text-gray-900 dark:text-white">
+                              {t(`permissions.resources.${resource}`, resource)}
                             </h3>
                             <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
                               {permissions.filter(p => formData.permissions.includes(p.id)).length}/{permissions.length}
@@ -376,7 +376,7 @@ export default function NewRolePage() {
                                 </div>
                               </div>
                               <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
-                                {permission.action}
+                                {t(`permissions.actions.${permission.action}`, permission.action)}
                               </span>
                             </label>
                           ))}

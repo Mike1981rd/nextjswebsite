@@ -12,5 +12,6 @@ namespace WebsiteBuilderAPI.Services
         Task<List<string>> GetEffectivePermissionsAsync(int userId);
         Task<bool> UserExistsAsync(string email, int? excludeId = null);
         Task ChangePasswordAsync(int userId, ChangePasswordDto dto);
+        Task AssignRolesToUserAsync(int userId, List<int> roleIds);
     }
 }

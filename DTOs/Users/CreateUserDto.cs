@@ -23,6 +23,8 @@ namespace WebsiteBuilderAPI.DTOs.Users
         [Phone]
         public string? PhoneNumber { get; set; }
 
+        public string? AvatarUrl { get; set; }
+
         [Required]
         [MinLength(1, ErrorMessage = "At least one role is required")]
         public List<int> RoleIds { get; set; } = new List<int>();

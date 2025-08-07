@@ -80,6 +80,7 @@ namespace WebsiteBuilderAPI.Services
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 PhoneNumber = dto.PhoneNumber,
+                AvatarUrl = dto.AvatarUrl,
                 CompanyId = companyId,
                 IsActive = true,
                 EmailConfirmed = false,
@@ -127,11 +128,19 @@ namespace WebsiteBuilderAPI.Services
                 throw new InvalidOperationException("One or more specified roles do not exist.");
             }
 
+            user.Email = dto.Email;
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
             user.PhoneNumber = dto.PhoneNumber;
+            user.AvatarUrl = dto.AvatarUrl;
             user.IsActive = dto.IsActive;
             user.UpdatedAt = DateTime.UtcNow;
+            
+            // Update password if provided
+            if (!string.IsNullOrEmpty(dto.Password))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            }
 
             // Actualizar roles
             _context.UserRoles.RemoveRange(user.UserRoles);
@@ -224,6 +233,38 @@ namespace WebsiteBuilderAPI.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task AssignRolesToUserAsync(int userId, List<int> roleIds)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"User with id {userId} not found.");
+            }
+
+            // Eliminar roles existentes
+            _context.UserRoles.RemoveRange(user.UserRoles);
+
+            // Agregar nuevos roles
+            foreach (var roleId in roleIds.Distinct())
+            {
+                var role = await _context.Roles.FindAsync(roleId);
+                if (role != null)
+                {
+                    user.UserRoles.Add(new UserRole
+                    {
+                        UserId = userId,
+                        RoleId = roleId,
+                        AssignedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         private UserDto MapToDto(User user)
         {
             var dto = new UserDto
@@ -233,6 +274,7 @@ namespace WebsiteBuilderAPI.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
+                AvatarUrl = user.AvatarUrl,
                 CompanyId = user.CompanyId,
                 IsActive = user.IsActive,
                 EmailConfirmed = user.EmailConfirmed,

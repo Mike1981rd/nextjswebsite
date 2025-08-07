@@ -18,6 +18,43 @@ namespace WebsiteBuilderAPI.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
+        public async Task<string> UploadAvatarAsync(IFormFile file)
+        {
+            try
+            {
+                // Create avatars directory if it doesn't exist
+                var uploadsFolder = Path.Combine(_environment.WebRootPath ?? _environment.ContentRootPath, "uploads", "avatars");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                // Generate unique filename
+                var fileExtension = Path.GetExtension(file.FileName);
+                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                // Return full URL
+                var request = _httpContextAccessor.HttpContext?.Request;
+                var baseUrl = $"{request?.Scheme}://{request?.Host}";
+                var fileUrl = $"{baseUrl}/uploads/avatars/{uniqueFileName}";
+
+                _logger.LogInformation($"Avatar uploaded successfully: {fileUrl}");
+                return fileUrl;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading avatar");
+                throw;
+            }
+        }
+
         public async Task<string> UploadImageAsync(IFormFile file)
         {
             try

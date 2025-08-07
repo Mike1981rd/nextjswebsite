@@ -169,26 +169,29 @@ namespace WebsiteBuilderAPI.Services
 
         private RoleDto MapToDto(Role role)
         {
+            var userCount = role.UserRoles?.Count ?? 0;
+            var avatars = role.UserRoles?
+                .Where(ur => ur.User != null && !string.IsNullOrEmpty(ur.User.AvatarUrl))
+                .Take(4) // Solo tomar los primeros 4 avatares
+                .Select(ur => ur.User.AvatarUrl)
+                .ToList() ?? new List<string>();
+
             return new RoleDto
             {
                 Id = role.Id,
                 Name = role.Name,
                 Description = role.Description,
                 IsSystemRole = role.IsSystemRole,
-                UserCount = role.UserRoles.Count,
-                Avatars = role.UserRoles
-                    .Where(ur => ur.User != null && !string.IsNullOrEmpty(ur.User.AvatarUrl))
-                    .Take(4) // Solo tomar los primeros 4 avatares
-                    .Select(ur => ur.User.AvatarUrl)
-                    .ToList(),
+                UserCount = userCount,
+                Avatars = avatars,
                 CreatedAt = role.CreatedAt,
-                Permissions = role.RolePermissions.Select(rp => new PermissionDto
+                Permissions = role.RolePermissions?.Select(rp => new PermissionDto
                 {
                     Id = rp.Permission.Id,
                     Resource = rp.Permission.Resource,
                     Action = rp.Permission.Action,
                     Description = rp.Permission.Description
-                }).ToList()
+                }).ToList() ?? new List<PermissionDto>()
             };
         }
     }

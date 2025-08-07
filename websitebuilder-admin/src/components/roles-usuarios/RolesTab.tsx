@@ -41,6 +41,10 @@ export function RolesTab({ primaryColor }: RolesTabProps) {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Roles data received:', data);
+        data.forEach((role: Role) => {
+          console.log(`Role: ${role.name}, UserCount: ${role.userCount}, Avatars: ${role.avatars?.length || 0}`);
+        });
         setRoles(data);
       } else {
         console.error('Error fetching roles:', response.status);
@@ -110,7 +114,7 @@ export function RolesTab({ primaryColor }: RolesTabProps) {
             {/* User Count and Avatars - At the top like design */}
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {t('rolesUsers.totalUsers', 'Total {{count}} users', { count: role.userCount || 0 })}
+                Total {role.userCount || 0} users
               </span>
               {/* User Avatars Stack - Tamaño más grande */}
               <div className="flex -space-x-4">

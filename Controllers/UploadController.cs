@@ -18,6 +18,39 @@ namespace WebsiteBuilderAPI.Controllers
             _logger = logger;
         }
 
+        [HttpPost("avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { error = "No file provided" });
+                }
+
+                // Validate file type
+                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+                if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                {
+                    return BadRequest(new { error = "File must be an image (JPEG, PNG, GIF or WebP)" });
+                }
+
+                // Validate size (5MB max)
+                if (file.Length > 5 * 1024 * 1024)
+                {
+                    return BadRequest(new { error = "File size must not exceed 5MB" });
+                }
+
+                var result = await _uploadService.UploadAvatarAsync(file);
+                return Ok(new { url = result, success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading avatar");
+                return StatusCode(500, new { error = "Error processing avatar" });
+            }
+        }
+
         [HttpPost("image")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {

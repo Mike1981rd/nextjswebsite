@@ -303,164 +303,236 @@ export default function EditRolePage() {
 
       {/* Content */}
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Basic Info */}
-          <div className="lg:col-span-1">
+        <form onSubmit={handleSubmit}>
+          {/* Basic Info Header - Desktop only */}
+          <div className="hidden lg:block mb-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {t('rolesUsers.basicInformation', 'Basic Information')}
-              </h2>
-
-              {/* Role Name */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('rolesUsers.roleName', 'Role Name')} *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  onFocus={handleInputFocus}
-                  onBlur={(e) => handleInputBlur(e, !!errors.name)}
-                  disabled={role.isSystemRole}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
-                    errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                  placeholder={t('rolesUsers.roleNamePlaceholder', 'e.g., Sales Manager')}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
-                )}
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('rolesUsers.roleDescription', 'Description')} *
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  onFocus={handleInputFocus}
-                  onBlur={(e) => handleInputBlur(e, !!errors.description)}
-                  disabled={role.isSystemRole}
-                  rows={4}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all resize-none disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
-                    errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                  placeholder={t('rolesUsers.roleDescriptionPlaceholder', 'Describe the purpose of this role')}
-                />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
-                )}
-              </div>
-
-              {/* Role Stats */}
-              <div className="mt-6 grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    {t('rolesUsers.type', 'Type')}
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {role.isSystemRole ? t('rolesUsers.system', 'System') : t('rolesUsers.custom', 'Custom')}
-                  </p>
+              <div className="grid grid-cols-3 gap-6">
+                {/* Role Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rolesUsers.roleName', 'Role Name')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onFocus={handleInputFocus}
+                    onBlur={(e) => handleInputBlur(e, !!errors.name)}
+                    disabled={role.isSystemRole}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
+                      errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    placeholder={t('rolesUsers.roleNamePlaceholder', 'e.g., Sales Manager')}
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+                  )}
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    {t('rolesUsers.permissions', 'Permissions')}
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {formData.permissions.length}
-                  </p>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rolesUsers.roleDescription', 'Description')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onFocus={handleInputFocus}
+                    onBlur={(e) => handleInputBlur(e, !!errors.description)}
+                    disabled={role.isSystemRole}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
+                      errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    placeholder={t('rolesUsers.roleDescriptionPlaceholder', 'Describe the purpose of this role')}
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
+                  )}
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      {t('rolesUsers.type', 'Type')}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {role.isSystemRole ? t('rolesUsers.system', 'System') : t('rolesUsers.custom', 'Custom')}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      {t('rolesUsers.permissions', 'Permissions')}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {formData.permissions.length}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Permissions */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('rolesUsers.permissions', 'Permissions')}
+          {/* Mobile Layout - Keep original */}
+          <div className="grid grid-cols-1 lg:hidden gap-6">
+            {/* Basic Info - Mobile */}
+            <div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  {t('rolesUsers.basicInformation', 'Basic Information')}
                 </h2>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {formData.permissions.length} {t('rolesUsers.selected', 'selected')}
-                </span>
+
+                {/* Role Name */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rolesUsers.roleName', 'Role Name')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onFocus={handleInputFocus}
+                    onBlur={(e) => handleInputBlur(e, !!errors.name)}
+                    disabled={role.isSystemRole}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
+                      errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    placeholder={t('rolesUsers.roleNamePlaceholder', 'e.g., Sales Manager')}
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+                  )}
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rolesUsers.roleDescription', 'Description')} *
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onFocus={handleInputFocus}
+                    onBlur={(e) => handleInputBlur(e, !!errors.description)}
+                    disabled={role.isSystemRole}
+                    rows={4}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all resize-none disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
+                      errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    placeholder={t('rolesUsers.roleDescriptionPlaceholder', 'Describe the purpose of this role')}
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
+                  )}
+                </div>
+
+                {/* Role Stats */}
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      {t('rolesUsers.type', 'Type')}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {role.isSystemRole ? t('rolesUsers.system', 'System') : t('rolesUsers.custom', 'Custom')}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      {t('rolesUsers.permissions', 'Permissions')}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {formData.permissions.length}
+                    </p>
+                  </div>
+                </div>
               </div>
-
-              {loadingPermissions ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(groupedPermissions).map(([resource, permissions]) => {
-                    const allSelected = permissions.every(p => formData.permissions.includes(p.id));
-
-                    return (
-                      <div key={resource} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium text-gray-900 dark:text-white capitalize">
-                              {resource}
-                            </h3>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                              {permissions.filter(p => formData.permissions.includes(p.id)).length}/{permissions.length}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAll(resource, permissions)}
-                            disabled={role.isSystemRole}
-                            className="text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{ color: role.isSystemRole ? '#9ca3af' : primaryColor }}
-                          >
-                            {allSelected ? t('common.deselectAll', 'Deselect All') : t('common.selectAll', 'Select All')}
-                          </button>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                          {permissions.map((permission) => (
-                            <label
-                              key={permission.id}
-                              className={`flex items-center gap-2 ${role.isSystemRole ? 'cursor-not-allowed opacity-60' : 'cursor-pointer group'}`}
-                            >
-                              <div className="relative">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.permissions.includes(permission.id)}
-                                  onChange={() => !role.isSystemRole && handlePermissionToggle(permission.id)}
-                                  disabled={role.isSystemRole}
-                                  className="sr-only"
-                                />
-                                <div
-                                  className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center ${
-                                    formData.permissions.includes(permission.id)
-                                      ? 'border-transparent'
-                                      : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500'
-                                  }`}
-                                  style={{
-                                    backgroundColor: formData.permissions.includes(permission.id) ? primaryColor : 'transparent'
-                                  }}
-                                >
-                                  {formData.permissions.includes(permission.id) && (
-                                    <CheckIcon className="w-3 h-3 text-white" />
-                                  )}
-                                </div>
-                              </div>
-                              <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
-                                {permission.action}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
+          </div>
+
+          {/* Permissions Section - Full width on desktop */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {t('rolesUsers.permissions', 'Permissions')}
+              </h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {formData.permissions.length} {t('rolesUsers.selected', 'selected')}
+              </span>
+            </div>
+
+            {loadingPermissions ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {Object.entries(groupedPermissions).map(([resource, permissions]) => {
+                  const allSelected = permissions.every(p => formData.permissions.includes(p.id));
+
+                  return (
+                    <div key={resource} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-gray-900 dark:text-white">
+                            {t(`permissions.resources.${resource}`, resource)}
+                          </h3>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                            {permissions.filter(p => formData.permissions.includes(p.id)).length}/{permissions.length}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectAll(resource, permissions)}
+                          disabled={role.isSystemRole}
+                          className="text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          style={{ color: role.isSystemRole ? '#9ca3af' : primaryColor }}
+                        >
+                          {allSelected ? t('common.deselectAll', 'Deselect All') : t('common.selectAll', 'Select All')}
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-2">
+                        {permissions.map((permission) => (
+                          <label
+                            key={permission.id}
+                            className={`flex items-center gap-2 ${role.isSystemRole ? 'cursor-not-allowed opacity-60' : 'cursor-pointer group'}`}
+                          >
+                            <div className="relative">
+                              <input
+                                type="checkbox"
+                                checked={formData.permissions.includes(permission.id)}
+                                onChange={() => !role.isSystemRole && handlePermissionToggle(permission.id)}
+                                disabled={role.isSystemRole}
+                                className="sr-only"
+                              />
+                              <div
+                                className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center ${
+                                  formData.permissions.includes(permission.id)
+                                    ? 'border-transparent'
+                                    : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500'
+                                }`}
+                                style={{
+                                  backgroundColor: formData.permissions.includes(permission.id) ? primaryColor : 'transparent'
+                                }}
+                              >
+                                {formData.permissions.includes(permission.id) && (
+                                  <CheckIcon className="w-3 h-3 text-white" />
+                                )}
+                              </div>
+                            </div>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                              {t(`permissions.actions.${permission.action}`, permission.action)}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </form>
       </div>

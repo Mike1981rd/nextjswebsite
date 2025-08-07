@@ -63,9 +63,7 @@ namespace WebsiteBuilderAPI.Controllers
                 var isSuperAdmin = User.IsInRole("SuperAdmin");
                 
                 // Ya no validamos hotel porque solo hay una empresa
-                {
-                    return Forbid("No tiene permisos para ver este usuario");
-                }
+                // Todos los usuarios autenticados pueden ver detalles de usuarios
 
                 return Ok(user);
             }
@@ -131,9 +129,7 @@ namespace WebsiteBuilderAPI.Controllers
                 var isSuperAdmin = User.IsInRole("SuperAdmin");
                 
                 // Ya no validamos hotel porque solo hay una empresa
-                {
-                    return Forbid("No tiene permisos para actualizar este usuario");
-                }
+                // Todos los usuarios con permisos pueden actualizar
 
                 var user = await _userService.UpdateAsync(id, dto);
                 return Ok(user);
@@ -173,9 +169,7 @@ namespace WebsiteBuilderAPI.Controllers
                 var isSuperAdmin = User.IsInRole("SuperAdmin");
                 
                 // Ya no validamos hotel porque solo hay una empresa
-                {
-                    return Forbid("No tiene permisos para eliminar este usuario");
-                }
+                // Todos los usuarios con permisos pueden eliminar
 
                 // No permitir auto-eliminación
                 var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
@@ -218,9 +212,7 @@ namespace WebsiteBuilderAPI.Controllers
                 var isSuperAdmin = User.IsInRole("SuperAdmin");
                 
                 // Ya no validamos hotel porque solo hay una empresa
-                {
-                    return Forbid("No tiene permisos para ver los permisos de este usuario");
-                }
+                // Todos los usuarios con permisos pueden ver permisos
 
                 var permissions = await _userService.GetEffectivePermissionsAsync(id);
                 return Ok(permissions);
@@ -283,6 +275,29 @@ namespace WebsiteBuilderAPI.Controllers
             {
                 _logger.LogError(ex, "Error al obtener usuario actual");
                 return StatusCode(500, new { message = "Error al obtener el perfil" });
+            }
+        }
+
+        /// <summary>
+        /// Asignar roles a un usuario
+        /// </summary>
+        [HttpPost("{id}/roles")]
+        [RequirePermission("users.update")]
+        public async Task<IActionResult> AssignRoles(int id, [FromBody] List<int> roleIds)
+        {
+            try
+            {
+                await _userService.AssignRolesToUserAsync(id, roleIds);
+                return Ok(new { message = "Roles asignados correctamente" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al asignar roles al usuario {id}");
+                return StatusCode(500, new { message = "Error al asignar roles" });
             }
         }
     }
