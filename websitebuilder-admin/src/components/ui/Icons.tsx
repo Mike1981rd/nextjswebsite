@@ -153,3 +153,39 @@ export const ChevronLeftIcon = ({ className, size = 16 }: IconProps) => (
     <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
   </svg>
 );
+
+// ChevronDown Icon for collapsible menus
+export const ChevronDownIcon = ({ className, size = 16 }: IconProps) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 20 20" className={className}>
+    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+  </svg>
+);
+
+// WhatsApp Icon
+export const WhatsAppIcon = ({ className, size = 20 }: IconProps) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 20 20" className={className}>
+    <path fillRule="evenodd" d="M17.472 9.887c0 3.872-3.135 7.008-7.008 7.008a6.967 6.967 0 01-3.36-.855L2 17.5l1.49-4.967a6.967 6.967 0 01-.962-3.54c0-3.873 3.135-7.009 7.008-7.009 3.872 0 7.936 3.136 7.936 7.903zM10.536 2.984c-3.323 0-6.008 2.685-6.008 6.009 0 1.31.423 2.523 1.141 3.51l-.747 2.491 2.571-.73a5.977 5.977 0 003.043.831c3.323 0 6.008-2.685 6.008-6.008 0-3.324-2.794-6.103-6.008-6.103zm3.618 7.65c-.045-.075-.165-.12-.345-.21-.18-.09-1.065-.525-1.23-.585-.165-.06-.285-.09-.405.09-.12.18-.465.585-.57.705-.105.12-.21.135-.39.045-.18-.09-.76-.28-1.447-.892-.535-.477-.896-1.066-1.001-1.246-.105-.18-.011-.278.079-.368.081-.081.18-.21.27-.315.09-.105.12-.18.18-.3.06-.12.03-.225-.015-.315-.045-.09-.405-.975-.555-1.335-.146-.351-.295-.303-.405-.309-.105-.005-.225-.006-.345-.006s-.315.045-.48.225c-.165.18-.63.615-.63 1.5s.645 1.74.735 1.86c.09.12 1.27 1.935 3.075 2.715.429.185.764.296.025.495.407.166.777.143 1.07.087.326-.063 1.065-.435 1.215-.855.15-.42.15-.78.105-.855z" clipRule="evenodd" />
+  </svg>
+);
+
+// Orders Icon
+export const OrdersIcon = ({ className, size = 20 }: IconProps) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 20 20" className={className}>
+    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+  </svg>
+);
+
+// Subscribers Icon
+export const SubscribersIcon = ({ className, size = 20 }: IconProps) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 20 20" className={className}>
+    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+  </svg>
+);
+
+// Navigation Icon
+export const NavigationIcon = ({ className, size = 20 }: IconProps) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 20 20" className={className}>
+    <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z" clipRule="evenodd" />
+  </svg>
+);

@@ -23,11 +23,27 @@ import {
   DomainsIcon,
   PoliciesIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  ChevronDownIcon,
+  WhatsAppIcon,
+  NotificationIcon,
+  OrdersIcon,
+  SubscribersIcon,
+  NavigationIcon
 } from '@/components/ui/Icons';
 
+// Define menu item type
+interface MenuItem {
+  id: string;
+  nameKey: string;
+  href?: string;
+  icon: any;
+  permission: string;
+  children?: MenuItem[];
+}
+
 // Define menu items with translation keys
-const menuItems = [
+const menuItems: MenuItem[] = [
   {
     id: 'dashboard',
     nameKey: 'navigation.dashboard',
@@ -43,18 +59,11 @@ const menuItems = [
     permission: 'company.view'
   },
   {
-    id: 'usuarios',
+    id: 'roles-usuarios',
     nameKey: 'navigation.rolesUsuarios',
-    href: '/usuarios',
+    href: '/dashboard/roles-usuarios',
     icon: UsersIcon,
     permission: 'users.view'
-  },
-  {
-    id: 'roles',
-    nameKey: 'navigation.rolesUsuarios',
-    href: '/roles',
-    icon: RolesIcon,
-    permission: 'roles.view'
   },
   {
     id: 'clientes',
@@ -62,20 +71,6 @@ const menuItems = [
     href: '/clientes',
     icon: ClientsIcon,
     permission: 'clients.view'
-  },
-  {
-    id: 'habitaciones',
-    nameKey: 'navigation.reservaciones',
-    href: '/habitaciones',
-    icon: RoomsIcon,
-    permission: 'rooms.view'
-  },
-  {
-    id: 'reservaciones',
-    nameKey: 'navigation.reservaciones',
-    href: '/reservaciones',
-    icon: ReservationsIcon,
-    permission: 'reservations.view'
   },
   {
     id: 'productos',
@@ -92,39 +87,82 @@ const menuItems = [
     permission: 'collections.view'
   },
   {
-    id: 'paginas',
-    nameKey: 'navigation.paginas',
-    href: '/paginas',
-    icon: PagesIcon,
-    permission: 'pages.view'
+    id: 'notificaciones',
+    nameKey: 'navigation.notificaciones',
+    href: '/notificaciones',
+    icon: NotificationIcon,
+    permission: 'notifications.view'
   },
   {
     id: 'sitio-web',
     nameKey: 'navigation.websiteBuilder',
-    href: '/sitio-web',
     icon: WebsiteIcon,
-    permission: 'website.view'
-  },
-  {
-    id: 'metodos-pago',
-    nameKey: 'navigation.metodosPago',
-    href: '/metodos-pago',
-    icon: PaymentIcon,
-    permission: 'payments.view'
-  },
-  {
-    id: 'dominios',
-    nameKey: 'navigation.dominios',
-    href: '/dominios',
-    icon: DomainsIcon,
-    permission: 'domains.view'
-  },
-  {
-    id: 'politicas',
-    nameKey: 'navigation.politicas',
-    href: '/politicas',
-    icon: PoliciesIcon,
-    permission: 'policies.view'
+    permission: 'website.view',
+    children: [
+      {
+        id: 'whatsapp',
+        nameKey: 'navigation.whatsapp',
+        href: '/whatsapp',
+        icon: WhatsAppIcon,
+        permission: 'whatsapp.view'
+      },
+      {
+        id: 'orders',
+        nameKey: 'navigation.orders',
+        href: '/orders',
+        icon: OrdersIcon,
+        permission: 'orders.view'
+      },
+      {
+        id: 'subscriptores',
+        nameKey: 'navigation.subscriptores',
+        href: '/subscriptores',
+        icon: SubscribersIcon,
+        permission: 'subscribers.view'
+      },
+      {
+        id: 'navegacion',
+        nameKey: 'navigation.navegacion',
+        href: '/navegacion',
+        icon: NavigationIcon,
+        permission: 'navigation.view'
+      },
+      {
+        id: 'habitaciones',
+        nameKey: 'navigation.habitaciones',
+        href: '/habitaciones',
+        icon: RoomsIcon,
+        permission: 'rooms.view'
+      },
+      {
+        id: 'paginas',
+        nameKey: 'navigation.paginas',
+        href: '/paginas',
+        icon: PagesIcon,
+        permission: 'pages.view'
+      },
+      {
+        id: 'politicas',
+        nameKey: 'navigation.politicas',
+        href: '/politicas',
+        icon: PoliciesIcon,
+        permission: 'policies.view'
+      },
+      {
+        id: 'dominios',
+        nameKey: 'navigation.dominios',
+        href: '/dominios',
+        icon: DomainsIcon,
+        permission: 'domains.view'
+      },
+      {
+        id: 'reservaciones',
+        nameKey: 'navigation.reservaciones',
+        href: '/reservaciones',
+        icon: ReservationsIcon,
+        permission: 'reservations.view'
+      }
+    ]
   }
 ];
 
@@ -137,6 +175,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['sitio-web']); // Default expanded
   const { t } = useI18n();
   const { company } = useCompany();
   
@@ -161,6 +200,20 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
     setMounted(true);
   }, []);
 
+  // Auto-expand parent if child is active
+  useEffect(() => {
+    menuItems.forEach(item => {
+      if (item.children) {
+        const hasActiveChild = item.children.some(child => 
+          pathname === child.href || pathname.startsWith(child.href + '/')
+        );
+        if (hasActiveChild && !expandedItems.includes(item.id)) {
+          setExpandedItems(prev => [...prev, item.id]);
+        }
+      }
+    });
+  }, [pathname]);
+
   if (!mounted) {
     return null;
   }
@@ -171,12 +224,147 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
     return true;
   };
 
-  // Filter menu items based on permissions
-  const visibleMenuItems = menuItems.filter(item => hasPermission(item.permission));
+  // Toggle expanded state for parent items
+  const toggleExpanded = (itemId: string) => {
+    setExpandedItems(prev => 
+      prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
 
-  // Debug log (cleaned up)
-  // console.log('Sidebar collapsed state:', collapsed);
-  // console.log('Visible menu items count:', visibleMenuItems.length);
+  // Filter menu items based on permissions and hide specific items
+  const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
+    return items.filter(item => {
+      // Hide "Métodos de pago" from the sidebar
+      if (item.id === 'metodos-pago') {
+        return false;
+      }
+      // Filter children if they exist
+      if (item.children) {
+        item.children = filterMenuItems(item.children);
+      }
+      return hasPermission(item.permission);
+    });
+  };
+
+  const visibleMenuItems = filterMenuItems(menuItems);
+
+  // Render menu item
+  const renderMenuItem = (item: MenuItem, isChild: boolean = false) => {
+    const Icon = item.icon;
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded = expandedItems.includes(item.id);
+    
+    // Check if item or any of its children are active
+    let isActive = false;
+    if (item.href) {
+      isActive = pathname === item.href || 
+        (item.href !== '/dashboard' && pathname.startsWith(item.href + '/')) ||
+        (item.href === '/dashboard' && pathname === '/dashboard');
+    }
+    if (item.children) {
+      const hasActiveChild = item.children.some(child => 
+        pathname === child.href || (child.href && pathname.startsWith(child.href + '/'))
+      );
+      if (hasActiveChild) isActive = true;
+    }
+
+    if (hasChildren) {
+      // Parent item with children
+      return (
+        <li key={item.id}>
+          <button
+            onClick={() => toggleExpanded(item.id)}
+            className={cn(
+              'w-full flex items-center rounded-lg py-2.5 text-sm font-medium transition-all duration-200 group relative',
+              collapsed ? 'justify-center px-0' : 'justify-between px-3',
+              isActive
+                ? 'bg-sidebar-active text-white shadow-lg'
+                : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
+            )}
+          >
+            <div className={cn('flex items-center', collapsed ? '' : 'gap-3')}>
+              <Icon
+                size={20}
+                className={cn(
+                  'flex-shrink-0 transition-colors',
+                  isActive ? 'text-white' : 'text-sidebar-textSecondary group-hover:text-sidebar-text'
+                )}
+              />
+              {!collapsed && (
+                <span className="flex-1 text-left truncate">
+                  {t(item.nameKey)}
+                </span>
+              )}
+            </div>
+            {!collapsed && (
+              <ChevronDownIcon 
+                size={16} 
+                className={cn(
+                  'transition-transform duration-200',
+                  isExpanded ? 'rotate-180' : '',
+                  isActive ? 'text-white' : 'text-sidebar-textSecondary group-hover:text-sidebar-text'
+                )}
+              />
+            )}
+            {/* Tooltip for collapsed state */}
+            {collapsed && (
+              <div className="absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-800 px-3 py-2 text-xs text-white opacity-0 shadow-xl transition-all duration-200 group-hover:opacity-100 pointer-events-none">
+                {t(item.nameKey)}
+                <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-800"></div>
+              </div>
+            )}
+          </button>
+          
+          {/* Children items */}
+          {!collapsed && isExpanded && item.children && (
+            <ul className="mt-1 ml-4 space-y-1">
+              {item.children.map(child => renderMenuItem(child, true))}
+            </ul>
+          )}
+        </li>
+      );
+    } else {
+      // Regular item without children
+      return (
+        <li key={item.id}>
+          <Link
+            href={item.href || '#'}
+            className={cn(
+              'flex items-center rounded-lg py-2.5 text-sm font-medium transition-all duration-200 group relative',
+              collapsed ? 'justify-center px-0' : 'gap-3 px-3',
+              isChild && !collapsed ? 'pl-9' : '', // Indent child items
+              isActive
+                ? 'bg-sidebar-active text-white shadow-lg'
+                : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
+            )}
+            title={collapsed ? t(item.nameKey) : undefined}
+          >
+            <Icon
+              size={isChild ? 18 : 20}
+              className={cn(
+                'flex-shrink-0 transition-colors',
+                isActive ? 'text-white' : 'text-sidebar-textSecondary group-hover:text-sidebar-text'
+              )}
+            />
+            {!collapsed && (
+              <span className="flex-1 truncate">
+                {t(item.nameKey)}
+              </span>
+            )}
+            {/* Tooltip for collapsed state */}
+            {collapsed && (
+              <div className="absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-800 px-3 py-2 text-xs text-white opacity-0 shadow-xl transition-all duration-200 group-hover:opacity-100 pointer-events-none">
+                {t(item.nameKey)}
+                <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-800"></div>
+              </div>
+            )}
+          </Link>
+        </li>
+      );
+    }
+  };
 
   return (
     <>
@@ -268,53 +456,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
           collapsed ? "px-2" : "px-4"
         )} style={{ height: 'calc(100vh - 64px - 80px)' }}>
           <ul className="space-y-2">
-            {visibleMenuItems.map((item) => {
-              const Icon = item.icon;
-              // More specific active check to avoid false positives
-              const isActive = pathname === item.href || 
-                (item.href !== '/dashboard' && pathname.startsWith(item.href + '/')) ||
-                (item.href === '/dashboard' && pathname === '/dashboard');
-
-              return (
-                <li key={item.id}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      'flex items-center rounded-lg py-2.5 text-sm font-medium transition-all duration-200 group relative',
-                      collapsed ? 'justify-center px-0' : 'gap-3 px-3',
-                      isActive
-                        ? 'bg-sidebar-active text-white shadow-lg'
-                        : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
-                    )}
-                    title={collapsed ? t(item.nameKey) : undefined}
-                  >
-                    {/* Icon */}
-                    <Icon
-                      size={20}
-                      className={cn(
-                        'flex-shrink-0 transition-colors',
-                        isActive ? 'text-white' : 'text-sidebar-textSecondary group-hover:text-sidebar-text'
-                      )}
-                    />
-
-                    {/* Label */}
-                    {!collapsed && (
-                      <span className="flex-1 truncate">
-                        {t(item.nameKey)}
-                      </span>
-                    )}
-
-                    {/* Tooltip for collapsed state */}
-                    {collapsed && (
-                      <div className="absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg bg-gray-800 px-3 py-2 text-xs text-white opacity-0 shadow-xl transition-all duration-200 group-hover:opacity-100 pointer-events-none">
-                        {t(item.nameKey)}
-                        <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-gray-800"></div>
-                      </div>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
+            {visibleMenuItems.map(item => renderMenuItem(item))}
           </ul>
         </nav>
 
@@ -435,38 +577,124 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
           {/* Mobile Navigation */}
           <nav className="px-4 py-6 overflow-y-auto sidebar-scroll" style={{ height: 'calc(100vh - 64px - 80px)' }}>
             <ul className="space-y-2">
-              {visibleMenuItems.map((item) => {
+              {visibleMenuItems.map(item => {
                 const Icon = item.icon;
-                // More specific active check to avoid false positives
-                const isActive = pathname === item.href || 
-                  (item.href !== '/dashboard' && pathname.startsWith(item.href + '/')) ||
-                  (item.href === '/dashboard' && pathname === '/dashboard');
+                const hasChildren = item.children && item.children.length > 0;
+                const isExpanded = expandedItems.includes(item.id);
+                
+                // Check if item or any of its children are active
+                let isActive = false;
+                if (item.href) {
+                  isActive = pathname === item.href || 
+                    (item.href !== '/dashboard' && pathname.startsWith(item.href + '/')) ||
+                    (item.href === '/dashboard' && pathname === '/dashboard');
+                }
+                if (item.children) {
+                  const hasActiveChild = item.children.some(child => 
+                    pathname === child.href || (child.href && pathname.startsWith(child.href + '/'))
+                  );
+                  if (hasActiveChild) isActive = true;
+                }
 
-                return (
-                  <li key={item.id}>
-                    <Link
-                      href={item.href}
-                      onClick={onToggle} // Close mobile sidebar on navigation
-                      className={cn(
-                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                        isActive
-                          ? 'bg-sidebar-active text-white shadow-lg'
-                          : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
-                      )}
-                    >
-                      <Icon
-                        size={20}
+                if (hasChildren) {
+                  return (
+                    <li key={item.id}>
+                      <button
+                        onClick={() => toggleExpanded(item.id)}
                         className={cn(
-                          'flex-shrink-0 transition-colors',
-                          isActive ? 'text-white' : 'text-sidebar-textSecondary'
+                          'w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                          isActive
+                            ? 'bg-sidebar-active text-white shadow-lg'
+                            : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
                         )}
-                      />
-                      <span className="flex-1 truncate">
-                        {t(item.nameKey)}
-                      </span>
-                    </Link>
-                  </li>
-                );
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon
+                            size={20}
+                            className={cn(
+                              'flex-shrink-0 transition-colors',
+                              isActive ? 'text-white' : 'text-sidebar-textSecondary'
+                            )}
+                          />
+                          <span className="flex-1 text-left truncate">
+                            {t(item.nameKey)}
+                          </span>
+                        </div>
+                        <ChevronDownIcon 
+                          size={16} 
+                          className={cn(
+                            'transition-transform duration-200',
+                            isExpanded ? 'rotate-180' : '',
+                            isActive ? 'text-white' : 'text-sidebar-textSecondary'
+                          )}
+                        />
+                      </button>
+                      
+                      {/* Children items for mobile */}
+                      {isExpanded && item.children && (
+                        <ul className="mt-1 ml-4 space-y-1">
+                          {item.children.map(child => {
+                            const ChildIcon = child.icon;
+                            const isChildActive = pathname === child.href || 
+                              (child.href && pathname.startsWith(child.href + '/'));
+                            
+                            return (
+                              <li key={child.id}>
+                                <Link
+                                  href={child.href || '#'}
+                                  onClick={onToggle} // Close mobile sidebar on navigation
+                                  className={cn(
+                                    'flex items-center gap-3 rounded-lg pl-9 pr-3 py-2.5 text-sm font-medium transition-all duration-200',
+                                    isChildActive
+                                      ? 'bg-sidebar-active text-white shadow-lg'
+                                      : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
+                                  )}
+                                >
+                                  <ChildIcon
+                                    size={18}
+                                    className={cn(
+                                      'flex-shrink-0 transition-colors',
+                                      isChildActive ? 'text-white' : 'text-sidebar-textSecondary'
+                                    )}
+                                  />
+                                  <span className="flex-1 truncate">
+                                    {t(child.nameKey)}
+                                  </span>
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                } else {
+                  return (
+                    <li key={item.id}>
+                      <Link
+                        href={item.href || '#'}
+                        onClick={onToggle} // Close mobile sidebar on navigation
+                        className={cn(
+                          'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                          isActive
+                            ? 'bg-sidebar-active text-white shadow-lg'
+                            : 'text-sidebar-textSecondary hover:bg-sidebar-bgHover hover:text-sidebar-text'
+                        )}
+                      >
+                        <Icon
+                          size={20}
+                          className={cn(
+                            'flex-shrink-0 transition-colors',
+                            isActive ? 'text-white' : 'text-sidebar-textSecondary'
+                          )}
+                        />
+                        <span className="flex-1 truncate">
+                          {t(item.nameKey)}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                }
               })}
             </ul>
           </nav>
