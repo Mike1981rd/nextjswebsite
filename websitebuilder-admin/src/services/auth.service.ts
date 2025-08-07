@@ -19,6 +19,7 @@ export interface UserDto {
   firstName: string;
   lastName: string;
   fullName: string;
+  avatarUrl?: string;
   companyId?: number;
   companyName?: string;
   roles?: string[];

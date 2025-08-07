@@ -11,6 +11,7 @@ namespace WebsiteBuilderAPI.Models
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
+        public string? AvatarUrl { get; set; }
         public int? CompanyId { get; set; } // Para multi-tenancy
         public bool IsActive { get; set; } = true;
         public bool EmailConfirmed { get; set; } = false;

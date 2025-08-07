@@ -51,7 +51,7 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
       >
         {src ? (
           <img
-            src={src}
+            src={src.startsWith('http') ? src : `http://localhost:5266${src}`}
             alt={alt || name}
             className={cn(
               'h-full w-full object-cover',

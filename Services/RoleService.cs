@@ -21,6 +21,7 @@ namespace WebsiteBuilderAPI.Services
                 .Include(r => r.RolePermissions)
                     .ThenInclude(rp => rp.Permission)
                 .Include(r => r.UserRoles)
+                    .ThenInclude(ur => ur.User)
                 .OrderBy(r => r.Name)
                 .ToListAsync();
 
@@ -33,6 +34,7 @@ namespace WebsiteBuilderAPI.Services
                 .Include(r => r.RolePermissions)
                     .ThenInclude(rp => rp.Permission)
                 .Include(r => r.UserRoles)
+                    .ThenInclude(ur => ur.User)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             return role != null ? MapToDto(role) : null;
@@ -174,6 +176,11 @@ namespace WebsiteBuilderAPI.Services
                 Description = role.Description,
                 IsSystemRole = role.IsSystemRole,
                 UserCount = role.UserRoles.Count,
+                Avatars = role.UserRoles
+                    .Where(ur => ur.User != null && !string.IsNullOrEmpty(ur.User.AvatarUrl))
+                    .Take(4) // Solo tomar los primeros 4 avatares
+                    .Select(ur => ur.User.AvatarUrl)
+                    .ToList(),
                 CreatedAt = role.CreatedAt,
                 Permissions = role.RolePermissions.Select(rp => new PermissionDto
                 {

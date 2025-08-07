@@ -68,6 +68,7 @@ namespace WebsiteBuilderAPI.Services
                         FirstName = user.FirstName,
                         LastName = user.LastName,
                         FullName = user.FullName,
+                        AvatarUrl = user.AvatarUrl,
                         CompanyId = user.CompanyId,
                         CompanyName = user.Company?.Name,
                         Roles = roles,

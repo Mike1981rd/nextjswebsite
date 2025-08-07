@@ -87,6 +87,7 @@ namespace WebsiteBuilderAPI.Controllers
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 FullName = user.FullName,
+                AvatarUrl = user.AvatarUrl,
                 CompanyId = user.CompanyId,
                 CompanyName = user.Company?.Name,
                 Permissions = permissions,
