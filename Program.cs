@@ -70,6 +70,7 @@ builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IShippingService, ShippingService>();
 builder.Services.AddScoped<IPaymentProviderService, PaymentProviderService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<INotificationSettingsService, NotificationSettingsService>();
 builder.Services.AddScoped<WebsiteBuilderAPI.Services.Encryption.IEncryptionService, WebsiteBuilderAPI.Services.Encryption.EncryptionService>();
 builder.Services.AddScoped<IUploadService, UploadService>();
 

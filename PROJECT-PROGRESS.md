@@ -298,8 +298,14 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - Separated endpoints for logo vs general data
   - Auto-save functionality for logo and size
   - Proper validation and conditional updates
+- ✅ **Shipping Zones Implementation**: `/docs/implementations/features/2025-08-shipping-zones-implementation.md`
+  - Complete shipping management system with zones and rates
+  - JSONB storage for countries list
+  - Bulk update optimization
+  - Default rates auto-creation
 - ✅ **Troubleshooting Docs**: 
   - Database issues: `/docs/troubleshooting/general/general-01-database-issues.md`
+  - Npgsql JSON serialization: `/docs/troubleshooting/database/db-01-npgsql-json-serialization.md`
   - Next.js auth: `/docs/troubleshooting/auth/auth-03-nextjs-integration.md`
   - Login problems: `/docs/troubleshooting/auth/auth-04-login-problems.md`
   - DTO conflicts: `/docs/troubleshooting/auth/auth-05-dto-naming-conflicts.md`

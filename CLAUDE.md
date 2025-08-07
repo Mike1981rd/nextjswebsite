@@ -281,6 +281,16 @@ useEffect(() => {
 <div className="hidden sm:block">
 ```
 
+**📱 NOTA ADICIONAL - MOBILE-FIRST OBLIGATORIO:**
+- **TODA vista DEBE ser responsive desde el inicio** - NO entregar sin probar móvil
+- **Diseñar primero para 320px**, luego escalar a tablet/desktop
+- **Botones apilados en móvil**: `w-3/4` centrados con `flex-col`
+- **Toggles/switches móvil**: Usar botones HTML simples con inline styles, NO librerías complejas
+- **Prevenir overflow**: SIEMPRE verificar que nada se salga del viewport
+- **Tamaños táctiles mínimos**: 44x44px para elementos interactivos
+- **Testing en**: 320px, 375px, 414px antes de entregar
+- **Si los toggles no aparecen**: Moverlos hacia la izquierda con `marginRight`
+
 ### ✅ 5. BOTONES CON ESTADOS
 ```typescript
 // Botón primario con loading y disabled:

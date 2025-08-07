@@ -538,5 +538,46 @@
       "stateRequired": "El estado es requerido",
       "countryRequired": "El país es requerido"
     }
+  },
+  "notifications": {
+    "title": "Configuración de Notificaciones",
+    "description": "Configura cómo recibes notificaciones para diferentes eventos",
+    "categories": {
+      "customer": "Cliente",
+      "customer.description": "Notificaciones sobre actividades de clientes",
+      "orders": "Pedidos",
+      "orders.description": "Notificaciones sobre eventos de pedidos",
+      "shipping": "Envío",
+      "shipping.description": "Notificaciones sobre actualizaciones de envío"
+    },
+    "table": {
+      "type": "Tipo",
+      "email": "Correo",
+      "app": "App"
+    },
+    "types": {
+      "customer_signup": "Registro de nuevo cliente",
+      "customer_password_reset": "Restablecimiento de contraseña de cliente",
+      "customer_account_invite": "Invitación de cuenta de cliente",
+      "order_purchase": "Compra de pedido",
+      "order_cancelled": "Pedido cancelado",
+      "order_refund_request": "Solicitud de reembolso",
+      "order_confirmation": "Confirmación de pedido",
+      "payment_error": "Error de pago",
+      "picked_up": "Recogido",
+      "shipping_update": "Actualización de envío",
+      "delivered": "Entregado"
+    },
+    "error": {
+      "fetch": "Error al cargar la configuración de notificaciones",
+      "save": "Error al guardar la configuración de notificaciones"
+    },
+    "success": {
+      "save": "Configuración de notificaciones guardada exitosamente"
+    },
+    "changes": {
+      "discarded": "Cambios descartados"
+    },
+    "active": "activas"
   }
 }

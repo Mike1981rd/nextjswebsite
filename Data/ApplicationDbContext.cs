@@ -36,6 +36,7 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<ShippingZone> ShippingZones { get; set; }
         public DbSet<ShippingRate> ShippingRates { get; set; }
         public DbSet<Location> Locations { get; set; }
+        public DbSet<NotificationSettings> NotificationSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -337,6 +338,25 @@ namespace WebsiteBuilderAPI.Data
                 // Índices para optimización
                 entity.HasIndex(e => e.CompanyId);
                 entity.HasIndex(e => e.IsDefault);
+            });
+
+            // Configuración de NotificationSettings
+            modelBuilder.Entity<NotificationSettings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.NotificationType).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Category).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId);
+                
+                // Índices para optimización
+                entity.HasIndex(e => new { e.CompanyId, e.NotificationType }).IsUnique();
+                entity.HasIndex(e => e.Category);
+                entity.HasIndex(e => e.SortOrder);
             });
         }
     }

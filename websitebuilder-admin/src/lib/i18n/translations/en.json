@@ -48,6 +48,7 @@
     "empresa": "Company",
     "rolesUsuarios": "Roles & Users",
     "clientes": "Clients",
+    "notifications": "Notifications",
     "locations": "Locations",
     "reservaciones": "Reservations",
     "metodosPago": "Payment Methods",
@@ -499,5 +500,46 @@
       "stateRequired": "State is required",
       "countryRequired": "Country is required"
     }
+  },
+  "notifications": {
+    "title": "Notification Settings",
+    "description": "Configure how you receive notifications for different events",
+    "categories": {
+      "customer": "Customer",
+      "customer.description": "Notifications about customer activities",
+      "orders": "Orders",
+      "orders.description": "Notifications about order events",
+      "shipping": "Shipping",
+      "shipping.description": "Notifications about shipping updates"
+    },
+    "table": {
+      "type": "Type",
+      "email": "Email",
+      "app": "App"
+    },
+    "types": {
+      "customer_signup": "New customer sign up",
+      "customer_password_reset": "Customer account password reset",
+      "customer_account_invite": "Customer account invite",
+      "order_purchase": "Order purchase",
+      "order_cancelled": "Order cancelled",
+      "order_refund_request": "Order refund request",
+      "order_confirmation": "Order confirmation",
+      "payment_error": "Payment error",
+      "picked_up": "Picked up",
+      "shipping_update": "Shipping update",
+      "delivered": "Delivered"
+    },
+    "error": {
+      "fetch": "Failed to load notification settings",
+      "save": "Failed to save notification settings"
+    },
+    "success": {
+      "save": "Notification settings saved successfully"
+    },
+    "changes": {
+      "discarded": "Changes discarded"
+    },
+    "active": "active"
   }
 }
