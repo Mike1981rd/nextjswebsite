@@ -33,6 +33,9 @@ namespace WebsiteBuilderAPI.Data
         // Entidades de empresa
         public DbSet<PaymentProvider> PaymentProviders { get; set; }
         public DbSet<CheckoutSettings> CheckoutSettings { get; set; }
+        public DbSet<ShippingZone> ShippingZones { get; set; }
+        public DbSet<ShippingRate> ShippingRates { get; set; }
+        public DbSet<Location> Locations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -272,6 +275,68 @@ namespace WebsiteBuilderAPI.Data
                 
                 // Índice único para asegurar una configuración por empresa
                 entity.HasIndex(e => e.CompanyId).IsUnique();
+            });
+
+            // Configuración de ShippingZone
+            modelBuilder.Entity<ShippingZone>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ZoneType).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Countries).HasColumnType("jsonb");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId);
+                
+                // Índices para optimización
+                entity.HasIndex(e => e.CompanyId);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.DisplayOrder);
+            });
+
+            // Configuración de ShippingRate
+            modelBuilder.Entity<ShippingRate>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.RateType).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Condition).HasMaxLength(100);
+                entity.Property(e => e.Price).HasPrecision(10, 2);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.ShippingZone)
+                    .WithMany(z => z.Rates)
+                    .HasForeignKey(e => e.ShippingZoneId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                // Índices para optimización
+                entity.HasIndex(e => e.ShippingZoneId);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.DisplayOrder);
+            });
+
+            // Configuración de Location
+            modelBuilder.Entity<Location>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Address).HasMaxLength(255);
+                entity.Property(e => e.Apartment).HasMaxLength(100);
+                entity.Property(e => e.Phone).HasMaxLength(20);
+                entity.Property(e => e.City).HasMaxLength(100);
+                entity.Property(e => e.State).HasMaxLength(100);
+                entity.Property(e => e.Country).HasMaxLength(100);
+                entity.Property(e => e.PinCode).HasMaxLength(20);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId);
+                
+                // Índices para optimización
+                entity.HasIndex(e => e.CompanyId);
+                entity.HasIndex(e => e.IsDefault);
             });
         }
     }

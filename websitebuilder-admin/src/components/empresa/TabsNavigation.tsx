@@ -49,7 +49,7 @@ export function TabsNavigation() {
     {
       id: 'shipping-delivery',
       label: t('empresa.tabs.shippingDelivery', 'Shipping & Delivery'),
-      href: '/empresa/shipping-delivery'
+      href: '/empresa/shipping'
     },
     {
       id: 'locations',

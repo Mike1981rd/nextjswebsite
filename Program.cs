@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using System.Text;
 using WebsiteBuilderAPI.Data;
 using WebsiteBuilderAPI.Repositories;
@@ -10,9 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-// Configurar Entity Framework con PostgreSQL
+// Configurar Npgsql DataSource con soporte para JSON dinámico
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("DefaultConnection"));
+dataSourceBuilder.EnableDynamicJson();
+var dataSource = dataSourceBuilder.Build();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(dataSource));
 
 // Configurar JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
@@ -62,7 +67,9 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 
 // Servicios de empresa
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IShippingService, ShippingService>();
 builder.Services.AddScoped<IPaymentProviderService, PaymentProviderService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<WebsiteBuilderAPI.Services.Encryption.IEncryptionService, WebsiteBuilderAPI.Services.Encryption.EncryptionService>();
 builder.Services.AddScoped<IUploadService, UploadService>();
 
@@ -163,11 +170,11 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseAuthentication();
 
-// Middleware temporal para permitir acceso sin auth a endpoints de pago
+// Middleware temporal para permitir acceso sin auth a endpoints de pago y shipping
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value?.ToLower() ?? "";
-    if (path.Contains("/api/paymentprovider") || path.Contains("/api/payment"))
+    if (path.Contains("/api/paymentprovider") || path.Contains("/api/payment") || path.Contains("/api/shipping"))
     {
         // Permitir acceso sin autenticación temporalmente
         await next();

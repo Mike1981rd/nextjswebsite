@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "@/styles/flags.css";
+import "flag-icons/css/flag-icons.min.css";
 import { Providers } from "./providers";
 
 const geistSans = localFont({

@@ -2,15 +2,15 @@
 
 import { useI18n } from '@/contexts/I18nContext';
 import { TabsNavigation } from '@/components/empresa/TabsNavigation';
-import { CheckoutConfiguration } from '@/components/empresa/CheckoutConfiguration';
+import { ShippingConfiguration } from '@/components/empresa/ShippingConfiguration';
 
-export default function EmpresaCheckoutPage() {
+export default function EmpresaShippingPage() {
   const { t } = useI18n();
 
   return (
     <div className="w-full min-h-screen overflow-x-hidden">
-      <div className="max-w-6xl mx-auto pl-2 pr-3 sm:px-6 lg:px-8">
-        {/* Breadcrumbs - Mobile responsive */}
+      <div className="max-w-xs sm:max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumbs - Desktop only */}
         <nav className="hidden sm:flex mb-4 text-sm" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li>
@@ -20,15 +20,15 @@ export default function EmpresaCheckoutPage() {
             </li>
             <li className="text-gray-400 dark:text-gray-500">/</li>
             <li className="text-gray-700 font-medium dark:text-gray-300">
-              {t('navigation.checkout', 'Checkout')}
+              {t('navigation.shipping', 'Shipping & Delivery')}
             </li>
           </ol>
         </nav>
         
         {/* Mobile Title - Only shows on mobile */}
-        <div className="sm:hidden mb-4">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {t('navigation.checkout', 'Checkout')}
+        <div className="sm:hidden mb-3">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t('navigation.shipping', 'Shipping & Delivery')}
           </h1>
         </div>
         
@@ -37,9 +37,9 @@ export default function EmpresaCheckoutPage() {
           <TabsNavigation />
         </div>
         
-        {/* Checkout Configuration */}
+        {/* Shipping Configuration Component */}
         <div className="mt-4 sm:mt-6">
-          <CheckoutConfiguration />
+          <ShippingConfiguration />
         </div>
       </div>
     </div>

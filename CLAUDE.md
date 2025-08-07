@@ -217,7 +217,7 @@ fontFamily: 'Inter, system-ui, sans-serif'
 ```
 
 ## 🎨 UI IMPLEMENTATION CHECKLIST - MANDATORY FOR ALL NEW PAGES
-**IMPORTANTE**: Toda nueva UI/página DEBE implementar estos 5 puntos obligatorios:
+**IMPORTANTE**: Toda nueva UI/página DEBE implementar estos 6 puntos obligatorios:
 
 ### ✅ 1. TRADUCCIONES (i18n)
 ```typescript
@@ -300,6 +300,169 @@ useEffect(() => {
 </button>
 ```
 
+### ✅ 6. BREADCRUMBS (NAVEGACIÓN)
+```typescript
+// Breadcrumbs responsivos - ocultos en móvil
+<nav className="hidden sm:flex mb-4 text-sm" aria-label="Breadcrumb">
+  <ol className="flex items-center space-x-2">
+    <li>
+      <a href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+        {t('navigation.dashboard')}
+      </a>
+    </li>
+    <li className="text-gray-400 dark:text-gray-500">/</li>
+    <li className="text-gray-700 font-medium dark:text-gray-300">
+      {t('navigation.currentPage', 'Current Page')}
+    </li>
+  </ol>
+</nav>
+
+// Título móvil alternativo
+<div className="sm:hidden mb-4">
+  <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+    {t('navigation.currentPage', 'Current Page')}
+  </h1>
+</div>
+```
+
+### ✅ 7. FOCUS STATES CON COLOR PRIMARIO EN INPUTS
+**⚠️ INSTRUCCIÓN OBLIGATORIA**: TODOS los inputs, selects, textareas y checkboxes DEBEN usar el color primario del usuario en sus estados de focus. NUNCA usar el negro/azul por defecto del navegador.
+
+```typescript
+// 1. Crear funciones helper en el componente
+const getInputClassName = (hasError: boolean) => {
+  return `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-30 dark:bg-gray-700 dark:text-white transition-all ${
+    hasError 
+      ? 'border-red-300 dark:border-red-600' 
+      : 'border-gray-300 dark:border-gray-600'
+  }`;
+};
+
+const getInputStyle = () => ({
+  '--tw-ring-color': primaryColor,
+} as React.CSSProperties);
+
+const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+  e.target.style.borderColor = primaryColor;
+  e.target.style.boxShadow = `0 0 0 3px ${primaryColor}33`; // 33 = 20% opacity
+};
+
+const handleInputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>, hasError: boolean) => {
+  e.target.style.borderColor = hasError ? '#fca5a5' : '#d1d5db';
+  e.target.style.boxShadow = '';
+};
+
+// 2. Aplicar a TODOS los elementos del formulario
+<input
+  type="text"
+  className={getInputClassName(!!errors.field)}
+  style={getInputStyle()}
+  onFocus={handleInputFocus}
+  onBlur={(e) => handleInputBlur(e, !!errors.field)}
+/>
+
+// 3. Para checkboxes usar accentColor
+<input
+  type="checkbox"
+  style={{ 
+    accentColor: primaryColor,
+    '--tw-ring-color': primaryColor 
+  }}
+  onFocus={(e) => e.target.style.boxShadow = `0 0 0 3px ${primaryColor}33`}
+  onBlur={(e) => e.target.style.boxShadow = ''}
+/>
+```
+
+**REGLAS CRÍTICAS**:
+- SIEMPRE remover `focus:ring-blue-500` o cualquier color hardcodeado
+- SIEMPRE usar `focus:outline-none` para control total
+- SIEMPRE aplicar transición suave con `transition-all`
+- MANTENER borde rojo en errores, pero focus sigue siendo color primario
+- Box shadow al 20-30% de opacidad (usar `${primaryColor}33`)
+
+### ✅ 8. SELECTOR DE PAÍS CON BANDERAS
+
+#### Opción A: Select HTML nativo con bandera visible (Solución rápida - Locations)
+```typescript
+// 1. Instalar librería flag-icons
+npm install flag-icons
+
+// 2. Importar CSS en layout.tsx
+import "flag-icons/css/flag-icons.min.css";
+
+// 3. Usar componente CountryFlag (soporta ambas interfaces)
+import { CountryFlag, countries } from '@/components/ui/CountryFlag';
+
+// 4. Implementar select con bandera visible
+<div className="relative">
+  <select
+    value={formData.country}
+    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+    className="w-full pl-10 pr-4 py-2 border rounded-lg appearance-none"
+  >
+    <option value="">Select a country</option>
+    {Object.entries(countries).map(([code, country]) => (
+      <option key={code} value={code}>
+        {country.name}
+      </option>
+    ))}
+  </select>
+  
+  {/* Bandera del país seleccionado */}
+  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+    <CountryFlag countryCode={formData.country || 'US'} className="w-5 h-4" />
+  </div>
+</div>
+```
+
+#### Opción B: Radix UI Select con banderas completas (Recomendado - Store Details)
+```typescript
+// 1. Instalar dependencias
+npm install @radix-ui/react-select flag-icons
+
+// 2. Implementar con Radix UI para banderas en dropdown
+import * as Select from '@radix-ui/react-select';
+import { CountryFlag, countries } from '@/components/ui/CountryFlag';
+
+<Select.Root value={country} onValueChange={setCountry}>
+  <Select.Trigger className="w-full flex items-center justify-between">
+    <Select.Value>
+      {country ? (
+        <div className="flex items-center gap-2">
+          <CountryFlag code={countries[country].flag} />
+          <span>{countries[country].name}</span>
+        </div>
+      ) : (
+        <span>Select country...</span>
+      )}
+    </Select.Value>
+  </Select.Trigger>
+  
+  <Select.Portal>
+    <Select.Content>
+      <Select.Viewport>
+        {Object.entries(countries).map(([code, country]) => (
+          <Select.Item key={code} value={code} className="flex items-center gap-2">
+            <CountryFlag code={country.flag} />
+            <Select.ItemText>{country.name}</Select.ItemText>
+          </Select.Item>
+        ))}
+      </Select.Viewport>
+    </Select.Content>
+  </Select.Portal>
+</Select.Root>
+```
+
+#### ⚠️ Notas importantes:
+- **CountryFlag acepta DOS props**: 
+  - `countryCode`: Para códigos ISO como 'US', 'MX' (usado en Locations)
+  - `code`: Para códigos de bandera como 'us', 'mx' (usado en Store Details)
+- **countries es un OBJETO**, no array - siempre usar `Object.entries(countries)`
+- **Limitación HTML**: Las banderas NO se muestran dentro de `<option>` por restricciones del navegador
+- **Store Details**: Usa Radix UI Select para mostrar banderas en el dropdown
+- **Locations**: Usa select nativo con bandera visible mediante position absolute
+```
+
 ### 📋 EJEMPLO COMPLETO DE COMPONENTE
 ```typescript
 export function NewComponent() {
@@ -316,16 +479,38 @@ export function NewComponent() {
   }, []);
 
   return (
-    <div className="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg">
-      <h1 className="text-base sm:text-xl text-gray-900 dark:text-white">
-        {t('component.title', 'Title')}
-      </h1>
-      <button 
-        className="px-4 py-2 text-white rounded-lg"
-        style={{ backgroundColor: primaryColor }}
-      >
-        {t('common.save', 'Save')}
-      </button>
+    <div className="w-full min-h-screen">
+      {/* Breadcrumbs - Desktop */}
+      <nav className="hidden sm:flex mb-4 text-sm" aria-label="Breadcrumb">
+        <ol className="flex items-center space-x-2">
+          <li>
+            <a href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+              {t('navigation.dashboard')}
+            </a>
+          </li>
+          <li className="text-gray-400 dark:text-gray-500">/</li>
+          <li className="text-gray-700 font-medium dark:text-gray-300">
+            {t('component.title', 'Title')}
+          </li>
+        </ol>
+      </nav>
+      
+      {/* Mobile Title */}
+      <div className="sm:hidden mb-4">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          {t('component.title', 'Title')}
+        </h1>
+      </div>
+      
+      {/* Main Content */}
+      <div className="p-3 sm:p-6 bg-white dark:bg-gray-800 rounded-lg">
+        <button 
+          className="px-4 py-2 text-white rounded-lg"
+          style={{ backgroundColor: primaryColor }}
+        >
+          {t('common.save', 'Save')}
+        </button>
+      </div>
     </div>
   );
 }
@@ -334,9 +519,156 @@ export function NewComponent() {
 ### ⚠️ VALIDACIÓN ANTES DE ENTREGAR
 - [ ] ¿Todas las strings están traducidas con useI18n?
 - [ ] ¿Los botones principales usan el color primario?
+- [ ] ¿Los inputs/selects/checkboxes usan el color primario en focus?
 - [ ] ¿Funciona correctamente en dark mode?
 - [ ] ¿Se ve bien en móvil (320px) y desktop?
 - [ ] ¿Los botones tienen estados loading/disabled?
+- [ ] ¿Tiene breadcrumbs en desktop y título en móvil?
+
+## 🔴 TROUBLESHOOTING CRUD - LEER SI SE IMPLEMENTA MÉTODO CRUD
+**⚠️ NOTA IMPORTANTE**: Esta sección debe consultarse SIEMPRE cuando el usuario solicite implementar operaciones CRUD (Create, Read, Update, Delete) en cualquier módulo nuevo.
+
+### 🎯 PROBLEMAS CRÍTICOS Y SOLUCIONES CRUD
+
+#### 1. Error 400: "Company ID not found in token"
+**Problema**: El token JWT usa `"companyId"` (minúscula) pero el controller busca `"CompanyId"` (mayúscula).
+
+**Solución Correcta**:
+```csharp
+// SIEMPRE usar minúscula y fallback
+var companyIdClaim = User.FindFirst("companyId")?.Value;
+int companyId;
+if (string.IsNullOrEmpty(companyIdClaim) || !int.TryParse(companyIdClaim, out companyId))
+{
+    companyId = 1; // Usar company por defecto
+}
+```
+
+#### 2. PostgreSQL JSONB - Error de Serialización
+**Problema**: No se pueden guardar `List<string>` en columnas JSONB.
+
+**Solución OBLIGATORIA en Program.cs**:
+```csharp
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+dataSourceBuilder.EnableDynamicJson(); // CRÍTICO - Sin esto falla JSONB
+var dataSource = dataSourceBuilder.Build();
+```
+
+#### 3. URLs de API - Configuración Correcta
+**SIEMPRE usar el puerto correcto**:
+```typescript
+// Frontend - usar puerto del backend
+const API_URL = 'http://localhost:5266'; // NO usar 3000, NO usar 7224 en dev
+const response = await fetch(`${API_URL}/api/locations`);
+```
+
+#### 4. Actualización Parcial de Datos
+**Problema**: Actualizar un campo borra otros campos.
+
+**Solución Backend**:
+```csharp
+// Manejar strings vacíos explícitamente
+if (request.Phone != null && request.Phone != "")
+    entity.Phone = request.Phone;
+else if (request.Phone == "")
+    entity.Phone = null; // Explícitamente null para vacío
+```
+
+#### 5. UI No Se Actualiza Después de Guardar
+**SIEMPRE refrescar datos después de operación CRUD**:
+```typescript
+const handleSubmit = async () => {
+  const response = await fetch(url, { method: 'POST', ... });
+  if (response.ok) {
+    await fetchData(); // CRÍTICO: Recargar datos
+    resetForm();
+  }
+};
+```
+
+### 📋 CHECKLIST OBLIGATORIO PARA MÓDULOS CRUD
+
+#### Backend:
+- [ ] Controller busca `"companyId"` en minúscula con fallback a 1
+- [ ] Service registrado en Program.cs
+- [ ] DbSet agregado a ApplicationDbContext
+- [ ] DTOs separados para Create/Update/Response
+- [ ] Validación ModelState en todos los endpoints
+- [ ] Try-catch con mensajes de error descriptivos
+
+#### Frontend:
+- [ ] URL de API apunta a puerto 5266 (no 3000)
+- [ ] Headers incluyen Authorization y Content-Type
+- [ ] Refetch de datos después de Create/Update/Delete
+- [ ] Manejo de errores 400/401/404/500
+- [ ] Estados loading/saving con feedback visual
+- [ ] Validación de formularios antes de enviar
+
+#### Migraciones:
+- [ ] NUNCA crear archivos de migración manualmente
+- [ ] Usuario ejecuta Add-Migration en Visual Studio
+- [ ] Especificar siempre -Context ApplicationDbContext
+
+### 🚨 ERRORES COMUNES A EVITAR
+
+1. **NO usar** `User.FindFirst("CompanyId")` - siempre minúscula
+2. **NO olvidar** `EnableDynamicJson()` para PostgreSQL JSONB
+3. **NO mezclar** puertos - frontend en 3000, backend en 5266
+4. **NO asumir** que el token tiene CompanyId - usar fallback
+5. **NO olvidar** refrescar datos después de guardar
+6. **NO crear** migraciones manualmente - Visual Studio las genera
+
+### 🔧 SNIPPETS REUTILIZABLES
+
+**Controller Method Template**:
+```csharp
+[HttpPost]
+public async Task<IActionResult> Create([FromBody] CreateDto dto)
+{
+    try
+    {
+        var companyIdClaim = User.FindFirst("companyId")?.Value;
+        int companyId = string.IsNullOrEmpty(companyIdClaim) ? 1 : int.Parse(companyIdClaim);
+        
+        var result = await _service.CreateAsync(companyId, dto);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { error = ex.Message });
+    }
+}
+```
+
+**Frontend Fetch Template**:
+```typescript
+const fetchData = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:5266/api/resource', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Error:', response.status, error);
+      return;
+    }
+    
+    const data = await response.json();
+    setData(data);
+  } catch (error) {
+    console.error('Fetch error:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+**Documentación Completa**: Ver `/docs/implementations/features/Guardado.md` para guía detallada de troubleshooting.
 
 ## 🛠️ COMANDOS CLAUDE CODE DISPONIBLES
 - `create-section [nombre]` - Crear nueva sección del builder
@@ -345,28 +677,95 @@ export function NewComponent() {
 - `optimize-performance [área]` - Optimizar performance
 - `/document-implementation [feature]` - Documentar implementación y troubleshooting
 
-## 🗄️ MIGRACIONES DE BASE DE DATOS
-**IMPORTANTE**: El proyecto tiene múltiples DbContext (ApplicationDbContext y TenantAwareDbContext).
+## 🗄️ MIGRACIONES DE BASE DE DATOS - PROCESO CRÍTICO
+**⚠️ IMPORTANTE**: Las migraciones deben seguir un proceso específico para evitar conflictos con Visual Studio.
 
-### Comandos de migración en Package Manager Console:
-```powershell
-# SIEMPRE especificar el contexto
-Add-Migration NombreMigracion -Context ApplicationDbContext
-Update-Database -Context ApplicationDbContext
+### ❌ LO QUE CLAUDE CODE NO DEBE HACER:
+1. **NUNCA** crear archivos de migración manualmente (.cs)
+2. **NUNCA** ejecutar `dotnet ef database update` o `Update-Database`
+3. **NUNCA** modificar archivos de migración existentes
 
-# Para revertir
-Update-Database NombreMigracionAnterior -Context ApplicationDbContext
+### ✅ PROCESO CORRECTO DE MIGRACIONES:
 
-# Para eliminar última migración
-Remove-Migration -Context ApplicationDbContext
+#### Paso 1: Claude Code PREPARA el modelo
+```csharp
+// Claude Code crea/modifica:
+// - Models/NuevoModelo.cs
+// - Data/ApplicationDbContext.cs (agregar DbSet)
+// - DTOs si son necesarios
+// - NO crea archivos de migración
 ```
 
-### Comandos de migración en CLI:
+#### Paso 2: Claude Code INSTRUYE al usuario
+```markdown
+MIGRACIÓN PREPARADA - Ejecuta estos comandos:
+
+1. En Package Manager Console de Visual Studio:
+   Add-Migration AddShippingFeature -Context ApplicationDbContext
+
+2. Verifica que la migración se creó correctamente
+
+3. Aplica la migración:
+   Update-Database -Context ApplicationDbContext
+
+4. Confirma cuando esté completado
+```
+
+#### Paso 3: Usuario EJECUTA en Visual Studio
+- El usuario ejecuta los comandos en Package Manager Console
+- Visual Studio genera los archivos de migración automáticamente
+- No hay conflictos porque solo Visual Studio crea migraciones
+
+### 📋 FORMATO DE INSTRUCCIÓN DE MIGRACIÓN:
+Claude Code SIEMPRE debe proporcionar:
+```markdown
+## 🗄️ MIGRACIÓN REQUERIDA
+
+**Nombre de migración:** `AddNombreFeature`
+**Contexto:** `ApplicationDbContext`
+
+**Cambios que incluye:**
+- ✅ Tabla Companies con campos X, Y, Z
+- ✅ Relación con tabla Usuarios
+- ✅ Índices en campos de búsqueda
+
+**Comandos a ejecutar:**
+```powershell
+# 1. Crear migración (Package Manager Console)
+Add-Migration AddNombreFeature -Context ApplicationDbContext
+
+# 2. Aplicar migración
+Update-Database -Context ApplicationDbContext
+```
+
+**Alternativa CLI:**
 ```bash
-# SIEMPRE especificar el contexto
-dotnet ef migrations add NombreMigracion --context ApplicationDbContext
+dotnet ef migrations add AddNombreFeature --context ApplicationDbContext
 dotnet ef database update --context ApplicationDbContext
 ```
+```
+
+### 🔴 PROBLEMAS COMUNES Y SOLUCIONES:
+
+#### Problema: Migraciones duplicadas (CS0111)
+**Causa:** Claude Code creó migración manual + Visual Studio auto-generó otra
+**Solución:** 
+1. Eliminar archivo de migración creado por Claude Code
+2. Mantener solo el auto-generado por Visual Studio
+3. Recompilar proyecto
+
+#### Problema: El contexto no está especificado
+**Causa:** Múltiples DbContext en el proyecto
+**Solución:** SIEMPRE usar `-Context ApplicationDbContext`
+
+### 📝 CHECKLIST DE MIGRACIÓN:
+- [ ] Claude Code preparó modelos y DbContext
+- [ ] Claude Code NO creó archivos .cs de migración
+- [ ] Claude Code proporcionó nombre descriptivo de migración
+- [ ] Claude Code especificó el contexto correcto
+- [ ] Usuario ejecutó Add-Migration en Visual Studio
+- [ ] Usuario ejecutó Update-Database
+- [ ] Usuario confirmó éxito
 
 ## 📝 CHECKLIST ANTES DE CADA CAMBIO
 - [ ] ¿Estoy separando correctamente habitaciones de productos?
@@ -420,24 +819,26 @@ dotnet ef database update --context ApplicationDbContext
 - If permission denied, continue with other tasks and note pending changes in PROJECT-PROGRESS.md
 
 ## Database Migration Workflow Rules
-- **Claude Code PREPARES migrations only** - analyze changes, generate migration code, create migration files
-- **Human EXECUTES migrations manually** - user runs migrations through Visual Studio or command line
-- **Claude Code NEVER executes** `dotnet ef database update` or equivalent database update commands
-- **After preparing migration, Claude MUST provide:**
-  1. Exact migration name created
-  2. Specific command to execute: `Update-Database -Migration [MigrationName]`
-  3. Alternative command if needed: `dotnet ef database update`
+- **Claude Code PREPARES models only** - create/modify models, update DbContext, create DTOs
+- **Claude Code NEVER creates migration files** - no .cs migration files, Visual Studio generates them
+- **Human EXECUTES migrations** - user runs Add-Migration and Update-Database in Visual Studio
+- **Claude Code MUST provide:**
+  1. Descriptive migration name (e.g., `AddShippingFeature`, `UpdateCompanyModel`)
+  2. Exact commands with context: `Add-Migration MigrationName -Context ApplicationDbContext`
+  3. List of changes the migration will include
+  4. Both Package Manager Console and CLI alternatives
 - **Workflow steps:**
-  1. Claude prepares migration files and shows what will be migrated
-  2. Claude provides exact migration name and execution command
-  3. Claude asks: "Migration [MigrationName] prepared. Execute in Visual Studio: `Update-Database -Migration [MigrationName]`. Confirm when completed? [Y/N]"
-  4. Wait for human confirmation before updating PROJECT-PROGRESS.md
+  1. Claude prepares models and DbContext changes
+  2. Claude provides migration instructions with specific name
+  3. User executes Add-Migration in Visual Studio
+  4. User executes Update-Database
+  5. User confirms completion
 
 ## Modified Permission Rules
 - Remove any automatic database update permissions
-- Claude can create migration files but cannot apply them
-- Always provide exact migration name and execution command
-- Document migration preparation vs execution separately in progress tracker
+- Claude CANNOT create migration .cs files (Visual Studio generates them)
+- Always provide descriptive migration name and exact commands
+- Document model changes and migration instructions separately in progress tracker
 
 ## Documentation Standards
 - Always document completed tasks with:

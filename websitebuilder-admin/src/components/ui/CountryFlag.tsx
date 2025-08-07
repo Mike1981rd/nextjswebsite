@@ -1,14 +1,32 @@
 import React from 'react';
 
 interface CountryFlagProps {
-  code: string;
+  countryCode?: string;  // Accept country code like 'US', 'MX'
+  code?: string;          // Accept flag code like 'us', 'mx' (for backward compatibility)
   className?: string;
 }
 
-export function CountryFlag({ code, className = 'w-5 h-4' }: CountryFlagProps) {
+export function CountryFlag({ countryCode, code, className = 'w-5 h-4' }: CountryFlagProps) {
   // Using flag-icons library format
+  // Support both interfaces:
+  // 1. countryCode: 'US' -> convert to 'us'
+  // 2. code: 'us' -> use directly
+  let flagCode: string;
+  
+  if (code) {
+    // If code prop is provided (Store Details uses this)
+    flagCode = code.toLowerCase();
+  } else if (countryCode) {
+    // If countryCode prop is provided (Locations uses this)
+    // If it's already lowercase, use it. Otherwise convert
+    flagCode = countryCode.toLowerCase();
+  } else {
+    // Default fallback
+    flagCode = 'us';
+  }
+  
   return (
-    <span className={`fi fi-${code.toLowerCase()} ${className}`} />
+    <span className={`fi fi-${flagCode} ${className}`} />
   );
 }
 
