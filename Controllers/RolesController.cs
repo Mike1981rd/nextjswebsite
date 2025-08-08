@@ -99,12 +99,16 @@ namespace WebsiteBuilderAPI.Controllers
         {
             try
             {
+                _logger.LogInformation($"Updating role {id} with data: {System.Text.Json.JsonSerializer.Serialize(dto)}");
+                
                 if (!ModelState.IsValid)
                 {
+                    _logger.LogWarning($"Invalid model state for role {id}");
                     return BadRequest(ModelState);
                 }
 
                 var role = await _roleService.UpdateAsync(id, dto);
+                _logger.LogInformation($"Role {id} updated successfully");
                 return Ok(role);
             }
             catch (KeyNotFoundException ex)

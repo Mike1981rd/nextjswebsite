@@ -173,9 +173,12 @@ namespace WebsiteBuilderAPI.Services
 
             // Agregar roles al token
             var roles = GetUserRolesAsync(user.Id).Result;
+            
+            // Add all roles for authorization (ClaimTypes.Role can have multiple values)
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim("role", role)); // Also add as simple "role" claim
             }
 
             // Agregar permisos al token

@@ -24,6 +24,13 @@ This section contains implementation documentation for all authentication and au
   - 5 predefined roles, 67 permissions
   - Related troubleshooting: [auth-05](../../troubleshooting/auth/auth-05-dto-naming-conflicts.md)
 
+- [2025-08-roles-permissions-system.md](./2025-08-roles-permissions-system.md) - **Complete RBAC System Refactor**
+  - Dynamic UI filtering based on permissions
+  - usePermissions hook implementation
+  - Sidebar menu filtering
+  - SuperAdmin protection
+  - Related troubleshooting: [auth-06](../../troubleshooting/auth/auth-06-permissions-not-showing.md), [auth-07](../../troubleshooting/auth/auth-07-role-update-fails.md)
+
 ---
 
 ## 🏗️ Architecture Overview
@@ -109,5 +116,5 @@ const ProtectedRoute = ({ children }) => {
 
 ---
 
-**Last Updated**: 2025-08
-**Total Auth Implementations**: 1
+**Last Updated**: 2025-08-08
+**Total Auth Implementations**: 3

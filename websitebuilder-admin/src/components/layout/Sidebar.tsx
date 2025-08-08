@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { cn, buildAssetUrl } from '@/lib/utils';
 import { useI18n } from '@/contexts/I18nContext';
 import { useCompany } from '@/hooks/useCompany';
+import { usePermissions } from '@/hooks/usePermissions';
 import Image from 'next/image';
 import {
   DashboardIcon,
@@ -49,118 +50,118 @@ const menuItems: MenuItem[] = [
     nameKey: 'navigation.dashboard',
     href: '/dashboard',
     icon: DashboardIcon,
-    permission: 'dashboard.view'
+    permission: 'dashboard.read'
   },
   {
     id: 'empresa',
     nameKey: 'navigation.empresa',
     href: '/dashboard/empresa',
     icon: CompanyIcon,
-    permission: 'company.view'
+    permission: 'company.read'
   },
   {
     id: 'roles-usuarios',
     nameKey: 'navigation.rolesUsuarios',
     href: '/dashboard/roles-usuarios',
     icon: UsersIcon,
-    permission: 'users.view'
+    permission: 'users.read'
   },
   {
     id: 'clientes',
     nameKey: 'navigation.clientes',
     href: '/clientes',
     icon: ClientsIcon,
-    permission: 'clients.view'
+    permission: 'clients.read'
   },
   {
     id: 'productos',
     nameKey: 'navigation.productos',
     href: '/productos',
     icon: ProductsIcon,
-    permission: 'products.view'
+    permission: 'products.read'
   },
   {
     id: 'colecciones',
     nameKey: 'navigation.colecciones',
     href: '/colecciones',
     icon: CollectionsIcon,
-    permission: 'collections.view'
+    permission: 'collections.read'
   },
   {
     id: 'notificaciones',
     nameKey: 'navigation.notificaciones',
     href: '/notificaciones',
     icon: NotificationIcon,
-    permission: 'notifications.view'
+    permission: 'notifications.read'
   },
   {
     id: 'sitio-web',
     nameKey: 'navigation.websiteBuilder',
     icon: WebsiteIcon,
-    permission: 'website.view',
+    permission: 'website.read',
     children: [
       {
         id: 'whatsapp',
         nameKey: 'navigation.whatsapp',
         href: '/whatsapp',
         icon: WhatsAppIcon,
-        permission: 'whatsapp.view'
+        permission: 'whatsapp.read'
       },
       {
         id: 'orders',
         nameKey: 'navigation.orders',
         href: '/orders',
         icon: OrdersIcon,
-        permission: 'orders.view'
+        permission: 'orders.read'
       },
       {
         id: 'subscriptores',
         nameKey: 'navigation.subscriptores',
         href: '/subscriptores',
         icon: SubscribersIcon,
-        permission: 'subscribers.view'
+        permission: 'subscribers.read'
       },
       {
         id: 'navegacion',
         nameKey: 'navigation.navegacion',
         href: '/navegacion',
         icon: NavigationIcon,
-        permission: 'navigation.view'
+        permission: 'navigation.read'
       },
       {
         id: 'habitaciones',
         nameKey: 'navigation.habitaciones',
         href: '/habitaciones',
         icon: RoomsIcon,
-        permission: 'rooms.view'
+        permission: 'rooms.read'
       },
       {
         id: 'paginas',
         nameKey: 'navigation.paginas',
         href: '/paginas',
         icon: PagesIcon,
-        permission: 'pages.view'
+        permission: 'pages.read'
       },
       {
         id: 'politicas',
         nameKey: 'navigation.politicas',
         href: '/politicas',
         icon: PoliciesIcon,
-        permission: 'policies.view'
+        permission: 'policies.read'
       },
       {
         id: 'dominios',
         nameKey: 'navigation.dominios',
         href: '/dominios',
         icon: DomainsIcon,
-        permission: 'domains.view'
+        permission: 'domains.read'
       },
       {
         id: 'reservaciones',
         nameKey: 'navigation.reservaciones',
         href: '/reservaciones',
         icon: ReservationsIcon,
-        permission: 'reservations.view'
+        permission: 'reservations.read'
       }
     ]
   }
@@ -178,6 +179,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
   const [expandedItems, setExpandedItems] = useState<string[]>(['sitio-web']); // Default expanded
   const { t } = useI18n();
   const { company } = useCompany();
+  const { hasPermission: checkPermission, loading: permissionsLoading } = usePermissions();
   
   // Calculate logo size for sidebar based on logoSize (scale from 120px default to sidebar size)
   const calculateSidebarLogoSize = (originalSize: number = 120): number => {
@@ -214,14 +216,43 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
     });
   }, [pathname]);
 
-  if (!mounted) {
+  if (!mounted || permissionsLoading) {
     return null;
   }
 
-  // Check if user has permission (placeholder - integrate with actual auth)
+  // Filter menu items based on permissions and hide specific items
+  const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
+    return items.filter(item => {
+      // Hide "Métodos de pago" from the sidebar
+      if (item.id === 'metodos-pago') {
+        return false;
+      }
+      
+      // Check if user has permission for this item
+      if (!checkPermission(item.permission)) {
+        return false;
+      }
+      
+      // If item has children, filter them too
+      if (item.children) {
+        const filteredChildren = filterMenuItems(item.children);
+        // Only show parent if it has at least one visible child
+        if (filteredChildren.length > 0) {
+          item.children = filteredChildren;
+          return true;
+        }
+        return false;
+      }
+      
+      return true;
+    });
+  };
+
+  const visibleMenuItems = filterMenuItems([...menuItems]);
+
+  // Check if user has permission
   const hasPermission = (permission: string) => {
-    // TODO: Integrate with actual auth context
-    return true;
+    return checkPermission(permission);
   };
 
   // Toggle expanded state for parent items
@@ -232,23 +263,6 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
         : [...prev, itemId]
     );
   };
-
-  // Filter menu items based on permissions and hide specific items
-  const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
-    return items.filter(item => {
-      // Hide "Métodos de pago" from the sidebar
-      if (item.id === 'metodos-pago') {
-        return false;
-      }
-      // Filter children if they exist
-      if (item.children) {
-        item.children = filterMenuItems(item.children);
-      }
-      return hasPermission(item.permission);
-    });
-  };
-
-  const visibleMenuItems = filterMenuItems(menuItems);
 
   // Render menu item
   const renderMenuItem = (item: MenuItem, isChild: boolean = false) => {

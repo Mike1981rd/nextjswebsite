@@ -8,7 +8,8 @@ import {
   ArrowLeftIcon, 
   SaveIcon,
   XIcon,
-  CheckIcon
+  CheckIcon,
+  AlertCircleIcon
 } from 'lucide-react';
 
 interface Permission {
@@ -32,12 +33,16 @@ export default function NewRolePage() {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // Load everything on mount
   useEffect(() => {
+    // Load UI settings
     const settings = localStorage.getItem('ui-settings');
     if (settings) {
       const parsed = JSON.parse(settings);
       setPrimaryColor(parsed.primaryColor || '#22c55e');
     }
+    
+    // Load permissions
     fetchPermissions();
   }, []);
 
@@ -94,19 +99,33 @@ export default function NewRolePage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description,
+          permissionIds: formData.permissions // Usar permissionIds como espera el backend
+        })
       });
 
       if (response.ok) {
         router.push('/dashboard/roles-usuarios?tab=roles&success=created');
       } else {
-        const error = await response.text();
-        console.error('Error saving role:', error);
-        alert(t('rolesUsers.saveError', 'Error saving role'));
+        const errorText = await response.text();
+        console.error('Error creating role:', response.status, errorText);
+        
+        // Try to parse error as JSON
+        let errorMessage = errorText;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorJson.error || errorText;
+        } catch (e) {
+          // Keep original error text if not JSON
+        }
+        
+        alert(`Error creating role: ${errorMessage}\\n\\nStatus: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error saving role:', error);
-      alert(t('rolesUsers.saveError', 'Error saving role'));
+      console.error('Error creating role:', error);
+      alert(t('rolesUsers.createError', 'Error creating role'));
     } finally {
       setLoading(false);
     }
@@ -159,6 +178,14 @@ export default function NewRolePage() {
     e.target.style.boxShadow = '';
   };
 
+  if (loadingPermissions) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
+      </div>
+    );
+  }
+
   const groupedPermissions = groupPermissionsByResource();
 
   return (
@@ -186,10 +213,10 @@ export default function NewRolePage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {t('rolesUsers.createNewRole', 'Create New Role')}
+                    {t('rolesUsers.createRole', 'Create Role')}
                   </h1>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('rolesUsers.definePermissions', 'Define role name and permissions')}
+                    {t('rolesUsers.defineRoleDetails', 'Define role details and permissions')}
                   </p>
                 </div>
               </div>
@@ -208,21 +235,21 @@ export default function NewRolePage() {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="px-4 py-2 text-white rounded-lg disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 text-white rounded-lg flex items-center gap-2 transition-all disabled:opacity-50"
                 style={{ backgroundColor: primaryColor }}
               >
                 {loading ? (
                   <>
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     <span className="hidden sm:inline">{t('common.saving', 'Saving...')}</span>
                   </>
                 ) : (
                   <>
                     <SaveIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t('common.save', 'Save Role')}</span>
+                    <span className="hidden sm:inline">{t('common.create', 'Create')}</span>
                   </>
                 )}
               </button>
@@ -231,73 +258,73 @@ export default function NewRolePage() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Form Content */}
+      <form onSubmit={handleSubmit} className="p-4 sm:p-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Basic Info */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {t('rolesUsers.basicInformation', 'Basic Information')}
+                {t('rolesUsers.basicInfo', 'Basic Information')}
               </h2>
-
-              {/* Role Name */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('rolesUsers.roleName', 'Role Name')} *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  onFocus={handleInputFocus}
-                  onBlur={(e) => handleInputBlur(e, !!errors.name)}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${
-                    errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                  placeholder={t('rolesUsers.roleNamePlaceholder', 'e.g., Sales Manager')}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
-                )}
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('rolesUsers.roleDescription', 'Description')} *
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  onFocus={handleInputFocus}
-                  onBlur={(e) => handleInputBlur(e, !!errors.description)}
-                  rows={4}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all resize-none ${
-                    errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                  placeholder={t('rolesUsers.roleDescriptionPlaceholder', 'Describe the purpose of this role')}
-                />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
-                )}
-              </div>
-
-              {/* Role Info Card */}
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                      {t('rolesUsers.roleInfoTitle', 'About Roles')}
-                    </h4>
-                    <p className="mt-1 text-sm text-blue-700 dark:text-blue-400">
-                      {t('rolesUsers.roleInfoDescription', 'Roles define what users can access and modify in the system. Assign permissions carefully.')}
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('rolesUsers.roleName', 'Role Name')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onFocus={handleInputFocus}
+                    onBlur={(e) => handleInputBlur(e, !!errors.name)}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-30 dark:bg-gray-700 dark:text-white transition-all ${
+                      errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                    placeholder={t('rolesUsers.roleNamePlaceholder', 'e.g., Content Manager')}
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-500 dark:text-red-400 flex items-center gap-1">
+                      <AlertCircleIcon className="w-3 h-3" />
+                      {errors.name}
                     </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('rolesUsers.description', 'Description')} *
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onFocus={handleInputFocus}
+                    onBlur={(e) => handleInputBlur(e, !!errors.description)}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-30 dark:bg-gray-700 dark:text-white transition-all ${
+                      errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                    rows={4}
+                    placeholder={t('rolesUsers.descriptionPlaceholder', 'Describe the purpose of this role')}
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-500 dark:text-red-400 flex items-center gap-1">
+                      <AlertCircleIcon className="w-3 h-3" />
+                      {errors.description}
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {t('rolesUsers.selectedPermissions', 'Selected Permissions')}
+                    </span>
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {formData.permissions.length}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -306,90 +333,85 @@ export default function NewRolePage() {
 
           {/* Right Column - Permissions */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('rolesUsers.permissions', 'Permissions')}
-                </h2>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {formData.permissions.length} {t('rolesUsers.selected', 'selected')}
-                </span>
-              </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                {t('rolesUsers.permissions', 'Permissions')}
+              </h2>
 
-              {loadingPermissions ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(groupedPermissions).map(([resource, permissions]) => {
-                    const allSelected = permissions.every(p => formData.permissions.includes(p.id));
-                    const someSelected = permissions.some(p => formData.permissions.includes(p.id));
-
-                    return (
-                      <div key={resource} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium text-gray-900 dark:text-white">
-                              {t(`permissions.resources.${resource}`, resource)}
-                            </h3>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                              {permissions.filter(p => formData.permissions.includes(p.id)).length}/{permissions.length}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAll(resource, permissions)}
-                            className="text-sm font-medium transition-colors"
-                            style={{ color: primaryColor }}
-                          >
-                            {allSelected ? t('common.deselectAll', 'Deselect All') : t('common.selectAll', 'Select All')}
-                          </button>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                          {permissions.map((permission) => (
-                            <label
-                              key={permission.id}
-                              className="flex items-center gap-2 cursor-pointer group"
-                            >
-                              <div className="relative">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.permissions.includes(permission.id)}
-                                  onChange={() => handlePermissionToggle(permission.id)}
-                                  className="sr-only"
-                                />
-                                <div
-                                  className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center ${
-                                    formData.permissions.includes(permission.id)
-                                      ? 'border-transparent'
-                                      : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500'
-                                  }`}
-                                  style={{
-                                    backgroundColor: formData.permissions.includes(permission.id) ? primaryColor : 'transparent'
-                                  }}
-                                >
-                                  {formData.permissions.includes(permission.id) && (
-                                    <CheckIcon className="w-3 h-3 text-white" />
-                                  )}
-                                </div>
-                              </div>
-                              <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
-                                {t(`permissions.actions.${permission.action}`, permission.action)}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
+              <div className="space-y-4">
+                {Object.entries(groupedPermissions).map(([resource, permissions]) => (
+                  <div key={resource} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-gray-900 dark:text-white capitalize">
+                          {t(`resources.${resource}`, resource)}
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectAll(resource, permissions)}
+                          className="text-sm font-medium transition-colors"
+                          style={{ 
+                            color: permissions.every(p => formData.permissions.includes(p.id)) 
+                              ? primaryColor 
+                              : '#6b7280' 
+                          }}
+                        >
+                          {permissions.every(p => formData.permissions.includes(p.id))
+                            ? t('common.deselectAll', 'Deselect All')
+                            : t('common.selectAll', 'Select All')}
+                        </button>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    </div>
+                    <div className="p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {permissions.map(permission => (
+                          <label
+                            key={permission.id}
+                            className="flex items-start gap-3 cursor-pointer group"
+                          >
+                            <div className="relative flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={formData.permissions.includes(permission.id)}
+                                onChange={() => handlePermissionToggle(permission.id)}
+                                className="sr-only"
+                              />
+                              <div 
+                                className={`w-5 h-5 rounded border-2 transition-all ${
+                                  formData.permissions.includes(permission.id)
+                                    ? 'border-transparent'
+                                    : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400'
+                                }`}
+                                style={{
+                                  backgroundColor: formData.permissions.includes(permission.id) 
+                                    ? primaryColor 
+                                    : 'transparent'
+                                }}
+                              >
+                                {formData.permissions.includes(permission.id) && (
+                                  <CheckIcon className="w-3 h-3 text-white absolute top-0.5 left-0.5" />
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-sm text-gray-900 dark:text-white">
+                                {t(`permissions.${permission.action}`, permission.action)}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {permission.description}
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

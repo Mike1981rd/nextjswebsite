@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using WebsiteBuilderAPI.Data;
 using WebsiteBuilderAPI.DTOs.Permissions;
 using WebsiteBuilderAPI.DTOs.Roles;
@@ -9,10 +11,12 @@ namespace WebsiteBuilderAPI.Services
     public class RoleService : IRoleService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public RoleService(ApplicationDbContext context)
+        public RoleService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<List<RoleDto>> GetAllAsync()
@@ -52,7 +56,7 @@ namespace WebsiteBuilderAPI.Services
             {
                 Name = dto.Name,
                 Description = dto.Description,
-                IsSystemRole = false,
+                IsSystemRole = false, // Solo mantenemos para compatibilidad con DB existente
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -70,30 +74,58 @@ namespace WebsiteBuilderAPI.Services
 
         public async Task<RoleDto> UpdateAsync(int id, UpdateRoleDto dto)
         {
-            var role = await _context.Roles.FindAsync(id);
+            // Simple and clean: Get role with permissions
+            var role = await _context.Roles
+                .Include(r => r.RolePermissions)
+                .FirstOrDefaultAsync(r => r.Id == id);
+                
             if (role == null)
             {
                 throw new KeyNotFoundException($"Role with id {id} not found.");
             }
 
-            if (role.IsSystemRole)
+            // ONLY SuperAdmin role cannot be edited (to prevent system lockout)
+            // All other roles are fully editable
+            if (role.Name == "SuperAdmin")
             {
-                throw new InvalidOperationException("System roles cannot be modified.");
+                throw new InvalidOperationException("SuperAdmin role cannot be modified to prevent system lockout.");
             }
-
-            // Verificar nombre único
-            if (await RoleExistsAsync(dto.Name, id))
+            
+            // Check unique name only if it changed
+            if (role.Name != dto.Name && await RoleExistsAsync(dto.Name, id))
             {
                 throw new InvalidOperationException($"Another role with name '{dto.Name}' already exists.");
             }
 
+            // Update basic properties
             role.Name = dto.Name;
             role.Description = dto.Description;
-
+            
+            // Update permissions - clear and re-add
+            _context.RolePermissions.RemoveRange(role.RolePermissions);
+            await _context.SaveChangesAsync(); // Save the removal first
+            
+            // Add new permissions
+            var validPermissionIds = await _context.Permissions
+                .Where(p => dto.PermissionIds.Contains(p.Id))
+                .Select(p => p.Id)
+                .ToListAsync();
+                
+            foreach (var permissionId in validPermissionIds)
+            {
+                _context.RolePermissions.Add(new RolePermission
+                {
+                    RoleId = id,
+                    PermissionId = permissionId,
+                    GrantedAt = DateTime.UtcNow
+                });
+            }
+            
+            // Save changes
             await _context.SaveChangesAsync();
-
-            // Actualizar permisos
-            await AssignPermissionsAsync(id, dto.PermissionIds);
+            
+            // Log for debugging
+            System.Diagnostics.Debug.WriteLine($"Updated role {id} with {validPermissionIds.Count} permissions");
 
             return await GetByIdAsync(id) ?? throw new InvalidOperationException("Failed to update role");
         }
@@ -109,9 +141,10 @@ namespace WebsiteBuilderAPI.Services
                 throw new KeyNotFoundException($"Role with id {id} not found.");
             }
 
-            if (role.IsSystemRole)
+            // Never allow deleting SuperAdmin role (it's critical)
+            if (role.Name == "SuperAdmin")
             {
-                throw new InvalidOperationException("System roles cannot be deleted.");
+                throw new InvalidOperationException("The SuperAdmin role is critical and cannot be deleted.");
             }
 
             if (role.UserRoles.Any())

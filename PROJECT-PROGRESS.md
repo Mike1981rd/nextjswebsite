@@ -289,6 +289,11 @@ Resolver los 9 problemas críticos del proyecto anterior:
 ### 📚 Documentation
 - ✅ **Login Implementation**: `/docs/implementations/auth/2025-08-login-implementation.md`
 - ✅ **Roles & Permissions**: `/docs/implementations/auth/2025-08-roles-permissions-implementation.md`
+- ✅ **RBAC System Complete Refactor**: `/docs/implementations/auth/2025-08-roles-permissions-system.md`
+  - Dynamic UI filtering based on permissions
+  - usePermissions hook implementation
+  - Sidebar menu filtering by permissions
+  - SuperAdmin protection against modification
 - ✅ **Dual Calendar Implementation**: `/docs/implementations/features/2025-08-dual-calendar-implementation.md`
 - ✅ **Empresa UI Design Implementation**: `/docs/implementations/features/2025-08-empresa-ui-design.md`
   - Complete UI redesign with Materialize-inspired design
@@ -309,6 +314,8 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - Next.js auth: `/docs/troubleshooting/auth/auth-03-nextjs-integration.md`
   - Login problems: `/docs/troubleshooting/auth/auth-04-login-problems.md`
   - DTO conflicts: `/docs/troubleshooting/auth/auth-05-dto-naming-conflicts.md`
+  - Permissions not showing: `/docs/troubleshooting/auth/auth-06-permissions-not-showing.md`
+  - Role update fails: `/docs/troubleshooting/auth/auth-07-role-update-fails.md`
   - Calendar positioning: `/docs/troubleshooting/features/features-01-calendar-positioning.md`
   - Date highlighting logic: `/docs/troubleshooting/features/features-02-date-highlighting-logic.md`
   - Calendar state management: `/docs/troubleshooting/features/features-03-calendar-state-management.md`

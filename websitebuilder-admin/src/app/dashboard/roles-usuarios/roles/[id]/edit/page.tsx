@@ -38,6 +38,7 @@ export default function EditRolePage() {
   const [loadingPermissions, setLoadingPermissions] = useState(true);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
   const [role, setRole] = useState<Role | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -45,14 +46,38 @@ export default function EditRolePage() {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // Load everything on mount
   useEffect(() => {
+    // Load UI settings
     const settings = localStorage.getItem('ui-settings');
     if (settings) {
       const parsed = JSON.parse(settings);
       setPrimaryColor(parsed.primaryColor || '#22c55e');
     }
-    fetchRole();
-    fetchPermissions();
+    
+    // Get current user role from token
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        // Handle role as array or string
+        let userRole = '';
+        if (Array.isArray(payload.role)) {
+          userRole = payload.role.includes('SuperAdmin') ? 'SuperAdmin' : payload.role[0] || '';
+        } else {
+          userRole = payload.role || '';
+        }
+        setCurrentUserRole(userRole);
+      } catch (error) {
+        console.error('Error parsing token:', error);
+      }
+    }
+
+    // Load role and permissions
+    if (roleId) {
+      fetchRole();
+      fetchPermissions();
+    }
   }, [roleId]);
 
   const fetchRole = async () => {
@@ -140,15 +165,29 @@ export default function EditRolePage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description,
+          permissionIds: formData.permissions // Cambiar de 'permissions' a 'permissionIds'
+        })
       });
 
       if (response.ok) {
         router.push('/dashboard/roles-usuarios?tab=roles&success=updated');
       } else {
-        const error = await response.text();
-        console.error('Error updating role:', error);
-        alert(t('rolesUsers.updateError', 'Error updating role'));
+        const errorText = await response.text();
+        console.error('Error updating role:', response.status, errorText);
+        
+        // Try to parse error as JSON
+        let errorMessage = errorText;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorJson.error || errorText;
+        } catch (e) {
+          // Keep original error text if not JSON
+        }
+        
+        alert(`Error updating role: ${errorMessage}\n\nStatus: ${response.status}`);
       }
     } catch (error) {
       console.error('Error updating role:', error);
@@ -265,7 +304,7 @@ export default function EditRolePage() {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={loading || role.isSystemRole}
+                disabled={loading || (role.isSystemRole && currentUserRole !== 'SuperAdmin')}
                 className="px-4 py-2 text-white rounded-lg disabled:opacity-50 flex items-center gap-2"
                 style={{ backgroundColor: primaryColor }}
               >
@@ -295,7 +334,10 @@ export default function EditRolePage() {
           <div className="flex items-center gap-3 max-w-7xl mx-auto">
             <AlertCircleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
             <p className="text-sm text-amber-800 dark:text-amber-300">
-              {t('rolesUsers.systemRoleWarning', 'This is a system role. Name and permissions cannot be modified.')}
+              {currentUserRole === 'SuperAdmin' 
+                ? t('rolesUsers.systemRoleWarningSuperAdmin', 'This is a system role. As SuperAdmin, you can modify it, but be careful with changes.')
+                : t('rolesUsers.systemRoleWarning', 'This is a system role. Only SuperAdmin can modify it.')
+              }
             </p>
           </div>
         </div>
@@ -319,7 +361,7 @@ export default function EditRolePage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.name)}
-                    disabled={role.isSystemRole}
+                    disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
                       errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                     }`}
@@ -341,7 +383,7 @@ export default function EditRolePage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.description)}
-                    disabled={role.isSystemRole}
+                    disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
                       errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                     }`}
@@ -395,7 +437,7 @@ export default function EditRolePage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.name)}
-                    disabled={role.isSystemRole}
+                    disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
                       errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                     }`}
@@ -416,7 +458,7 @@ export default function EditRolePage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.description)}
-                    disabled={role.isSystemRole}
+                    disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
                     rows={4}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all resize-none disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
                       errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
@@ -485,26 +527,28 @@ export default function EditRolePage() {
                         <button
                           type="button"
                           onClick={() => handleSelectAll(resource, permissions)}
-                          disabled={role.isSystemRole}
+                          disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
                           className="text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          style={{ color: role.isSystemRole ? '#9ca3af' : primaryColor }}
+                          style={{ color: (role.isSystemRole && currentUserRole !== 'SuperAdmin') ? '#9ca3af' : primaryColor }}
                         >
                           {allSelected ? t('common.deselectAll', 'Deselect All') : t('common.selectAll', 'Select All')}
                         </button>
                       </div>
                       
                       <div className="grid grid-cols-1 gap-2">
-                        {permissions.map((permission) => (
+                        {permissions.map((permission) => {
+                          const isDisabled = role.isSystemRole && currentUserRole !== 'SuperAdmin';
+                          return (
                           <label
                             key={permission.id}
-                            className={`flex items-center gap-2 ${role.isSystemRole ? 'cursor-not-allowed opacity-60' : 'cursor-pointer group'}`}
+                            className={`flex items-center gap-2 ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer group'}`}
                           >
                             <div className="relative">
                               <input
                                 type="checkbox"
                                 checked={formData.permissions.includes(permission.id)}
-                                onChange={() => !role.isSystemRole && handlePermissionToggle(permission.id)}
-                                disabled={role.isSystemRole}
+                                onChange={() => !isDisabled && handlePermissionToggle(permission.id)}
+                                disabled={isDisabled}
                                 className="sr-only"
                               />
                               <div
@@ -526,7 +570,8 @@ export default function EditRolePage() {
                               {t(`permissions.actions.${permission.action}`, permission.action)}
                             </span>
                           </label>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   );

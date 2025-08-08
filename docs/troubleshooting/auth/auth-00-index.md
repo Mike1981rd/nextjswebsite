@@ -48,6 +48,20 @@
 - Namespace collision issues
 - Swashbuckle configuration
 
+### [Auth-06: Permissions Not Showing](./auth-06-permissions-not-showing.md)
+- Sidebar appears empty after role assignment
+- Permission name mismatch (.view vs .read)
+- JWT token contains permissions but UI doesn't show
+- Menu items not filtering correctly
+- Token not refreshed after permission change
+
+### [Auth-07: Role Update Fails](./auth-07-role-update-fails.md)
+- Role changes not persisting to database
+- Frontend/Backend DTO field mismatch
+- permissions vs permissionIds confusion
+- Silent failures with 200 response
+- UpdateRoleDto validation issues
+
 ---
 
 ## 🔍 Quick Diagnosis
@@ -61,6 +75,8 @@
 | Logged out after refresh | Token storage method | [Auth-03](./auth-03-nextjs-integration.md) |
 | Swagger fails to load | DTO naming conflicts | [Auth-05](./auth-05-dto-naming-conflicts.md) |
 | JWT errors in console | JWT configuration | [Auth-01](./auth-01-jwt-setup-issues.md) |
+| Empty sidebar menu | Permission naming mismatch | [Auth-06](./auth-06-permissions-not-showing.md) |
+| Role changes not saving | DTO field mismatch | [Auth-07](./auth-07-role-update-fails.md) |
 
 ---
 
