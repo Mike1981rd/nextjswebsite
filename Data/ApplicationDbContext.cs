@@ -37,6 +37,15 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<ShippingRate> ShippingRates { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<NotificationSettings> NotificationSettings { get; set; }
+        
+        // Entidades de clientes
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<CustomerAddress> CustomerAddresses { get; set; }
+        public DbSet<CustomerPaymentMethod> CustomerPaymentMethods { get; set; }
+        public DbSet<CustomerNotificationPreference> CustomerNotificationPreferences { get; set; }
+        public DbSet<CustomerDevice> CustomerDevices { get; set; }
+        public DbSet<CustomerWishlistItem> CustomerWishlistItems { get; set; }
+        public DbSet<CustomerCoupon> CustomerCoupons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -357,6 +366,168 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasIndex(e => new { e.CompanyId, e.NotificationType }).IsUnique();
                 entity.HasIndex(e => e.Category);
                 entity.HasIndex(e => e.SortOrder);
+            });
+
+            // Configuración de Customer
+            modelBuilder.Entity<Customer>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.CustomerId).IsRequired().HasMaxLength(10);
+                entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.PasswordHash).IsRequired();
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Country).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.LoyaltyTier).HasMaxLength(20);
+                entity.Property(e => e.AccountBalance).HasPrecision(10, 2);
+                entity.Property(e => e.TotalSpent).HasPrecision(10, 2);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId);
+                
+                // Índices únicos y de optimización
+                entity.HasIndex(e => new { e.CompanyId, e.Email }).IsUnique();
+                entity.HasIndex(e => new { e.CompanyId, e.Username }).IsUnique();
+                entity.HasIndex(e => e.CustomerId).IsUnique();
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.Country);
+                entity.HasIndex(e => e.DeletedAt); // Para soft delete
+            });
+
+            // Configuración de CustomerAddress
+            modelBuilder.Entity<CustomerAddress>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Type).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Label).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Street).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.City).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Country).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Customer)
+                    .WithMany(c => c.Addresses)
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasIndex(e => e.CustomerId);
+                entity.HasIndex(e => e.IsDefault);
+            });
+
+            // Configuración de CustomerPaymentMethod
+            modelBuilder.Entity<CustomerPaymentMethod>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.CardType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.CardholderName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Last4Digits).IsRequired().HasMaxLength(4);
+                entity.Property(e => e.ExpiryMonth).IsRequired().HasMaxLength(2);
+                entity.Property(e => e.ExpiryYear).IsRequired().HasMaxLength(4);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Customer)
+                    .WithMany(c => c.PaymentMethods)
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasIndex(e => e.CustomerId);
+                entity.HasIndex(e => e.IsPrimary);
+            });
+
+            // Configuración de CustomerNotificationPreference
+            modelBuilder.Entity<CustomerNotificationPreference>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.NotificationType).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(200);
+                
+                entity.HasOne(e => e.Customer)
+                    .WithMany(c => c.NotificationPreferences)
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasIndex(e => new { e.CustomerId, e.NotificationType }).IsUnique();
+            });
+
+            // Configuración de CustomerDevice
+            modelBuilder.Entity<CustomerDevice>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Browser).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.DeviceType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.DeviceName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.OperatingSystem).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.IpAddress).IsRequired().HasMaxLength(45);
+                entity.Property(e => e.Location).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.LastActivity).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.FirstSeen).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Customer)
+                    .WithMany(c => c.Devices)
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasIndex(e => e.CustomerId);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.LastActivity);
+            });
+
+            // Configuración de CustomerWishlistItem
+            modelBuilder.Entity<CustomerWishlistItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.AddedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Customer)
+                    .WithMany(c => c.WishlistItems)
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasOne(e => e.Product)
+                    .WithMany()
+                    .HasForeignKey(e => e.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                entity.HasOne(e => e.ProductVariant)
+                    .WithMany()
+                    .HasForeignKey(e => e.ProductVariantId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false);
+                
+                // Unique constraint to prevent duplicate items
+                entity.HasIndex(e => new { e.CustomerId, e.ProductId, e.ProductVariantId }).IsUnique();
+            });
+
+            // Configuración de CustomerCoupon
+            modelBuilder.Entity<CustomerCoupon>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Description).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.DiscountType).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.DiscountAmount).HasPrecision(10, 2);
+                entity.Property(e => e.MinimumPurchase).HasPrecision(10, 2);
+                entity.Property(e => e.ValidFrom).IsRequired();
+                entity.Property(e => e.ValidUntil).IsRequired();
+                entity.Property(e => e.ApplicableProducts).HasColumnType("jsonb");
+                entity.Property(e => e.ApplicableCategories).HasColumnType("jsonb");
+                
+                entity.HasOne(e => e.Customer)
+                    .WithMany(c => c.Coupons)
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.HasIndex(e => e.CustomerId);
+                entity.HasIndex(e => e.Code);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => new { e.ValidFrom, e.ValidUntil });
             });
         }
     }

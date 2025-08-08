@@ -69,9 +69,9 @@ const menuItems: MenuItem[] = [
   {
     id: 'clientes',
     nameKey: 'navigation.clientes',
-    href: '/clientes',
+    href: '/dashboard/clientes',
     icon: ClientsIcon,
-    permission: 'clients.read'
+    permission: 'customers.read'
   },
   {
     id: 'productos',

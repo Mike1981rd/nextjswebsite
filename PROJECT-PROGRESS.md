@@ -227,10 +227,17 @@ Resolver los 9 problemas críticos del proyecto anterior:
 
 ### 🔄 Currently Working On
 
-**SIGUIENTE TAREA**: Implementar módulo Habitaciones (Rooms)
+**SIGUIENTE TAREA**: Completar tabs de detalle de clientes (Overview, Security, Address & Billing, Notifications)
 
 **TAREAS COMPLETADAS RECIENTEMENTE**:
-1. ✅ **Sistema completo de Roles y Usuarios** (2025-08-08)
+1. ✅ **Módulo Clientes (Customers) - Backend Completo** (2025-08-08)
+   - 7 modelos creados (Customer y relacionados)
+   - CustomersController con 23 endpoints
+   - CustomerService implementado
+   - 15 DTOs para todas las operaciones
+   - Migración AddCustomerModels lista
+   - Frontend: Lista de clientes implementada
+2. ✅ **Sistema completo de Roles y Usuarios** (2025-08-08)
    - RolesController, UsersController, PermissionsController
    - Sistema RBAC con permisos dinámicos
    - UI completa con filtros activo/inactivo

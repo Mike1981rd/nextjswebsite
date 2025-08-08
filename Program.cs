@@ -73,6 +73,7 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<INotificationSettingsService, NotificationSettingsService>();
 builder.Services.AddScoped<WebsiteBuilderAPI.Services.Encryption.IEncryptionService, WebsiteBuilderAPI.Services.Encryption.EncryptionService>();
 builder.Services.AddScoped<IUploadService, UploadService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 // Servicios de pagos
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
@@ -91,6 +92,8 @@ builder.Services.AddControllers()
     {
         // Evitar referencias circulares
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
 // Configure FormOptions for file uploads

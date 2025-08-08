@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace WebsiteBuilderAPI.Models
 {
@@ -13,6 +14,7 @@ namespace WebsiteBuilderAPI.Models
         public bool IsActive { get; set; } = true;
 
         // Navegación
+        [JsonIgnore]
         public Product Product { get; set; } = null!;
 
         // Helper para trabajar con atributos
