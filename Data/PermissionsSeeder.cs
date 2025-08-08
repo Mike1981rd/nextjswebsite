@@ -33,14 +33,12 @@ namespace WebsiteBuilderAPI.Data
                 new { Name = "checkout", Description = "Checkout Settings" }
             };
 
-            // Define las acciones estándar para cada recurso
+            // Define las acciones estándar para cada recurso (solo 3)
             var actions = new[]
             {
-                new { Name = "view", Description = "View in menu" },
-                new { Name = "read", Description = "Read/List records" },
-                new { Name = "create", Description = "Create new records" },
-                new { Name = "update", Description = "Update existing records" },
-                new { Name = "delete", Description = "Delete records" }
+                new { Name = "read", Description = "Read/View" },
+                new { Name = "write", Description = "Write/Edit" },
+                new { Name = "create", Description = "Create new" }
             };
 
             var permissions = new List<Permission>();
@@ -116,7 +114,7 @@ namespace WebsiteBuilderAPI.Data
                 {
                     Name = "Administrator",
                     Description = "Administrator with company management access",
-                    IsSystemRole = true,
+                    IsSystemRole = false,  // Changed to false - only SuperAdmin should be protected
                     PermissionPatterns = new[]
                     {
                         "dashboard.*", "company.*", "users.*", 
@@ -128,34 +126,34 @@ namespace WebsiteBuilderAPI.Data
                 {
                     Name = "Manager",
                     Description = "Manager with operational access",
-                    IsSystemRole = true,
+                    IsSystemRole = false,
                     PermissionPatterns = new[]
                     {
-                        "dashboard.view", "dashboard.read",
+                        "dashboard.read",
                         "products.*", "collections.*", "orders.*", "clients.*",
                         "reservations.*", "rooms.*", "notifications.*",
-                        "reports.view", "reports.export"
+                        "reports.read"
                     }
                 },
                 new
                 {
                     Name = "Editor",
                     Description = "Content editor with limited access",
-                    IsSystemRole = true,
+                    IsSystemRole = false,
                     PermissionPatterns = new[]
                     {
-                        "dashboard.view", "dashboard.read",
-                        "products.view", "products.read", "products.create", "products.update",
-                        "collections.view", "collections.read", "collections.create", "collections.update",
-                        "pages.view", "pages.read", "pages.create", "pages.update",
-                        "policies.view", "policies.read", "policies.update"
+                        "dashboard.read",
+                        "products.read", "products.write", "products.create",
+                        "collections.read", "collections.write", "collections.create",
+                        "pages.read", "pages.write", "pages.create",
+                        "policies.read", "policies.write"
                     }
                 },
                 new
                 {
                     Name = "Support",
                     Description = "Customer support staff",
-                    IsSystemRole = true,
+                    IsSystemRole = false,
                     PermissionPatterns = new[]
                     {
                         "dashboard.view", "dashboard.read",
@@ -170,7 +168,7 @@ namespace WebsiteBuilderAPI.Data
                 {
                     Name = "Viewer",
                     Description = "Read-only access to basic information",
-                    IsSystemRole = true,
+                    IsSystemRole = false,
                     PermissionPatterns = new[]
                     {
                         "dashboard.view", "dashboard.read",

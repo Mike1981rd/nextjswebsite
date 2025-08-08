@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/contexts/I18nContext';
-import { ShieldIcon, PlusIcon, UsersIcon, CopyIcon } from 'lucide-react';
+import { ShieldIcon, PlusIcon, UsersIcon, CopyIcon, Trash2Icon } from 'lucide-react';
 
 interface Role {
   id: number;
@@ -69,6 +69,41 @@ export function RolesTab({ primaryColor }: RolesTabProps) {
     };
     sessionStorage.setItem('duplicateRole', JSON.stringify(duplicateData));
     router.push('/dashboard/roles-usuarios/roles/new');
+  };
+
+  const handleDelete = async (role: Role) => {
+    // Don't allow deleting SuperAdmin role
+    if (role.name === 'SuperAdmin') {
+      alert(t('rolesUsers.cannotDeleteSuperAdmin', 'Cannot delete SuperAdmin role'));
+      return;
+    }
+
+    // Confirm deletion
+    if (!confirm(t('rolesUsers.confirmDelete', `Are you sure you want to delete the role "${role.name}"?`))) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5266/api/roles/${role.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // Reload roles
+        fetchRoles();
+      } else {
+        const error = await response.text();
+        alert(t('rolesUsers.deleteError', `Error deleting role: ${error}`));
+      }
+    } catch (error) {
+      console.error('Error deleting role:', error);
+      alert(t('rolesUsers.deleteError', 'Error deleting role'));
+    }
   };
 
   const getRoleColor = (roleName: string) => {
@@ -182,7 +217,7 @@ export function RolesTab({ primaryColor }: RolesTabProps) {
               {role.name}
             </h3>
 
-            {/* Edit Role Link and Copy Icon */}
+            {/* Edit Role Link and Action Icons */}
             <div className="flex items-center justify-between">
               <button
                 onClick={() => handleEdit(role)}
@@ -192,14 +227,27 @@ export function RolesTab({ primaryColor }: RolesTabProps) {
                 {t('rolesUsers.editRole', 'Edit Role')}
               </button>
               
-              {/* Copy Icon */}
-              <button 
-                onClick={() => handleDuplicate(role)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title={t('common.duplicate', 'Duplicate')}
-              >
-                <CopyIcon className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-              </button>
+              <div className="flex items-center gap-1">
+                {/* Copy Icon */}
+                <button 
+                  onClick={() => handleDuplicate(role)}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  title={t('common.duplicate', 'Duplicate')}
+                >
+                  <CopyIcon className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                </button>
+                
+                {/* Delete Icon - Hide for SuperAdmin */}
+                {role.name !== 'SuperAdmin' && (
+                  <button 
+                    onClick={() => handleDelete(role)}
+                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    title={t('common.delete', 'Delete')}
+                  >
+                    <Trash2Icon className="w-4 h-4 text-gray-400 hover:text-red-600 dark:hover:text-red-400" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}

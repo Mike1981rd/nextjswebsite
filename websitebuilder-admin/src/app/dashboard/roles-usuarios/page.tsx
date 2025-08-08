@@ -36,8 +36,8 @@ export default function RolesUsuariosPage() {
         </ol>
       </nav>
 
-      {/* Mobile Title */}
-      <div className="sm:hidden mb-4">
+      {/* Mobile Title - Centered */}
+      <div className="sm:hidden mb-4 text-center">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
           {t('navigation.rolesUsuarios', 'Roles & Users')}
         </h1>
@@ -45,8 +45,8 @@ export default function RolesUsuariosPage() {
 
       {/* Main Content Card */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-        {/* Header */}
-        <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+        {/* Header - Hidden on mobile since we have the centered title */}
+        <div className="hidden sm:block p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
@@ -59,12 +59,12 @@ export default function RolesUsuariosPage() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Centered on mobile */}
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <div className="flex overflow-x-auto">
+          <div className="flex justify-center sm:justify-start overflow-x-auto">
             <button
               onClick={() => setActiveTab('roles')}
-              className={`flex items-center gap-2 px-4 sm:px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center sm:justify-start gap-2 px-4 sm:px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === 'roles'
                   ? 'text-gray-900 dark:text-white'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-transparent'
@@ -78,7 +78,7 @@ export default function RolesUsuariosPage() {
             </button>
             <button
               onClick={() => setActiveTab('users')}
-              className={`flex items-center gap-2 px-4 sm:px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center sm:justify-start gap-2 px-4 sm:px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === 'users'
                   ? 'text-gray-900 dark:text-white'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-transparent'

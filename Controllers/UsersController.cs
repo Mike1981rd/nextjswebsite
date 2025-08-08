@@ -108,7 +108,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Actualiza un usuario existente
         /// </summary>
         [HttpPut("{id}")]
-        [RequirePermission("users.update")]
+        [RequirePermission("users.write")]  // Changed from users.update to users.write
         public async Task<ActionResult<UserDto>> Update(int id, [FromBody] UpdateUserDto dto)
         {
             try
@@ -153,7 +153,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Desactiva un usuario (soft delete)
         /// </summary>
         [HttpDelete("{id}")]
-        [RequirePermission("users.delete")]
+        [RequirePermission("users.write")]  // Changed from users.delete to users.write (using write for delete)
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -282,7 +282,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Asignar roles a un usuario
         /// </summary>
         [HttpPost("{id}/roles")]
-        [RequirePermission("users.update")]
+        [RequirePermission("users.write")]  // Changed from users.update to users.write
         public async Task<IActionResult> AssignRoles(int id, [FromBody] List<int> roleIds)
         {
             try

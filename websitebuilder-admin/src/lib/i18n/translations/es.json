@@ -631,14 +631,9 @@
       "cache": "Caché"
     },
     "actions": {
-      "view": "Ver",
       "read": "Leer",
+      "write": "Escribir",
       "create": "Crear",
-      "update": "Actualizar",
-      "delete": "Eliminar",
-      "admin": "Administrar",
-      "export": "Exportar",
-      "manage": "Gestionar",
       "restore": "Restaurar",
       "clear": "Limpiar"
     }
@@ -683,7 +678,8 @@
     "type": "Tipo",
     "system": "Sistema",
     "custom": "Personalizado",
-    "systemRoleWarning": "Este es un rol del sistema. El nombre y los permisos no se pueden modificar.",
+    "systemRoleWarning": "Este es un rol del sistema. Solo el SuperAdmin puede modificarlo.",
+    "systemRoleWarningSuperAdmin": "Este es un rol del sistema. Como SuperAdmin, puedes modificarlo, pero ten cuidado con los cambios.",
     "confirmDelete": "¿Estás seguro de que deseas eliminar este rol?",
     "deleteError": "Error al eliminar el rol",
     "updateError": "Error al actualizar el rol",

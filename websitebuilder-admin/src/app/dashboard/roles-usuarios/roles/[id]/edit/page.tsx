@@ -304,7 +304,7 @@ export default function EditRolePage() {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={loading || (role.isSystemRole && currentUserRole !== 'SuperAdmin')}
+                disabled={loading || (role.name === 'SuperAdmin' && currentUserRole !== 'SuperAdmin')}
                 className="px-4 py-2 text-white rounded-lg disabled:opacity-50 flex items-center gap-2"
                 style={{ backgroundColor: primaryColor }}
               >
@@ -328,15 +328,15 @@ export default function EditRolePage() {
         </div>
       </div>
 
-      {/* System Role Warning */}
-      {role.isSystemRole && (
+      {/* SuperAdmin Role Warning */}
+      {role.name === 'SuperAdmin' && (
         <div className="px-4 sm:px-6 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
           <div className="flex items-center gap-3 max-w-7xl mx-auto">
             <AlertCircleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
             <p className="text-sm text-amber-800 dark:text-amber-300">
               {currentUserRole === 'SuperAdmin' 
-                ? t('rolesUsers.systemRoleWarningSuperAdmin', 'This is a system role. As SuperAdmin, you can modify it, but be careful with changes.')
-                : t('rolesUsers.systemRoleWarning', 'This is a system role. Only SuperAdmin can modify it.')
+                ? t('rolesUsers.superAdminRoleWarningSuperAdmin', 'This is the SuperAdmin role. As SuperAdmin, you can modify it, but be careful with changes.')
+                : t('rolesUsers.superAdminRoleWarning', 'This is the SuperAdmin role. Only SuperAdmin can modify it.')
               }
             </p>
           </div>
@@ -361,7 +361,7 @@ export default function EditRolePage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.name)}
-                    disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
+                    disabled={role.name === 'SuperAdmin' && currentUserRole !== 'SuperAdmin'}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
                       errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                     }`}
@@ -383,7 +383,7 @@ export default function EditRolePage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.description)}
-                    disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
+                    disabled={role.name === 'SuperAdmin' && currentUserRole !== 'SuperAdmin'}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
                       errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                     }`}
@@ -437,7 +437,7 @@ export default function EditRolePage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.name)}
-                    disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
+                    disabled={role.name === 'SuperAdmin' && currentUserRole !== 'SuperAdmin'}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
                       errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                     }`}
@@ -458,7 +458,7 @@ export default function EditRolePage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.description)}
-                    disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
+                    disabled={role.name === 'SuperAdmin' && currentUserRole !== 'SuperAdmin'}
                     rows={4}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all resize-none disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ${
                       errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
@@ -527,9 +527,9 @@ export default function EditRolePage() {
                         <button
                           type="button"
                           onClick={() => handleSelectAll(resource, permissions)}
-                          disabled={role.isSystemRole && currentUserRole !== 'SuperAdmin'}
+                          disabled={role.name === 'SuperAdmin' && currentUserRole !== 'SuperAdmin'}
                           className="text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          style={{ color: (role.isSystemRole && currentUserRole !== 'SuperAdmin') ? '#9ca3af' : primaryColor }}
+                          style={{ color: (role.name === 'SuperAdmin' && currentUserRole !== 'SuperAdmin') ? '#9ca3af' : primaryColor }}
                         >
                           {allSelected ? t('common.deselectAll', 'Deselect All') : t('common.selectAll', 'Select All')}
                         </button>
@@ -537,7 +537,7 @@ export default function EditRolePage() {
                       
                       <div className="grid grid-cols-1 gap-2">
                         {permissions.map((permission) => {
-                          const isDisabled = role.isSystemRole && currentUserRole !== 'SuperAdmin';
+                          const isDisabled = role.name === 'SuperAdmin' && currentUserRole !== 'SuperAdmin';
                           return (
                           <label
                             key={permission.id}

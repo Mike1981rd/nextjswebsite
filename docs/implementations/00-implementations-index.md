@@ -23,6 +23,8 @@ Core business logic implementations including multi-tenancy, e-commerce, and hot
 - [2025-08 UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - Complete Materialize design clone
 - [2025-08 Empresa UI Design Implementation](./features/2025-08-empresa-ui-design.md) - Modern company configuration interface with enhanced UX
 - [2025-08 i18n System Implementation](./features/2025-08-i18n-system.md) - Complete translation system with dynamic language switching
+- [2025-08 Export System](./features/2025-08-export-system.md) - Multi-format user data export with modal UI
+- [2025-08 Status Filter](./features/2025-08-status-filter.md) - Active/Inactive filtering with auto-defaults
 
 ### 🔧 [Infrastructure](./infrastructure/infrastructure-00-index.md)
 Database setup, Docker configuration, CI/CD pipelines, and performance optimizations.
@@ -37,21 +39,23 @@ Database setup, Docker configuration, CI/CD pipelines, and performance optimizat
 ### By Category
 - **Authentication**: 1 implementation documented
 - **API Features**: 0 implementations documented
-- **Business Features**: 3 implementations documented
+- **Business Features**: 5 implementations documented
 - **Infrastructure**: 0 implementations documented
 
 ### By Month
-- **2025-08**: 4 implementations (Login, UI Dashboard, Empresa UI, i18n System)
+- **2025-08**: 6 implementations (Login, UI Dashboard, Empresa UI, i18n System, Export System, Status Filter)
 
 ---
 
 ## 🔍 Quick Find
 
 ### Recent Additions
-1. [Empresa UI Design Implementation](./features/2025-08-empresa-ui-design.md) - August 2025
-2. [UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - August 2025
-3. [i18n System Implementation](./features/2025-08-i18n-system.md) - August 2025
-4. [Login Implementation](./auth/2025-08-login-implementation.md) - August 2025
+1. [Status Filter Implementation](./features/2025-08-status-filter.md) - August 2025
+2. [Export System Implementation](./features/2025-08-export-system.md) - August 2025
+3. [Empresa UI Design Implementation](./features/2025-08-empresa-ui-design.md) - August 2025
+4. [UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - August 2025
+5. [i18n System Implementation](./features/2025-08-i18n-system.md) - August 2025
+6. [Login Implementation](./auth/2025-08-login-implementation.md) - August 2025
 
 ### Most Referenced
 1. [UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - Materialize design system
@@ -116,6 +120,6 @@ See [Documentation Templates](../documentation-templates/) for standard formats.
 
 ---
 
-**Last Updated**: 2025-08
-**Total Implementations Documented**: 4
-**Documentation Coverage**: ~25% (Auth, UI Dashboard, Empresa UI, i18n System completed)
+**Last Updated**: 2025-08-08
+**Total Implementations Documented**: 6
+**Documentation Coverage**: ~30% (Auth, UI Dashboard, Empresa UI, i18n System, Export System, Status Filter completed)

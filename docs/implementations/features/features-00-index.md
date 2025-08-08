@@ -14,6 +14,8 @@ This directory contains implementation documentation for major business features
 
 ### Data Management
 - **[Company Data Save Implementation](./2025-08-company-data-save.md)** - Robust save system with separated endpoints for logo/data, auto-save functionality, and proper validation handling
+- **[User Export System](./2025-08-export-system.md)** - Multi-format export system (CSV, Excel, PDF) with modern modal UI and browser-native implementation
+- **[Status Filter System](./2025-08-status-filter.md)** - Active/Inactive/Pending status filtering with auto-defaults and pagination integration
 
 ## Coming Soon
 

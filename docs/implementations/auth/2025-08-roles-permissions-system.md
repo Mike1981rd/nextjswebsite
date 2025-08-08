@@ -5,7 +5,8 @@
 - **Scope**: Backend (ASP.NET Core) + Frontend (Next.js) con permisos granulares
 - **Dependencies**: JWT, Entity Framework Core, React Hooks
 - **Date Implemented**: 2025-08-08
-- **Time Spent**: ~3 horas
+- **Last Updated**: 2025-08-08
+- **Time Spent**: ~5 horas (initial + fixes)
 
 ## Architecture Decisions
 
@@ -26,6 +27,47 @@
 - Permisos validados tanto en frontend como backend
 - Token JWT incluye todos los permisos del usuario
 - Refresh de token al cambiar permisos
+
+## CRITICAL: Permission Naming Convention
+
+### ⚠️ ONLY 3 Actions Per Resource
+The system uses exactly **3 actions** for each resource. NO OTHER ACTIONS EXIST:
+- `read` - View/List resources
+- `write` - Edit/Update/Delete resources  
+- `create` - Create new resources
+
+### ❌ Common Mistakes to Avoid
+```csharp
+// WRONG - These permissions DO NOT EXIST
+[RequirePermission("users.update")]  // ❌ Does not exist
+[RequirePermission("users.delete")]  // ❌ Does not exist
+[RequirePermission("roles.read")]    // ❌ Roles use users.* permissions
+
+// CORRECT - Use only these 3 actions
+[RequirePermission("users.read")]    // ✅ For viewing
+[RequirePermission("users.write")]   // ✅ For editing/deleting
+[RequirePermission("users.create")]  // ✅ For creating
+```
+
+### 📋 Complete Permission Mapping
+| Controller | Action | Required Permission |
+|------------|--------|-------------------|
+| **RolesController** |
+| GET /api/roles | users.read |
+| GET /api/roles/{id} | users.read |
+| POST /api/roles | users.create |
+| PUT /api/roles/{id} | users.write |
+| DELETE /api/roles/{id} | users.write |
+| **UsersController** |
+| GET /api/users | users.read |
+| GET /api/users/{id} | users.read |
+| POST /api/users | users.create |
+| PUT /api/users/{id} | users.write |
+| DELETE /api/users/{id} | users.write |
+| POST /api/users/{id}/roles | users.write |
+| **PermissionsController** |
+| GET /api/permissions | users.read |
+| GET /api/permissions/grouped | users.read |
 
 ## Implementation Details
 
@@ -310,10 +352,36 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 
 ### Common Problems
 1. **Sidebar shows empty after role assignment**
+   - **Fixed**: Changed permission naming from `.view` to `.read` in Sidebar.tsx
    - See: `/docs/troubleshooting/auth/auth-06-permissions-not-showing.md`
 
 2. **Role changes not saving**
+   - **Fixed**: Frontend was sending `permissions` but backend expected `permissionIds`
    - See: `/docs/troubleshooting/auth/auth-07-role-update-fails.md`
+
+3. **Roles not showing for users with permissions**
+   - **Fixed**: Changed all controllers from `roles.*` permissions to `users.*`
+   - Controllers affected: RolesController, PermissionsController
+   - Root cause: Roles are combined with users management in permission system
+
+4. **Cannot edit roles despite having permissions**
+   - **Fixed**: Changed protection from all `isSystemRole` to only `SuperAdmin` role
+   - Updated edit page to check `role.name === 'SuperAdmin'` instead of `isSystemRole`
+   - Updated PermissionsSeeder to set only SuperAdmin as system role
+
+5. **Cannot edit users despite having users.write permission**
+   - **Fixed**: Changed UsersController permissions from non-existent ones to actual DB permissions
+   - UsersController was requiring `users.update` and `users.delete` which don't exist
+   - Changed all to use the 3 actual permissions: `users.read`, `users.write`, `users.create`
+
+6. **Missing Add User button in desktop view**
+   - **Fixed**: Added header section with Export and Add User buttons for desktop
+   - Mobile keeps the floating action button (FAB)
+
+7. **Create Role UI different from Edit Role UI**
+   - **Fixed**: Updated Create Role page to match Edit Role's horizontal layout
+   - Desktop: 3-column header (name, description, stats) with full-width permissions below
+   - Mobile: Vertical layout with sidebar
 
 ### Debug Tips
 ```javascript

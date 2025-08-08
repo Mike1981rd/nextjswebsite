@@ -24,7 +24,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Obtiene todos los permisos disponibles
         /// </summary>
         [HttpGet]
-        [RequirePermission("roles.read")]
+        [RequirePermission("users.read")]  // Changed from roles.read to users.read
         public async Task<ActionResult<List<PermissionDto>>> GetAll()
         {
             try
@@ -43,7 +43,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Obtiene los permisos agrupados por recurso
         /// </summary>
         [HttpGet("grouped")]
-        [RequirePermission("roles.read")]
+        [RequirePermission("users.read")]  // Changed from roles.read to users.read
         public async Task<ActionResult<List<GroupedPermissionsDto>>> GetGrouped()
         {
             try
@@ -62,7 +62,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Obtiene los permisos de un recurso específico
         /// </summary>
         [HttpGet("by-resource/{resource}")]
-        [RequirePermission("roles.read")]
+        [RequirePermission("users.read")]  // Changed from roles.read to users.read
         public async Task<ActionResult<List<PermissionDto>>> GetByResource(string resource)
         {
             try

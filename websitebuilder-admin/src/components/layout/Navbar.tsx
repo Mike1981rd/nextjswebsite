@@ -53,15 +53,35 @@ export function Navbar({
   // Check if we're on dashboard page
   const isDashboard = pathname === '/dashboard';
   
+  // Get user role from token
+  const getUserRole = () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        // Handle role as array or string
+        if (Array.isArray(payload.role)) {
+          return payload.role[0] || 'User';
+        }
+        return payload.role || 'User';
+      }
+    } catch (error) {
+      console.error('Error getting user role:', error);
+    }
+    return 'User';
+  };
+
   // Use real user data or fallback to mock data
   const user = authUser ? {
     name: authUser.fullName || `${authUser.firstName} ${authUser.lastName}`,
     email: authUser.email,
-    avatar: authUser.avatarUrl || null // Use real avatar URL from user
+    avatar: authUser.avatarUrl || null, // Use real avatar URL from user
+    role: getUserRole() // Get actual role from token
   } : {
     name: 'Admin User',
     email: 'admin@websitebuilder.com',
-    avatar: null
+    avatar: null,
+    role: 'Administrator'
   };
 
   const notifications = [
@@ -339,7 +359,7 @@ export function Navbar({
               />
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                <p className="text-xs text-gray-500">{t('common.admin', 'Administrator')}</p>
+                <p className="text-xs text-gray-500">{user.role}</p>
               </div>
               <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

@@ -308,6 +308,14 @@ Resolver los 9 problemas críticos del proyecto anterior:
   - JSONB storage for countries list
   - Bulk update optimization
   - Default rates auto-creation
+- ✅ **Export System Implementation**: `/docs/implementations/features/2025-08-export-system.md`
+  - Multi-format export (CSV, Excel, PDF) with modal UI
+  - Browser-native implementation without dependencies
+  - Respects current filters and pagination
+- ✅ **Status Filter Implementation**: `/docs/implementations/features/2025-08-status-filter.md`
+  - Active/Inactive/Pending status filtering
+  - Default to "active" on initial load
+  - Automatic pagination reset on filter change
 - ✅ **Troubleshooting Docs**: 
   - Database issues: `/docs/troubleshooting/general/general-01-database-issues.md`
   - Npgsql JSON serialization: `/docs/troubleshooting/database/db-01-npgsql-json-serialization.md`

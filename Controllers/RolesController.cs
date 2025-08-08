@@ -24,7 +24,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Obtiene todos los roles
         /// </summary>
         [HttpGet]
-        [RequirePermission("roles.read")]
+        [RequirePermission("users.read")]  // Changed from roles.read to users.read
         public async Task<ActionResult<List<RoleDto>>> GetAll()
         {
             try
@@ -43,7 +43,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Obtiene un rol por ID
         /// </summary>
         [HttpGet("{id}")]
-        [RequirePermission("roles.read")]
+        [RequirePermission("users.read")]  // Changed from roles.read to users.read
         public async Task<ActionResult<RoleDto>> GetById(int id)
         {
             try
@@ -66,7 +66,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Crea un nuevo rol
         /// </summary>
         [HttpPost]
-        [RequirePermission("roles.create")]
+        [RequirePermission("users.create")]  // Changed from roles.create to users.create
         public async Task<ActionResult<RoleDto>> Create([FromBody] CreateRoleDto dto)
         {
             try
@@ -94,7 +94,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Actualiza un rol existente
         /// </summary>
         [HttpPut("{id}")]
-        [RequirePermission("roles.update")]
+        [RequirePermission("users.write")]  // Changed from roles.update to users.write
         public async Task<ActionResult<RoleDto>> Update(int id, [FromBody] UpdateRoleDto dto)
         {
             try
@@ -130,7 +130,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Elimina un rol
         /// </summary>
         [HttpDelete("{id}")]
-        [RequirePermission("roles.delete")]
+        [RequirePermission("users.write")]  // Changed from roles.delete to users.write (using write for delete)
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -157,7 +157,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// Asigna permisos a un rol
         /// </summary>
         [HttpPost("{id}/permissions")]
-        [RequirePermission("roles.update")]
+        [RequirePermission("users.write")]  // Changed from roles.update to users.write
         public async Task<IActionResult> AssignPermissions(int id, [FromBody] List<int> permissionIds)
         {
             try

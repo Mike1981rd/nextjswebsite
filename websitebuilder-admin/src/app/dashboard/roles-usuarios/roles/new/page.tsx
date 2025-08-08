@@ -259,18 +259,15 @@ export default function NewRolePage() {
       </div>
 
       {/* Form Content */}
-      <form onSubmit={handleSubmit} className="p-4 sm:p-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Basic Info */}
-          <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {t('rolesUsers.basicInfo', 'Basic Information')}
-              </h2>
-              
-              <div className="space-y-4">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+        <form onSubmit={handleSubmit}>
+          {/* Basic Info Header - Desktop only */}
+          <div className="hidden lg:block mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <div className="grid grid-cols-3 gap-6">
+                {/* Role Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('rolesUsers.roleName', 'Role Name')} *
                   </label>
                   <input
@@ -279,139 +276,217 @@ export default function NewRolePage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.name)}
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-30 dark:bg-gray-700 dark:text-white transition-all ${
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${
                       errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                     }`}
-                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                    placeholder={t('rolesUsers.roleNamePlaceholder', 'e.g., Content Manager')}
+                    placeholder={t('rolesUsers.roleNamePlaceholder', 'e.g., Sales Manager')}
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-500 dark:text-red-400 flex items-center gap-1">
-                      <AlertCircleIcon className="w-3 h-3" />
-                      {errors.name}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
                   )}
                 </div>
 
+                {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('rolesUsers.description', 'Description')} *
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rolesUsers.roleDescription', 'Description')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onFocus={handleInputFocus}
+                    onBlur={(e) => handleInputBlur(e, !!errors.description)}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${
+                      errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    placeholder={t('rolesUsers.roleDescriptionPlaceholder', 'Describe the purpose of this role')}
+                  />
+                  {errors.description && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
+                  )}
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      {t('rolesUsers.type', 'Type')}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {t('rolesUsers.custom', 'Custom')}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      {t('rolesUsers.permissions', 'Permissions')}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {formData.permissions.length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Layout - Keep original */}
+          <div className="grid grid-cols-1 lg:hidden gap-6">
+            {/* Basic Info - Mobile */}
+            <div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  {t('rolesUsers.basicInformation', 'Basic Information')}
+                </h2>
+
+                {/* Role Name */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rolesUsers.roleName', 'Role Name')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onFocus={handleInputFocus}
+                    onBlur={(e) => handleInputBlur(e, !!errors.name)}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${
+                      errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    placeholder={t('rolesUsers.roleNamePlaceholder', 'e.g., Sales Manager')}
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+                  )}
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rolesUsers.roleDescription', 'Description')} *
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={(e) => handleInputBlur(e, !!errors.description)}
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-30 dark:bg-gray-700 dark:text-white transition-all ${
+                    rows={4}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all resize-none ${
                       errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                     }`}
-                    style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                    rows={4}
-                    placeholder={t('rolesUsers.descriptionPlaceholder', 'Describe the purpose of this role')}
+                    placeholder={t('rolesUsers.roleDescriptionPlaceholder', 'Describe the purpose of this role')}
                   />
                   {errors.description && (
-                    <p className="mt-1 text-sm text-red-500 dark:text-red-400 flex items-center gap-1">
-                      <AlertCircleIcon className="w-3 h-3" />
-                      {errors.description}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      {t('rolesUsers.selectedPermissions', 'Selected Permissions')}
-                    </span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                {/* Role Stats */}
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      {t('rolesUsers.type', 'Type')}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {t('rolesUsers.custom', 'Custom')}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+                      {t('rolesUsers.permissions', 'Permissions')}
+                    </p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
                       {formData.permissions.length}
-                    </span>
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Permissions */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          {/* Permissions Section - Full width on desktop */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {t('rolesUsers.permissions', 'Permissions')}
               </h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {formData.permissions.length} {t('rolesUsers.selected', 'selected')}
+              </span>
+            </div>
 
-              <div className="space-y-4">
-                {Object.entries(groupedPermissions).map(([resource, permissions]) => (
-                  <div key={resource} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-gray-900 dark:text-white capitalize">
-                          {t(`resources.${resource}`, resource)}
-                        </h3>
+            {loadingPermissions ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: primaryColor }}></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {Object.entries(groupedPermissions).map(([resource, permissions]) => {
+                  const allSelected = permissions.every(p => formData.permissions.includes(p.id));
+
+                  return (
+                    <div key={resource} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-gray-900 dark:text-white">
+                            {t(`permissions.resources.${resource}`, resource)}
+                          </h3>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                            {permissions.filter(p => formData.permissions.includes(p.id)).length}/{permissions.length}
+                          </span>
+                        </div>
                         <button
                           type="button"
                           onClick={() => handleSelectAll(resource, permissions)}
                           className="text-sm font-medium transition-colors"
-                          style={{ 
-                            color: permissions.every(p => formData.permissions.includes(p.id)) 
-                              ? primaryColor 
-                              : '#6b7280' 
-                          }}
+                          style={{ color: primaryColor }}
                         >
-                          {permissions.every(p => formData.permissions.includes(p.id))
-                            ? t('common.deselectAll', 'Deselect All')
-                            : t('common.selectAll', 'Select All')}
+                          {allSelected ? t('common.deselectAll', 'Deselect All') : t('common.selectAll', 'Select All')}
                         </button>
                       </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {permissions.map(permission => (
+                      
+                      <div className="grid grid-cols-1 gap-2">
+                        {permissions.map((permission) => (
                           <label
                             key={permission.id}
-                            className="flex items-start gap-3 cursor-pointer group"
+                            className="flex items-center gap-2 cursor-pointer group"
                           >
-                            <div className="relative flex items-center">
+                            <div className="relative">
                               <input
                                 type="checkbox"
                                 checked={formData.permissions.includes(permission.id)}
                                 onChange={() => handlePermissionToggle(permission.id)}
                                 className="sr-only"
                               />
-                              <div 
-                                className={`w-5 h-5 rounded border-2 transition-all ${
+                              <div
+                                className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center ${
                                   formData.permissions.includes(permission.id)
                                     ? 'border-transparent'
-                                    : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400'
+                                    : 'border-gray-300 dark:border-gray-600 group-hover:border-gray-400 dark:group-hover:border-gray-500'
                                 }`}
                                 style={{
-                                  backgroundColor: formData.permissions.includes(permission.id) 
-                                    ? primaryColor 
-                                    : 'transparent'
+                                  backgroundColor: formData.permissions.includes(permission.id) ? primaryColor : 'transparent'
                                 }}
                               >
                                 {formData.permissions.includes(permission.id) && (
-                                  <CheckIcon className="w-3 h-3 text-white absolute top-0.5 left-0.5" />
+                                  <CheckIcon className="w-3 h-3 text-white" />
                                 )}
                               </div>
                             </div>
-                            <div className="flex-1">
-                              <div className="font-medium text-sm text-gray-900 dark:text-white">
-                                {t(`permissions.${permission.action}`, permission.action)}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {permission.description}
-                              </div>
-                            </div>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                              {t(`permissions.actions.${permission.action}`, permission.action)}
+                            </span>
                           </label>
                         ))}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

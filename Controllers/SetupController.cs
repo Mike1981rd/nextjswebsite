@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebsiteBuilderAPI.Data;
 
 namespace WebsiteBuilderAPI.Controllers
@@ -88,6 +89,140 @@ namespace WebsiteBuilderAPI.Controllers
             {
                 _logger.LogError(ex, "Error getting permissions stats");
                 return StatusCode(500, new { message = "Error getting stats", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Debug endpoint to check role status
+        /// </summary>
+        [HttpGet("debug-roles")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DebugRoles()
+        {
+            var roles = _context.Roles
+                .Select(r => new { r.Id, r.Name, r.IsSystemRole })
+                .OrderBy(r => r.Name)
+                .ToList();
+
+            var adminUser = _context.Users
+                .Where(u => u.Email == "admin@websitebuilder.com")
+                .Select(u => new 
+                { 
+                    u.Id, 
+                    u.Email, 
+                    Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList() 
+                })
+                .FirstOrDefault();
+
+            return Ok(new { roles, adminUser });
+        }
+
+        /// <summary>
+        /// Debug specific role with permissions
+        /// </summary>
+        [HttpGet("debug-role/{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DebugRole(int id)
+        {
+            var role = await _context.Roles
+                .Where(r => r.Id == id)
+                .Select(r => new 
+                { 
+                    r.Id, 
+                    r.Name, 
+                    r.Description,
+                    r.IsSystemRole,
+                    Permissions = r.RolePermissions.Select(rp => new 
+                    {
+                        rp.PermissionId,
+                        rp.Permission.Resource,
+                        rp.Permission.Action
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(role);
+        }
+
+        /// <summary>
+        /// Reset permissions to only have read, write, create
+        /// </summary>
+        [HttpPost("reset-permissions")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPermissions()
+        {
+            try
+            {
+                // Clear all existing permissions and role permissions
+                _context.RolePermissions.RemoveRange(_context.RolePermissions);
+                _context.Permissions.RemoveRange(_context.Permissions);
+                await _context.SaveChangesAsync();
+
+                // Re-seed permissions with only 3 actions
+                await PermissionsSeeder.SeedPermissionsAsync(_context);
+                
+                // Re-seed roles with updated permissions
+                await PermissionsSeeder.SeedRolesAsync(_context);
+
+                return Ok(new 
+                { 
+                    message = "Permissions reset successfully to read, write, create only",
+                    permissionCount = _context.Permissions.Count()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting permissions");
+                return StatusCode(500, new { message = "Error resetting permissions", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Fix system roles - only SuperAdmin and Administrator should be system roles
+        /// </summary>
+        [HttpPost("fix-system-roles")]
+        [AllowAnonymous]
+        public async Task<IActionResult> FixSystemRoles()
+        {
+            try
+            {
+                // Update all roles to non-system except SuperAdmin and Administrator
+                var rolesToUpdate = _context.Roles
+                    .Where(r => r.Name != "SuperAdmin" && r.Name != "Administrator")
+                    .ToList();
+
+                foreach (var role in rolesToUpdate)
+                {
+                    role.IsSystemRole = false;
+                }
+
+                // Ensure SuperAdmin and Administrator are system roles
+                var systemRoles = _context.Roles
+                    .Where(r => r.Name == "SuperAdmin" || r.Name == "Administrator")
+                    .ToList();
+
+                foreach (var role in systemRoles)
+                {
+                    role.IsSystemRole = true;
+                }
+
+                await _context.SaveChangesAsync();
+
+                var updatedRoles = _context.Roles
+                    .Select(r => new { r.Name, r.IsSystemRole })
+                    .OrderBy(r => r.Name)
+                    .ToList();
+
+                return Ok(new 
+                { 
+                    message = "System roles fixed successfully",
+                    roles = updatedRoles
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fixing system roles");
+                return StatusCode(500, new { message = "Error fixing system roles", error = ex.Message });
             }
         }
     }

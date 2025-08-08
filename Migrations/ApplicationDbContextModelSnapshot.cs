@@ -934,6 +934,9 @@ namespace WebsiteBuilderAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("text");
+
                     b.Property<int?>("CompanyId")
                         .HasColumnType("integer");
 

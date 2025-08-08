@@ -51,9 +51,11 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('active'); // Default to active
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -91,7 +93,7 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
   };
 
   const handleDelete = async (userId: number) => {
-    if (!confirm(t('rolesUsers.confirmDeleteUser', 'Are you sure you want to delete this user?'))) {
+    if (!confirm(t('rolesUsers.confirmDeleteUser', 'Are you sure you want to deactivate this user?'))) {
       return;
     }
 
@@ -107,12 +109,14 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
 
       if (response.ok) {
         await fetchUsers();
+        // If we're showing active users and just deactivated one, the list will auto-update
+        // due to the filter logic
       } else {
-        alert(t('rolesUsers.deleteUserError', 'Error deleting user'));
+        alert(t('rolesUsers.deleteUserError', 'Error deactivating user'));
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
-      alert(t('rolesUsers.deleteUserError', 'Error deleting user'));
+      console.error('Error deactivating user:', error);
+      alert(t('rolesUsers.deleteUserError', 'Error deactivating user'));
     }
   };
 
@@ -146,12 +150,16 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
     return colors[plan] || '#6b7280';
   };
 
-  // Filter users based on search and role
+  // Filter users based on search, role and status
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           user.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = !selectedRole || user.roles.some(r => r.name === selectedRole);
-    return matchesSearch && matchesRole;
+    const matchesStatus = selectedStatus === '' || 
+                          (selectedStatus === 'active' && user.isActive) ||
+                          (selectedStatus === 'inactive' && !user.isActive) ||
+                          (selectedStatus === 'pending' && !user.emailConfirmed);
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   // Pagination
@@ -178,8 +186,169 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
   };
 
   const handleExport = () => {
-    // Implement export functionality
-    console.log('Exporting users...');
+    setShowExportModal(true);
+  };
+
+  const handleExportFormat = (format: 'excel' | 'pdf' | 'csv') => {
+    setShowExportModal(false);
+    
+    switch(format) {
+      case 'excel':
+        exportToExcel();
+        break;
+      case 'pdf':
+        exportToPDF();
+        break;
+      case 'csv':
+        exportToCSV();
+        break;
+    }
+  };
+
+  const exportToCSV = () => {
+    // Prepare CSV data
+    const headers = ['ID', 'Name', 'Email', 'Phone', 'Role', 'Status', 'Created At'];
+    const csvData = filteredUsers.map(user => [
+      user.id,
+      user.fullName,
+      user.email,
+      user.phoneNumber || '',
+      user.roles.map(r => r.name).join(', '),
+      user.isActive ? 'Active' : 'Inactive',
+      new Date(user.createdAt).toLocaleDateString()
+    ]);
+    
+    // Create CSV content
+    let csvContent = headers.join(',') + '\n';
+    csvData.forEach(row => {
+      csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+    });
+    
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `users_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToExcel = () => {
+    // Create HTML table for Excel
+    let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+    html += '<head><meta charset="utf-8"><title>Users Export</title></head>';
+    html += '<body><table border="1">';
+    
+    // Headers
+    html += '<tr style="background-color:#f0f0f0;font-weight:bold;">';
+    html += '<th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Created At</th>';
+    html += '</tr>';
+    
+    // Data rows
+    filteredUsers.forEach(user => {
+      html += '<tr>';
+      html += `<td>${user.id}</td>`;
+      html += `<td>${user.fullName}</td>`;
+      html += `<td>${user.email}</td>`;
+      html += `<td>${user.phoneNumber || ''}</td>`;
+      html += `<td>${user.roles.map(r => r.name).join(', ')}</td>`;
+      html += `<td style="color:${user.isActive ? 'green' : 'red'}">${user.isActive ? 'Active' : 'Inactive'}</td>`;
+      html += `<td>${new Date(user.createdAt).toLocaleDateString()}</td>`;
+      html += '</tr>';
+    });
+    
+    html += '</table></body></html>';
+    
+    // Download as Excel
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `users_${new Date().toISOString().split('T')[0]}.xls`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToPDF = () => {
+    // Create a printable HTML document
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert(t('rolesUsers.popupBlocked', 'Please allow popups to export PDF'));
+      return;
+    }
+    
+    let html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Users Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; }
+          h1 { color: #333; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th { background-color: #f0f0f0; padding: 10px; text-align: left; border: 1px solid #ddd; }
+          td { padding: 8px; border: 1px solid #ddd; }
+          .active { color: green; }
+          .inactive { color: red; }
+          @media print {
+            body { margin: 0; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Users Report - ${new Date().toLocaleDateString()}</h1>
+        <p>Total Users: ${filteredUsers.length}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    filteredUsers.forEach(user => {
+      html += `
+        <tr>
+          <td>${user.id}</td>
+          <td>${user.fullName}</td>
+          <td>${user.email}</td>
+          <td>${user.phoneNumber || '-'}</td>
+          <td>${user.roles.map(r => r.name).join(', ')}</td>
+          <td class="${user.isActive ? 'active' : 'inactive'}">${user.isActive ? 'Active' : 'Inactive'}</td>
+          <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+        </tr>
+      `;
+    });
+    
+    html += `
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.print();
+      // Note: User can save as PDF from print dialog
+    };
   };
 
   if (loading) {
@@ -202,6 +371,27 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
 
   return (
     <div>
+      {/* Header with Actions - Desktop Only */}
+      <div className="hidden sm:flex justify-end items-center mb-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleExport}
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+          >
+            <DownloadIcon className="w-4 h-4" />
+            <span>{t('common.export', 'Export')}</span>
+          </button>
+          <button
+            onClick={() => router.push('/dashboard/roles-usuarios/users/new')}
+            className="px-4 py-2 text-white rounded-lg flex items-center gap-2 transition-colors"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <UserPlusIcon className="w-4 h-4" />
+            <span>{t('rolesUsers.addUser', 'Add User')}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Statistics Cards - Mobile Optimized */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Sessions Card */}
@@ -350,10 +540,15 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
 
             {/* Status Filter */}
             <select
+              value={selectedStatus}
+              onChange={(e) => {
+                setSelectedStatus(e.target.value);
+                setCurrentPage(1); // Reset to first page when filter changes
+              }}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2"
               style={{ '--tw-ring-color': primaryColor } as any}
             >
-              <option value="">{t('rolesUsers.selectStatus', 'Select Status')}</option>
+              <option value="">{t('rolesUsers.allStatus', 'All Status')}</option>
               <option value="active">{t('common.active', 'Active')}</option>
               <option value="inactive">{t('common.inactive', 'Inactive')}</option>
               <option value="pending">{t('common.pending', 'Pending')}</option>
@@ -441,28 +636,14 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
                     </p>
                   </div>
                   
-                  {/* Actions Dropdown */}
-                  <div className="relative group">
-                    <button className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
-                      <MoreVerticalIcon className="w-4 h-4 text-gray-500" />
-                    </button>
-                    <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-10">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-                      >
-                        <EditIcon className="w-4 h-4" />
-                        {t('common.edit', 'Edit')}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                        {t('common.delete', 'Delete')}
-                      </button>
-                    </div>
-                  </div>
+                  {/* Direct Edit Button - Mobile */}
+                  <button
+                    onClick={() => handleEdit(user)}
+                    className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                    title={t('common.edit', 'Edit')}
+                  >
+                    <EditIcon className="w-4 h-4 text-gray-500" />
+                  </button>
                 </div>
                 
                 {/* Role Badge */}
@@ -620,33 +801,12 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
                       <CopyIcon className="w-4 h-4 text-gray-500" />
                     </button>
                     <button
-                      onClick={() => handleView(user)}
+                      onClick={() => handleEdit(user)}
                       className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                      title={t('common.view', 'View')}
+                      title={t('common.edit', 'Edit')}
                     >
-                      <EyeIcon className="w-4 h-4 text-gray-500" />
+                      <EditIcon className="w-4 h-4 text-gray-500" />
                     </button>
-                    <div className="relative group">
-                      <button className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <MoreVerticalIcon className="w-4 h-4 text-gray-500" />
-                      </button>
-                      <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                        <button
-                          onClick={() => handleEdit(user)}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-                        >
-                          <EditIcon className="w-4 h-4" />
-                          {t('common.edit', 'Edit')}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                          {t('common.delete', 'Delete')}
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 </td>
               </tr>
@@ -751,6 +911,77 @@ export function UsersTab({ primaryColor }: UsersTabProps) {
       >
         <PlusIcon className="w-6 h-6" />
       </button>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-96 max-w-[90%] shadow-2xl">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('rolesUsers.exportData', 'Export Data')}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              {t('rolesUsers.selectFormat', 'Select the format you want to export the user data')}
+            </p>
+            
+            <div className="space-y-3">
+              {/* Excel Option */}
+              <button
+                onClick={() => handleExportFormat('excel')}
+                className="w-full p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-4 group"
+              >
+                <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M15.8,20H14L12,13.2L10,20H8.2L6.6,11H8.4L9.2,17.7L11.2,11H12.8L14.8,17.7L15.6,11H17.4L15.8,20M13,9V3.5L18.5,9H13Z"/>
+                  </svg>
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-medium text-gray-900 dark:text-white">Excel</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">.xls format</p>
+                </div>
+              </button>
+
+              {/* PDF Option */}
+              <button
+                onClick={() => handleExportFormat('pdf')}
+                className="w-full p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-4 group"
+              >
+                <div className="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M9.5,11.5C9.5,12.3 8.8,13 8,13H7V15H5.5V9H8C8.8,9 9.5,9.7 9.5,10.5V11.5M14.5,13.5C14.5,14.3 13.8,15 13,15H10.5V9H13C13.8,9 14.5,9.7 14.5,10.5V13.5M18.5,10.5H17V15H15.5V10.5H14V9H18.5V10.5M7,10.5V11.5H8V10.5H7M12,10.5V13.5H13V10.5H12Z"/>
+                  </svg>
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-medium text-gray-900 dark:text-white">PDF</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Print-ready format</p>
+                </div>
+              </button>
+
+              {/* CSV Option */}
+              <button
+                onClick={() => handleExportFormat('csv')}
+                className="w-full p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-4 group"
+              >
+                <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M10,19L12,15H13L15,19H14L13.5,18H11.5L11,19H10M12,17H13L12.5,16L12,17M8,13H10V15H11V17H10V19H8V17H7V15H8V13M8,15V17H10V15H8Z"/>
+                  </svg>
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-medium text-gray-900 dark:text-white">CSV</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Comma-separated values</p>
+                </div>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowExportModal(false)}
+              className="mt-6 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              {t('common.cancel', 'Cancel')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
