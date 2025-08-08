@@ -15,6 +15,95 @@ interface CustomerDetailProps {
   customerId: string;
 }
 
+// Interfaces for form data structure - Exported for use in tab components
+export interface OverviewFormData {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  phoneNumber: string;
+  birthDate: string;
+  gender: string;
+  status: string;
+  loyaltyTier: string;
+  preferredLanguage: string;
+  preferredCurrency: string;
+  companyName: string;
+  taxId: string;
+  country: string;
+  avatarUrl: string;
+}
+
+export interface SecurityFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+  isTwoFactorEnabled: boolean;
+  recoveryEmail: string;
+  securityQuestions: Array<{ question: string; answer: string }>;
+  trustedDevices: string[];
+  sessionTimeout: number;
+}
+
+export interface AddressBillingFormData {
+  addresses: Array<{
+    id?: number;
+    type: string;
+    addressLine1: string;
+    addressLine2: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    isDefault: boolean;
+  }>;
+  paymentMethods: Array<{
+    id?: number;
+    type: string;
+    last4: string;
+    expiryMonth: number;
+    expiryYear: number;
+    isDefault: boolean;
+  }>;
+  billingPreferences: {
+    invoiceEmail: string;
+    autoCharge: boolean;
+    paperlessBilling: boolean;
+  };
+}
+
+export interface NotificationsFormData {
+  emailNotifications: {
+    orderUpdates: boolean;
+    promotions: boolean;
+    newsletter: boolean;
+    productReviews: boolean;
+    priceAlerts: boolean;
+  };
+  smsNotifications: {
+    orderUpdates: boolean;
+    deliveryAlerts: boolean;
+    promotions: boolean;
+  };
+  pushNotifications: {
+    enabled: boolean;
+    sound: boolean;
+    vibration: boolean;
+  };
+  notificationSchedule: {
+    doNotDisturbStart: string;
+    doNotDisturbEnd: string;
+    timezone: string;
+  };
+}
+
+interface AllFormData {
+  overview: OverviewFormData;
+  security: SecurityFormData;
+  addressBilling: AddressBillingFormData;
+  notifications: NotificationsFormData;
+}
+
 export default function CustomerDetail({ customerId }: CustomerDetailProps) {
   const { t } = useI18n();
   const router = useRouter();
@@ -22,7 +111,72 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
+  const [isEditing, setIsEditing] = useState(false);
   const isNewCustomer = customerId === 'new';
+  
+  // Centralized form state - persists across tab changes
+  const [formData, setFormData] = useState<AllFormData>({
+    overview: {
+      firstName: '',
+      lastName: '',
+      username: '',
+      email: '',
+      phoneNumber: '',
+      birthDate: '',
+      gender: '',
+      status: 'Active',
+      loyaltyTier: 'Silver',
+      preferredLanguage: 'English',
+      preferredCurrency: 'USD',
+      companyName: '',
+      taxId: '',
+      country: '',
+      avatarUrl: ''
+    },
+    security: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      isTwoFactorEnabled: false,
+      recoveryEmail: '',
+      securityQuestions: [],
+      trustedDevices: [],
+      sessionTimeout: 30
+    },
+    addressBilling: {
+      addresses: [],
+      paymentMethods: [],
+      billingPreferences: {
+        invoiceEmail: '',
+        autoCharge: false,
+        paperlessBilling: true
+      }
+    },
+    notifications: {
+      emailNotifications: {
+        orderUpdates: true,
+        promotions: false,
+        newsletter: false,
+        productReviews: true,
+        priceAlerts: false
+      },
+      smsNotifications: {
+        orderUpdates: false,
+        deliveryAlerts: false,
+        promotions: false
+      },
+      pushNotifications: {
+        enabled: false,
+        sound: true,
+        vibration: true
+      },
+      notificationSchedule: {
+        doNotDisturbStart: '22:00',
+        doNotDisturbEnd: '08:00',
+        timezone: 'America/Santo_Domingo'
+      }
+    }
+  });
 
   useEffect(() => {
     const settings = localStorage.getItem('ui-settings');
@@ -59,6 +213,7 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
         coupons: [],
         orders: []
       } as CustomerDetailDto);
+      setIsEditing(true); // New customers start in edit mode
       setLoading(false);
     } else {
       fetchCustomerDetail();
@@ -72,10 +227,142 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
       setLoading(true);
       const data = await customerAPI.getCustomer(parseInt(customerId));
       setCustomer(data);
+      
+      // Initialize form data with customer data
+      setFormData(prev => ({
+        ...prev,
+        overview: {
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          username: data.username || '',
+          email: data.email || '',
+          phoneNumber: data.phoneNumber || '',
+          birthDate: data.birthDate || '',
+          gender: data.gender || '',
+          status: data.status || 'Active',
+          loyaltyTier: data.loyaltyTier || 'Silver',
+          preferredLanguage: data.preferredLanguage || 'English',
+          preferredCurrency: data.preferredCurrency || 'USD',
+          companyName: data.companyName || '',
+          taxId: data.taxId || '',
+          country: data.country || '',
+          avatarUrl: data.avatarUrl || ''
+        },
+        security: {
+          ...prev.security,
+          isTwoFactorEnabled: data.isTwoFactorEnabled || false,
+          recoveryEmail: data.recoveryEmail || data.email || '',
+          securityQuestions: data.securityQuestions || [],
+          trustedDevices: data.devices?.map(d => d.deviceName) || [],
+          sessionTimeout: data.sessionTimeout || 30
+        },
+        addressBilling: {
+          addresses: data.addresses || [],
+          paymentMethods: data.paymentMethods || [],
+          billingPreferences: {
+            invoiceEmail: data.billingEmail || data.email || '',
+            autoCharge: data.autoCharge || false,
+            paperlessBilling: data.paperlessBilling !== false
+          }
+        },
+        notifications: {
+          emailNotifications: {
+            orderUpdates: data.notificationPreferences?.orderUpdates !== false,
+            promotions: data.notificationPreferences?.promotions || false,
+            newsletter: data.notificationPreferences?.newsletter || false,
+            productReviews: data.notificationPreferences?.productReviews !== false,
+            priceAlerts: data.notificationPreferences?.priceAlerts || false
+          },
+          smsNotifications: {
+            orderUpdates: data.notificationPreferences?.smsOrderUpdates || false,
+            deliveryAlerts: data.notificationPreferences?.smsDeliveryAlerts || false,
+            promotions: data.notificationPreferences?.smsPromotions || false
+          },
+          pushNotifications: {
+            enabled: data.notificationPreferences?.pushEnabled || false,
+            sound: data.notificationPreferences?.pushSound !== false,
+            vibration: data.notificationPreferences?.pushVibration !== false
+          },
+          notificationSchedule: {
+            doNotDisturbStart: data.notificationPreferences?.doNotDisturbStart || '22:00',
+            doNotDisturbEnd: data.notificationPreferences?.doNotDisturbEnd || '08:00',
+            timezone: data.notificationPreferences?.timezone || 'America/Santo_Domingo'
+          }
+        }
+      }));
     } catch (error) {
       console.error('Error fetching customer:', error);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // Handler functions for updating form data from child tabs
+  const updateOverviewData = (data: Partial<OverviewFormData>) => {
+    setFormData(prev => ({
+      ...prev,
+      overview: { ...prev.overview, ...data }
+    }));
+  };
+  
+  const updateSecurityData = (data: Partial<SecurityFormData>) => {
+    setFormData(prev => ({
+      ...prev,
+      security: { ...prev.security, ...data }
+    }));
+  };
+  
+  const updateAddressBillingData = (data: Partial<AddressBillingFormData>) => {
+    setFormData(prev => ({
+      ...prev,
+      addressBilling: { ...prev.addressBilling, ...data }
+    }));
+  };
+  
+  const updateNotificationsData = (data: Partial<NotificationsFormData>) => {
+    setFormData(prev => ({
+      ...prev,
+      notifications: { ...prev.notifications, ...data }
+    }));
+  };
+  
+  // Centralized save handler that collects data from all tabs
+  const handleSaveAll = async () => {
+    try {
+      // Combine all form data for saving
+      const dataToSave = {
+        ...formData.overview,
+        isTwoFactorEnabled: formData.security.isTwoFactorEnabled,
+        recoveryEmail: formData.security.recoveryEmail,
+        sessionTimeout: formData.security.sessionTimeout,
+        addresses: formData.addressBilling.addresses,
+        paymentMethods: formData.addressBilling.paymentMethods,
+        billingEmail: formData.addressBilling.billingPreferences.invoiceEmail,
+        autoCharge: formData.addressBilling.billingPreferences.autoCharge,
+        paperlessBilling: formData.addressBilling.billingPreferences.paperlessBilling,
+        notificationPreferences: {
+          ...formData.notifications.emailNotifications,
+          smsOrderUpdates: formData.notifications.smsNotifications.orderUpdates,
+          smsDeliveryAlerts: formData.notifications.smsNotifications.deliveryAlerts,
+          smsPromotions: formData.notifications.smsNotifications.promotions,
+          pushEnabled: formData.notifications.pushNotifications.enabled,
+          pushSound: formData.notifications.pushNotifications.sound,
+          pushVibration: formData.notifications.pushNotifications.vibration,
+          ...formData.notifications.notificationSchedule
+        }
+      };
+      
+      if (isNewCustomer) {
+        const newCustomer = await customerAPI.createCustomer(dataToSave);
+        router.push(`/dashboard/clientes/${newCustomer.id}`);
+      } else {
+        await customerAPI.updateCustomer(customer!.id, dataToSave);
+        await fetchCustomerDetail();
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Error saving customer:', error);
+      alert(t('common.error', 'An error occurred while saving'));
     }
   };
 
@@ -282,33 +569,50 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           {activeTab === 'overview' && (
             <CustomerOverviewTab 
               customer={customer} 
+              formData={formData.overview}
+              onFormChange={updateOverviewData}
               primaryColor={primaryColor}
               onRefresh={fetchCustomerDetail}
               isNewCustomer={isNewCustomer}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
+              onSave={handleSaveAll}
             />
           )}
           {activeTab === 'security' && (
             <CustomerSecurityTab 
               customer={customer} 
+              formData={formData.security}
+              onFormChange={updateSecurityData}
               primaryColor={primaryColor}
               onRefresh={fetchCustomerDetail}
               isNewCustomer={isNewCustomer}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
             />
           )}
           {activeTab === 'address-billing' && (
             <CustomerAddressBillingTab 
               customer={customer} 
+              formData={formData.addressBilling}
+              onFormChange={updateAddressBillingData}
               primaryColor={primaryColor}
               onRefresh={fetchCustomerDetail}
               isNewCustomer={isNewCustomer}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
             />
           )}
           {activeTab === 'notifications' && (
             <CustomerNotificationsTab 
               customer={customer} 
+              formData={formData.notifications}
+              onFormChange={updateNotificationsData}
               primaryColor={primaryColor}
               onRefresh={fetchCustomerDetail}
               isNewCustomer={isNewCustomer}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
             />
           )}
         </div>

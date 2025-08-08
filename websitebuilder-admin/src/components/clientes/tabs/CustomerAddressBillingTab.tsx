@@ -1,35 +1,41 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import { CustomerDetailDto, CustomerAddressDto, CustomerPaymentMethodDto } from '@/types/customer';
-import { customerAPI } from '@/lib/api/customers';
+import { CustomerDetailDto } from '@/types/customer';
+import { AddressBillingFormData } from '../CustomerDetail';
+import { CountryFlag, countries } from '@/components/ui/CountryFlag';
 
 interface CustomerAddressBillingTabProps {
-  customer: CustomerDetailDto;
+  customer: CustomerDetailDto | null;
+  formData: AddressBillingFormData;
+  onFormChange: (data: Partial<AddressBillingFormData>) => void;
   primaryColor: string;
   onRefresh: () => void;
   isNewCustomer?: boolean;
+  isEditing: boolean;
+  setIsEditing: (value: boolean) => void;
 }
 
-export default function CustomerAddressBillingTab({ customer, primaryColor, onRefresh, isNewCustomer = false }: CustomerAddressBillingTabProps) {
+export default function CustomerAddressBillingTab({ 
+  customer, 
+  formData,
+  onFormChange,
+  primaryColor, 
+  onRefresh, 
+  isNewCustomer = false,
+  isEditing,
+  setIsEditing
+}: CustomerAddressBillingTabProps) {
   const { t } = useI18n();
-  const [showAddAddressModal, setShowAddAddressModal] = useState(false);
-  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
-  const [editingAddress, setEditingAddress] = useState<CustomerAddressDto | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(isNewCustomer);
   
-  // For new customer - editable billing info
-  const [billingInfo, setBillingInfo] = useState({
-    taxId: customer.taxId || '',
-    companyName: customer.companyName || '',
-    preferredCurrency: customer.preferredCurrency || 'USD',
-    billingCycle: 'monthly'
-  });
-
-  // For new customer - initial address
-  const [newCustomerAddress, setNewCustomerAddress] = useState({
+  // For editing existing addresses inline
+  const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
+  const [editingPaymentId, setEditingPaymentId] = useState<number | null>(null);
+  
+  // Temporary state for new address being added
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [newAddress, setNewAddress] = useState({
     type: 'billing',
     label: '',
     street: '',
@@ -38,84 +44,165 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
     state: '',
     postalCode: '',
     country: '',
-    isDefault: true
+    isDefault: false
   });
 
-  useEffect(() => {
-    setBillingInfo({
-      taxId: customer.taxId || '',
-      companyName: customer.companyName || '',
-      preferredCurrency: customer.preferredCurrency || 'USD',
-      billingCycle: 'monthly'
-    });
-    setIsEditing(isNewCustomer);
-  }, [customer, isNewCustomer]);
+  // Temporary state for new payment method being added
+  const [showNewPaymentForm, setShowNewPaymentForm] = useState(false);
+  const [newPayment, setNewPayment] = useState({
+    cardType: 'Visa',
+    lastFourDigits: '',
+    expiryMonth: 1,
+    expiryYear: new Date().getFullYear(),
+    cardholderName: '',
+    isDefault: false
+  });
 
-  const handleDeleteAddress = async (addressId: number) => {
-    if (confirm(t('customers.addresses.confirmDelete', 'Are you sure you want to delete this address?'))) {
-      try {
-        await customerAPI.deleteAddress(customer.id, addressId);
-        onRefresh();
-      } catch (error) {
-        console.error('Error deleting address:', error);
-      }
-    }
-  };
-
-  const handleSetDefaultAddress = async (addressId: number) => {
-    try {
-      await customerAPI.setDefaultAddress(customer.id, addressId);
-      onRefresh();
-    } catch (error) {
-      console.error('Error setting default address:', error);
-    }
-  };
-
-  const handleDeletePaymentMethod = async (paymentMethodId: number) => {
-    if (confirm(t('customers.payments.confirmDelete', 'Are you sure you want to delete this payment method?'))) {
-      try {
-        await customerAPI.deletePaymentMethod(customer.id, paymentMethodId);
-        onRefresh();
-      } catch (error) {
-        console.error('Error deleting payment method:', error);
-      }
-    }
-  };
-
-  const handleAddressChange = (field: string, value: string) => {
-    setNewCustomerAddress(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleBillingChange = (field: string, value: string) => {
-    setBillingInfo(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSave = async () => {
-    try {
-      setLoading(true);
-      if (!isNewCustomer) {
-        // Update existing customer billing info
-        await customerAPI.updateCustomer(customer.id, {
-          taxId: billingInfo.taxId,
-          companyName: billingInfo.companyName,
-          preferredCurrency: billingInfo.preferredCurrency
+  const handleAddressChange = (field: string, value: any, index?: number) => {
+    if (index !== undefined) {
+      // Editing existing address
+      const updatedAddresses = [...formData.addresses];
+      updatedAddresses[index] = {
+        ...updatedAddresses[index],
+        [field]: value
+      };
+      onFormChange({ addresses: updatedAddresses });
+    } else {
+      // For new customer primary address (first address)
+      if (formData.addresses.length === 0) {
+        onFormChange({ 
+          addresses: [{
+            type: 'billing',
+            addressLine1: '',
+            addressLine2: '',
+            city: '',
+            state: '',
+            postalCode: '',
+            country: '',
+            isDefault: true
+          }]
         });
-        onRefresh();
-        setIsEditing(false);
+      } else {
+        const updatedAddresses = [...formData.addresses];
+        updatedAddresses[0] = {
+          ...updatedAddresses[0],
+          [field]: value
+        };
+        onFormChange({ addresses: updatedAddresses });
       }
-    } catch (error) {
-      console.error('Error saving billing info:', error);
-      alert(t('common.error', 'An error occurred while saving'));
-    } finally {
-      setLoading(false);
     }
   };
+
+  const handleBillingPreferenceChange = (field: string, value: any) => {
+    onFormChange({
+      billingPreferences: {
+        ...formData.billingPreferences,
+        [field]: value
+      }
+    });
+  };
+
+  const handleDeleteAddress = (index: number) => {
+    if (confirm(t('customers.addresses.confirmDelete', 'Are you sure you want to delete this address?'))) {
+      const updatedAddresses = formData.addresses.filter((_, i) => i !== index);
+      onFormChange({ addresses: updatedAddresses });
+    }
+  };
+
+  const handleSetDefaultAddress = (index: number) => {
+    const updatedAddresses = formData.addresses.map((addr, i) => ({
+      ...addr,
+      isDefault: i === index
+    }));
+    onFormChange({ addresses: updatedAddresses });
+  };
+
+  const handleDeletePaymentMethod = (index: number) => {
+    if (confirm(t('customers.payments.confirmDelete', 'Are you sure you want to delete this payment method?'))) {
+      const updatedPayments = formData.paymentMethods.filter((_, i) => i !== index);
+      onFormChange({ paymentMethods: updatedPayments });
+    }
+  };
+
+  const handleSetDefaultPayment = (index: number) => {
+    const updatedPayments = formData.paymentMethods.map((payment, i) => ({
+      ...payment,
+      isDefault: i === index
+    }));
+    onFormChange({ paymentMethods: updatedPayments });
+  };
+
+  const handleAddNewAddress = () => {
+    const addressToAdd = {
+      type: newAddress.type,
+      addressLine1: newAddress.street,
+      addressLine2: newAddress.apartment,
+      city: newAddress.city,
+      state: newAddress.state,
+      postalCode: newAddress.postalCode,
+      country: newAddress.country,
+      isDefault: formData.addresses.length === 0 || newAddress.isDefault
+    };
+    
+    onFormChange({ 
+      addresses: [...formData.addresses, addressToAdd] 
+    });
+    
+    // Reset form
+    setNewAddress({
+      type: 'billing',
+      label: '',
+      street: '',
+      apartment: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: '',
+      isDefault: false
+    });
+    setShowNewAddressForm(false);
+  };
+
+  const handleAddNewPayment = () => {
+    const paymentToAdd = {
+      type: newPayment.cardType.toLowerCase().replace(' ', '_'),
+      last4: newPayment.lastFourDigits,
+      expiryMonth: newPayment.expiryMonth,
+      expiryYear: newPayment.expiryYear,
+      isDefault: formData.paymentMethods.length === 0 || newPayment.isDefault
+    };
+    
+    onFormChange({ 
+      paymentMethods: [...formData.paymentMethods, paymentToAdd] 
+    });
+    
+    // Reset form
+    setNewPayment({
+      cardType: 'Visa',
+      lastFourDigits: '',
+      expiryMonth: 1,
+      expiryYear: new Date().getFullYear(),
+      cardholderName: '',
+      isDefault: false
+    });
+    setShowNewPaymentForm(false);
+  };
+
+  // Initialize first address for new customer
+  if (isNewCustomer && formData.addresses.length === 0) {
+    onFormChange({ 
+      addresses: [{
+        type: 'billing',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: '',
+        isDefault: true
+      }]
+    });
+  }
 
   return (
     <div className="relative min-h-screen pb-20 md:pb-6">
@@ -126,9 +213,9 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
               {t('customers.addresses.title', 'Addresses')}
             </h3>
-            {!isNewCustomer && (
+            {!isNewCustomer && !showNewAddressForm && (
               <button
-                onClick={() => setShowAddAddressModal(true)}
+                onClick={() => setShowNewAddressForm(true)}
                 className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white rounded-lg"
                 style={{ backgroundColor: primaryColor }}
               >
@@ -138,7 +225,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
           </div>
 
           {isNewCustomer ? (
-            // For new customer - show address input form
+            // For new customer - show primary address input form
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6">
               <h4 className="font-medium text-gray-900 dark:text-white mb-4">
                 {t('customers.addresses.primaryAddress', 'Primary Address')}
@@ -150,8 +237,8 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                   </label>
                   <input
                     type="text"
-                    value={newCustomerAddress.street}
-                    onChange={(e) => handleAddressChange('street', e.target.value)}
+                    value={formData.addresses[0]?.addressLine1 || ''}
+                    onChange={(e) => handleAddressChange('addressLine1', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
                     style={{ '--tw-ring-color': primaryColor } as any}
                     placeholder={t('customers.addresses.streetPlaceholder', '123 Main St')}
@@ -164,8 +251,8 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                   </label>
                   <input
                     type="text"
-                    value={newCustomerAddress.apartment}
-                    onChange={(e) => handleAddressChange('apartment', e.target.value)}
+                    value={formData.addresses[0]?.addressLine2 || ''}
+                    onChange={(e) => handleAddressChange('addressLine2', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
                     style={{ '--tw-ring-color': primaryColor } as any}
                     placeholder={t('customers.addresses.apartmentPlaceholder', 'Apt 4B')}
@@ -178,7 +265,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                   </label>
                   <input
                     type="text"
-                    value={newCustomerAddress.city}
+                    value={formData.addresses[0]?.city || ''}
                     onChange={(e) => handleAddressChange('city', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
                     style={{ '--tw-ring-color': primaryColor } as any}
@@ -192,7 +279,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                   </label>
                   <input
                     type="text"
-                    value={newCustomerAddress.state}
+                    value={formData.addresses[0]?.state || ''}
                     onChange={(e) => handleAddressChange('state', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
                     style={{ '--tw-ring-color': primaryColor } as any}
@@ -206,7 +293,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                   </label>
                   <input
                     type="text"
-                    value={newCustomerAddress.postalCode}
+                    value={formData.addresses[0]?.postalCode || ''}
                     onChange={(e) => handleAddressChange('postalCode', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
                     style={{ '--tw-ring-color': primaryColor } as any}
@@ -218,28 +305,26 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('customers.addresses.country', 'Country')}
                   </label>
-                  <input
-                    type="text"
-                    value={newCustomerAddress.country}
-                    onChange={(e) => handleAddressChange('country', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
-                    style={{ '--tw-ring-color': primaryColor } as any}
-                    placeholder={t('customers.addresses.countryPlaceholder', 'United States')}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('customers.addresses.label', 'Label')}
-                  </label>
-                  <input
-                    type="text"
-                    value={newCustomerAddress.label}
-                    onChange={(e) => handleAddressChange('label', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
-                    style={{ '--tw-ring-color': primaryColor } as any}
-                    placeholder={t('customers.addresses.labelPlaceholder', 'Home, Office, etc.')}
-                  />
+                  <div className="relative">
+                    <select
+                      value={formData.addresses[0]?.country || ''}
+                      onChange={(e) => handleAddressChange('country', e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all appearance-none"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                    >
+                      <option value="">{t('customers.addresses.countryPlaceholder', 'Select Country')}</option>
+                      {Object.entries(countries).map(([code, country]) => (
+                        <option key={code} value={code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                    {formData.addresses[0]?.country && (
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <CountryFlag countryCode={formData.addresses[0].country} className="w-5 h-4" />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div>
@@ -247,7 +332,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                     {t('customers.addresses.type', 'Type')}
                   </label>
                   <select
-                    value={newCustomerAddress.type}
+                    value={formData.addresses[0]?.type || 'billing'}
                     onChange={(e) => handleAddressChange('type', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
                     style={{ '--tw-ring-color': primaryColor } as any}
@@ -257,43 +342,152 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                     <option value="both">{t('customers.addresses.both', 'Both')}</option>
                   </select>
                 </div>
-                
-                <div className="sm:col-span-2 flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={newCustomerAddress.isDefault}
-                    onChange={(e) => handleAddressChange('isDefault', e.target.checked.toString())}
-                    className="h-4 w-4 rounded"
-                    style={{ accentColor: primaryColor }}
-                  />
-                  <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    {t('customers.addresses.setAsDefault', 'Set as default address')}
-                  </label>
-                </div>
               </div>
             </div>
           ) : (
             // For existing customer - show address cards
             <>
+              {/* Show new address form if adding */}
+              {showNewAddressForm && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6 mb-4">
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-4">
+                    {t('customers.addresses.addNew', 'Add New Address')}
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('customers.addresses.street', 'Street Address')}
+                      </label>
+                      <input
+                        type="text"
+                        value={newAddress.street}
+                        onChange={(e) => setNewAddress({...newAddress, street: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                        style={{ '--tw-ring-color': primaryColor } as any}
+                        placeholder={t('customers.addresses.streetPlaceholder', '123 Main St')}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('customers.addresses.apartment', 'Apartment/Suite')}
+                      </label>
+                      <input
+                        type="text"
+                        value={newAddress.apartment}
+                        onChange={(e) => setNewAddress({...newAddress, apartment: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                        style={{ '--tw-ring-color': primaryColor } as any}
+                        placeholder={t('customers.addresses.apartmentPlaceholder', 'Apt 4B')}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('customers.addresses.city', 'City')}
+                      </label>
+                      <input
+                        type="text"
+                        value={newAddress.city}
+                        onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                        style={{ '--tw-ring-color': primaryColor } as any}
+                        placeholder={t('customers.addresses.cityPlaceholder', 'New York')}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('customers.addresses.state', 'State/Province')}
+                      </label>
+                      <input
+                        type="text"
+                        value={newAddress.state}
+                        onChange={(e) => setNewAddress({...newAddress, state: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                        style={{ '--tw-ring-color': primaryColor } as any}
+                        placeholder={t('customers.addresses.statePlaceholder', 'NY')}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('customers.addresses.postalCode', 'Postal Code')}
+                      </label>
+                      <input
+                        type="text"
+                        value={newAddress.postalCode}
+                        onChange={(e) => setNewAddress({...newAddress, postalCode: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                        style={{ '--tw-ring-color': primaryColor } as any}
+                        placeholder={t('customers.addresses.postalCodePlaceholder', '10001')}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {t('customers.addresses.country', 'Country')}
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={newAddress.country}
+                          onChange={(e) => setNewAddress({...newAddress, country: e.target.value})}
+                          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all appearance-none"
+                          style={{ '--tw-ring-color': primaryColor } as any}
+                        >
+                          <option value="">{t('customers.addresses.countryPlaceholder', 'Select Country')}</option>
+                          {Object.entries(countries).map(([code, country]) => (
+                            <option key={code} value={code}>
+                              {country.name}
+                            </option>
+                          ))}
+                        </select>
+                        {newAddress.country && (
+                          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <CountryFlag countryCode={newAddress.country} className="w-5 h-4" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="sm:col-span-2 flex gap-2">
+                      <button
+                        onClick={handleAddNewAddress}
+                        className="px-4 py-2 text-white rounded-lg"
+                        style={{ backgroundColor: primaryColor }}
+                      >
+                        {t('common.save', 'Save')}
+                      </button>
+                      <button
+                        onClick={() => setShowNewAddressForm(false)}
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg"
+                      >
+                        {t('common.cancel', 'Cancel')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Mobile: Address Cards */}
               <div className="md:hidden space-y-3">
-                {customer.addresses && customer.addresses.length > 0 ? (
-                  customer.addresses.map((address) => (
-                    <div key={address.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+                {formData.addresses && formData.addresses.length > 0 ? (
+                  formData.addresses.map((address, index) => (
+                    <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <p className="font-medium text-gray-900 dark:text-white">
-                            {address.label || address.type}
+                            {address.type}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {address.street}
-                            {address.apartment && `, ${address.apartment}`}
+                            {address.addressLine1}
+                            {address.addressLine2 && `, ${address.addressLine2}`}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             {address.city}{address.state && `, ${address.state}`} {address.postalCode}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {address.country}
+                            {countries[address.country as keyof typeof countries]?.name || address.country}
                           </p>
                         </div>
                         {address.isDefault && (
@@ -306,7 +500,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                       <div className="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                         {!address.isDefault && (
                           <button
-                            onClick={() => handleSetDefaultAddress(address.id)}
+                            onClick={() => handleSetDefaultAddress(index)}
                             className="flex-1 px-3 py-1.5 text-xs font-medium border rounded-lg"
                             style={{ borderColor: primaryColor, color: primaryColor }}
                           >
@@ -314,13 +508,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                           </button>
                         )}
                         <button
-                          onClick={() => setEditingAddress(address)}
-                          className="flex-1 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg"
-                        >
-                          {t('common.edit', 'Edit')}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAddress(address.id)}
+                          onClick={() => handleDeleteAddress(index)}
                           className="flex-1 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg"
                         >
                           {t('common.delete', 'Delete')}
@@ -339,9 +527,9 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
 
               {/* Desktop: Address Grid */}
               <div className="hidden md:grid md:grid-cols-2 gap-4">
-                {customer.addresses && customer.addresses.length > 0 ? (
-                  customer.addresses.map((address) => (
-                    <div key={address.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 relative">
+                {formData.addresses && formData.addresses.length > 0 ? (
+                  formData.addresses.map((address, index) => (
+                    <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 relative">
                       {address.isDefault && (
                         <span className="absolute top-2 right-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-full">
                           {t('customers.addresses.default', 'Default')}
@@ -350,37 +538,31 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                       
                       <div className="mb-3">
                         <p className="font-medium text-gray-900 dark:text-white mb-1">
-                          {address.label || address.type}
+                          {address.type}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {address.street}
-                          {address.apartment && `, ${address.apartment}`}
+                          {address.addressLine1}
+                          {address.addressLine2 && `, ${address.addressLine2}`}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {address.city}{address.state && `, ${address.state}`} {address.postalCode}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {address.country}
+                          {countries[address.country as keyof typeof countries]?.name || address.country}
                         </p>
                       </div>
 
                       <div className="flex space-x-2">
                         {!address.isDefault && (
                           <button
-                            onClick={() => handleSetDefaultAddress(address.id)}
+                            onClick={() => handleSetDefaultAddress(index)}
                             className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                           >
                             {t('customers.addresses.setDefault', 'Set as Default')}
                           </button>
                         )}
                         <button
-                          onClick={() => setEditingAddress(address)}
-                          className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
-                        >
-                          {t('common.edit', 'Edit')}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAddress(address.id)}
+                          onClick={() => handleDeleteAddress(index)}
                           className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                         >
                           {t('common.delete', 'Delete')}
@@ -407,32 +589,89 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
               <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 {t('customers.payments.title', 'Payment Methods')}
               </h3>
-              <button
-                onClick={() => setShowAddPaymentModal(true)}
-                className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white rounded-lg"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {t('customers.payments.add', 'Add Payment')}
-              </button>
+              {!showNewPaymentForm && (
+                <button
+                  onClick={() => setShowNewPaymentForm(true)}
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white rounded-lg"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {t('customers.payments.add', 'Add Payment')}
+                </button>
+              )}
             </div>
+
+            {/* Show new payment form if adding */}
+            {showNewPaymentForm && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6 mb-4">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-4">
+                  {t('customers.payments.addNew', 'Add New Payment Method')}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('customers.payments.cardType', 'Card Type')}
+                    </label>
+                    <select
+                      value={newPayment.cardType}
+                      onChange={(e) => setNewPayment({...newPayment, cardType: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                    >
+                      <option value="Visa">Visa</option>
+                      <option value="Mastercard">Mastercard</option>
+                      <option value="American Express">American Express</option>
+                      <option value="Discover">Discover</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('customers.payments.lastFour', 'Last 4 Digits')}
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={4}
+                      value={newPayment.lastFourDigits}
+                      onChange={(e) => setNewPayment({...newPayment, lastFourDigits: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      placeholder="1234"
+                    />
+                  </div>
+                  
+                  <div className="sm:col-span-2 flex gap-2">
+                    <button
+                      onClick={handleAddNewPayment}
+                      className="px-4 py-2 text-white rounded-lg"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {t('common.save', 'Save')}
+                    </button>
+                    <button
+                      onClick={() => setShowNewPaymentForm(false)}
+                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg"
+                    >
+                      {t('common.cancel', 'Cancel')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Mobile: Payment Cards */}
             <div className="md:hidden space-y-3">
-              {customer.paymentMethods && customer.paymentMethods.length > 0 ? (
-                customer.paymentMethods.map((payment) => (
-                  <div key={payment.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+              {formData.paymentMethods && formData.paymentMethods.length > 0 ? (
+                formData.paymentMethods.map((payment, index) => (
+                  <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-3">
                         <div className="text-2xl">💳</div>
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">
-                            {payment.cardType} •••• {payment.lastFourDigits}
+                            •••• {payment.last4}
                           </p>
                           <p className="text-xs text-gray-600 dark:text-gray-400">
                             {t('customers.payments.expires', 'Expires')} {payment.expiryMonth}/{payment.expiryYear}
-                          </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            {payment.cardholderName}
                           </p>
                         </div>
                       </div>
@@ -446,6 +685,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                     <div className="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
                       {!payment.isDefault && (
                         <button
+                          onClick={() => handleSetDefaultPayment(index)}
                           className="flex-1 px-3 py-1.5 text-xs font-medium border rounded-lg"
                           style={{ borderColor: primaryColor, color: primaryColor }}
                         >
@@ -453,7 +693,7 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                         </button>
                       )}
                       <button
-                        onClick={() => handleDeletePaymentMethod(payment.id)}
+                        onClick={() => handleDeletePaymentMethod(index)}
                         className="flex-1 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-lg"
                       >
                         {t('common.delete', 'Delete')}
@@ -472,9 +712,9 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
 
             {/* Desktop: Payment Grid */}
             <div className="hidden md:grid md:grid-cols-2 gap-4">
-              {customer.paymentMethods && customer.paymentMethods.length > 0 ? (
-                customer.paymentMethods.map((payment) => (
-                  <div key={payment.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 relative">
+              {formData.paymentMethods && formData.paymentMethods.length > 0 ? (
+                formData.paymentMethods.map((payment, index) => (
+                  <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 relative">
                     {payment.isDefault && (
                       <span className="absolute top-2 right-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-full">
                         {t('customers.payments.default', 'Default')}
@@ -485,13 +725,10 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                       <div className="text-2xl">💳</div>
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">
-                          {payment.cardType} ending in {payment.lastFourDigits}
+                          ending in {payment.last4}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {t('customers.payments.expires', 'Expires')} {payment.expiryMonth}/{payment.expiryYear}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {payment.cardholderName}
                         </p>
                       </div>
                     </div>
@@ -499,13 +736,14 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
                     <div className="flex space-x-2">
                       {!payment.isDefault && (
                         <button
+                          onClick={() => handleSetDefaultPayment(index)}
                           className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                         >
                           {t('customers.payments.setDefault', 'Set as Default')}
                         </button>
                       )}
                       <button
-                        onClick={() => handleDeletePaymentMethod(payment.id)}
+                        onClick={() => handleDeletePaymentMethod(index)}
                         className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                       >
                         {t('common.delete', 'Delete')}
@@ -524,173 +762,62 @@ export default function CustomerAddressBillingTab({ customer, primaryColor, onRe
           </div>
         )}
 
-        {/* Billing Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-          <div className="p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                {t('customers.billing.title', 'Billing Information')}
-              </h3>
-              {!isNewCustomer && !isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white rounded-lg"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  {t('common.edit', 'Edit')}
-                </button>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        {/* Billing Preferences */}
+        <div className="mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {t('customers.billing.preferences', 'Billing Preferences')}
+          </h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6">
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.billing.taxId', 'Tax ID')}
+                  {t('customers.billing.invoiceEmail', 'Invoice Email')}
                 </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={billingInfo.taxId}
-                    onChange={(e) => handleBillingChange('taxId', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
-                    style={{ '--tw-ring-color': primaryColor } as any}
-                    placeholder={t('customers.billing.taxIdPlaceholder', 'Enter tax ID')}
-                  />
-                ) : (
-                  <p className="px-3 py-2 text-gray-900 dark:text-white">
-                    {customer.taxId || t('common.notProvided', 'Not provided')}
-                  </p>
-                )}
+                <input
+                  type="email"
+                  value={formData.billingPreferences.invoiceEmail}
+                  onChange={(e) => handleBillingPreferenceChange('invoiceEmail', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                  style={{ '--tw-ring-color': primaryColor } as any}
+                  placeholder={t('customers.billing.invoiceEmailPlaceholder', 'billing@example.com')}
+                />
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.billing.company', 'Company')}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.billingPreferences.autoCharge}
+                  onChange={(e) => handleBillingPreferenceChange('autoCharge', e.target.checked)}
+                  className="h-4 w-4 rounded"
+                  style={{ accentColor: primaryColor }}
+                />
+                <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  {t('customers.billing.autoCharge', 'Auto-charge')}
+                  <span className="block text-xs text-gray-500 dark:text-gray-400">
+                    {t('customers.billing.autoChargeDescription', 'Automatically charge payment method for subscriptions')}
+                  </span>
                 </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={billingInfo.companyName}
-                    onChange={(e) => handleBillingChange('companyName', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
-                    style={{ '--tw-ring-color': primaryColor } as any}
-                    placeholder={t('customers.billing.companyPlaceholder', 'Enter company name')}
-                  />
-                ) : (
-                  <p className="px-3 py-2 text-gray-900 dark:text-white">
-                    {customer.companyName || t('common.notProvided', 'Not provided')}
-                  </p>
-                )}
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.billing.preferredCurrency', 'Preferred Currency')}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.billingPreferences.paperlessBilling}
+                  onChange={(e) => handleBillingPreferenceChange('paperlessBilling', e.target.checked)}
+                  className="h-4 w-4 rounded"
+                  style={{ accentColor: primaryColor }}
+                />
+                <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  {t('customers.billing.paperlessBilling', 'Paperless Billing')}
+                  <span className="block text-xs text-gray-500 dark:text-gray-400">
+                    {t('customers.billing.paperlessDescription', 'Receive invoices via email only')}
+                  </span>
                 </label>
-                {isEditing ? (
-                  <select
-                    value={billingInfo.preferredCurrency}
-                    onChange={(e) => handleBillingChange('preferredCurrency', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
-                    style={{ '--tw-ring-color': primaryColor } as any}
-                  >
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="GBP">GBP - British Pound</option>
-                    <option value="CAD">CAD - Canadian Dollar</option>
-                    <option value="AUD">AUD - Australian Dollar</option>
-                    <option value="MXN">MXN - Mexican Peso</option>
-                  </select>
-                ) : (
-                  <p className="px-3 py-2 text-gray-900 dark:text-white">
-                    {customer.preferredCurrency || 'USD'}
-                  </p>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.billing.billingCycle', 'Billing Cycle')}
-                </label>
-                {isEditing ? (
-                  <select
-                    value={billingInfo.billingCycle}
-                    onChange={(e) => handleBillingChange('billingCycle', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
-                    style={{ '--tw-ring-color': primaryColor } as any}
-                  >
-                    <option value="monthly">{t('customers.billing.monthly', 'Monthly')}</option>
-                    <option value="quarterly">{t('customers.billing.quarterly', 'Quarterly')}</option>
-                    <option value="yearly">{t('customers.billing.yearly', 'Yearly')}</option>
-                  </select>
-                ) : (
-                  <p className="px-3 py-2 text-gray-900 dark:text-white">
-                    {t('customers.billing.monthly', 'Monthly')}
-                  </p>
-                )}
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Fixed Action Buttons - Mobile */}
-      {isEditing && !isNewCustomer && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 md:hidden">
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                setIsEditing(false);
-                setBillingInfo({
-                  taxId: customer.taxId || '',
-                  companyName: customer.companyName || '',
-                  preferredCurrency: customer.preferredCurrency || 'USD',
-                  billingCycle: 'monthly'
-                });
-              }}
-              className="flex-1 px-4 py-3 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium"
-            >
-              {t('common.cancel', 'Cancel')}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={loading}
-              className="flex-1 px-4 py-3 text-white rounded-lg font-medium disabled:opacity-50"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {loading ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Desktop Action Buttons */}
-      {isEditing && !isNewCustomer && (
-        <div className="hidden md:flex justify-end gap-3 mt-6 px-6">
-          <button
-            onClick={() => {
-              setIsEditing(false);
-              setBillingInfo({
-                taxId: customer.taxId || '',
-                companyName: customer.companyName || '',
-                preferredCurrency: customer.preferredCurrency || 'USD',
-                billingCycle: 'monthly'
-              });
-            }}
-            className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
-          >
-            {t('common.cancel', 'Cancel')}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50"
-            style={{ backgroundColor: primaryColor }}
-          >
-            {loading ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -62,6 +62,13 @@ src/hooks/       # Custom hooks
 
 ## 📋 REGLAS DE DESARROLLO
 
+### ⚡ ARQUITECTURA DE COMPONENTES CON PESTAÑAS
+**⚠️ IMPORTANTE**: Si el módulo a construir tiene pestañas/tabs para dividir contenido:
+- **LEER PRIMERO**: `/docs/architecture/tabbed-components-architecture.md`
+- **USAR SIEMPRE**: Patrón de Estado Elevado (Lifted State)
+- **NUNCA**: Usar estado local en las pestañas (se pierde al cambiar)
+- **REFERENCIA**: Ver implementación en `/src/components/clientes/`
+
 ### 1. SEPARACIÓN DE CONCEPTOS
 ```csharp
 // ❌ INCORRECTO
@@ -156,6 +163,46 @@ export function Section({ config, isMultiple = false, index = 0 }: Props) {
     // Lógica clara
     // JSX limpio
 }
+```
+
+### Componentes con Pestañas (Patrón Estado Elevado)
+```typescript
+// ✅ CORRECTO - Componente Padre con estado centralizado
+export default function ParentWithTabs() {
+    const [formData, setFormData] = useState<AllFormData>({
+        tab1: { /* datos tab 1 */ },
+        tab2: { /* datos tab 2 */ }
+    });
+    
+    const updateTab1Data = (data: Partial<Tab1Data>) => {
+        setFormData(prev => ({
+            ...prev,
+            tab1: { ...prev.tab1, ...data }
+        }));
+    };
+    
+    return (
+        <Tab1Component 
+            formData={formData.tab1}
+            onFormChange={updateTab1Data}
+        />
+    );
+}
+
+// ✅ CORRECTO - Componente de pestaña SIN estado local para datos
+export function Tab1Component({ formData, onFormChange }: Props) {
+    // ❌ NO usar useState para datos del formulario
+    // ✅ SÍ usar props formData y onFormChange
+    
+    return (
+        <input
+            value={formData.field}
+            onChange={(e) => onFormChange({ field: e.target.value })}
+        />
+    );
+}
+
+// 📖 VER DOCUMENTACIÓN COMPLETA: /docs/architecture/tabbed-components-architecture.md
 ```
 
 ### Services

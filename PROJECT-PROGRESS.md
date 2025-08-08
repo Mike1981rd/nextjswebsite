@@ -284,7 +284,8 @@ Resolver los 9 problemas críticos del proyecto anterior:
 2. **Puerto API**: Verificar puerto HTTPS (7224) para configurar correctamente en Next.js
 3. ~~**Autenticación**: Decidir si usar Identity o implementación custom~~ ✅ RESUELTO - Implementación custom con JWT
 4. ~~**Multi-tenancy**: Definir estrategia~~ ✅ RESUELTO - Sistema single-tenant (una empresa por DB)
-5. **Error 401 en Payments**: Middleware temporal agregado en Program.cs - necesita restart del backend para aplicar cambios
+5. ~~**Error 401 en Payments**: Middleware temporal agregado en Program.cs - necesita restart del backend para aplicar cambios~~ ✅ RESUELTO
+6. ~~**Swagger Issue con Customer Module**: Backend de Customers deshabilitado temporalmente~~ ✅ RESUELTO
 
 ### 🔗 Related Files
 

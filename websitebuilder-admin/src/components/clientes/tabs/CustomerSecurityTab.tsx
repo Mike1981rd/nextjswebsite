@@ -3,412 +3,525 @@
 import React, { useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { CustomerDetailDto } from '@/types/customer';
-import { customerAPI } from '@/lib/api/customers';
+import { SecurityFormData } from '../CustomerDetail';
 
 interface CustomerSecurityTabProps {
-  customer: CustomerDetailDto;
+  customer: CustomerDetailDto | null;
+  formData: SecurityFormData;
+  onFormChange: (data: Partial<SecurityFormData>) => void;
   primaryColor: string;
   onRefresh: () => void;
   isNewCustomer?: boolean;
+  isEditing: boolean;
+  setIsEditing: (value: boolean) => void;
 }
 
-export default function CustomerSecurityTab({ customer, primaryColor, onRefresh, isNewCustomer = false }: CustomerSecurityTabProps) {
+export default function CustomerSecurityTab({ 
+  customer, 
+  formData,
+  onFormChange,
+  primaryColor, 
+  onRefresh, 
+  isNewCustomer = false,
+  isEditing,
+  setIsEditing
+}: CustomerSecurityTabProps) {
   const { t } = useI18n();
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(customer.isTwoFactorEnabled || false);
-  const [twoFactorPhone, setTwoFactorPhone] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
 
-  // For new customer, show password fields
-  const [initialPassword, setInitialPassword] = useState('');
-  const [initialConfirmPassword, setInitialConfirmPassword] = useState('');
-
-  const handlePasswordReset = async () => {
-    if (newPassword !== confirmPassword) {
-      alert(t('customers.security.passwordMismatch', 'Passwords do not match'));
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await customerAPI.changePassword(customer.id, { newPassword });
-      setShowPasswordModal(false);
-      setNewPassword('');
-      setConfirmPassword('');
-      alert(t('customers.security.passwordChanged', 'Password changed successfully'));
-    } catch (error) {
-      console.error('Error changing password:', error);
-      alert(t('customers.security.passwordError', 'Error changing password'));
-    } finally {
-      setLoading(false);
-    }
+  const calculatePasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    setPasswordStrength(Math.min(strength, 5));
   };
 
-  const handleToggleTwoFactor = async () => {
-    if (isNewCustomer) {
-      setTwoFactorEnabled(!twoFactorEnabled);
-    } else {
-      try {
-        if (!twoFactorEnabled) {
-          if (!twoFactorPhone) {
-            alert(t('customers.security.phoneRequired', 'Phone number is required for 2FA'));
-            return;
-          }
-          await customerAPI.enableTwoFactor(customer.id, { phoneNumber: twoFactorPhone });
-          setTwoFactorEnabled(true);
-        } else {
-          if (confirm(t('customers.security.confirmDisable2FA', 'Are you sure you want to disable 2FA?'))) {
-            await customerAPI.disableTwoFactor(customer.id);
-            setTwoFactorEnabled(false);
-          }
-        }
-        onRefresh();
-      } catch (error) {
-        console.error('Error toggling 2FA:', error);
-        alert(t('customers.security.twoFactorError', 'Error updating 2FA settings'));
-      }
-    }
+  const handlePasswordChange = (value: string) => {
+    onFormChange({ newPassword: value });
+    calculatePasswordStrength(value);
   };
 
-  const handleRevokeDevice = async (deviceId: number) => {
-    if (confirm(t('customers.security.confirmRevoke', 'Are you sure you want to revoke access for this device?'))) {
-      try {
-        await customerAPI.revokeDevice(customer.id, deviceId);
-        onRefresh();
-      } catch (error) {
-        console.error('Error revoking device:', error);
-      }
-    }
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength <= 1) return 'bg-red-500';
+    if (passwordStrength <= 2) return 'bg-orange-500';
+    if (passwordStrength <= 3) return 'bg-yellow-500';
+    if (passwordStrength <= 4) return 'bg-green-500';
+    return 'bg-green-600';
   };
+
+  const getPasswordStrengthText = () => {
+    if (passwordStrength === 0) return t('security.passwordStrength.veryWeak', 'Very Weak');
+    if (passwordStrength === 1) return t('security.passwordStrength.weak', 'Weak');
+    if (passwordStrength === 2) return t('security.passwordStrength.fair', 'Fair');
+    if (passwordStrength === 3) return t('security.passwordStrength.good', 'Good');
+    if (passwordStrength === 4) return t('security.passwordStrength.strong', 'Strong');
+    return t('security.passwordStrength.veryStrong', 'Very Strong');
+  };
+
+  const handleSecurityQuestionChange = (index: number, field: 'question' | 'answer', value: string) => {
+    const questions = [...formData.securityQuestions];
+    questions[index] = { ...questions[index], [field]: value };
+    onFormChange({ securityQuestions: questions });
+  };
+
+  const addSecurityQuestion = () => {
+    onFormChange({ 
+      securityQuestions: [...formData.securityQuestions, { question: '', answer: '' }] 
+    });
+  };
+
+  const removeSecurityQuestion = (index: number) => {
+    const questions = formData.securityQuestions.filter((_, i) => i !== index);
+    onFormChange({ securityQuestions: questions });
+  };
+
+  // Mock login history data - in production, this would come from the API
+  const loginHistory = [
+    { id: 1, date: '2024-03-20 14:30', ip: '192.168.1.100', location: 'Santo Domingo, DO', device: 'Chrome on Windows', status: 'Success' },
+    { id: 2, date: '2024-03-19 09:15', ip: '192.168.1.100', location: 'Santo Domingo, DO', device: 'Safari on iPhone', status: 'Success' },
+    { id: 3, date: '2024-03-18 18:45', ip: '201.229.45.67', location: 'Santiago, DO', device: 'Chrome on Android', status: 'Failed' },
+    { id: 4, date: '2024-03-17 11:20', ip: '192.168.1.100', location: 'Santo Domingo, DO', device: 'Chrome on Windows', status: 'Success' },
+  ];
+
+  if (isNewCustomer) {
+    return (
+      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+        <svg className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <p>{t('security.newCustomerMessage', 'Security settings will be available after customer creation')}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24 md:pb-6">
       {/* Password Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
-        <div className="p-4 md:p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {t('customers.security.password', 'Password')}
-          </h3>
-          
-          {isNewCustomer ? (
-            // For new customer, show password input fields
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.security.initialPassword', 'Initial Password')} *
-                </label>
-                <input
-                  type="password"
-                  value={initialPassword}
-                  onChange={(e) => setInitialPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                  placeholder={t('customers.security.passwordPlaceholder', 'Enter initial password')}
-                  required
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {t('customers.security.passwordHint', 'Minimum 6 characters, include numbers and letters')}
-                </p>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-4">
+        <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-red-50 dark:bg-red-900/20">
+                <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.security.confirmPassword', 'Confirm Password')} *
-                </label>
-                <input
-                  type="password"
-                  value={initialConfirmPassword}
-                  onChange={(e) => setInitialConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                  placeholder={t('customers.security.confirmPasswordPlaceholder', 'Confirm password')}
-                  required
-                />
-              </div>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {t('security.password', 'Password & Authentication')}
+              </span>
             </div>
-          ) : (
-            // For existing customer
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                    {t('customers.security.lastPasswordChange', 'Last password change')}
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {customer.lastPasswordChangeAt 
-                      ? new Date(customer.lastPasswordChangeAt).toLocaleDateString()
-                      : t('common.never', 'Never')
-                    }
-                  </p>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-sm font-medium transition-colors"
+                style={{ color: primaryColor }}
+              >
+                {t('security.changePassword', 'Change Password')}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {isEditing ? (
+            <>
+              <div className="w-11/12 md:w-full">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                  {t('security.currentPassword', 'Current Password')}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.currentPassword}
+                    onChange={(e) => onFormChange({ currentPassword: e.target.value })}
+                    className="w-full pr-10 px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
+                    style={{ '--tw-ring-color': primaryColor } as any}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowPasswordModal(true)}
-                  className="w-full md:w-auto px-4 py-2 text-sm font-medium text-white rounded-lg"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  {t('customers.security.resetPassword', 'Reset Password')}
-                </button>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="w-11/12 md:w-full">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                    {t('security.newPassword', 'New Password')}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={formData.newPassword}
+                      onChange={(e) => handlePasswordChange(e.target.value)}
+                      className="w-full pr-10 px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      {showNewPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {formData.newPassword && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {t('security.strength', 'Strength')}:
+                        </span>
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                          {getPasswordStrengthText()}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all ${getPasswordStrengthColor()}`}
+                          style={{ width: `${(passwordStrength / 5) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-11/12 md:w-full">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                    {t('security.confirmPassword', 'Confirm Password')}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={formData.confirmPassword}
+                      onChange={(e) => onFormChange({ confirmPassword: e.target.value })}
+                      className="w-full pr-10 px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      {showConfirmPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {formData.confirmPassword && formData.newPassword !== formData.confirmPassword && (
+                    <p className="mt-1 text-xs text-red-500 dark:text-red-400">
+                      {t('security.passwordsDoNotMatch', 'Passwords do not match')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              <p>{t('security.lastPasswordChange', 'Last password change')}: {t('security.neverChanged', 'Never changed')}</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Two-Factor Authentication */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
-        <div className="p-4 md:p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {t('customers.security.twoFactor', 'Two-Factor Authentication')}
-          </h3>
-          
-          <div className="space-y-4">
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${
-                    twoFactorEnabled 
-                      ? 'bg-green-500' 
-                      : 'bg-gray-300 dark:bg-gray-600'
-                  }`}></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {twoFactorEnabled 
-                        ? t('customers.security.twoFactorEnabled', '2FA Enabled')
-                        : t('customers.security.twoFactorDisabled', '2FA Disabled')
-                      }
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-4">
+        <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-green-50 dark:bg-green-900/20">
+              <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <span className="font-medium text-gray-900 dark:text-white">
+              {t('security.twoFactor', 'Two-Factor Authentication')}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {formData.isTwoFactorEnabled ? t('security.2faEnabled', 'Enabled') : t('security.2faDisabled', 'Disabled')}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {t('security.2faDescription', 'Add an extra layer of security to your account')}
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isTwoFactorEnabled}
+                onChange={(e) => onFormChange({ isTwoFactorEnabled: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-opacity-30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600"
+                style={{ 
+                  backgroundColor: formData.isTwoFactorEnabled ? primaryColor : undefined,
+                  '--tw-ring-color': primaryColor 
+                } as any}
+              />
+            </label>
+          </div>
+
+          {formData.isTwoFactorEnabled && (
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+              <p className="text-xs text-blue-700 dark:text-blue-400">
+                {t('security.2faInfo', 'Two-factor authentication is active. You will need to enter a verification code when logging in.')}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Security Questions */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-4">
+        <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-900/20">
+                <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {t('security.securityQuestions', 'Security Questions')}
+              </span>
+            </div>
+            {isEditing && (
+              <button
+                onClick={addSecurityQuestion}
+                className="text-sm font-medium transition-colors"
+                style={{ color: primaryColor }}
+              >
+                {t('security.addQuestion', 'Add Question')}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {formData.securityQuestions.length > 0 ? (
+            formData.securityQuestions.map((q, index) => (
+              <div key={index} className="space-y-2">
+                {isEditing ? (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={q.question}
+                        onChange={(e) => handleSecurityQuestionChange(index, 'question', e.target.value)}
+                        className="flex-1 px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
+                        style={{ '--tw-ring-color': primaryColor } as any}
+                        placeholder={t('security.questionPlaceholder', 'Enter security question')}
+                      />
+                      <button
+                        onClick={() => removeSecurityQuestion(index)}
+                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={q.answer}
+                      onChange={(e) => handleSecurityQuestionChange(index, 'answer', e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      placeholder={t('security.answerPlaceholder', 'Enter answer')}
+                    />
+                  </>
+                ) : (
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                      {q.question}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {twoFactorEnabled
-                        ? t('customers.security.twoFactorDescription', 'Additional security layer is active')
-                        : t('customers.security.twoFactorDescriptionDisabled', 'Enable for extra account protection')
-                      }
+                      {t('security.answerSet', 'Answer configured')}
                     </p>
                   </div>
-                </div>
-                <button
-                  onClick={handleToggleTwoFactor}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    twoFactorEnabled 
-                      ? 'bg-green-500' 
-                      : 'bg-gray-300 dark:bg-gray-600'
-                  }`}
-                  style={twoFactorEnabled ? { backgroundColor: primaryColor } : {}}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    twoFactorEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </button>
+                )}
               </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t('security.noQuestions', 'No security questions configured')}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Session Settings */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-4">
+        <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20">
+              <svg className="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span className="font-medium text-gray-900 dark:text-white">
+              {t('security.sessionSettings', 'Session Settings')}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                {t('security.sessionTimeout', 'Session Timeout (minutes)')}
+              </label>
+              <select
+                value={formData.sessionTimeout}
+                onChange={(e) => onFormChange({ sessionTimeout: parseInt(e.target.value) })}
+                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
+                style={{ '--tw-ring-color': primaryColor } as any}
+              >
+                <option value="15">15 {t('common.minutes', 'minutes')}</option>
+                <option value="30">30 {t('common.minutes', 'minutes')}</option>
+                <option value="60">1 {t('common.hour', 'hour')}</option>
+                <option value="120">2 {t('common.hours', 'hours')}</option>
+                <option value="480">8 {t('common.hours', 'hours')}</option>
+              </select>
             </div>
 
-            {/* Phone number input for 2FA */}
-            {!isNewCustomer && !twoFactorEnabled && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.security.phoneFor2FA', 'Phone Number for 2FA')}
-                </label>
-                <input
-                  type="tel"
-                  value={twoFactorPhone}
-                  onChange={(e) => setTwoFactorPhone(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                  placeholder={t('customers.security.phonePlaceholder', '+1 234 567 8900')}
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                {t('security.recoveryEmail', 'Recovery Email')}
+              </label>
+              <input
+                type="email"
+                value={formData.recoveryEmail}
+                onChange={(e) => onFormChange({ recoveryEmail: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
+                style={{ '--tw-ring-color': primaryColor } as any}
+                placeholder={t('security.recoveryEmailPlaceholder', 'recovery@example.com')}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Active Devices - Only for existing customers */}
-      {!isNewCustomer && customer.devices && customer.devices.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
-          <div className="p-4 md:p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {t('customers.security.activeDevices', 'Active Devices')}
-            </h3>
-            
-            {/* Mobile: Cards */}
-            <div className="md:hidden space-y-3">
-              {customer.devices.map((device) => (
-                <div key={device.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      <div className="text-2xl">
-                        {device.deviceType === 'Mobile' ? '📱' : 
-                         device.deviceType === 'Tablet' ? '📱' : '💻'}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {device.deviceName}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {device.browser}
-                        </p>
-                      </div>
-                    </div>
-                    {device.isTrusted && (
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-full">
-                        {t('customers.security.trusted', 'Trusted')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                    <p>{device.location}</p>
-                    <p>{t('customers.security.lastSeen', 'Last seen')}: {new Date(device.lastActivity).toLocaleDateString()}</p>
-                  </div>
-                  <button
-                    onClick={() => handleRevokeDevice(device.id)}
-                    className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                  >
-                    {t('customers.security.revoke', 'Revoke')}
-                  </button>
-                </div>
-              ))}
+      {/* Login History */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
+            <span className="font-medium text-gray-900 dark:text-white">
+              {t('security.loginHistory', 'Recent Login Activity')}
+            </span>
+          </div>
+        </div>
 
-            {/* Desktop: List */}
-            <div className="hidden md:block divide-y divide-gray-200 dark:divide-gray-700">
-              {customer.devices.map((device) => (
-                <div key={device.id} className="py-4 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="text-2xl">
-                      {device.deviceType === 'Mobile' ? '📱' : 
-                       device.deviceType === 'Tablet' ? '📱' : '💻'}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {device.deviceName}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {device.browser} • {device.location}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {t('customers.security.lastSeen', 'Last seen')}: {new Date(device.lastActivity).toLocaleDateString()}
-                      </p>
-                    </div>
+        <div className="p-4">
+          <div className="space-y-3">
+            {loginHistory.map((login) => (
+              <div key={login.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
+                      login.status === 'Success' 
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}>
+                      {login.status}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {login.date}
+                    </span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {device.isTrusted && (
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-full">
-                        {t('customers.security.trusted', 'Trusted')}
-                      </span>
-                    )}
-                    <button
-                      onClick={() => handleRevokeDevice(device.id)}
-                      className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                    >
-                      {t('customers.security.revoke', 'Revoke')}
-                    </button>
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    {login.device}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {login.location} • IP: {login.ip}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Save/Cancel Buttons for Edit Mode */}
+      {isEditing && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 md:hidden z-20">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsEditing(false)}
+              className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-all active:scale-95"
+            >
+              {t('common.cancel', 'Cancel')}
+            </button>
+            <button
+              className="flex-1 px-4 py-3 text-white rounded-xl font-medium transition-all active:scale-95 shadow-lg"
+              style={{ backgroundColor: primaryColor }}
+            >
+              {t('common.save', 'Save')}
+            </button>
           </div>
         </div>
       )}
 
-      {/* Account Settings - For new customers */}
-      {isNewCustomer && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-          <div className="p-4 md:p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {t('customers.security.accountSettings', 'Account Settings')}
-            </h3>
-            <div className="space-y-4">
-              <label className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {t('customers.security.sendWelcomeEmail', 'Send Welcome Email')}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t('customers.security.welcomeEmailDescription', 'Send account credentials to customer')}
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  defaultChecked
-                  className="h-4 w-4 rounded"
-                  style={{ accentColor: primaryColor }}
-                />
-              </label>
-              <label className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {t('customers.security.requirePasswordChange', 'Require Password Change')}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t('customers.security.requirePasswordDescription', 'Force password change on first login')}
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  defaultChecked
-                  className="h-4 w-4 rounded"
-                  style={{ accentColor: primaryColor }}
-                />
-              </label>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Password Reset Modal */}
-      {showPasswordModal && !isNewCustomer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {t('customers.security.resetPasswordTitle', 'Reset Customer Password')}
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.security.newPassword', 'New Password')}
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('customers.security.confirmNewPassword', 'Confirm New Password')}
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                />
-              </div>
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  onClick={() => {
-                    setShowPasswordModal(false);
-                    setNewPassword('');
-                    setConfirmPassword('');
-                  }}
-                  className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500"
-                >
-                  {t('common.cancel', 'Cancel')}
-                </button>
-                <button
-                  onClick={handlePasswordReset}
-                  disabled={loading}
-                  className="px-4 py-2 text-white rounded-lg disabled:opacity-50"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  {loading ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
-                </button>
-              </div>
-            </div>
-          </div>
+      {/* Desktop Actions */}
+      {isEditing && (
+        <div className="hidden md:flex justify-end gap-3 px-6 py-4">
+          <button
+            onClick={() => setIsEditing(false)}
+            className="px-6 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            {t('common.cancel', 'Cancel')}
+          </button>
+          <button
+            className="px-6 py-2.5 text-white rounded-xl font-medium transition-all shadow-lg hover:shadow-xl"
+            style={{ backgroundColor: primaryColor }}
+          >
+            {t('common.save', 'Save Changes')}
+          </button>
         </div>
       )}
     </div>

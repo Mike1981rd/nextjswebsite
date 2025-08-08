@@ -1,52 +1,43 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { CustomerDetailDto } from '@/types/customer';
 import { customerAPI } from '@/lib/api/customers';
 import { useRouter } from 'next/navigation';
 import { CountryFlag, countries } from '@/components/ui/CountryFlag';
+import { OverviewFormData } from '../CustomerDetail';
 
 interface CustomerOverviewTabProps {
-  customer: CustomerDetailDto;
+  customer: CustomerDetailDto | null;
+  formData: OverviewFormData;
+  onFormChange: (data: Partial<OverviewFormData>) => void;
   primaryColor: string;
   onRefresh: () => void;
   isNewCustomer?: boolean;
+  isEditing: boolean;
+  setIsEditing: (value: boolean) => void;
+  onSave: () => Promise<void>;
 }
 
-export default function CustomerOverviewTab({ customer, primaryColor, onRefresh, isNewCustomer = false }: CustomerOverviewTabProps) {
+export default function CustomerOverviewTab({ 
+  customer, 
+  formData,
+  onFormChange,
+  primaryColor, 
+  onRefresh, 
+  isNewCustomer = false,
+  isEditing,
+  setIsEditing,
+  onSave
+}: CustomerOverviewTabProps) {
   const { t } = useI18n();
   const router = useRouter();
-  const [isEditing, setIsEditing] = useState(isNewCustomer);
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(customer.avatarUrl || '');
-  const [formData, setFormData] = useState({
-    firstName: customer.firstName || '',
-    lastName: customer.lastName || '',
-    username: customer.username || '',
-    email: customer.email || '',
-    phoneNumber: customer.phoneNumber || '',
-    birthDate: customer.birthDate || '',
-    gender: customer.gender || '',
-    status: customer.status || 'Active',
-    loyaltyTier: customer.loyaltyTier || 'Silver',
-    preferredLanguage: customer.preferredLanguage || 'English',
-    preferredCurrency: customer.preferredCurrency || 'USD',
-    companyName: customer.companyName || '',
-    taxId: customer.taxId || '',
-    country: customer.country || ''
-  });
-
-  useEffect(() => {
-    setIsEditing(isNewCustomer);
-  }, [isNewCustomer]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    onFormChange({ [field]: value });
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,9 +74,9 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
       }
 
       const result = await response.json();
-      setAvatarUrl(result.url);
+      onFormChange({ avatarUrl: result.url });
       
-      if (!isNewCustomer && customer.id) {
+      if (!isNewCustomer && customer?.id) {
         await customerAPI.updateAvatar(customer.id, { avatarUrl: result.url });
         onRefresh();
       }
@@ -100,20 +91,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
   const handleSave = async () => {
     try {
       setLoading(true);
-      
-      if (isNewCustomer) {
-        const newCustomer = await customerAPI.createCustomer({
-          ...formData,
-          avatarUrl: avatarUrl,
-          password: 'TempPassword123!'
-        });
-        
-        router.push(`/dashboard/clientes/${newCustomer.id}`);
-      } else {
-        await customerAPI.updateCustomer(customer.id, formData);
-        onRefresh();
-        setIsEditing(false);
-      }
+      await onSave();
     } catch (error) {
       console.error('Error saving customer:', error);
       alert(t('common.error', 'An error occurred while saving'));
@@ -127,23 +105,26 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
       router.push('/dashboard/clientes');
     } else {
       setIsEditing(false);
-      setFormData({
-        firstName: customer.firstName || '',
-        lastName: customer.lastName || '',
-        username: customer.username || '',
-        email: customer.email || '',
-        phoneNumber: customer.phoneNumber || '',
-        birthDate: customer.birthDate || '',
-        gender: customer.gender || '',
-        status: customer.status || 'Active',
-        loyaltyTier: customer.loyaltyTier || 'Silver',
-        preferredLanguage: customer.preferredLanguage || 'English',
-        preferredCurrency: customer.preferredCurrency || 'USD',
-        companyName: customer.companyName || '',
-        taxId: customer.taxId || '',
-        country: customer.country || ''
-      });
-      setAvatarUrl(customer.avatarUrl || '');
+      // Reset form data to original customer data
+      if (customer) {
+        onFormChange({
+          firstName: customer.firstName || '',
+          lastName: customer.lastName || '',
+          username: customer.username || '',
+          email: customer.email || '',
+          phoneNumber: customer.phoneNumber || '',
+          birthDate: customer.birthDate || '',
+          gender: customer.gender || '',
+          status: customer.status || 'Active',
+          loyaltyTier: customer.loyaltyTier || 'Silver',
+          preferredLanguage: customer.preferredLanguage || 'English',
+          preferredCurrency: customer.preferredCurrency || 'USD',
+          companyName: customer.companyName || '',
+          taxId: customer.taxId || '',
+          country: customer.country || '',
+          avatarUrl: customer.avatarUrl || ''
+        });
+      }
     }
   };
 
@@ -151,7 +132,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
   const metrics = [
     {
       label: t('customers.metrics.totalOrders', 'Orders'),
-      value: customer.totalOrders || 0,
+      value: customer?.totalOrders || 0,
       icon: '📦',
       bgColor: 'bg-blue-50 dark:bg-blue-900/20',
       iconColor: 'text-blue-600 dark:text-blue-400',
@@ -160,7 +141,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
     },
     {
       label: t('customers.metrics.totalSpent', 'Spent'),
-      value: `$${(customer.totalSpent || 0).toLocaleString()}`,
+      value: `$${(customer?.totalSpent || 0).toLocaleString()}`,
       icon: '💰',
       bgColor: 'bg-green-50 dark:bg-green-900/20',
       iconColor: 'text-green-600 dark:text-green-400',
@@ -169,7 +150,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
     },
     {
       label: t('customers.metrics.loyaltyPoints', 'Points'),
-      value: customer.loyaltyPoints || 0,
+      value: customer?.loyaltyPoints || 0,
       icon: '⭐',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
       iconColor: 'text-purple-600 dark:text-purple-400',
@@ -178,7 +159,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
     },
     {
       label: t('customers.metrics.averageOrder', 'Avg Order'),
-      value: `$${(customer.averageOrderValue || 0).toFixed(0)}`,
+      value: `$${(customer?.averageOrderValue || 0).toFixed(0)}`,
       icon: '📈',
       bgColor: 'bg-orange-50 dark:bg-orange-900/20',
       iconColor: 'text-orange-600 dark:text-orange-400',
@@ -205,10 +186,10 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Customer ID #{customer.customerId || '000000'}
+                Customer ID #{customer?.customerId || '000000'}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {new Date(customer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {customer ? new Date(customer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
               </p>
             </div>
             <button 
@@ -227,9 +208,9 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
             {/* Modern Avatar Preview */}
             <div className="relative group">
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 shadow-xl ring-4 ring-white dark:ring-gray-800">
-                {avatarUrl ? (
+                {formData.avatarUrl ? (
                   <img 
-                    src={avatarUrl} 
+                    src={formData.avatarUrl} 
                     alt="Avatar" 
                     className="w-full h-full object-cover"
                   />
@@ -293,7 +274,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                 </div>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${(customer.accountBalance || 0).toFixed(2)}
+                ${(customer?.accountBalance || 0).toFixed(2)}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {t('customers.detail.creditLeft', 'Credit Left')}
@@ -316,7 +297,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                 </span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {customer.loyaltyPoints || 0}
+                {customer?.loyaltyPoints || 0}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {t('customers.detail.points', 'points')}
@@ -336,7 +317,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                 </div>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {customer.wishlistCount || 15}
+                {customer?.wishlistCount || 15}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {t('customers.detail.wishlist', 'Wishlist')}
@@ -356,7 +337,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                 </div>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {customer.couponsCount || 21}
+                {customer?.couponsCount || 21}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {t('customers.detail.coupons', 'Coupons')}
@@ -375,8 +356,8 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
           <div className="flex flex-col items-center">
             <div className="relative">
               <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-4 ring-gray-50 dark:ring-gray-900">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                {formData.avatarUrl ? (
+                  <img src={formData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br" style={{ backgroundColor: primaryColor }}>
                     <span className="text-3xl font-bold text-white">
@@ -393,7 +374,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
               {formData.firstName} {formData.lastName}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Customer ID #{customer.customerId}
+              Customer ID #{customer?.customerId}
             </p>
           </div>
         </div>
@@ -415,8 +396,8 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
               <div className="md:hidden flex justify-center py-4 border-b border-gray-100 dark:border-gray-700">
                 <div className="relative group">
                   <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-lg">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    {formData.avatarUrl ? (
+                      <img src={formData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
                         <svg className="w-12 h-12 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -468,8 +449,8 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
               <div className="hidden md:flex justify-center py-4">
                 <div className="relative group">
                   <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 shadow-2xl ring-4 ring-white dark:ring-gray-700 group-hover:ring-opacity-80 transition-all">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    {formData.avatarUrl ? (
+                      <img src={formData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500">
                         <svg className="w-12 h-12 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -532,7 +513,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   />
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    {customer.firstName || '-'}
+                    {customer?.firstName || '-'}
                   </p>
                 )}
               </div>
@@ -553,7 +534,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   />
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    {customer.lastName || '-'}
+                    {customer?.lastName || '-'}
                   </p>
                 )}
               </div>
@@ -574,7 +555,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   />
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    @{customer.username}
+                    @{customer?.username || ''}
                   </p>
                 )}
               </div>
@@ -599,7 +580,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   </select>
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    {customer.gender ? t(`customers.gender.${customer.gender.toLowerCase()}`, customer.gender) : '-'}
+                    {customer?.gender ? t(`customers.gender.${customer.gender.toLowerCase()}`, customer.gender) : '-'}
                   </p>
                 )}
               </div>
@@ -619,7 +600,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   />
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    {customer.birthDate ? new Date(customer.birthDate).toLocaleDateString() : '-'}
+                    {customer?.birthDate ? new Date(customer.birthDate).toLocaleDateString() : '-'}
                   </p>
                 )}
               </div>
@@ -643,8 +624,8 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   </select>
                 ) : (
                   <div className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(customer.status)}`}>
-                      {t(`common.${customer.status.toLowerCase()}`, customer.status)}
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(customer?.status || 'Active')}`}>
+                      {t(`common.${customer?.status?.toLowerCase() || 'active'}`, customer?.status || 'Active')}
                     </span>
                   </div>
                 )}
@@ -685,7 +666,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-                    {customer.country && countries[customer.country as keyof typeof countries] ? (
+                    {customer?.country && countries[customer.country as keyof typeof countries] ? (
                       <>
                         <CountryFlag countryCode={customer.country} className="w-5 h-4" />
                         <span className="text-gray-900 dark:text-white">
@@ -715,7 +696,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   />
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    {customer.taxId || '-'}
+                    {customer?.taxId || '-'}
                   </p>
                 )}
               </div>
@@ -764,7 +745,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-gray-900 dark:text-white">{customer.email}</span>
+                    <span className="text-gray-900 dark:text-white">{customer?.email || ''}</span>
                   </div>
                 )}
               </div>
@@ -794,7 +775,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                     <span className="text-gray-900 dark:text-white">
-                      {customer.phoneNumber || t('common.notProvided', 'Not provided')}
+                      {customer?.phoneNumber || t('common.notProvided', 'Not provided')}
                     </span>
                   </div>
                 )}
@@ -842,7 +823,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                     <span className="inline-flex items-center gap-1">
                       <span className="text-yellow-500">⭐</span>
                       <span className="text-gray-900 dark:text-white font-medium">
-                        {t(`customers.loyalty.${customer.loyaltyTier?.toLowerCase()}`, customer.loyaltyTier)}
+                        {t(`customers.loyalty.${customer?.loyaltyTier?.toLowerCase() || 'silver'}`, customer?.loyaltyTier || 'Silver')}
                       </span>
                     </span>
                   </p>
@@ -868,7 +849,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   </select>
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    {t(`languages.${customer.preferredLanguage?.toLowerCase()}`, customer.preferredLanguage)}
+                    {t(`languages.${customer?.preferredLanguage?.toLowerCase() || 'english'}`, customer?.preferredLanguage || 'English')}
                   </p>
                 )}
               </div>
@@ -892,7 +873,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   </select>
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    {customer.preferredCurrency}
+                    {customer?.preferredCurrency || 'USD'}
                   </p>
                 )}
               </div>
@@ -913,7 +894,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
                   />
                 ) : (
                   <p className="px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/30 rounded-xl text-gray-900 dark:text-white">
-                    {customer.companyName || '-'}
+                    {customer?.companyName || '-'}
                   </p>
                 )}
               </div>
@@ -922,7 +903,7 @@ export default function CustomerOverviewTab({ customer, primaryColor, onRefresh,
         </div>
 
         {/* Recent Orders Section - Only for existing customers */}
-        {!isNewCustomer && customer.orders && customer.orders.length > 0 && (
+        {!isNewCustomer && customer?.orders && customer.orders.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-l-2xl rounded-r-xl md:rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
             <div className="pl-3 pr-6 md:px-4 py-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center justify-between">
