@@ -263,33 +263,195 @@ useEffect(() => {
 // - Hover: hover:bg-gray-50 dark:hover:bg-gray-700
 ```
 
-### ✅ 4. RESPONSIVIDAD MÓVIL
+### ✅ 4. RESPONSIVIDAD MÓVIL - PATRONES OBLIGATORIOS
+
+#### 🎯 REGLA PRINCIPAL
+**SIEMPRE diseñar primero para móvil (320px-414px), luego escalar a desktop**
+
+#### 📐 PATRONES DE LAYOUT MÓVIL PROBADOS
+
+##### 1️⃣ PESTAÑAS EN PÁGINAS CON MÚLTIPLES SECCIONES
 ```typescript
-// Breakpoints obligatorios:
-// - Textos: text-sm sm:text-base lg:text-lg
-// - Padding: p-3 sm:p-4 md:p-6
-// - Gaps: gap-2 sm:gap-3 lg:gap-4
+// ✅ MÓVIL: Vertical stack con pestaña activa destacada
+<div className="sm:hidden">
+  {/* Pestaña activa como header */}
+  <div className="px-4 py-3 bg-white dark:bg-gray-800">
+    <div className="px-4 py-3 rounded-xl text-white" style={{ backgroundColor: primaryColor }}>
+      <div className="flex items-center gap-3">
+        <span>{activeTab.icon}</span>
+        <span>{activeTab.label}</span>
+      </div>
+    </div>
+  </div>
+  
+  {/* Otras pestañas como lista vertical */}
+  <div className="px-4 py-2 space-y-2">
+    {tabs.map(tab => (
+      <button className="w-full px-4 py-3.5 bg-white rounded-xl flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span>{tab.icon}</span>
+          <span>{tab.label}</span>
+        </div>
+        <ChevronRight />
+      </button>
+    ))}
+  </div>
+</div>
 
-// Ejemplo tarjeta responsiva:
-<div className="p-3 sm:p-6 rounded-lg sm:rounded-xl">
-  <h2 className="text-base sm:text-lg lg:text-xl">
-
-// Botones móvil:
-<div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-
-// Ocultar en móvil:
-<div className="hidden sm:block">
+// ✅ DESKTOP: Tabs horizontales tradicionales
+<div className="hidden sm:block border-b">
+  <nav className="flex space-x-8">
+    {tabs.map(tab => <button className="py-2 px-1 border-b-2">)}
+  </nav>
+</div>
 ```
 
-**📱 NOTA ADICIONAL - MOBILE-FIRST OBLIGATORIO:**
-- **TODA vista DEBE ser responsive desde el inicio** - NO entregar sin probar móvil
-- **Diseñar primero para 320px**, luego escalar a tablet/desktop
-- **Botones apilados en móvil**: `w-3/4` centrados con `flex-col`
-- **Toggles/switches móvil**: Usar botones HTML simples con inline styles, NO librerías complejas
-- **Prevenir overflow**: SIEMPRE verificar que nada se salga del viewport
-- **Tamaños táctiles mínimos**: 44x44px para elementos interactivos
-- **Testing en**: 320px, 375px, 414px antes de entregar
-- **Si los toggles no aparecen**: Moverlos hacia la izquierda con `marginRight`
+##### 2️⃣ INPUTS Y FORMULARIOS
+```typescript
+// ✅ SIEMPRE con padding del contenedor o w-11/12
+<div className="px-4 space-y-4">
+  <div className="w-11/12 md:w-full">
+    <label className="block text-xs mb-1.5">Label</label>
+    <input className="w-full px-3.5 py-2.5 rounded-xl" />
+  </div>
+</div>
+
+// ❌ NUNCA input al 100% sin margen
+<input className="w-full" /> // MAL - toca los bordes
+```
+
+##### 3️⃣ BOTONES DE ACCIÓN
+```typescript
+// ✅ Botón principal único - Full width
+<div className="px-4 pb-6">
+  <button className="w-full px-4 py-3.5 rounded-xl" style={{ backgroundColor: primaryColor }}>
+    Edit Details
+  </button>
+</div>
+
+// ✅ Botones duales (Cancel/Save) - Flex horizontal
+<div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t md:hidden">
+  <div className="flex gap-3">
+    <button className="flex-1 py-3 rounded-xl bg-gray-100">Cancel</button>
+    <button className="flex-1 py-3 rounded-xl text-white" style={{ backgroundColor: primaryColor }}>
+      Save
+    </button>
+  </div>
+</div>
+
+// ✅ Múltiples opciones - Stack vertical
+<div className="flex flex-col gap-2">
+  <button className="w-full py-3.5">Option 1</button>
+  <button className="w-full py-3.5">Option 2</button>
+</div>
+```
+
+##### 4️⃣ CARDS DE MÉTRICAS/ESTADÍSTICAS
+```typescript
+// ✅ Grid 2x2 en móvil, 4 columnas en desktop
+<div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+  {/* Cards importantes span 2 columnas en móvil */}
+  <div className="col-span-2 md:col-span-1 bg-white rounded-xl p-4">
+    <div className="p-2.5 rounded-lg bg-blue-50">
+      <Icon />
+    </div>
+    <p className="text-2xl font-bold mt-2">{value}</p>
+    <p className="text-xs text-gray-500">{label}</p>
+  </div>
+  
+  {/* Cards normales 1 columna */}
+  <div className="bg-white rounded-xl p-4">
+    {/* contenido */}
+  </div>
+</div>
+```
+
+##### 5️⃣ AVATAR Y PERFIL CENTRADO
+```typescript
+// ✅ Centrado SOLO en móvil
+<div className="md:hidden flex flex-col items-center py-6">
+  <div className="relative">
+    <div className="w-24 h-24 rounded-full overflow-hidden">
+      <img src={avatar} />
+    </div>
+    <span className="absolute -bottom-1 -right-1 px-2.5 py-1 text-xs rounded-full bg-green-100">
+      Active
+    </span>
+  </div>
+  <h3 className="mt-3 text-lg font-semibold">{name}</h3>
+  <p className="text-sm text-gray-500">Customer ID #{id}</p>
+</div>
+```
+
+##### 6️⃣ HEADER COMPACTO MÓVIL
+```typescript
+// ✅ Header con info esencial y acción
+<div className="md:hidden bg-white px-4 py-4 border-b">
+  <div className="flex items-center justify-between mb-3">
+    <div>
+      <p className="text-xs text-gray-500">Customer ID #{id}</p>
+      <p className="text-xs text-gray-500">{date}</p>
+    </div>
+    <button className="px-3 py-1.5 text-xs rounded-lg bg-red-50 text-red-600">
+      Delete
+    </button>
+  </div>
+</div>
+```
+
+#### 🚫 ANTI-PATRONES A EVITAR
+
+1. **❌ NO usar scroll horizontal** para navegación principal
+2. **❌ NO poner inputs al 100%** sin padding del contenedor  
+3. **❌ NO usar pestañas horizontales** que se corten en móvil
+4. **❌ NO poner botones pequeños** lado a lado (mínimo 44px altura)
+5. **❌ NO centrar en desktop** contenido que solo debe estar centrado en móvil
+6. **❌ NO usar overflow-x-auto** para cards principales
+
+#### 📏 MEDIDAS ESTÁNDAR MÓVIL
+
+```typescript
+// Padding contenedor
+className="px-4"  // 16px laterales
+
+// Altura mínima elementos táctiles  
+className="py-3.5" // 14px = ~48px altura total con texto
+
+// Gaps consistentes
+className="gap-3"  // 12px entre elementos
+
+// Border radius
+className="rounded-xl" // 12px esquinas redondeadas
+
+// Ancho inputs móvil
+className="w-11/12"  // O contenedor con px-4
+
+// Fixed bottom bar
+className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t"
+```
+
+#### 🔄 TESTING OBLIGATORIO
+
+Antes de considerar completa una vista, verificar en:
+- **320px** - iPhone SE (más pequeño)
+- **375px** - iPhone 12/13/14
+- **414px** - iPhone Plus/Max
+- **Rotación** - Landscape orientation
+
+#### 📱 BREAKPOINTS TAILWIND
+
+```typescript
+// sm: 640px  - Tablets pequeñas
+// md: 768px  - Tablets
+// lg: 1024px - Desktop pequeño
+// xl: 1280px - Desktop normal
+
+// Mobile-first approach
+className="block sm:hidden"     // Visible solo en móvil
+className="hidden sm:block"      // Oculto en móvil
+className="w-full sm:w-auto"     // Full width móvil, auto desktop
+className="flex-col sm:flex-row" // Stack móvil, horizontal desktop
+```
 
 ### ✅ 5. BOTONES CON ESTADOS
 ```typescript
@@ -797,6 +959,98 @@ dotnet ef database update --context ApplicationDbContext
 6. **NUNCA** hacer push directo a main
 7. **SIEMPRE** documentar APIs con Swagger
 8. **SIEMPRE** manejar errores apropiadamente
+
+## 🧩 COMPONENTES RESPONSIVE REUTILIZABLES
+
+### 📦 Componentes Core Disponibles
+
+#### 1. ResponsiveTabs
+Automáticamente renderiza pestañas verticales en móvil y horizontales en desktop.
+```typescript
+import { ResponsiveTabs } from '@/components/responsive/ResponsiveTabs';
+
+// Uso:
+<ResponsiveTabs
+  tabs={[
+    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'security', label: 'Security', icon: '🔒' }
+  ]}
+  activeTab={activeTab}
+  onTabChange={setActiveTab}
+  primaryColor={primaryColor}
+/>
+```
+
+#### 2. ResponsiveTable
+Automáticamente convierte tablas en cards apiladas en móvil.
+```typescript
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+
+// Uso:
+<ResponsiveTable
+  data={customers}
+  columns={[
+    { key: 'name', label: 'Name', priority: 'high' },
+    { key: 'email', label: 'Email', priority: 'medium' },
+    { key: 'status', label: 'Status', priority: 'high' }
+  ]}
+  onRowClick={handleRowClick}
+  primaryColor={primaryColor}
+/>
+```
+
+#### 3. MobileActionBar
+Maneja botones de acción con layout optimizado para móvil.
+```typescript
+import { MobileActionBar } from '@/components/mobile/MobileActionBar';
+
+// Uso:
+<MobileActionBar
+  actions={[
+    { id: 'save', label: 'Save', variant: 'primary', onClick: handleSave },
+    { id: 'cancel', label: 'Cancel', variant: 'secondary', onClick: handleCancel }
+  ]}
+  primaryColor={primaryColor}
+  position="fixed" // fixed | sticky | relative
+/>
+
+// ⚠️ IMPORTANTE: Si usas position="fixed", agrega padding al contenedor:
+<div className="pb-24 md:pb-0"> // Evita que el contenido se tape
+  {/* Tu contenido */}
+</div>
+```
+
+### 🎯 USO OBLIGATORIO
+
+**SIEMPRE usar estos componentes cuando implementes:**
+- Páginas con pestañas → `ResponsiveTabs`
+- Listas/tablas de datos → `ResponsiveTable`
+- Botones de acción → `MobileActionBar`
+
+### 📋 Checklist al Recibir un Diseño
+
+Cuando recibas un diseño nuevo, SIEMPRE:
+
+1. **Identificar componentes responsive necesarios:**
+   - [ ] ¿Tiene pestañas? → Usar ResponsiveTabs
+   - [ ] ¿Tiene tabla? → Usar ResponsiveTable
+   - [ ] ¿Tiene botones de acción? → Usar MobileActionBar
+   - [ ] ¿Tiene formulario? → Aplicar patrones de inputs w-11/12
+   - [ ] ¿Tiene métricas? → Usar grid 2x2
+
+2. **Implementar versión dual desde el inicio:**
+   ```typescript
+   // NO hacer esto:
+   <div className="flex gap-4">  // Solo desktop
+   
+   // SIEMPRE hacer esto:
+   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">  // Mobile + Desktop
+   ```
+
+3. **Verificar en viewports móviles:**
+   - 320px (iPhone SE)
+   - 375px (iPhone standard)
+   - 414px (iPhone Plus)
 
 ## 🚦 CRITERIOS DE ÉXITO
 - Los 9 problemas originales están resueltos
