@@ -218,7 +218,49 @@ const handleChange = (value: string) => {
 
 ---
 
-### 7. Validation Errors Not Showing
+### 7. PostgreSQL DateTime UTC Error
+
+**Problem:**
+- Error 500: "Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone'"
+- Occurs when saving DateTime fields to PostgreSQL columns defined as `timestamp with time zone`
+- Affects fields like BirthDate in Customer model
+
+**Symptoms:**
+```
+System.InvalidCastException: Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone', only UTC is supported.
+```
+
+**Root Cause:**
+PostgreSQL requires DateTime values to be in UTC format when saving to `timestamp with time zone` columns, but .NET DateTime values can have Kind=Unspecified by default.
+
+**Solution:**
+Convert DateTime values to UTC before saving:
+```csharp
+// CustomerService.cs - Line 299 (Create)
+BirthDate = dto.BirthDate?.ToUniversalTime(),
+
+// CustomerService.cs - Line 475 (Update)
+if (dto.BirthDate.HasValue)
+    customer.BirthDate = dto.BirthDate.Value.ToUniversalTime();
+```
+
+**Prevention:**
+- Always use `.ToUniversalTime()` when saving DateTime values to PostgreSQL
+- Consider using DateTimeOffset for timezone-aware dates
+- Set DateTime.Kind explicitly to UTC when creating dates
+- Configure Entity Framework to handle UTC conversion automatically:
+```csharp
+// In ApplicationDbContext OnModelCreating
+modelBuilder.Entity<Customer>()
+    .Property(e => e.BirthDate)
+    .HasConversion(
+        v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v,
+        v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+```
+
+---
+
+### 8. Validation Errors Not Showing
 
 **Problem:**
 - Backend returns validation errors but frontend doesn't display them
@@ -332,8 +374,8 @@ const validateDto = (dto: CreateLocationDto): boolean => {
 - [ ] API URLs use correct port (5266 for HTTP, 7224 for HTTPS)
 - [ ] Content-Type headers are set correctly
 - [ ] Authorization header includes "Bearer " prefix
-- [ ] JSON serialization is configured for complex types
-- [ ] Dates are handled correctly (UTC conversion)
+- [ ] JSON serialization is configured for complex types (EnableDynamicJson for JSONB)
+- [ ] Dates are handled correctly (UTC conversion with .ToUniversalTime())
 
 ---
 
@@ -414,5 +456,9 @@ SELECT * FROM "Users" WHERE "Email" = 'user@example.com';
 ---
 
 **Last Updated:** August 2025
-**Version:** 1.0
+**Version:** 1.1
 **Maintainer:** Development Team
+
+## 📝 Revision History
+- **v1.1** - Added PostgreSQL DateTime UTC error documentation (Section 7)
+- **v1.0** - Initial troubleshooting guide

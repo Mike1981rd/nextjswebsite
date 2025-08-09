@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebsiteBuilderAPI.Data;
@@ -12,9 +13,11 @@ using WebsiteBuilderAPI.Data;
 namespace WebsiteBuilderAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250808202946_FixCustomerDefaultValues")]
+    partial class FixCustomerDefaultValues
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,9 +262,6 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<bool>("ForcePasswordChange")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Gender")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -299,13 +299,6 @@ namespace WebsiteBuilderAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
-
-                    b.Property<string>("RecoveryEmail")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<int>("SessionTimeoutMinutes")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -590,66 +583,35 @@ namespace WebsiteBuilderAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("AppEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("BrowserEnabled")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("DoNotDisturbEnd")
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("DisplayName")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.Property<string>("DoNotDisturbStart")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<bool>("EmailNewsletter")
+                    b.Property<bool>("EmailEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("EmailOrderUpdates")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("EmailPriceAlerts")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("EmailProductReviews")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("EmailPromotions")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("PushEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("PushSound")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("PushVibration")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("SmsDeliveryAlerts")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("SmsOrderUpdates")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("SmsPromotions")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Timezone")
+                    b.Property<string>("NotificationType")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId")
+                    b.HasIndex("CustomerId", "NotificationType")
                         .IsUnique();
 
                     b.ToTable("CustomerNotificationPreferences");
@@ -718,39 +680,6 @@ namespace WebsiteBuilderAPI.Migrations
                     b.HasIndex("IsPrimary");
 
                     b.ToTable("CustomerPaymentMethods");
-                });
-
-            modelBuilder.Entity("WebsiteBuilderAPI.Models.CustomerSecurityQuestion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AnswerHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("CustomerSecurityQuestions");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.CustomerWishlistItem", b =>
@@ -1712,8 +1641,8 @@ namespace WebsiteBuilderAPI.Migrations
             modelBuilder.Entity("WebsiteBuilderAPI.Models.CustomerNotificationPreference", b =>
                 {
                     b.HasOne("WebsiteBuilderAPI.Models.Customer", "Customer")
-                        .WithOne("NotificationPreference")
-                        .HasForeignKey("WebsiteBuilderAPI.Models.CustomerNotificationPreference", "CustomerId")
+                        .WithMany("NotificationPreferences")
+                        .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1724,17 +1653,6 @@ namespace WebsiteBuilderAPI.Migrations
                 {
                     b.HasOne("WebsiteBuilderAPI.Models.Customer", "Customer")
                         .WithMany("PaymentMethods")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("WebsiteBuilderAPI.Models.CustomerSecurityQuestion", b =>
-                {
-                    b.HasOne("WebsiteBuilderAPI.Models.Customer", "Customer")
-                        .WithMany("SecurityQuestions")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2009,12 +1927,9 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.Navigation("Devices");
 
-                    b.Navigation("NotificationPreference")
-                        .IsRequired();
+                    b.Navigation("NotificationPreferences");
 
                     b.Navigation("PaymentMethods");
-
-                    b.Navigation("SecurityQuestions");
 
                     b.Navigation("WishlistItems");
                 });

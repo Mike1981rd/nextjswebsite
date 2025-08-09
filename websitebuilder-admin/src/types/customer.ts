@@ -28,6 +28,16 @@ export interface CustomerDto {
 }
 
 export interface CustomerDetailDto extends CustomerDto {
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  gender?: string;
+  preferredLanguage?: string;
+  preferredCurrency?: string;
+  companyName?: string;
+  taxId?: string;
+  country?: string;
+  phoneNumber?: string;
   addresses?: CustomerAddressDto[];
   paymentMethods?: CustomerPaymentMethodDto[];
   notificationPreferences?: any;
@@ -35,6 +45,12 @@ export interface CustomerDetailDto extends CustomerDto {
   wishlistItems?: CustomerWishlistItemDto[];
   coupons?: CustomerCouponDto[];
   orders?: CustomerOrderDto[];
+  recoveryEmail?: string;
+  securityQuestions?: any[];
+  sessionTimeout?: number;
+  billingEmail?: string;
+  autoCharge?: boolean;
+  paperlessBilling?: boolean;
 }
 
 export interface CustomerAddressDto {

@@ -80,6 +80,165 @@ export default function CustomerSecurityTab({
     const questions = formData.securityQuestions.filter((_, i) => i !== index);
     onFormChange({ securityQuestions: questions });
   };
+  
+  const handleResetPassword = async () => {
+    if (!confirm(t('security.confirmReset', 'Are you sure you want to reset this customer\'s password? A temporary password will be generated.'))) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5266/api/customers/${customer.id}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          forcePasswordChange: true,
+          sendEmail: false // Email service not implemented yet
+        })
+      });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error);
+      }
+      
+      const result = await response.json();
+      
+      // Create a modal-like div to show the password (copyable)
+      const modalDiv = document.createElement('div');
+      modalDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+        z-index: 10000;
+        max-width: 400px;
+        font-family: system-ui, -apple-system, sans-serif;
+      `;
+      
+      modalDiv.innerHTML = `
+        <h3 style="margin: 0 0 20px 0; color: #22c55e; font-size: 20px;">
+          ✅ ${t('security.passwordReset', 'Password Reset Successful!')}
+        </h3>
+        <p style="margin: 10px 0; color: #333;">
+          ${t('security.tempPassword', 'Temporary Password')}:
+        </p>
+        <div style="
+          background: #f3f4f6; 
+          padding: 15px; 
+          border-radius: 5px; 
+          margin: 10px 0;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        ">
+          <input 
+            type="text" 
+            value="${result.temporaryPassword}" 
+            readonly 
+            id="tempPasswordInput"
+            style="
+              flex: 1;
+              background: transparent;
+              border: none;
+              font-family: monospace;
+              font-size: 16px;
+              font-weight: bold;
+              color: #1f2937;
+              outline: none;
+            "
+          />
+          <button 
+            onclick="
+              const input = document.getElementById('tempPasswordInput');
+              input.select();
+              document.execCommand('copy');
+              this.textContent = '✓ Copied!';
+              this.style.background = '#22c55e';
+              setTimeout(() => {
+                this.textContent = '📋 Copy';
+                this.style.background = '#3b82f6';
+              }, 2000);
+            "
+            style="
+              padding: 8px 16px;
+              background: #3b82f6;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: 500;
+              transition: all 0.2s;
+            "
+            onmouseover="this.style.background='#2563eb'"
+            onmouseout="this.style.background='#3b82f6'"
+          >
+            📋 Copy
+          </button>
+        </div>
+        <p style="margin: 15px 0 20px 0; color: #666; font-size: 14px;">
+          ⚠️ ${t('security.copyPassword', 'Please copy this password now. It will not be shown again.')}
+        </p>
+        <button 
+          onclick="
+            document.body.removeChild(this.parentElement.parentElement);
+          "
+          style="
+            width: 100%;
+            padding: 12px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 16px;
+          "
+          onmouseover="this.style.background='#16a34a'"
+          onmouseout="this.style.background='#22c55e'"
+        >
+          Close
+        </button>
+      `;
+      
+      // Create overlay
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 9999;
+      `;
+      overlay.appendChild(modalDiv);
+      document.body.appendChild(overlay);
+      
+      // Auto-select the password for easy copying
+      setTimeout(() => {
+        const input = document.getElementById('tempPasswordInput') as HTMLInputElement;
+        if (input) {
+          input.select();
+        }
+      }, 100);
+      
+      // Refresh the customer data
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      alert(t('security.resetError', 'Error resetting password. Please try again.'));
+    }
+  };
 
   // Mock login history data - in production, this would come from the API
   const loginHistory = [
@@ -116,15 +275,28 @@ export default function CustomerSecurityTab({
                 {t('security.password', 'Password & Authentication')}
               </span>
             </div>
-            {!isEditing && (
+            <div className="flex gap-2">
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-sm font-medium transition-colors"
+                  style={{ color: primaryColor }}
+                >
+                  {t('security.changePassword', 'Change Password')}
+                </button>
+              )}
+              {/* Admin Reset Password Button - Always visible */}
               <button
-                onClick={() => setIsEditing(true)}
-                className="text-sm font-medium transition-colors"
-                style={{ color: primaryColor }}
+                onClick={handleResetPassword}
+                className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-colors"
+                title={t('security.resetPasswordTooltip', 'Generate a temporary password for this customer')}
               >
-                {t('security.changePassword', 'Change Password')}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                {t('security.resetPassword', 'Reset Password')}
               </button>
-            )}
+            </div>
           </div>
         </div>
 
@@ -134,6 +306,9 @@ export default function CustomerSecurityTab({
               <div className="w-11/12 md:w-full">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   {t('security.currentPassword', 'Current Password')}
+                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400 ml-2">
+                    {t('security.forVerification', '(for verification)')}
+                  </span>
                 </label>
                 <div className="relative">
                   <input
@@ -142,7 +317,7 @@ export default function CustomerSecurityTab({
                     onChange={(e) => onFormChange({ currentPassword: e.target.value })}
                     className="w-full pr-10 px-3.5 py-2.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all"
                     style={{ '--tw-ring-color': primaryColor } as any}
-                    placeholder="••••••••"
+                    placeholder={t('security.enterCurrentPassword', 'Enter your current password')}
                   />
                   <button
                     type="button"
@@ -166,7 +341,7 @@ export default function CustomerSecurityTab({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="w-11/12 md:w-full">
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                    {t('security.newPassword', 'New Password')}
+                    {t('security.newPassword', 'New Password')} {isNewCustomer && <span className="text-red-500">*</span>}
                   </label>
                   <div className="relative">
                     <input
@@ -253,8 +428,18 @@ export default function CustomerSecurityTab({
               </div>
             </>
           ) : (
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              <p>{t('security.lastPasswordChange', 'Last password change')}: {t('security.neverChanged', 'Never changed')}</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('security.passwordSecure', 'Password is set and secure')}
+                </p>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {t('security.passwordNote', 'Passwords are encrypted and cannot be displayed for security reasons')}
+              </p>
             </div>
           )}
         </div>
@@ -375,9 +560,14 @@ export default function CustomerSecurityTab({
                     <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
                       {q.question}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {t('security.answerSet', 'Answer configured')}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {t('security.answerSaved', 'Answer saved securely (hidden for security)')}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

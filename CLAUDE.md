@@ -744,6 +744,33 @@ export function NewComponent() {
 - [ ] ¿Los botones tienen estados loading/disabled?
 - [ ] ¿Tiene breadcrumbs en desktop y título en móvil?
 
+## ⚠️ REGLAS CRÍTICAS DE BASE DE DATOS - NUNCA VIOLAR
+
+### 🔴 PROHIBIDO - ACCIONES DESTRUCTIVAS
+**NUNCA ejecutar estos comandos sin permiso EXPLÍCITO del usuario:**
+- ❌ `dotnet ef database drop`
+- ❌ `DROP DATABASE`
+- ❌ `DELETE FROM` (sin WHERE en tablas con datos de producción)
+- ❌ `TRUNCATE TABLE`
+- ❌ Cualquier comando que pueda borrar datos existentes
+
+### ✅ PROCESO CORRECTO para cambios de esquema con datos existentes:
+1. **SIEMPRE preguntar primero**: "Este cambio requiere modificar la base de datos. ¿Deseas hacer un backup primero?"
+2. **Ofrecer alternativas** que preserven datos:
+   - Migraciones incrementales sin DROP
+   - Scripts de actualización que preserven datos
+   - Columnas nullable temporales
+3. **Si es absolutamente necesario** borrar datos:
+   - Explicar EXACTAMENTE qué se perderá
+   - Esperar confirmación explícita: "¿Confirmas que deseas borrar [datos específicos]? S/N"
+   - Solo proceder con "S" o "Sí" explícito
+
+### 📋 CHECKLIST antes de ejecutar migraciones:
+- [ ] ¿El comando preserva los datos existentes?
+- [ ] ¿He advertido al usuario si hay riesgo de pérdida de datos?
+- [ ] ¿Tengo permiso explícito si voy a borrar algo?
+- [ ] ¿He ofrecido hacer un backup primero?
+
 ## 🔴 TROUBLESHOOTING CRUD - LEER SI SE IMPLEMENTA MÉTODO CRUD
 **⚠️ NOTA IMPORTANTE**: Esta sección debe consultarse SIEMPRE cuando el usuario solicite implementar operaciones CRUD (Create, Read, Update, Delete) en cualquier módulo nuevo.
 
@@ -897,12 +924,7 @@ const fetchData = async () => {
 - `/document-implementation [feature]` - Documentar implementación y troubleshooting
 
 ## 🗄️ MIGRACIONES DE BASE DE DATOS - PROCESO CRÍTICO
-**⚠️ IMPORTANTE**: Las migraciones deben seguir un proceso específico para evitar conflictos con Visual Studio.
-
-### ❌ LO QUE CLAUDE CODE NO DEBE HACER:
-1. **NUNCA** crear archivos de migración manualmente (.cs)
-2. **NUNCA** ejecutar `dotnet ef database update` o `Update-Database`
-3. **NUNCA** modificar archivos de migración existentes
+**⚠️ IMPORTANTE**: Las migraciones se ejecutan desde PowerShell en el entorno WSL.
 
 ### ✅ PROCESO CORRECTO DE MIGRACIONES:
 
@@ -912,31 +934,10 @@ const fetchData = async () => {
 // - Models/NuevoModelo.cs
 // - Data/ApplicationDbContext.cs (agregar DbSet)
 // - DTOs si son necesarios
-// - NO crea archivos de migración
+// - NO crea archivos de migración manualmente
 ```
 
-#### Paso 2: Claude Code INSTRUYE al usuario
-```markdown
-MIGRACIÓN PREPARADA - Ejecuta estos comandos:
-
-1. En Package Manager Console de Visual Studio:
-   Add-Migration AddShippingFeature -Context ApplicationDbContext
-
-2. Verifica que la migración se creó correctamente
-
-3. Aplica la migración:
-   Update-Database -Context ApplicationDbContext
-
-4. Confirma cuando esté completado
-```
-
-#### Paso 3: Usuario EJECUTA en Visual Studio
-- El usuario ejecuta los comandos en Package Manager Console
-- Visual Studio genera los archivos de migración automáticamente
-- No hay conflictos porque solo Visual Studio crea migraciones
-
-### 📋 FORMATO DE INSTRUCCIÓN DE MIGRACIÓN:
-Claude Code SIEMPRE debe proporcionar:
+#### Paso 2: Claude Code PREGUNTA al usuario
 ```markdown
 ## 🗄️ MIGRACIÓN REQUERIDA
 
@@ -948,20 +949,47 @@ Claude Code SIEMPRE debe proporcionar:
 - ✅ Relación con tabla Usuarios
 - ✅ Índices en campos de búsqueda
 
-**Comandos a ejecutar:**
-```powershell
-# 1. Crear migración (Package Manager Console)
-Add-Migration AddNombreFeature -Context ApplicationDbContext
-
-# 2. Aplicar migración
-Update-Database -Context ApplicationDbContext
+¿La ejecuto por PowerShell? [S/N]
 ```
 
-**Alternativa CLI:**
+#### Paso 3: SI el usuario confirma, Claude Code EJECUTA
 ```bash
-dotnet ef migrations add AddNombreFeature --context ApplicationDbContext
-dotnet ef database update --context ApplicationDbContext
+# COMANDO CORRECTO desde WSL:
+powershell.exe -Command "cd 'C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI'; dotnet ef migrations add AddNombreFeature --context ApplicationDbContext"
+
+# Luego aplicar a la base de datos:
+powershell.exe -Command "cd 'C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI'; dotnet ef database update --context ApplicationDbContext"
 ```
+
+### ⚠️ RECORDATORIO PARA CLAUDE CODE:
+- **SIEMPRE** usar `powershell.exe -Command` desde WSL
+- **NUNCA** intentar usar `dotnet` directamente (no está en Linux)
+- **NUNCA** decir "no puedo ejecutar migraciones"
+- **SIEMPRE** preguntar "¿La ejecuto por PowerShell?" después de preparar los modelos
+
+### 📋 EJEMPLO DE FLUJO COMPLETO:
+
+**Claude Code prepara los modelos y luego:**
+
+```markdown
+## 🗄️ MIGRACIÓN REQUERIDA
+
+**Nombre de migración:** `AddSecurityFields`
+**Contexto:** `ApplicationDbContext`
+
+**Cambios que incluye:**
+- ✅ Nuevos campos en tabla Customers: RecoveryEmail, SessionTimeoutMinutes
+- ✅ Nueva tabla CustomerSecurityQuestions
+- ✅ Índices y foreign keys correspondientes
+
+¿La ejecuto por PowerShell? [S/N]
+```
+
+**Si el usuario responde "S" o "Sí", Claude Code ejecuta automáticamente:**
+```bash
+powershell.exe -Command "cd 'C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI'; dotnet ef migrations add AddSecurityFields --context ApplicationDbContext"
+
+powershell.exe -Command "cd 'C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI'; dotnet ef database update --context ApplicationDbContext"
 ```
 
 ### 🔴 PROBLEMAS COMUNES Y SOLUCIONES:

@@ -16,7 +16,6 @@ namespace WebsiteBuilderAPI.Services
         Task<CustomerDto> UpdateAvatarAsync(int companyId, int id, string avatarUrl);
         
         // Authentication
-        Task ChangePasswordAsync(int companyId, int id, CustomerChangePasswordDto dto);
         Task<bool> EnableTwoFactorAsync(int companyId, int id, string phoneNumber);
         Task<bool> DisableTwoFactorAsync(int companyId, int id);
         
@@ -55,5 +54,11 @@ namespace WebsiteBuilderAPI.Services
         // Metrics
         Task UpdateCustomerMetricsAsync(int customerId);
         Task<string> GenerateCustomerIdAsync();
+        
+        // Security settings
+        Task UpdateSecuritySettingsAsync(int customerId, UpdateSecuritySettingsDto dto);
+        Task<bool> ChangePasswordAsync(int customerId, CustomerPasswordChangeDto dto);
+        Task<List<CustomerSecurityQuestionDto>> GetSecurityQuestionsAsync(int customerId);
+        Task<ResetPasswordResponseDto> ResetPasswordAsync(int customerId, ResetPasswordDto dto);
     }
 }

@@ -1,5 +1,5 @@
 // Customer API integration
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
 
 export interface Customer {
   id: number;
@@ -24,6 +24,14 @@ export interface Customer {
 }
 
 export interface CustomerDetail extends Customer {
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  gender?: string;
+  preferredLanguage?: string;
+  preferredCurrency?: string;
+  companyName?: string;
+  taxId?: string;
   twoFactorPhone?: string;
   addresses: CustomerAddress[];
   paymentMethods: CustomerPaymentMethod[];
@@ -190,7 +198,7 @@ class CustomerAPI {
       });
     }
 
-    const response = await fetch(`${API_URL}/api/customers?${params}`, {
+    const response = await fetch(`${API_URL}/customers?${params}`, {
       headers: this.getHeaders()
     });
 
@@ -204,7 +212,7 @@ class CustomerAPI {
   }
 
   async getCustomer(id: number): Promise<CustomerDetail> {
-    const response = await fetch(`${API_URL}/api/customers/${id}`, {
+    const response = await fetch(`${API_URL}/customers/${id}`, {
       headers: this.getHeaders()
     });
 
@@ -214,43 +222,76 @@ class CustomerAPI {
       throw new Error('Failed to fetch customer');
     }
 
-    return response.json();
+    const data = await response.json();
+    
+    // Map the backend response to our frontend model
+    return {
+      ...data,
+      phoneNumber: data.phone || data.phoneNumber || '',
+      avatarUrl: data.avatar || data.avatarUrl || ''
+    };
   }
 
   async createCustomer(data: CreateCustomerDto): Promise<Customer> {
-    const response = await fetch(`${API_URL}/api/customers`, {
+    const response = await fetch(`${API_URL}/customers`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(data)
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Error creating customer:', response.status, error);
-      throw new Error('Failed to create customer');
+      const errorText = await response.text();
+      console.error('Error creating customer:', response.status, errorText);
+      
+      // Try to parse error message from response
+      let errorMessage = 'Failed to create customer';
+      try {
+        const errorObj = JSON.parse(errorText);
+        errorMessage = errorObj.error || errorObj.message || errorObj.detail || errorMessage;
+      } catch {
+        // If not JSON, use the text directly if it's not empty
+        if (errorText && errorText.length < 200) {
+          errorMessage = errorText;
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return response.json();
   }
 
   async updateCustomer(id: number, data: UpdateCustomerDto): Promise<Customer> {
-    const response = await fetch(`${API_URL}/api/customers/${id}`, {
+    const response = await fetch(`${API_URL}/customers/${id}`, {
       method: 'PUT',
       headers: this.getHeaders(),
       body: JSON.stringify(data)
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Error updating customer:', response.status, error);
-      throw new Error('Failed to update customer');
+      const errorText = await response.text();
+      console.error('Error updating customer:', response.status, errorText);
+      
+      // Try to parse error message from response
+      let errorMessage = 'Failed to update customer';
+      try {
+        const errorObj = JSON.parse(errorText);
+        errorMessage = errorObj.error || errorObj.message || errorObj.detail || errorMessage;
+      } catch {
+        // If not JSON, use the text directly if it's not empty
+        if (errorText && errorText.length < 200) {
+          errorMessage = errorText;
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return response.json();
   }
 
   async deleteCustomer(id: number): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${id}`, {
+    const response = await fetch(`${API_URL}/customers/${id}`, {
       method: 'DELETE',
       headers: this.getHeaders()
     });
@@ -263,7 +304,7 @@ class CustomerAPI {
   }
 
   async updateAvatar(id: number, data: { avatarUrl: string }): Promise<Customer> {
-    const response = await fetch(`${API_URL}/api/customers/${id}/avatar`, {
+    const response = await fetch(`${API_URL}/customers/${id}/avatar`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(data)
@@ -278,22 +319,9 @@ class CustomerAPI {
     return response.json();
   }
 
-  async changePassword(id: number, newPassword: string, confirmPassword: string): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${id}/change-password`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify({ newPassword, confirmPassword })
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Error changing password:', response.status, error);
-      throw new Error('Failed to change password');
-    }
-  }
 
   async enableTwoFactor(id: number, phoneNumber: string): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${id}/two-factor/enable`, {
+    const response = await fetch(`${API_URL}/customers/${id}/two-factor/enable`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({ phoneNumber })
@@ -307,7 +335,7 @@ class CustomerAPI {
   }
 
   async disableTwoFactor(id: number): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${id}/two-factor/disable`, {
+    const response = await fetch(`${API_URL}/customers/${id}/two-factor/disable`, {
       method: 'POST',
       headers: this.getHeaders()
     });
@@ -320,10 +348,10 @@ class CustomerAPI {
   }
 
   async updateNotificationPreferences(id: number, preferences: any): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${id}/notifications`, {
+    const response = await fetch(`${API_URL}/customers/${id}/notifications`, {
       method: 'PUT',
       headers: this.getHeaders(),
-      body: JSON.stringify({ preferences })
+      body: JSON.stringify(preferences)
     });
 
     if (!response.ok) {
@@ -333,13 +361,41 @@ class CustomerAPI {
     }
   }
 
+  async updateSecuritySettings(id: number, settings: any): Promise<void> {
+    const response = await fetch(`${API_URL}/customers/${id}/security`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(settings)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Error updating security settings:', response.status, error);
+      throw new Error('Failed to update security settings');
+    }
+  }
+
+  async changePassword(id: number, passwordData: any): Promise<void> {
+    const response = await fetch(`${API_URL}/customers/${id}/change-password`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(passwordData)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Error changing password:', response.status, error);
+      throw new Error('Failed to change password');
+    }
+  }
+
   // Additional detail page methods
   async getById(id: number): Promise<CustomerDetail> {
     return this.getCustomer(id);
   }
 
   async revokeDevice(customerId: number, deviceId: number): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${customerId}/devices/${deviceId}/revoke`, {
+    const response = await fetch(`${API_URL}/customers/${customerId}/devices/${deviceId}/revoke`, {
       method: 'POST',
       headers: this.getHeaders()
     });
@@ -347,7 +403,7 @@ class CustomerAPI {
   }
 
   async deleteAddress(customerId: number, addressId: number): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${customerId}/addresses/${addressId}`, {
+    const response = await fetch(`${API_URL}/customers/${customerId}/addresses/${addressId}`, {
       method: 'DELETE',
       headers: this.getHeaders()
     });
@@ -355,15 +411,55 @@ class CustomerAPI {
   }
 
   async setDefaultAddress(customerId: number, addressId: number): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${customerId}/addresses/${addressId}/set-default`, {
+    const response = await fetch(`${API_URL}/customers/${customerId}/addresses/${addressId}/set-default`, {
       method: 'POST',
       headers: this.getHeaders()
     });
     if (!response.ok) throw new Error('Failed to set default address');
   }
 
+  async addAddress(customerId: number, address: any): Promise<CustomerAddress> {
+    const response = await fetch(`${API_URL}/customers/${customerId}/addresses`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(address)
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Error adding address:', response.status, error);
+      throw new Error('Failed to add address');
+    }
+    return response.json();
+  }
+
+  async updateAddress(customerId: number, addressId: number, address: any): Promise<CustomerAddress> {
+    const response = await fetch(`${API_URL}/customers/${customerId}/addresses/${addressId}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(address)
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Error updating address:', response.status, error);
+      throw new Error('Failed to update address');
+    }
+    return response.json();
+  }
+
+  async getAddresses(customerId: number): Promise<CustomerAddress[]> {
+    const response = await fetch(`${API_URL}/customers/${customerId}/addresses`, {
+      headers: this.getHeaders()
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Error fetching addresses:', response.status, error);
+      throw new Error('Failed to fetch addresses');
+    }
+    return response.json();
+  }
+
   async deletePaymentMethod(customerId: number, paymentMethodId: number): Promise<void> {
-    const response = await fetch(`${API_URL}/api/customers/${customerId}/payment-methods/${paymentMethodId}`, {
+    const response = await fetch(`${API_URL}/customers/${customerId}/payment-methods/${paymentMethodId}`, {
       method: 'DELETE',
       headers: this.getHeaders()
     });

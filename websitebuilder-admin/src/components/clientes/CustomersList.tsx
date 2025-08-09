@@ -14,7 +14,9 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  Eye
+  Eye,
+  UserX,
+  UserCheck
 } from 'lucide-react';
 
 export function CustomersList() {
@@ -90,6 +92,22 @@ export function CustomersList() {
     }
   };
 
+  const handleToggleStatus = async (customer: Customer) => {
+    const newStatus = customer.status === 'Active' ? 'Inactive' : 'Active';
+    const confirmMessage = customer.status === 'Active' 
+      ? t('customers.confirmDeactivate', 'Are you sure you want to deactivate this customer?')
+      : t('customers.confirmActivate', 'Are you sure you want to activate this customer?');
+    
+    if (confirm(confirmMessage)) {
+      try {
+        await customerAPI.updateCustomer(customer.id, { status: newStatus });
+        await fetchCustomers();
+      } catch (error) {
+        console.error('Error updating customer status:', error);
+      }
+    }
+  };
+
   const handleExport = (format: 'csv' | 'excel' | 'pdf') => {
     if (format === 'csv') {
       customerAPI.exportToCSV(customers);
@@ -142,9 +160,9 @@ export function CustomersList() {
 
   return (
     <div className="w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
+      {/* Header - Centered on Mobile */}
+      <div className="flex flex-col sm:flex-row justify-between items-center sm:items-center gap-4 mb-6">
+        <div className="text-center sm:text-left">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {t('customers.title', 'All Customers')}
           </h1>
@@ -155,7 +173,7 @@ export function CustomersList() {
         
         <button
           onClick={() => router.push('/dashboard/clientes/new')}
-          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors w-full sm:w-auto justify-center"
           style={{ backgroundColor: primaryColor }}
         >
           <Plus className="w-4 h-4" />
@@ -340,23 +358,20 @@ export function CustomersList() {
                         <button
                           onClick={() => router.push(`/dashboard/clientes/${customer.id}`)}
                           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
-                          title={t('common.view', 'View')}
-                        >
-                          <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                        </button>
-                        <button
-                          onClick={() => router.push(`/dashboard/clientes/${customer.id}/edit`)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
                           title={t('common.edit', 'Edit')}
                         >
                           <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                         </button>
                         <button
-                          onClick={() => handleDelete(customer.id)}
+                          onClick={() => handleToggleStatus(customer)}
                           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
-                          title={t('common.delete', 'Delete')}
+                          title={customer.status === 'Active' ? t('customers.deactivate', 'Deactivate') : t('customers.activate', 'Activate')}
                         >
-                          <Trash2 className="w-4 h-4 text-red-500" />
+                          {customer.status === 'Active' ? (
+                            <UserX className="w-4 h-4 text-orange-500" />
+                          ) : (
+                            <UserCheck className="w-4 h-4 text-green-500" />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -402,12 +417,24 @@ export function CustomersList() {
                         <p className="text-sm text-gray-500 dark:text-gray-400">{customer.customerId}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => router.push(`/dashboard/clientes/${customer.id}`)}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-                    >
-                      <MoreVertical className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => router.push(`/dashboard/clientes/${customer.id}`)}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                      >
+                        <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(customer)}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                      >
+                        {customer.status === 'Active' ? (
+                          <UserX className="w-4 h-4 text-orange-500" />
+                        ) : (
+                          <UserCheck className="w-4 h-4 text-green-500" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2 text-sm">
@@ -422,7 +449,7 @@ export function CustomersList() {
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500 dark:text-gray-400">{t('customers.orders', 'Orders')}: </span>
+                      <span className="text-gray-500 dark:text-gray-400">{t('customers.totalOrders', 'Orders')}: </span>
                       <span className="text-gray-900 dark:text-white">{customer.totalOrders}</span>
                     </div>
                     <div>

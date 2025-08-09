@@ -88,6 +88,14 @@ namespace WebsiteBuilderAPI.Models
         
         public string? TwoFactorSecret { get; set; }
         
+        [EmailAddress]
+        [StringLength(255)]
+        public string? RecoveryEmail { get; set; }
+        
+        public int SessionTimeoutMinutes { get; set; } = 30;
+        
+        public bool ForcePasswordChange { get; set; } = false;
+        
         // Wishlist and coupons count (computed)
         public int WishlistCount { get; set; }
         public int CouponsCount { get; set; }
@@ -102,19 +110,20 @@ namespace WebsiteBuilderAPI.Models
         public virtual Company Company { get; set; }
         public virtual ICollection<CustomerAddress> Addresses { get; set; }
         public virtual ICollection<CustomerPaymentMethod> PaymentMethods { get; set; }
-        public virtual ICollection<CustomerNotificationPreference> NotificationPreferences { get; set; }
+        public virtual CustomerNotificationPreference NotificationPreference { get; set; }
         public virtual ICollection<CustomerDevice> Devices { get; set; }
         public virtual ICollection<CustomerWishlistItem> WishlistItems { get; set; }
         public virtual ICollection<CustomerCoupon> Coupons { get; set; }
+        public virtual ICollection<CustomerSecurityQuestion> SecurityQuestions { get; set; }
         
         public Customer()
         {
             Addresses = new HashSet<CustomerAddress>();
             PaymentMethods = new HashSet<CustomerPaymentMethod>();
-            NotificationPreferences = new HashSet<CustomerNotificationPreference>();
             Devices = new HashSet<CustomerDevice>();
             WishlistItems = new HashSet<CustomerWishlistItem>();
             Coupons = new HashSet<CustomerCoupon>();
+            SecurityQuestions = new HashSet<CustomerSecurityQuestion>();
             Status = "Active";
             LoyaltyTier = "Silver";
             CreatedAt = DateTime.UtcNow;

@@ -15,6 +15,7 @@
     "saveChanges": "Guardar Cambios",
     "saving": "Guardando",
     "saved": "Guardado",
+    "saveSuccess": "Cliente guardado exitosamente",
     "uploading": "Subiendo...",
     "success": "Éxito",
     "confirm": "Confirmar",
@@ -48,6 +49,7 @@
     "back": "Atrás",
     "showing": "Mostrando",
     "to": "a",
+    "requiredFields": "Indica campos obligatorios",
     "of": "de",
     "entries": "entradas",
     "searchUser": "Buscar Usuario",
@@ -818,6 +820,7 @@
     "email": "Correo",
     "country": "País",
     "orders": "Pedidos",
+    "totalOrders": "Pedidos",
     "spent": "Gastado",
     "status": {
       "active": "Activo",

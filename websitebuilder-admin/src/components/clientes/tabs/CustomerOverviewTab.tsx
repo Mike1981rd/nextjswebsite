@@ -201,64 +201,6 @@ export default function CustomerOverviewTab({
         </div>
       )}
 
-      {/* Desktop Header - Keep existing */}
-      {!isNewCustomer && (
-        <div className="hidden md:block bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 p-4 md:p-6 border-b border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-4">
-            {/* Modern Avatar Preview */}
-            <div className="relative group">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 shadow-xl ring-4 ring-white dark:ring-gray-800">
-                {formData.avatarUrl ? (
-                  <img 
-                    src={formData.avatarUrl} 
-                    alt="Avatar" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500">
-                    <span className="text-3xl md:text-4xl font-bold text-white">
-                      {formData.firstName?.[0]?.toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                )}
-              </div>
-              {/* Status Badge */}
-              <div className={`absolute -bottom-1 -right-1 px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(formData.status)}`}>
-                {formData.status}
-              </div>
-            </div>
-
-            {/* Customer Info */}
-            <div className="flex-1">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                {formData.firstName} {formData.lastName}
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">@{formData.username}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {formData.email}
-                </span>
-              </div>
-            </div>
-
-            {/* Edit Button - Desktop */}
-            {!isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="p-2 rounded-xl transition-all"
-                style={{ backgroundColor: `${primaryColor}15` }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke={primaryColor} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Metrics Cards - Responsive Grid for Mobile */}
       {!isNewCustomer && (
@@ -350,35 +292,6 @@ export default function CustomerOverviewTab({
         </div>
       )}
 
-      {/* Mobile Avatar Section - Centered and Prominent */}
-      {!isNewCustomer && !isEditing && (
-        <div className="md:hidden px-4 py-6 bg-white dark:bg-gray-800">
-          <div className="flex flex-col items-center">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 ring-4 ring-gray-50 dark:ring-gray-900">
-                {formData.avatarUrl ? (
-                  <img src={formData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br" style={{ backgroundColor: primaryColor }}>
-                    <span className="text-3xl font-bold text-white">
-                      {formData.firstName?.[0]?.toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <span className={`absolute -bottom-1 -right-1 px-2.5 py-1 text-xs font-semibold rounded-full ${getStatusColor(formData.status)}`}>
-                {formData.status}
-              </span>
-            </div>
-            <h3 className="mt-3 text-lg font-semibold text-gray-900 dark:text-white">
-              {formData.firstName} {formData.lastName}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Customer ID #{customer?.customerId}
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Form Sections - Better Mobile Design */}
       <div className="px-4 md:px-6 space-y-4 pb-6">
@@ -500,7 +413,7 @@ export default function CustomerOverviewTab({
               {/* First Name */}
               <div className="w-11/12 md:w-full">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  {t('customers.fields.firstName', 'First Name')} *
+                  {t('customers.fields.firstName', 'First Name')} <span className="text-red-500">*</span>
                 </label>
                 {isEditing ? (
                   <input
@@ -521,7 +434,7 @@ export default function CustomerOverviewTab({
               {/* Last Name */}
               <div className="w-11/12 md:w-full">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  {t('customers.fields.lastName', 'Last Name')} *
+                  {t('customers.fields.lastName', 'Last Name')} <span className="text-red-500">*</span>
                 </label>
                 {isEditing ? (
                   <input
@@ -542,7 +455,7 @@ export default function CustomerOverviewTab({
               {/* Username */}
               <div className="w-11/12 md:w-full">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  {t('customers.fields.username', 'Username')} *
+                  {t('customers.fields.username', 'Username')} <span className="text-red-500">*</span>
                 </label>
                 {isEditing ? (
                   <input
@@ -634,7 +547,7 @@ export default function CustomerOverviewTab({
               {/* Country */}
               <div className="w-11/12 md:w-full">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  {t('customers.fields.country', 'Country')} *
+                  {t('customers.fields.country', 'Country')} <span className="text-red-500">*</span>
                 </label>
                 {isEditing ? (
                   <div className="relative">
@@ -724,7 +637,7 @@ export default function CustomerOverviewTab({
               {/* Email */}
               <div className="w-11/12 md:w-full md:col-span-2">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  {t('customers.fields.email', 'Email Address')} *
+                  {t('customers.fields.email', 'Email Address')} <span className="text-red-500">*</span>
                 </label>
                 {isEditing ? (
                   <div className="relative">
@@ -903,7 +816,7 @@ export default function CustomerOverviewTab({
         </div>
 
         {/* Recent Orders Section - Only for existing customers */}
-        {!isNewCustomer && customer?.orders && customer.orders.length > 0 && (
+        {!isNewCustomer && customer?.orders && Array.isArray(customer.orders) && customer.orders.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-l-2xl rounded-r-xl md:rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
             <div className="pl-3 pr-6 md:px-4 py-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center justify-between">
@@ -924,36 +837,46 @@ export default function CustomerOverviewTab({
             </div>
 
             <div className="pl-3 pr-6 md:p-4 space-y-3">
-              {customer.orders.slice(0, 3).map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        #{order.orderNumber}
-                      </span>
-                      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
-                        order.status === 'Delivered' 
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : order.status === 'Processing'
-                          ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                          : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                      }`}>
-                        {t(`orders.status.${order.status.toLowerCase()}`, order.status)}
-                      </span>
+              {customer.orders.slice(0, 3).map((order, index) => {
+                // Handle both formats - the expected format and the potentially malformed format
+                const orderId = order.id || (order as any).orderId || index;
+                const orderNumber = order.orderNumber || (order as any).orderId || `ORD-${orderId}`;
+                const orderDate = order.createdAt || (order as any).date || new Date().toISOString();
+                const itemCount = order.itemCount || (order as any).items || 0;
+                const total = order.total || 0;
+                const status = order.status || 'Pending';
+                
+                return (
+                  <div key={orderId} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          #{orderNumber}
+                        </span>
+                        <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
+                          status === 'Delivered' 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                            : status === 'Processing'
+                            ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                        }`}>
+                          {t(`orders.status.${status.toLowerCase()}`, status)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                        <span>{new Date(orderDate).toLocaleDateString()}</span>
+                        <span>•</span>
+                        <span>{itemCount} {t('common.items', 'items')}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                      <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                      <span>•</span>
-                      <span>{order.itemCount} {t('common.items', 'items')}</span>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900 dark:text-white">
+                        ${(typeof total === 'number' ? total : 0).toFixed(2)}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      ${order.total.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
               {customer.orders.length > 3 && (
                 <button className="w-full py-2 text-sm font-medium text-center rounded-xl transition-colors"
@@ -966,83 +889,6 @@ export default function CustomerOverviewTab({
           </div>
         )}
       </div>
-
-      {/* Mobile Action Button - At bottom of form */}
-      {!isNewCustomer && !isEditing && (
-        <div className="md:hidden px-4 pb-6 pt-2">
-          <button
-            onClick={() => setIsEditing(true)}
-            className="w-full px-4 py-3.5 text-white rounded-xl font-medium transition-all active:scale-95 shadow-md"
-            style={{ backgroundColor: primaryColor }}
-          >
-            {t('customers.detail.editDetails', 'Edit Details')}
-          </button>
-        </div>
-      )}
-
-      {/* Fixed Bottom Actions - Mobile Only for Editing Mode */}
-      {isEditing && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 md:hidden z-20">
-          <div className="flex gap-3">
-            <button
-              onClick={handleCancel}
-              className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-all active:scale-95"
-            >
-              {t('common.cancel', 'Cancel')}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={loading}
-              className="flex-1 px-4 py-3 text-white rounded-xl font-medium disabled:opacity-50 transition-all active:scale-95 shadow-lg"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {t('common.saving', 'Saving')}
-                </span>
-              ) : (
-                t('common.save', 'Save')
-              )}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Desktop Actions */}
-      {!isNewCustomer && (
-        <div className="hidden md:flex justify-end gap-3 px-6 py-4">
-          {isEditing ? (
-            <>
-              <button
-                onClick={handleCancel}
-                className="px-6 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                {t('common.cancel', 'Cancel')}
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={loading}
-                className="px-6 py-2.5 text-white rounded-xl font-medium disabled:opacity-50 transition-all shadow-lg hover:shadow-xl"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {loading ? t('common.saving', 'Saving...') : t('common.save', 'Save Changes')}
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-6 py-2.5 text-white rounded-xl font-medium transition-all shadow-lg hover:shadow-xl"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {t('common.edit', 'Edit Customer')}
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }

@@ -194,32 +194,6 @@ namespace WebsiteBuilderAPI.Controllers
             }
         }
 
-        // POST: api/customers/{id}/change-password
-        [HttpPost("{id}/change-password")]
-        public async Task<IActionResult> ChangePassword(int id, [FromBody] CustomerChangePasswordDto dto)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var companyIdClaim = User.FindFirst("companyId")?.Value;
-                int companyId = string.IsNullOrEmpty(companyIdClaim) ? 1 : int.Parse(companyIdClaim);
-
-                await _customerService.ChangePasswordAsync(companyId, id, dto);
-                
-                return Ok(new { message = "Password changed successfully" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error changing password for customer {Id}", id);
-                return StatusCode(500, new { error = "An error occurred while changing the password", details = ex.Message });
-            }
-        }
 
         // POST: api/customers/{id}/two-factor/enable
         [HttpPost("{id}/two-factor/enable")]
@@ -486,16 +460,91 @@ namespace WebsiteBuilderAPI.Controllers
                 return StatusCode(500, new { error = "An error occurred while retrieving coupons", details = ex.Message });
             }
         }
-    }
 
-    // Additional DTOs that were missing
-    public class UpdateAvatarDto
-    {
-        public string AvatarUrl { get; set; }
-    }
+        // PUT: api/customers/{id}/security
+        [HttpPut("{id}/security")]
+        public async Task<IActionResult> UpdateSecuritySettings(int id, [FromBody] UpdateSecuritySettingsDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-    public class EnableTwoFactorDto
-    {
-        public string PhoneNumber { get; set; }
+                await _customerService.UpdateSecuritySettingsAsync(id, dto);
+                return Ok(new { message = "Security settings updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating security settings for customer {Id}", id);
+                return StatusCode(500, new { error = "An error occurred while updating security settings", details = ex.Message });
+            }
+        }
+
+        // POST: api/customers/{id}/change-password
+        [HttpPost("{id}/change-password")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] CustomerPasswordChangeDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var success = await _customerService.ChangePasswordAsync(id, dto);
+                
+                if (!success)
+                    return BadRequest(new { error = "Current password is incorrect" });
+                
+                return Ok(new { message = "Password changed successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing password for customer {Id}", id);
+                return StatusCode(500, new { error = "An error occurred while changing password", details = ex.Message });
+            }
+        }
+
+        // GET: api/customers/{id}/security-questions
+        [HttpGet("{id}/security-questions")]
+        public async Task<IActionResult> GetSecurityQuestions(int id)
+        {
+            try
+            {
+                var questions = await _customerService.GetSecurityQuestionsAsync(id);
+                return Ok(questions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting security questions for customer {Id}", id);
+                return StatusCode(500, new { error = "An error occurred while retrieving security questions", details = ex.Message });
+            }
+        }
+        
+        // POST: api/customers/{id}/reset-password
+        [HttpPost("{id}/reset-password")]
+        [Authorize(Roles = "Admin,SuperAdmin")] // Only admins can reset passwords
+        public async Task<IActionResult> ResetPassword(int id, [FromBody] ResetPasswordDto dto)
+        {
+            try
+            {
+                var result = await _customerService.ResetPasswordAsync(id, dto);
+                
+                if (!result.Success)
+                    return BadRequest(new { error = result.Message });
+                
+                // Return the temporary password ONLY ONCE
+                return Ok(new 
+                { 
+                    message = result.Message,
+                    temporaryPassword = result.TemporaryPassword,
+                    emailSent = result.EmailSent,
+                    warning = "This temporary password is shown only once. Make sure to save it or communicate it securely to the customer."
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting password for customer {Id}", id);
+                return StatusCode(500, new { error = "An error occurred while resetting the password", details = ex.Message });
+            }
+        }
     }
 }

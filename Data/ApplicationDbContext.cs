@@ -46,6 +46,7 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<CustomerDevice> CustomerDevices { get; set; }
         public DbSet<CustomerWishlistItem> CustomerWishlistItems { get; set; }
         public DbSet<CustomerCoupon> CustomerCoupons { get; set; }
+        public DbSet<CustomerSecurityQuestion> CustomerSecurityQuestions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -445,15 +446,20 @@ namespace WebsiteBuilderAPI.Data
             modelBuilder.Entity<CustomerNotificationPreference>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.NotificationType).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(200);
                 
+                // Configure one-to-one relationship
                 entity.HasOne(e => e.Customer)
-                    .WithMany(c => c.NotificationPreferences)
-                    .HasForeignKey(e => e.CustomerId)
+                    .WithOne(c => c.NotificationPreference)
+                    .HasForeignKey<CustomerNotificationPreference>(e => e.CustomerId)
                     .OnDelete(DeleteBehavior.Cascade);
                 
-                entity.HasIndex(e => new { e.CustomerId, e.NotificationType }).IsUnique();
+                // Ensure one notification preference per customer
+                entity.HasIndex(e => e.CustomerId).IsUnique();
+                
+                // Configure string properties
+                entity.Property(e => e.DoNotDisturbStart).HasMaxLength(10);
+                entity.Property(e => e.DoNotDisturbEnd).HasMaxLength(10);
+                entity.Property(e => e.Timezone).HasMaxLength(100);
             });
 
             // Configuración de CustomerDevice

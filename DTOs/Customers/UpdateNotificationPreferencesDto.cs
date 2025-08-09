@@ -1,26 +1,55 @@
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
 namespace WebsiteBuilderAPI.DTOs.Customers
 {
     public class UpdateNotificationPreferencesDto
     {
-        [Required(ErrorMessage = "Preferences list is required")]
-        public List<NotificationPreferenceDto> Preferences { get; set; }
+        // Email Notifications
+        public EmailNotificationsDto EmailNotifications { get; set; }
+        
+        // SMS Notifications
+        public SmsNotificationsDto SmsNotifications { get; set; }
+        
+        // Push Notifications
+        public PushNotificationsDto PushNotifications { get; set; }
+        
+        // Notification Schedule
+        public NotificationScheduleDto NotificationSchedule { get; set; }
         
         public UpdateNotificationPreferencesDto()
         {
-            Preferences = new List<NotificationPreferenceDto>();
+            EmailNotifications = new EmailNotificationsDto();
+            SmsNotifications = new SmsNotificationsDto();
+            PushNotifications = new PushNotificationsDto();
+            NotificationSchedule = new NotificationScheduleDto();
         }
     }
     
-    public class NotificationPreferenceDto
+    public class EmailNotificationsDto
     {
-        [Required(ErrorMessage = "Notification type is required")]
-        public string NotificationType { get; set; }
-        
-        public bool EmailEnabled { get; set; }
-        public bool BrowserEnabled { get; set; }
-        public bool AppEnabled { get; set; }
+        public bool OrderUpdates { get; set; } = true;
+        public bool Promotions { get; set; } = false;
+        public bool Newsletter { get; set; } = false;
+        public bool ProductReviews { get; set; } = true;
+        public bool PriceAlerts { get; set; } = false;
+    }
+    
+    public class SmsNotificationsDto
+    {
+        public bool OrderUpdates { get; set; } = false;
+        public bool DeliveryAlerts { get; set; } = false;
+        public bool Promotions { get; set; } = false;
+    }
+    
+    public class PushNotificationsDto
+    {
+        public bool Enabled { get; set; } = false;
+        public bool Sound { get; set; } = true;
+        public bool Vibration { get; set; } = true;
+    }
+    
+    public class NotificationScheduleDto
+    {
+        public string DoNotDisturbStart { get; set; } = "22:00";
+        public string DoNotDisturbEnd { get; set; } = "08:00";
+        public string Timezone { get; set; } = "America/Santo_Domingo";
     }
 }

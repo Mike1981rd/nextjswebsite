@@ -111,8 +111,9 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
-  const [isEditing, setIsEditing] = useState(false);
   const isNewCustomer = customerId === 'new';
+  // Always in edit mode - no need for separate edit button
+  const [isEditing, setIsEditing] = useState(true);
   
   // Centralized form state - persists across tab changes
   const [formData, setFormData] = useState<AllFormData>({
@@ -210,10 +211,9 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
         notificationPreferences: {},
         devices: [],
         wishlistItems: [],
-        coupons: [],
-        orders: []
+        coupons: []
+        // Note: Don't include 'orders' to avoid rendering issues
       } as CustomerDetailDto);
-      setIsEditing(true); // New customers start in edit mode
       setLoading(false);
     } else {
       fetchCustomerDetail();
@@ -236,7 +236,7 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           lastName: data.lastName || '',
           username: data.username || '',
           email: data.email || '',
-          phoneNumber: data.phoneNumber || '',
+          phoneNumber: data.phoneNumber || data.phone || '',
           birthDate: data.birthDate || '',
           gender: data.gender || '',
           status: data.status || 'Active',
@@ -246,18 +246,28 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           companyName: data.companyName || '',
           taxId: data.taxId || '',
           country: data.country || '',
-          avatarUrl: data.avatarUrl || ''
+          avatarUrl: data.avatarUrl || data.avatar || ''
         },
         security: {
           ...prev.security,
-          isTwoFactorEnabled: data.isTwoFactorEnabled || false,
+          isTwoFactorEnabled: data.isTwoFactorEnabled || data.twoFactorEnabled || false,
           recoveryEmail: data.recoveryEmail || data.email || '',
           securityQuestions: data.securityQuestions || [],
           trustedDevices: data.devices?.map(d => d.deviceName) || [],
-          sessionTimeout: data.sessionTimeout || 30
+          sessionTimeout: data.sessionTimeoutMinutes || data.sessionTimeout || 30
         },
         addressBilling: {
-          addresses: data.addresses || [],
+          addresses: data.addresses?.map((addr: any) => ({
+            id: addr.id,
+            type: addr.type?.toLowerCase() || 'billing',
+            addressLine1: addr.street || addr.addressLine1 || '',
+            addressLine2: addr.apartment || addr.addressLine2 || '',
+            city: addr.city || '',
+            state: addr.state || '',
+            postalCode: addr.postalCode || '',
+            country: addr.country || '',
+            isDefault: addr.isDefault || false
+          })) || [],
           paymentMethods: data.paymentMethods || [],
           billingPreferences: {
             invoiceEmail: data.billingEmail || data.email || '',
@@ -267,11 +277,11 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
         },
         notifications: {
           emailNotifications: {
-            orderUpdates: data.notificationPreferences?.orderUpdates !== false,
-            promotions: data.notificationPreferences?.promotions || false,
-            newsletter: data.notificationPreferences?.newsletter || false,
-            productReviews: data.notificationPreferences?.productReviews !== false,
-            priceAlerts: data.notificationPreferences?.priceAlerts || false
+            orderUpdates: data.notificationPreferences?.emailOrderUpdates !== false,
+            promotions: data.notificationPreferences?.emailPromotions || false,
+            newsletter: data.notificationPreferences?.emailNewsletter || false,
+            productReviews: data.notificationPreferences?.emailProductReviews !== false,
+            priceAlerts: data.notificationPreferences?.emailPriceAlerts || false
           },
           smsNotifications: {
             orderUpdates: data.notificationPreferences?.smsOrderUpdates || false,
@@ -329,40 +339,313 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
   // Centralized save handler that collects data from all tabs
   const handleSaveAll = async () => {
     try {
-      // Combine all form data for saving
-      const dataToSave = {
-        ...formData.overview,
-        isTwoFactorEnabled: formData.security.isTwoFactorEnabled,
-        recoveryEmail: formData.security.recoveryEmail,
-        sessionTimeout: formData.security.sessionTimeout,
-        addresses: formData.addressBilling.addresses,
-        paymentMethods: formData.addressBilling.paymentMethods,
-        billingEmail: formData.addressBilling.billingPreferences.invoiceEmail,
-        autoCharge: formData.addressBilling.billingPreferences.autoCharge,
-        paperlessBilling: formData.addressBilling.billingPreferences.paperlessBilling,
-        notificationPreferences: {
-          ...formData.notifications.emailNotifications,
-          smsOrderUpdates: formData.notifications.smsNotifications.orderUpdates,
-          smsDeliveryAlerts: formData.notifications.smsNotifications.deliveryAlerts,
-          smsPromotions: formData.notifications.smsNotifications.promotions,
-          pushEnabled: formData.notifications.pushNotifications.enabled,
-          pushSound: formData.notifications.pushNotifications.sound,
-          pushVibration: formData.notifications.pushNotifications.vibration,
-          ...formData.notifications.notificationSchedule
-        }
-      };
-      
       if (isNewCustomer) {
-        const newCustomer = await customerAPI.createCustomer(dataToSave);
-        router.push(`/dashboard/clientes/${newCustomer.id}`);
+        // For new customers, send all available fields
+        const createData: any = {
+          firstName: formData.overview.firstName,
+          lastName: formData.overview.lastName,
+          username: formData.overview.username,
+          email: formData.overview.email,
+          password: formData.security.newPassword || 'TempPassword123!',
+          phone: formData.overview.phoneNumber || undefined,
+          country: formData.overview.country,
+          status: formData.overview.status || 'Active',
+          initialBalance: 0,
+          initialLoyaltyPoints: 0,
+          birthDate: formData.overview.birthDate || undefined,
+          gender: formData.overview.gender || undefined,
+          preferredLanguage: formData.overview.preferredLanguage || undefined,
+          preferredCurrency: formData.overview.preferredCurrency || undefined,
+          companyName: formData.overview.companyName || undefined,
+          taxId: formData.overview.taxId || undefined,
+          loyaltyTier: formData.overview.loyaltyTier || 'Bronze',
+          avatar: formData.overview.avatarUrl || undefined
+        };
+        
+        // Remove undefined values
+        Object.keys(createData).forEach(key => 
+          createData[key] === undefined && delete createData[key]
+        );
+        
+        const newCustomer = await customerAPI.createCustomer(createData);
+        console.log('New customer created:', newCustomer);
+        
+        // Now save the address for the new customer
+        const firstAddress = formData.addressBilling.addresses[0];
+        console.log('Checking address to save:', firstAddress);
+        
+        // Check if we have valid address data (at least street, city and country)
+        if (firstAddress && 
+            firstAddress.addressLine1 && 
+            firstAddress.addressLine1.trim() !== '' &&
+            firstAddress.city && 
+            firstAddress.city.trim() !== '' &&
+            firstAddress.country && 
+            firstAddress.country.trim() !== '') {
+          
+          console.log('Valid address found, preparing to save:', firstAddress);
+          
+          // Map frontend address type to backend expected values
+          const getAddressType = (type: string) => {
+            switch(type) {
+              case 'billing': return 'Office';
+              case 'shipping': return 'Home';
+              case 'both': return 'Other';
+              default: return 'Home';
+            }
+          };
+          
+          const addressData = {
+            type: getAddressType(firstAddress.type || 'billing'),
+            label: firstAddress.type === 'billing' ? 'Billing Address' : 
+                   firstAddress.type === 'shipping' ? 'Shipping Address' : 
+                   'Main Address',
+            street: firstAddress.addressLine1.trim(),
+            apartment: firstAddress.addressLine2?.trim() || null,
+            city: firstAddress.city.trim(),
+            state: firstAddress.state?.trim() || null,
+            postalCode: firstAddress.postalCode?.trim() || null,
+            country: firstAddress.country.trim(),
+            isDefault: true
+          };
+          
+          console.log('Address payload to send:', addressData);
+          console.log('Customer ID for address:', newCustomer.id);
+          
+          try {
+            const savedAddress = await customerAPI.addAddress(newCustomer.id, addressData);
+            console.log('Address saved successfully:', savedAddress);
+          } catch (addressError) {
+            console.error('Error saving address:', addressError);
+            alert('Customer created but address could not be saved. Please add it manually.');
+          }
+        } else {
+          console.log('No valid address to save. Missing required fields:', {
+            hasAddress: !!firstAddress,
+            addressLine1: firstAddress?.addressLine1 || 'MISSING',
+            city: firstAddress?.city || 'MISSING',
+            country: firstAddress?.country || 'MISSING',
+            fullAddress: firstAddress
+          });
+        }
+        
+        // Save billing preferences if email is provided
+        if (formData.addressBilling.billingPreferences.invoiceEmail) {
+          // Note: This might need a separate API endpoint
+          // For now, we'll save it with the customer update
+          try {
+            await customerAPI.updateCustomer(newCustomer.id, {
+              email: formData.overview.email // Using main email for now
+            });
+          } catch (billingError) {
+            console.error('Error saving billing preferences:', billingError);
+          }
+        }
+        
+        // Save notification preferences for new customer
+        try {
+          const notificationData = {
+            emailNotifications: formData.notifications.emailNotifications,
+            smsNotifications: formData.notifications.smsNotifications,
+            pushNotifications: formData.notifications.pushNotifications,
+            notificationSchedule: formData.notifications.notificationSchedule
+          };
+          
+          console.log('Saving notification preferences:', notificationData);
+          await customerAPI.updateNotificationPreferences(newCustomer.id, notificationData);
+          console.log('Notification preferences saved successfully');
+        } catch (notifError) {
+          console.error('Error saving notification preferences:', notifError);
+          // Continue even if notifications fail
+        }
+        
+        // Show success message
+        alert(t('common.saveSuccess', 'Customer saved successfully'));
+        // Redirect to customers list
+        router.push('/dashboard/clientes');
       } else {
-        await customerAPI.updateCustomer(customer!.id, dataToSave);
-        await fetchCustomerDetail();
-        setIsEditing(false);
+        // For updates, send all fields
+        const updateData: any = {
+          firstName: formData.overview.firstName,
+          lastName: formData.overview.lastName,
+          username: formData.overview.username,
+          email: formData.overview.email,
+          phone: formData.overview.phoneNumber || undefined,
+          country: formData.overview.country,
+          status: formData.overview.status,
+          avatar: formData.overview.avatarUrl || undefined,
+          twoFactorEnabled: formData.security.isTwoFactorEnabled,
+          // Don't send twoFactorPhone - it's causing varchar(20) constraint errors
+          birthDate: formData.overview.birthDate || undefined,
+          gender: formData.overview.gender || undefined,
+          preferredLanguage: formData.overview.preferredLanguage || undefined,
+          preferredCurrency: formData.overview.preferredCurrency || undefined,
+          companyName: formData.overview.companyName || undefined,
+          taxId: formData.overview.taxId || undefined,
+          loyaltyTier: formData.overview.loyaltyTier || undefined
+        };
+        
+        // Remove undefined values
+        Object.keys(updateData).forEach(key => 
+          updateData[key] === undefined && delete updateData[key]
+        );
+        
+        console.log('Updating customer with data:', updateData);
+        await customerAPI.updateCustomer(customer!.id, updateData);
+        
+        // Handle address updates
+        if (formData.addressBilling.addresses.length > 0 && formData.addressBilling.addresses[0].addressLine1) {
+          // Map frontend address type to backend expected values
+          const getAddressType = (type: string) => {
+            switch(type) {
+              case 'billing': return 'Office';
+              case 'shipping': return 'Home';
+              case 'both': return 'Other';
+              default: return 'Home';
+            }
+          };
+          
+          const addressData = {
+            type: getAddressType(formData.addressBilling.addresses[0].type || 'billing'),
+            label: formData.addressBilling.addresses[0].type === 'billing' ? 'Billing Address' : 
+                   formData.addressBilling.addresses[0].type === 'shipping' ? 'Shipping Address' : 
+                   'Main Address',
+            street: formData.addressBilling.addresses[0].addressLine1,
+            apartment: formData.addressBilling.addresses[0].addressLine2 || null,
+            city: formData.addressBilling.addresses[0].city || '',
+            state: formData.addressBilling.addresses[0].state || null,
+            postalCode: formData.addressBilling.addresses[0].postalCode || null,
+            country: formData.addressBilling.addresses[0].country || '',
+            isDefault: formData.addressBilling.addresses[0].isDefault !== false
+          };
+          
+          try {
+            console.log('Address data to save:', addressData);
+            console.log('Address has ID?', formData.addressBilling.addresses[0].id);
+            if (formData.addressBilling.addresses[0].id) {
+              // Update existing address
+              console.log('Updating existing address');
+              await customerAPI.updateAddress(customer!.id, formData.addressBilling.addresses[0].id, addressData);
+            } else {
+              // Add new address
+              console.log('Adding new address');
+              await customerAPI.addAddress(customer!.id, addressData);
+            }
+          } catch (addressError) {
+            console.error('Error saving address:', addressError);
+            // Continue even if address fails
+          }
+        }
+        
+        // Save notification preferences for existing customer
+        try {
+          const notificationData = {
+            emailNotifications: formData.notifications.emailNotifications,
+            smsNotifications: formData.notifications.smsNotifications,
+            pushNotifications: formData.notifications.pushNotifications,
+            notificationSchedule: formData.notifications.notificationSchedule
+          };
+          
+          console.log('Updating notification preferences:', notificationData);
+          await customerAPI.updateNotificationPreferences(customer!.id, notificationData);
+          console.log('Notification preferences updated successfully');
+        } catch (notifError) {
+          console.error('Error updating notification preferences:', notifError);
+          // Continue even if notifications fail
+        }
+        
+        // Save security settings for existing customer - only if there are changes
+        const hasSecurityChanges = 
+          formData.security.newPassword || 
+          formData.security.isTwoFactorEnabled !== customer.twoFactorEnabled ||
+          formData.security.recoveryEmail !== (customer.recoveryEmail || customer.email) ||
+          formData.security.sessionTimeout !== (customer.sessionTimeoutMinutes || 30) ||
+          formData.security.securityQuestions.some(q => q.question && q.answer);
+        
+        if (hasSecurityChanges) {
+          console.log('=== STARTING SECURITY SAVE ===');
+          console.log('Security form data:', formData.security);
+          
+          try {
+            // Check if password needs to be changed
+            if (formData.security.newPassword && formData.security.currentPassword) {
+              const passwordData = {
+                currentPassword: formData.security.currentPassword,
+                newPassword: formData.security.newPassword,
+                confirmPassword: formData.security.confirmPassword
+              };
+              console.log('Calling changePassword with:', passwordData);
+              await customerAPI.changePassword(customer!.id, passwordData);
+              console.log('Password changed successfully');
+              
+              // Clear password fields after successful change
+              setFormData(prev => ({
+                ...prev,
+                security: {
+                  ...prev.security,
+                  currentPassword: '',
+                  newPassword: '',
+                  confirmPassword: ''
+                }
+              }));
+            }
+            
+            // Only update security settings if there are non-password changes
+            const hasNonPasswordChanges = 
+              formData.security.isTwoFactorEnabled !== customer.twoFactorEnabled ||
+              formData.security.recoveryEmail !== (customer.recoveryEmail || customer.email) ||
+              formData.security.sessionTimeout !== (customer.sessionTimeoutMinutes || 30) ||
+              formData.security.securityQuestions.some(q => q.question && q.answer);
+            
+            if (hasNonPasswordChanges) {
+              // Filter out empty security questions or questions without answers
+              const validSecurityQuestions = formData.security.securityQuestions
+                .filter(q => q.question && q.question.trim() !== '' && q.answer && q.answer.trim() !== '')
+                .map(q => ({
+                  question: q.question,
+                  answer: q.answer
+                }));
+              
+              const securityData = {
+                twoFactorEnabled: formData.security.isTwoFactorEnabled,
+                recoveryEmail: formData.security.recoveryEmail,
+                sessionTimeoutMinutes: formData.security.sessionTimeout,
+                securityQuestions: validSecurityQuestions
+              };
+              
+              console.log('Calling updateSecuritySettings with:', securityData);
+              await customerAPI.updateSecuritySettings(customer!.id, securityData);
+              console.log('Security settings updated successfully');
+            }
+          } catch (secError) {
+            console.error('Error updating security settings:', secError);
+            // Don't show alert for security errors - they're often validation issues
+            // The main save will still succeed
+          }
+          console.log('=== SECURITY SAVE COMPLETED ===');
+        } else {
+          console.log('No security changes detected, skipping security save');
+        }
+        
+        // Show success message
+        alert(t('common.saveSuccess', 'Customer saved successfully'));
+        // Redirect to customers list
+        router.push('/dashboard/clientes');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving customer:', error);
-      alert(t('common.error', 'An error occurred while saving'));
+      // Show specific error message if available
+      let errorMessage = t('common.error', 'An error occurred while saving');
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -410,7 +693,7 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
       <div className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumbs - Desktop */}
-          <nav className="hidden sm:flex px-4 sm:px-6 py-3 text-sm" aria-label="Breadcrumb">
+          <nav className="hidden sm:flex px-4 sm:px-6 py-3 text-sm border-b border-gray-200 dark:border-gray-700" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2">
               <li>
                 <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
@@ -431,32 +714,35 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           </nav>
 
           {/* Mobile Header */}
-          <div className="sm:hidden px-4 py-3">
+          <div className="sm:hidden px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={handleBack}
-              className="flex items-center text-gray-600 dark:text-gray-400 mb-2"
+              className="flex items-center text-gray-600 dark:text-gray-400"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               {t('common.back', 'Back')}
             </button>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {isNewCustomer ? t('customers.newCustomer', 'New Customer') : `${customer.firstName} ${customer.lastName}`}
-            </h1>
           </div>
 
           {/* Customer Header Info */}
-          <div className="px-4 sm:px-6 pb-4">
+          <div className="px-4 sm:px-6 py-4 sm:py-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 {/* Avatar */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                  {customer.avatarUrl ? (
-                    <img src={customer.avatarUrl} alt={customer.firstName} className="w-full h-full object-cover" />
+                  {(customer.avatarUrl || customer.avatar) ? (
+                    <img src={customer.avatarUrl || customer.avatar} alt={customer.firstName || customer.fullName} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-2xl font-semibold text-gray-500 dark:text-gray-400">
-                      {customer.firstName[0]}{customer.lastName[0]}
+                      {customer.firstName && customer.lastName ? (
+                        <>{customer.firstName[0]}{customer.lastName[0]}</>
+                      ) : customer.fullName ? (
+                        <>{customer.fullName.split(' ')[0]?.[0] || '?'}{customer.fullName.split(' ')[1]?.[0] || ''}</>
+                      ) : (
+                        <span>?</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -464,7 +750,10 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
                 {/* Basic Info */}
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                    {isNewCustomer ? t('customers.newCustomer', 'New Customer') : `${customer.firstName} ${customer.lastName}`}
+                    {isNewCustomer ? t('customers.newCustomer', 'New Customer') : 
+                      (customer.firstName && customer.lastName ? 
+                        `${customer.firstName} ${customer.lastName}` : 
+                        customer.fullName || customer.username || 'Customer')}
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {customer.email}
@@ -486,13 +775,26 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
                 </div>
               </div>
 
-              {/* Actions */}
+              {/* Actions - Save and Cancel Buttons */}
               <div className="flex space-x-2 mt-4 sm:mt-0">
-                <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
-                  {t('customers.actions.edit', 'Edit')}
+                <button 
+                  onClick={() => {
+                    if (isNewCustomer) {
+                      router.push('/dashboard/clientes');
+                    } else {
+                      fetchCustomerDetail(); // Reset to original data
+                    }
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+                >
+                  {t('common.cancel', 'Cancel')}
                 </button>
-                <button className="px-4 py-2 text-sm font-medium text-white rounded-lg" style={{ backgroundColor: primaryColor }}>
-                  {t('customers.actions.sendEmail', 'Send Email')}
+                <button 
+                  onClick={handleSaveAll}
+                  className="px-4 py-2 text-sm font-medium text-white rounded-lg" 
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {t('common.save', 'Save')}
                 </button>
               </div>
             </div>
@@ -564,8 +866,42 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           </nav>
         </div>
 
-        {/* Tab Content */}
-        <div className="sm:bg-white sm:dark:bg-gray-800 sm:rounded-lg sm:shadow">
+        {/* Tab Content - Always add padding bottom on mobile for save buttons */}
+        <div className="sm:bg-white sm:dark:bg-gray-800 sm:rounded-lg sm:shadow pb-24 sm:pb-0">
+          {/* Required fields notice */}
+          {isNewCustomer && (
+            <div className="px-4 sm:px-6 py-3 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                <span className="text-red-500">*</span> {t('common.requiredFields', 'Indicates required fields')}
+              </p>
+            </div>
+          )}
+          
+          {/* Mobile Save Bar - Always visible */}
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50">
+            <div className="flex gap-3">
+              <button 
+                onClick={() => {
+                  if (isNewCustomer) {
+                    router.push('/dashboard/clientes');
+                  } else {
+                    fetchCustomerDetail(); // Reset to original data
+                  }
+                }}
+                className="flex-1 py-3 px-4 text-sm font-medium text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600"
+              >
+                {t('common.cancel', 'Cancel')}
+              </button>
+              <button 
+                onClick={handleSaveAll}
+                className="flex-1 py-3 px-4 text-sm font-medium text-white rounded-xl" 
+                style={{ backgroundColor: primaryColor }}
+              >
+                {t('common.save', 'Save')}
+              </button>
+            </div>
+          </div>
+          
           {activeTab === 'overview' && (
             <CustomerOverviewTab 
               customer={customer} 

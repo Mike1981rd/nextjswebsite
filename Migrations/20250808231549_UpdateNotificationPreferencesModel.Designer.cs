@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebsiteBuilderAPI.Data;
@@ -12,9 +13,11 @@ using WebsiteBuilderAPI.Data;
 namespace WebsiteBuilderAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250808231549_UpdateNotificationPreferencesModel")]
+    partial class UpdateNotificationPreferencesModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,9 +262,6 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<bool>("ForcePasswordChange")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Gender")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -299,13 +299,6 @@ namespace WebsiteBuilderAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
-
-                    b.Property<string>("RecoveryEmail")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<int>("SessionTimeoutMinutes")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -718,39 +711,6 @@ namespace WebsiteBuilderAPI.Migrations
                     b.HasIndex("IsPrimary");
 
                     b.ToTable("CustomerPaymentMethods");
-                });
-
-            modelBuilder.Entity("WebsiteBuilderAPI.Models.CustomerSecurityQuestion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AnswerHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("CustomerSecurityQuestions");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.CustomerWishlistItem", b =>
@@ -1731,17 +1691,6 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("WebsiteBuilderAPI.Models.CustomerSecurityQuestion", b =>
-                {
-                    b.HasOne("WebsiteBuilderAPI.Models.Customer", "Customer")
-                        .WithMany("SecurityQuestions")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-                });
-
             modelBuilder.Entity("WebsiteBuilderAPI.Models.CustomerWishlistItem", b =>
                 {
                     b.HasOne("WebsiteBuilderAPI.Models.Customer", "Customer")
@@ -2013,8 +1962,6 @@ namespace WebsiteBuilderAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("PaymentMethods");
-
-                    b.Navigation("SecurityQuestions");
 
                     b.Navigation("WishlistItems");
                 });

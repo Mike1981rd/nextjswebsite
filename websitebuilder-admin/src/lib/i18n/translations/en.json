@@ -13,6 +13,7 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
+    "saveSuccess": "Customer saved successfully",
     "confirm": "Confirm",
     "close": "Close",
     "view": "View",
@@ -22,6 +23,7 @@
     "logout": "Logout",
     "login": "Login",
     "welcome": "Welcome",
+    "requiredFields": "Indicates required fields",
     "dashboard": "Dashboard",
     "home": "Home",
     "notifications": "Notifications",
@@ -822,6 +824,7 @@
     "recentOrders": "Recent Orders",
     "viewAllOrders": "View All Orders",
     "orders": "Orders",
+    "totalOrders": "Orders",
     "spent": "Spent",
     "status": {
       "active": "Active",

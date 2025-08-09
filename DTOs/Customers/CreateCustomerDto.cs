@@ -41,5 +41,15 @@ namespace WebsiteBuilderAPI.DTOs.Customers
         
         // Optional loyalty points to start with
         public int? InitialLoyaltyPoints { get; set; }
+        
+        // Additional optional fields
+        public DateTime? BirthDate { get; set; }
+        public string? Gender { get; set; }
+        public string? PreferredLanguage { get; set; }
+        public string? PreferredCurrency { get; set; }
+        public string? CompanyName { get; set; }
+        public string? TaxId { get; set; }
+        public string? LoyaltyTier { get; set; }
+        public string? Avatar { get; set; }
     }
 }

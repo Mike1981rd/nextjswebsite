@@ -145,11 +145,12 @@ namespace WebsiteBuilderAPI.Services
                 var customer = await _context.Customers
                     .Include(c => c.Addresses)
                     .Include(c => c.PaymentMethods)
-                    .Include(c => c.NotificationPreferences)
+                    .Include(c => c.NotificationPreference)
                     .Include(c => c.Devices)
                     .Include(c => c.WishlistItems)
                         .ThenInclude(w => w.Product)
                     .Include(c => c.Coupons)
+                    .Include(c => c.SecurityQuestions)
                     .FirstOrDefaultAsync(c => c.Id == id && c.CompanyId == companyId && c.DeletedAt == null);
 
                 if (customer == null)
@@ -159,7 +160,9 @@ namespace WebsiteBuilderAPI.Services
                 {
                     Id = customer.Id,
                     CustomerId = customer.CustomerId,
-                    FullName = customer.FullName,
+                    FullName = customer.FirstName + " " + customer.LastName,
+                    FirstName = customer.FirstName,
+                    LastName = customer.LastName,
                     Username = customer.Username,
                     Email = customer.Email,
                     Avatar = customer.Avatar,
@@ -173,8 +176,16 @@ namespace WebsiteBuilderAPI.Services
                     LoyaltyTier = customer.LoyaltyTier,
                     TwoFactorEnabled = customer.TwoFactorEnabled,
                     TwoFactorPhone = customer.TwoFactorPhone,
-                    WishlistCount = customer.WishlistCount,
-                    CouponsCount = customer.CouponsCount,
+                    RecoveryEmail = customer.RecoveryEmail,
+                    SessionTimeoutMinutes = customer.SessionTimeoutMinutes,
+                    BirthDate = customer.BirthDate?.ToString("yyyy-MM-dd"),
+                    Gender = customer.Gender,
+                    PreferredLanguage = customer.PreferredLanguage,
+                    PreferredCurrency = customer.PreferredCurrency,
+                    CompanyName = customer.CompanyName,
+                    TaxId = customer.TaxId,
+                    WishlistCount = customer.WishlistItems?.Count ?? 0,
+                    CouponsCount = customer.Coupons?.Count(cp => cp.IsActive && DateTime.UtcNow <= cp.ValidUntil) ?? 0,
                     CreatedAt = customer.CreatedAt,
                     LastLoginAt = customer.LastLoginAt,
                     Addresses = customer.Addresses.Select(a => new CustomerAddressDto
@@ -203,16 +214,28 @@ namespace WebsiteBuilderAPI.Services
                         IsPrimary = p.IsPrimary,
                         CreatedAt = p.CreatedAt
                     }).ToList(),
-                    NotificationPreferences = customer.NotificationPreferences.Select(n => new CustomerNotificationPreferenceDto
-                    {
-                        Id = n.Id,
-                        NotificationType = n.NotificationType,
-                        DisplayName = n.DisplayName,
-                        Description = n.Description,
-                        EmailEnabled = n.EmailEnabled,
-                        BrowserEnabled = n.BrowserEnabled,
-                        AppEnabled = n.AppEnabled
-                    }).ToList(),
+                    NotificationPreferences = customer.NotificationPreference != null ? 
+                        new CustomerNotificationPreferenceDto
+                        {
+                            Id = customer.NotificationPreference.Id,
+                            CustomerId = customer.NotificationPreference.CustomerId,
+                            EmailOrderUpdates = customer.NotificationPreference.EmailOrderUpdates,
+                            EmailPromotions = customer.NotificationPreference.EmailPromotions,
+                            EmailNewsletter = customer.NotificationPreference.EmailNewsletter,
+                            EmailProductReviews = customer.NotificationPreference.EmailProductReviews,
+                            EmailPriceAlerts = customer.NotificationPreference.EmailPriceAlerts,
+                            SmsOrderUpdates = customer.NotificationPreference.SmsOrderUpdates,
+                            SmsDeliveryAlerts = customer.NotificationPreference.SmsDeliveryAlerts,
+                            SmsPromotions = customer.NotificationPreference.SmsPromotions,
+                            PushEnabled = customer.NotificationPreference.PushEnabled,
+                            PushSound = customer.NotificationPreference.PushSound,
+                            PushVibration = customer.NotificationPreference.PushVibration,
+                            DoNotDisturbStart = customer.NotificationPreference.DoNotDisturbStart,
+                            DoNotDisturbEnd = customer.NotificationPreference.DoNotDisturbEnd,
+                            Timezone = customer.NotificationPreference.Timezone,
+                            CreatedAt = customer.NotificationPreference.CreatedAt,
+                            UpdatedAt = customer.NotificationPreference.UpdatedAt
+                        } : new CustomerNotificationPreferenceDto(),
                     RecentDevices = customer.Devices
                         .OrderByDescending(d => d.LastActivity)
                         .Take(10)
@@ -255,6 +278,13 @@ namespace WebsiteBuilderAPI.Services
                         IsActive = c.IsActive,
                         UsageCount = c.UsageCount,
                         MaxUsageCount = c.MaxUsageCount
+                    }).ToList(),
+                    SecurityQuestions = customer.SecurityQuestions.Select(sq => new CustomerSecurityQuestionDto
+                    {
+                        Id = sq.Id,
+                        CustomerId = sq.CustomerId,
+                        Question = sq.Question
+                        // Never return AnswerHash
                     }).ToList()
                 };
             }
@@ -296,6 +326,14 @@ namespace WebsiteBuilderAPI.Services
                     Status = dto.Status,
                     AccountBalance = dto.InitialBalance ?? 0,
                     LoyaltyPoints = dto.InitialLoyaltyPoints ?? 0,
+                    BirthDate = dto.BirthDate?.ToUniversalTime(),
+                    Gender = dto.Gender,
+                    PreferredLanguage = dto.PreferredLanguage,
+                    PreferredCurrency = dto.PreferredCurrency,
+                    CompanyName = dto.CompanyName,
+                    TaxId = dto.TaxId,
+                    LoyaltyTier = dto.LoyaltyTier ?? "Bronze",
+                    Avatar = dto.Avatar,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -303,52 +341,31 @@ namespace WebsiteBuilderAPI.Services
                 // Update loyalty tier based on initial points
                 customer.UpdateLoyaltyTier();
 
-                // Add default notification preferences
-                var defaultNotifications = new[]
+                // Add default notification preference (single record per customer)
+                var defaultNotificationPreference = new CustomerNotificationPreference
                 {
-                    new CustomerNotificationPreference
-                    {
-                        NotificationType = "NewForYou",
-                        DisplayName = "New for you",
-                        Description = "Get notified about new products and features",
-                        EmailEnabled = true,
-                        BrowserEnabled = true,
-                        AppEnabled = true
-                    },
-                    new CustomerNotificationPreference
-                    {
-                        NotificationType = "AccountActivity",
-                        DisplayName = "Account activity",
-                        Description = "Get notified about account changes and activities",
-                        EmailEnabled = true,
-                        BrowserEnabled = true,
-                        AppEnabled = true
-                    },
-                    new CustomerNotificationPreference
-                    {
-                        NotificationType = "BrowserLogin",
-                        DisplayName = "A new browser used to sign in",
-                        Description = "Get notified when your account is accessed from a new browser",
-                        EmailEnabled = true,
-                        BrowserEnabled = false,
-                        AppEnabled = false
-                    },
-                    new CustomerNotificationPreference
-                    {
-                        NotificationType = "DeviceLinked",
-                        DisplayName = "A new device is linked",
-                        Description = "Get notified when a new device is linked to your account",
-                        EmailEnabled = true,
-                        BrowserEnabled = false,
-                        AppEnabled = false
-                    }
+                    Customer = customer,
+                    // Email defaults
+                    EmailOrderUpdates = true,
+                    EmailPromotions = false,
+                    EmailNewsletter = false,
+                    EmailProductReviews = true,
+                    EmailPriceAlerts = false,
+                    // SMS defaults
+                    SmsOrderUpdates = false,
+                    SmsDeliveryAlerts = false,
+                    SmsPromotions = false,
+                    // Push defaults
+                    PushEnabled = false,
+                    PushSound = true,
+                    PushVibration = true,
+                    // Schedule defaults
+                    DoNotDisturbStart = "22:00",
+                    DoNotDisturbEnd = "08:00",
+                    Timezone = "America/Santo_Domingo"
                 };
 
-                foreach (var notification in defaultNotifications)
-                {
-                    notification.Customer = customer;
-                    _context.CustomerNotificationPreferences.Add(notification);
-                }
+                _context.CustomerNotificationPreferences.Add(defaultNotificationPreference);
 
                 _context.Customers.Add(customer);
                 await _context.SaveChangesAsync();
@@ -399,15 +416,12 @@ namespace WebsiteBuilderAPI.Services
                     return null;
 
                 // Update only provided fields (partial update per Guardado.md)
+                // FirstName and LastName are required fields, never set to null
                 if (!string.IsNullOrEmpty(dto.FirstName))
                     customer.FirstName = dto.FirstName;
-                else if (dto.FirstName == "")
-                    customer.FirstName = null;
 
                 if (!string.IsNullOrEmpty(dto.LastName))
                     customer.LastName = dto.LastName;
-                else if (dto.LastName == "")
-                    customer.LastName = null;
 
                 if (!string.IsNullOrEmpty(dto.Username))
                 {
@@ -461,6 +475,28 @@ namespace WebsiteBuilderAPI.Services
 
                 if (!string.IsNullOrEmpty(dto.TwoFactorPhone))
                     customer.TwoFactorPhone = dto.TwoFactorPhone;
+
+                // Handle additional fields
+                if (dto.BirthDate.HasValue)
+                    customer.BirthDate = dto.BirthDate.Value.ToUniversalTime();
+                    
+                if (!string.IsNullOrEmpty(dto.Gender))
+                    customer.Gender = dto.Gender;
+                    
+                if (!string.IsNullOrEmpty(dto.PreferredLanguage))
+                    customer.PreferredLanguage = dto.PreferredLanguage;
+                    
+                if (!string.IsNullOrEmpty(dto.PreferredCurrency))
+                    customer.PreferredCurrency = dto.PreferredCurrency;
+                    
+                if (!string.IsNullOrEmpty(dto.CompanyName))
+                    customer.CompanyName = dto.CompanyName;
+                    
+                if (!string.IsNullOrEmpty(dto.TaxId))
+                    customer.TaxId = dto.TaxId;
+                    
+                if (!string.IsNullOrEmpty(dto.LoyaltyTier))
+                    customer.LoyaltyTier = dto.LoyaltyTier;
 
                 customer.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
@@ -563,29 +599,6 @@ namespace WebsiteBuilderAPI.Services
         }
 
         // Authentication methods
-        public async Task ChangePasswordAsync(int companyId, int id, CustomerChangePasswordDto dto)
-        {
-            try
-            {
-                var customer = await _context.Customers
-                    .FirstOrDefaultAsync(c => c.Id == id && c.CompanyId == companyId && c.DeletedAt == null);
-
-                if (customer == null)
-                    throw new InvalidOperationException("Customer not found");
-
-                customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-                customer.UpdatedAt = DateTime.UtcNow;
-                
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Changed password for customer {CustomerId}", customer.CustomerId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error changing password for customer {Id}", id);
-                throw;
-            }
-        }
 
         public async Task<bool> EnableTwoFactorAsync(int companyId, int id, string phoneNumber)
         {
@@ -655,23 +668,235 @@ namespace WebsiteBuilderAPI.Services
             return customerId;
         }
 
-        // The remaining methods would follow similar patterns...
-        // Due to space constraints, I'll provide placeholder implementations
+        // Address management methods
+        public async Task<List<CustomerAddressDto>> GetAddressesAsync(int customerId)
+        {
+            try
+            {
+                var addresses = await _context.CustomerAddresses
+                    .Where(a => a.CustomerId == customerId)
+                    .OrderByDescending(a => a.IsDefault)
+                    .ThenByDescending(a => a.CreatedAt)
+                    .Select(a => new CustomerAddressDto
+                    {
+                        Id = a.Id,
+                        Type = a.Type,
+                        Label = a.Label,
+                        Street = a.Street,
+                        Apartment = a.Apartment,
+                        City = a.City,
+                        State = a.State,
+                        Country = a.Country,
+                        PostalCode = a.PostalCode,
+                        IsDefault = a.IsDefault,
+                        CreatedAt = a.CreatedAt
+                    })
+                    .ToListAsync();
 
-        public Task<List<CustomerAddressDto>> GetAddressesAsync(int customerId) => 
-            throw new NotImplementedException("Implement address retrieval");
+                return addresses;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting addresses for customer {CustomerId}", customerId);
+                throw;
+            }
+        }
 
-        public Task<CustomerAddressDto> AddAddressAsync(int customerId, AddAddressDto dto) => 
-            throw new NotImplementedException("Implement address addition");
+        public async Task<CustomerAddressDto> AddAddressAsync(int customerId, AddAddressDto dto)
+        {
+            try
+            {
+                var customer = await _context.Customers
+                    .FirstOrDefaultAsync(c => c.Id == customerId);
 
-        public Task<CustomerAddressDto> UpdateAddressAsync(int customerId, int addressId, AddAddressDto dto) => 
-            throw new NotImplementedException("Implement address update");
+                if (customer == null)
+                    throw new InvalidOperationException("Customer not found");
 
-        public Task DeleteAddressAsync(int customerId, int addressId) => 
-            throw new NotImplementedException("Implement address deletion");
+                var address = new CustomerAddress
+                {
+                    CustomerId = customerId,
+                    Type = dto.Type ?? "Home",
+                    Label = dto.Label ?? dto.Type ?? "Address",
+                    Street = dto.Street,
+                    Apartment = dto.Apartment,
+                    City = dto.City,
+                    State = dto.State,
+                    Country = dto.Country,
+                    PostalCode = dto.PostalCode,
+                    IsDefault = dto.IsDefault,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-        public Task<bool> SetDefaultAddressAsync(int customerId, int addressId) => 
-            throw new NotImplementedException("Implement default address setting");
+                // If this is the default address, unset other defaults
+                if (address.IsDefault)
+                {
+                    var existingDefaults = await _context.CustomerAddresses
+                        .Where(a => a.CustomerId == customerId && a.IsDefault)
+                        .ToListAsync();
+                    
+                    foreach (var existing in existingDefaults)
+                    {
+                        existing.IsDefault = false;
+                    }
+                }
+
+                _context.CustomerAddresses.Add(address);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Added address for customer {CustomerId}", customerId);
+
+                return new CustomerAddressDto
+                {
+                    Id = address.Id,
+                    Type = address.Type,
+                    Label = address.Label,
+                    Street = address.Street,
+                    Apartment = address.Apartment,
+                    City = address.City,
+                    State = address.State,
+                    Country = address.Country,
+                    PostalCode = address.PostalCode,
+                    IsDefault = address.IsDefault,
+                    CreatedAt = address.CreatedAt
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding address for customer {CustomerId}", customerId);
+                throw;
+            }
+        }
+
+        public async Task<CustomerAddressDto> UpdateAddressAsync(int customerId, int addressId, AddAddressDto dto)
+        {
+            try
+            {
+                var address = await _context.CustomerAddresses
+                    .FirstOrDefaultAsync(a => a.Id == addressId && a.CustomerId == customerId);
+
+                if (address == null)
+                    throw new InvalidOperationException("Address not found");
+
+                // Update fields
+                if (!string.IsNullOrEmpty(dto.Type))
+                    address.Type = dto.Type;
+                if (!string.IsNullOrEmpty(dto.Label))
+                    address.Label = dto.Label;
+                if (!string.IsNullOrEmpty(dto.Street))
+                    address.Street = dto.Street;
+                
+                address.Apartment = dto.Apartment; // Can be null
+                
+                if (!string.IsNullOrEmpty(dto.City))
+                    address.City = dto.City;
+                    
+                address.State = dto.State; // Can be null
+                
+                if (!string.IsNullOrEmpty(dto.Country))
+                    address.Country = dto.Country;
+                    
+                address.PostalCode = dto.PostalCode; // Can be null
+
+                // Handle default flag - IsDefault is not nullable in DTO
+                address.IsDefault = dto.IsDefault;
+                
+                // If setting as default, unset other defaults
+                if (address.IsDefault)
+                {
+                    var otherAddresses = await _context.CustomerAddresses
+                        .Where(a => a.CustomerId == customerId && a.Id != addressId && a.IsDefault)
+                        .ToListAsync();
+                    
+                    foreach (var other in otherAddresses)
+                    {
+                        other.IsDefault = false;
+                    }
+                }
+
+                address.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Updated address {AddressId} for customer {CustomerId}", addressId, customerId);
+
+                return new CustomerAddressDto
+                {
+                    Id = address.Id,
+                    Type = address.Type,
+                    Label = address.Label,
+                    Street = address.Street,
+                    Apartment = address.Apartment,
+                    City = address.City,
+                    State = address.State,
+                    Country = address.Country,
+                    PostalCode = address.PostalCode,
+                    IsDefault = address.IsDefault,
+                    CreatedAt = address.CreatedAt
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating address {AddressId} for customer {CustomerId}", addressId, customerId);
+                throw;
+            }
+        }
+
+        public async Task DeleteAddressAsync(int customerId, int addressId)
+        {
+            try
+            {
+                var address = await _context.CustomerAddresses
+                    .FirstOrDefaultAsync(a => a.Id == addressId && a.CustomerId == customerId);
+
+                if (address == null)
+                    return;
+
+                _context.CustomerAddresses.Remove(address);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Deleted address {AddressId} for customer {CustomerId}", addressId, customerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting address {AddressId} for customer {CustomerId}", addressId, customerId);
+                throw;
+            }
+        }
+
+        public async Task<bool> SetDefaultAddressAsync(int customerId, int addressId)
+        {
+            try
+            {
+                var address = await _context.CustomerAddresses
+                    .FirstOrDefaultAsync(a => a.Id == addressId && a.CustomerId == customerId);
+
+                if (address == null)
+                    return false;
+
+                // Unset all other defaults
+                var otherAddresses = await _context.CustomerAddresses
+                    .Where(a => a.CustomerId == customerId && a.Id != addressId && a.IsDefault)
+                    .ToListAsync();
+                
+                foreach (var other in otherAddresses)
+                {
+                    other.IsDefault = false;
+                }
+
+                address.IsDefault = true;
+                address.UpdatedAt = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Set default address {AddressId} for customer {CustomerId}", addressId, customerId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting default address {AddressId} for customer {CustomerId}", addressId, customerId);
+                throw;
+            }
+        }
 
         public Task<List<CustomerPaymentMethodDto>> GetPaymentMethodsAsync(int customerId) => 
             throw new NotImplementedException("Implement payment method retrieval");
@@ -688,8 +913,70 @@ namespace WebsiteBuilderAPI.Services
         public Task<List<CustomerNotificationPreferenceDto>> GetNotificationPreferencesAsync(int customerId) => 
             throw new NotImplementedException("Implement notification preference retrieval");
 
-        public Task UpdateNotificationPreferencesAsync(int customerId, UpdateNotificationPreferencesDto dto) => 
-            throw new NotImplementedException("Implement notification preference update");
+        public async Task UpdateNotificationPreferencesAsync(int customerId, UpdateNotificationPreferencesDto dto)
+        {
+            try
+            {
+                // Get existing preference or create new one
+                var preference = await _context.CustomerNotificationPreferences
+                    .FirstOrDefaultAsync(p => p.CustomerId == customerId);
+                
+                if (preference == null)
+                {
+                    // Create new preference if doesn't exist
+                    preference = new CustomerNotificationPreference
+                    {
+                        CustomerId = customerId,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.CustomerNotificationPreferences.Add(preference);
+                }
+                
+                // Update Email Notifications
+                if (dto.EmailNotifications != null)
+                {
+                    preference.EmailOrderUpdates = dto.EmailNotifications.OrderUpdates;
+                    preference.EmailPromotions = dto.EmailNotifications.Promotions;
+                    preference.EmailNewsletter = dto.EmailNotifications.Newsletter;
+                    preference.EmailProductReviews = dto.EmailNotifications.ProductReviews;
+                    preference.EmailPriceAlerts = dto.EmailNotifications.PriceAlerts;
+                }
+                
+                // Update SMS Notifications
+                if (dto.SmsNotifications != null)
+                {
+                    preference.SmsOrderUpdates = dto.SmsNotifications.OrderUpdates;
+                    preference.SmsDeliveryAlerts = dto.SmsNotifications.DeliveryAlerts;
+                    preference.SmsPromotions = dto.SmsNotifications.Promotions;
+                }
+                
+                // Update Push Notifications
+                if (dto.PushNotifications != null)
+                {
+                    preference.PushEnabled = dto.PushNotifications.Enabled;
+                    preference.PushSound = dto.PushNotifications.Sound;
+                    preference.PushVibration = dto.PushNotifications.Vibration;
+                }
+                
+                // Update Notification Schedule
+                if (dto.NotificationSchedule != null)
+                {
+                    preference.DoNotDisturbStart = dto.NotificationSchedule.DoNotDisturbStart;
+                    preference.DoNotDisturbEnd = dto.NotificationSchedule.DoNotDisturbEnd;
+                    preference.Timezone = dto.NotificationSchedule.Timezone;
+                }
+                
+                preference.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Updated notification preferences for customer {CustomerId}", customerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating notification preferences for customer {CustomerId}", customerId);
+                throw;
+            }
+        }
 
         public Task<List<CustomerDeviceDto>> GetDevicesAsync(int customerId) => 
             throw new NotImplementedException("Implement device retrieval");
@@ -720,5 +1007,226 @@ namespace WebsiteBuilderAPI.Services
 
         public Task UpdateCustomerMetricsAsync(int customerId) => 
             throw new NotImplementedException("Implement metrics update");
+
+        public async Task UpdateSecuritySettingsAsync(int customerId, UpdateSecuritySettingsDto dto)
+        {
+            try
+            {
+                var customer = await _context.Customers
+                    .Include(c => c.SecurityQuestions)
+                    .FirstOrDefaultAsync(c => c.Id == customerId);
+                
+                if (customer == null)
+                    throw new Exception($"Customer {customerId} not found");
+                
+                // Update Two-Factor settings
+                if (dto.TwoFactorEnabled.HasValue)
+                    customer.TwoFactorEnabled = dto.TwoFactorEnabled.Value;
+                
+                if (!string.IsNullOrEmpty(dto.TwoFactorPhone))
+                    customer.TwoFactorPhone = dto.TwoFactorPhone;
+                
+                // Update recovery email
+                if (!string.IsNullOrEmpty(dto.RecoveryEmail))
+                    customer.RecoveryEmail = dto.RecoveryEmail;
+                
+                // Update session timeout
+                if (dto.SessionTimeoutMinutes.HasValue)
+                    customer.SessionTimeoutMinutes = dto.SessionTimeoutMinutes.Value;
+                
+                // Handle security questions
+                if (dto.SecurityQuestions != null)
+                {
+                    foreach (var questionDto in dto.SecurityQuestions)
+                    {
+                        if (questionDto.Delete == true && questionDto.Id.HasValue)
+                        {
+                            // Delete existing question
+                            var existing = customer.SecurityQuestions.FirstOrDefault(q => q.Id == questionDto.Id.Value);
+                            if (existing != null)
+                                _context.CustomerSecurityQuestions.Remove(existing);
+                        }
+                        else if (questionDto.Id.HasValue)
+                        {
+                            // Update existing question
+                            var existing = customer.SecurityQuestions.FirstOrDefault(q => q.Id == questionDto.Id.Value);
+                            if (existing != null)
+                            {
+                                existing.Question = questionDto.Question;
+                                if (!string.IsNullOrEmpty(questionDto.Answer))
+                                    existing.AnswerHash = BCrypt.Net.BCrypt.HashPassword(questionDto.Answer);
+                                existing.UpdatedAt = DateTime.UtcNow;
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(questionDto.Question) && !string.IsNullOrEmpty(questionDto.Answer))
+                        {
+                            // Add new question
+                            var newQuestion = new CustomerSecurityQuestion
+                            {
+                                CustomerId = customerId,
+                                Question = questionDto.Question,
+                                AnswerHash = BCrypt.Net.BCrypt.HashPassword(questionDto.Answer),
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            };
+                            customer.SecurityQuestions.Add(newQuestion);
+                        }
+                    }
+                }
+                
+                customer.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Updated security settings for customer {CustomerId}", customerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating security settings for customer {CustomerId}", customerId);
+                throw;
+            }
+        }
+
+        public async Task<bool> ChangePasswordAsync(int customerId, CustomerPasswordChangeDto dto)
+        {
+            try
+            {
+                var customer = await _context.Customers
+                    .FirstOrDefaultAsync(c => c.Id == customerId);
+                
+                if (customer == null)
+                    return false;
+                
+                // Verify current password
+                if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, customer.PasswordHash))
+                {
+                    _logger.LogWarning("Invalid current password for customer {CustomerId}", customerId);
+                    return false;
+                }
+                
+                // Update password
+                customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+                customer.UpdatedAt = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Password changed for customer {CustomerId}", customerId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing password for customer {CustomerId}", customerId);
+                throw;
+            }
+        }
+
+        public async Task<List<CustomerSecurityQuestionDto>> GetSecurityQuestionsAsync(int customerId)
+        {
+            try
+            {
+                var questions = await _context.CustomerSecurityQuestions
+                    .Where(q => q.CustomerId == customerId)
+                    .Select(q => new CustomerSecurityQuestionDto
+                    {
+                        Id = q.Id,
+                        CustomerId = q.CustomerId,
+                        Question = q.Question
+                        // Never return AnswerHash
+                    })
+                    .ToListAsync();
+                
+                return questions;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting security questions for customer {CustomerId}", customerId);
+                throw;
+            }
+        }
+        
+        public async Task<ResetPasswordResponseDto> ResetPasswordAsync(int customerId, ResetPasswordDto dto)
+        {
+            try
+            {
+                var customer = await _context.Customers
+                    .FirstOrDefaultAsync(c => c.Id == customerId);
+                
+                if (customer == null)
+                {
+                    return new ResetPasswordResponseDto
+                    {
+                        Success = false,
+                        Message = "Customer not found"
+                    };
+                }
+                
+                // Generate a temporary password if not provided
+                string temporaryPassword = dto.TemporaryPassword;
+                if (string.IsNullOrEmpty(temporaryPassword))
+                {
+                    // Generate a secure random password
+                    temporaryPassword = GenerateSecurePassword();
+                }
+                
+                // Hash and save the new password
+                customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(temporaryPassword);
+                customer.ForcePasswordChange = dto.ForcePasswordChange;
+                customer.UpdatedAt = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync();
+                
+                // TODO: Send email notification if requested
+                bool emailSent = false;
+                if (dto.SendEmail && !string.IsNullOrEmpty(customer.Email))
+                {
+                    // Email sending logic would go here
+                    // For now, we'll just log it
+                    _logger.LogInformation("Password reset email should be sent to {Email} for customer {CustomerId}", 
+                        customer.Email, customerId);
+                    emailSent = false; // Set to true when email service is implemented
+                }
+                
+                _logger.LogInformation("Password reset for customer {CustomerId} by admin", customerId);
+                
+                return new ResetPasswordResponseDto
+                {
+                    Success = true,
+                    TemporaryPassword = temporaryPassword,
+                    Message = "Password has been reset successfully",
+                    EmailSent = emailSent
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting password for customer {CustomerId}", customerId);
+                throw;
+            }
+        }
+        
+        private string GenerateSecurePassword()
+        {
+            const string uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string lowercase = "abcdefghijklmnopqrstuvwxyz";
+            const string numbers = "0123456789";
+            const string special = "!@#$%^&*";
+            const string allChars = uppercase + lowercase + numbers + special;
+            
+            var random = new Random();
+            var password = new char[12];
+            
+            // Ensure at least one of each type
+            password[0] = uppercase[random.Next(uppercase.Length)];
+            password[1] = lowercase[random.Next(lowercase.Length)];
+            password[2] = numbers[random.Next(numbers.Length)];
+            password[3] = special[random.Next(special.Length)];
+            
+            // Fill the rest randomly
+            for (int i = 4; i < password.Length; i++)
+            {
+                password[i] = allChars[random.Next(allChars.Length)];
+            }
+            
+            // Shuffle the password
+            return new string(password.OrderBy(x => random.Next()).ToArray());
+        }
     }
 }
