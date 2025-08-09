@@ -397,13 +397,14 @@ Resolver los 9 problemas críticos del proyecto anterior:
 4. ✅ Usuarios
 5. ✅ Clientes (Customers) - COMPLETO
 6. ✅ Colecciones (Collections) - COMPLETO
-7. ✅ Payment Gateway (parcial)
+7. ✅ Productos con variantes - COMPLETO
+8. ✅ Newsletter Subscribers - COMPLETO
+9. ✅ Páginas CMS - COMPLETO
+10. ✅ Políticas - COMPLETO (2025-08-09)
+11. ✅ Payment Gateway (parcial)
 
 ### Módulos Pendientes
-1. ⏳ Productos con variantes
-2. ⏳ Habitaciones (Rooms)
-3. ⏳ Reservaciones
-4. ⏳ Website Builder
-5. ⏳ Páginas
-6. ⏳ Dominios
-7. ⏳ Políticas
+1. ⏳ Habitaciones (Rooms)
+2. ⏳ Reservaciones
+3. ⏳ Website Builder
+4. ⏳ Dominios

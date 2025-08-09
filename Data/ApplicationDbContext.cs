@@ -55,6 +55,9 @@ namespace WebsiteBuilderAPI.Data
         
         // Páginas CMS
         public DbSet<Pagina> Paginas { get; set; }
+        
+        // Políticas
+        public DbSet<Policy> Policies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -667,6 +670,28 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasIndex(e => e.PublishStatus);
                 entity.HasIndex(e => e.CreatedAt);
                 entity.HasIndex(e => e.PublishedAt);
+            });
+            
+            // Configuración de Policy
+            modelBuilder.Entity<Policy>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Type).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Content).HasColumnType("text");
+                entity.Property(e => e.IsRequired).HasDefaultValue(false);
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relación con Company
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                // Índice único para evitar duplicados de tipo por empresa
+                entity.HasIndex(e => new { e.CompanyId, e.Type }).IsUnique();
             });
         }
     }

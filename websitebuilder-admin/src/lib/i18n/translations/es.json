@@ -843,6 +843,26 @@
     "imageSizeError": "La imagen debe ser menor a 5MB",
     "imageTypeError": "Por favor selecciona un archivo de imagen válido"
   },
+  "policies": {
+    "title": "Políticas",
+    "written": "Políticas escritas",
+    "description": "Las políticas están enlazadas en el pie de página del proceso de pago y puedes agregarlas a tu",
+    "required": "OBLIGATORIA",
+    "info": "Las plantillas no son asesoramiento legal. Al usar las plantillas de políticas, aceptas que has leído y estás de acuerdo con el",
+    "disclaimer": "descargo de responsabilidad",
+    "templateInfo": "Las plantillas no son asesoramiento legal. Al usar las plantillas de políticas, aceptas que has leído y estás de acuerdo con el",
+    "titleLabel": "Título de la política",
+    "options": "Opciones",
+    "isRequired": "Esta política es obligatoria",
+    "isActive": "Esta política está activa",
+    "saveError": "Error al guardar la política",
+    "notFound": "Política no encontrada",
+    "returns": "Política de devoluciones y reembolsos",
+    "privacy": "Política de privacidad",
+    "terms": "Términos del servicio",
+    "shipping": "Política de envío",
+    "contact": "Información de contacto"
+  },
   "validation": {
     "required": "Este campo es requerido",
     "invalidEmail": "Dirección de correo inválida",

@@ -145,7 +145,7 @@ const menuItems: MenuItem[] = [
       {
         id: 'politicas',
         nameKey: 'navigation.politicas',
-        href: '/politicas',
+        href: '/dashboard/politicas',
         icon: PoliciesIcon,
         permission: 'policies.read'
       },

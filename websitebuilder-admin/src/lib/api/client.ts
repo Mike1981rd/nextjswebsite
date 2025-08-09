@@ -13,8 +13,8 @@ export const apiClient: AxiosInstance = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Get token from localStorage
-    const token = localStorage.getItem('auth-token');
+    // Get token from localStorage (auth.service uses 'token' key)
+    const token = localStorage.getItem('token');
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -48,7 +48,7 @@ apiClient.interceptors.response.use(
       console.error('Request URL:', error.config.url);
       
       // Clear token and redirect to login
-      localStorage.removeItem('auth-token');
+      localStorage.removeItem('token');
       // Delay redirect to see error
       // setTimeout(() => {
       //   window.location.href = '/login';
@@ -90,15 +90,15 @@ apiClient.interceptors.response.use(
 
 // Helper functions
 export const setAuthToken = (token: string) => {
-  localStorage.setItem('auth-token', token);
+  localStorage.setItem('token', token);
 };
 
 export const removeAuthToken = () => {
-  localStorage.removeItem('auth-token');
+  localStorage.removeItem('token');
 };
 
 export const getAuthToken = () => {
-  return localStorage.getItem('auth-token');
+  return localStorage.getItem('token');
 };
 
 // Export configured axios instance as default
