@@ -76,6 +76,7 @@ builder.Services.AddScoped<IUploadService, UploadService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICollectionService, CollectionService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<INewsletterSubscriberService, NewsletterSubscriberService>();
 
 // Servicios de pagos
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();

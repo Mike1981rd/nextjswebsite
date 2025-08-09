@@ -117,7 +117,7 @@ const menuItems: MenuItem[] = [
       {
         id: 'subscriptores',
         nameKey: 'navigation.subscriptores',
-        href: '/subscriptores',
+        href: '/dashboard/subscriptores',
         icon: SubscribersIcon,
         permission: 'subscribers.read'
       },

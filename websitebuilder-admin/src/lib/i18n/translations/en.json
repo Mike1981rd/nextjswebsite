@@ -618,6 +618,46 @@
       "clear": "Clear"
     }
   },
+  "errors": {
+    "unauthorized": "Unauthorized for this action. Please log in again.",
+    "forbidden": "No permissions for this action. Contact administrator.",
+    "notFound": "Resource does not exist or was previously deleted.",
+    "conflict": "Conflict performing action. Resource may have been modified by another user.",
+    "validationError": "Invalid data. Verify entered information.",
+    "serverError": "Internal server error. Try again in a few moments.",
+    "serviceUnavailable": "Service temporarily unavailable. Try again later.",
+    "genericError": "Error performing action",
+    "noToken": "Session expired. Please log in again.",
+    "networkError": "Connection error. Check your internet connection and server status.",
+    "unexpectedError": "Unexpected error"
+  },
+  "subscribers": {
+    "actions": {
+      "loading": "load subscribers",
+      "toggleStatus": "change status",
+      "delete": "delete subscriber",
+      "convert": "convert to customer",
+      "export": "export data"
+    },
+    "statusActive": "active",
+    "statusInactive": "inactive",
+    "statusUpdated": "Subscriber status updated successfully.",
+    "deleteSuccess": "Subscriber deleted successfully.",
+    "convertSuccess": "Subscriber converted to customer successfully."
+  },
+  "export": {
+    "noData": "No data to export. Load data first.",
+    "csvSuccess": "Data exported to CSV successfully.",
+    "csvError": "Error exporting CSV",
+    "excelSuccess": "Data exported to Excel successfully.",
+    "excelError": "Error exporting Excel",
+    "pdfSuccess": "PDF report generated successfully.",
+    "pdfError": "Error generating PDF",
+    "popupBlocked": "Browser blocked popup window. Please allow popups and try again."
+  },
+  "error": {
+    "title": "An error occurred"
+  },
   "rolesUsers": {
     "title": "Roles & Users Management",
     "description": "Manage system roles and user permissions",
@@ -1141,5 +1181,86 @@
       "keywordsPlaceholder": "word1, word2, word3",
       "publish": "Publish to search engines"
     }
+  },
+  "subscribers": {
+    "title": "Newsletter Subscribers",
+    "subscriber": "Subscriber",
+    "totalActive": "Active",
+    "totalInactive": "Inactive",
+    "converted": "Converted",
+    "thisMonth": "This month",
+    "conversionRate": "Conversion",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "source": "Source",
+    "subscribed": "Subscribed",
+    "status": "Status",
+    "search": "Search by email or name...",
+    "noResults": "No subscribers found",
+    "totalSubscribers": "Total: {count} subscribers",
+    "convertToCustomer": "Convert to Customer",
+    "convertingSubscriber": "Converting subscriber:",
+    "converting": "Converting...",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "exportData": "Export Subscribers",
+    "selectFormat": "Select the format you want to export",
+    "popupBlocked": "Please allow popups to export PDF"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "empresa": "Company",
+    "rolesUsuarios": "Roles & Users",
+    "clientes": "Customers",
+    "reservaciones": "Reservations",
+    "metodosPago": "Payment Methods",
+    "colecciones": "Collections",
+    "productos": "Products",
+    "notificaciones": "Notifications",
+    "websiteBuilder": "Website Builder",
+    "whatsapp": "WhatsApp",
+    "orders": "Orders",
+    "subscriptores": "Subscribers",
+    "navegacion": "Navigation",
+    "habitaciones": "Rooms",
+    "paginas": "Pages",
+    "politicas": "Policies",
+    "dominios": "Domains",
+    "currentPage": "Current Page"
+  },
+  "validation": {
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "customers": {
+    "personalInfo": "Personal Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "enterFirstName": "Enter first name",
+    "enterLastName": "Enter last name",
+    "phone": "Phone",
+    "enterPhone": "Enter phone number",
+    "country": "Country",
+    "birthDate": "Birth Date",
+    "gender": "Gender",
+    "selectGender": "Select gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "addressInfo": "Address Information",
+    "address": "Address",
+    "enterAddress": "Enter address",
+    "city": "City",
+    "enterCity": "Enter city",
+    "postalCode": "Postal Code",
+    "enterPostalCode": "Enter postal code",
+    "accountInfo": "Account Information",
+    "password": "Password",
+    "enterPassword": "Enter password",
+    "passwordMinLength": "Minimum 6 characters",
+    "confirmPassword": "Confirm Password"
   }
 }

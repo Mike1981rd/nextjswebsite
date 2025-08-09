@@ -49,6 +49,9 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<CustomerWishlistItem> CustomerWishlistItems { get; set; }
         public DbSet<CustomerCoupon> CustomerCoupons { get; set; }
         public DbSet<CustomerSecurityQuestion> CustomerSecurityQuestions { get; set; }
+        
+        // Newsletter Subscribers
+        public DbSet<NewsletterSubscriber> NewsletterSubscribers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -569,6 +572,46 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasIndex(e => e.Code);
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => new { e.ValidFrom, e.ValidUntil });
+            });
+
+            // Configuración de NewsletterSubscriber
+            modelBuilder.Entity<NewsletterSubscriber>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.FirstName).HasMaxLength(100);
+                entity.Property(e => e.LastName).HasMaxLength(100);
+                entity.Property(e => e.Phone).HasMaxLength(20);
+                entity.Property(e => e.SourcePage).HasMaxLength(255);
+                entity.Property(e => e.SourceCampaign).HasMaxLength(50);
+                entity.Property(e => e.Language).HasMaxLength(50).HasDefaultValue("es");
+                entity.Property(e => e.UnsubscribeReason).HasMaxLength(255);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relación con Company
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Relación opcional con Customer (si se convirtió)
+                entity.HasOne(e => e.Customer)
+                    .WithMany()
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .IsRequired(false);
+                
+                // Índices únicos y de optimización
+                entity.HasIndex(e => new { e.CompanyId, e.Email })
+                    .IsUnique()
+                    .HasFilter("\"DeletedAt\" IS NULL"); // Único por company, solo activos
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.ConvertedToCustomer);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.OptInDate);
+                entity.HasIndex(e => e.Language);
+                entity.HasIndex(e => e.DeletedAt); // Para soft delete
             });
         }
     }
