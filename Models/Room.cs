@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace WebsiteBuilderAPI.Models
@@ -9,34 +10,32 @@ namespace WebsiteBuilderAPI.Models
         public int CompanyId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+        
+        // Precios
         public decimal BasePrice { get; set; }
+        public decimal? ComparePrice { get; set; } // Precio anterior (para tachar)
+        
+        // Información específica de habitación
         public int MaxOccupancy { get; set; }
-        public string? Images { get; set; } // JSON almacenado como string
+        public string? RoomCode { get; set; } // Código único de habitación (ej: "SUITE-101")
+        public string? RoomType { get; set; } // Tipo: Estándar, Suite, Deluxe, etc.
+        public int? FloorNumber { get; set; } // Número de piso
+        public string? ViewType { get; set; } // Vista: Mar, Ciudad, Jardín, etc.
+        public decimal? SquareMeters { get; set; } // Tamaño en metros cuadrados
+        
+        // Organización y búsqueda
+        public List<string>? Tags { get; set; } // JSONB para búsquedas
+        public List<string>? Amenities { get; set; } // JSONB ["WiFi", "Minibar", "Jacuzzi", etc.]
+        
+        // Multimedia
+        public List<string>? Images { get; set; } // URLs de imágenes (JSONB)
+        
+        // Control
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
         // Navegación
         public Company Company { get; set; } = null!;
-
-        // Propiedad helper para trabajar con imágenes
-        public List<string> GetImagesList()
-        {
-            if (string.IsNullOrEmpty(Images))
-                return new List<string>();
-            
-            try
-            {
-                return JsonSerializer.Deserialize<List<string>>(Images) ?? new List<string>();
-            }
-            catch
-            {
-                return new List<string>();
-            }
-        }
-
-        public void SetImagesList(List<string> images)
-        {
-            Images = JsonSerializer.Serialize(images);
-        }
     }
 }

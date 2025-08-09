@@ -74,6 +74,13 @@ const menuItems: MenuItem[] = [
     permission: 'customers.read'
   },
   {
+    id: 'habitaciones',
+    nameKey: 'navigation.habitaciones',
+    href: '/dashboard/habitaciones',
+    icon: RoomsIcon,
+    permission: 'rooms.read'
+  },
+  {
     id: 'colecciones',
     nameKey: 'navigation.colecciones',
     href: '/dashboard/colecciones',
@@ -127,13 +134,6 @@ const menuItems: MenuItem[] = [
         href: '/dashboard/navigation-menus',
         icon: NavigationIcon,
         permission: 'navigation.read'
-      },
-      {
-        id: 'habitaciones',
-        nameKey: 'navigation.habitaciones',
-        href: '/habitaciones',
-        icon: RoomsIcon,
-        permission: 'rooms.read'
       },
       {
         id: 'paginas',
