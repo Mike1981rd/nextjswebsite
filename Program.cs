@@ -75,6 +75,7 @@ builder.Services.AddScoped<WebsiteBuilderAPI.Services.Encryption.IEncryptionServ
 builder.Services.AddScoped<IUploadService, UploadService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICollectionService, CollectionService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 // Servicios de pagos
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
@@ -177,21 +178,8 @@ if (app.Environment.IsDevelopment())
 // Usar CORS
 app.UseCors("AllowNextJsApp");
 
-// Servir archivos estáticos desde wwwroot (si existe)
+// Servir archivos estáticos desde wwwroot (incluye /uploads)
 app.UseStaticFiles();
-
-// Servir archivos estáticos (para las imágenes subidas)
-var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
-if (!Directory.Exists(uploadsPath))
-{
-    Directory.CreateDirectory(uploadsPath);
-}
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
-    RequestPath = "/uploads"
-});
 
 app.UseAuthentication();
 

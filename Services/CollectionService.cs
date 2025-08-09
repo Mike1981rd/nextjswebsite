@@ -272,6 +272,32 @@ namespace WebsiteBuilderAPI.Services
 
             await _context.SaveChangesAsync();
 
+            // Update products if provided
+            if (dto.ProductIds != null)
+            {
+                // Remove existing product associations
+                var existingAssociations = await _context.CollectionProducts
+                    .Where(cp => cp.CollectionId == collectionId)
+                    .ToListAsync();
+                _context.CollectionProducts.RemoveRange(existingAssociations);
+
+                // Add new product associations
+                if (dto.ProductIds.Any())
+                {
+                    var newAssociations = dto.ProductIds.Select((productId, index) => new CollectionProduct
+                    {
+                        CollectionId = collectionId,
+                        ProductId = productId,
+                        Position = index
+                    });
+                    _context.CollectionProducts.AddRange(newAssociations);
+                }
+
+                // Update product count
+                collection.ProductCount = dto.ProductIds.Count;
+                await _context.SaveChangesAsync();
+            }
+
             return await GetByIdAsync(companyId, collectionId);
         }
 
@@ -414,14 +440,13 @@ namespace WebsiteBuilderAPI.Services
                 .OrderBy(cp => cp.Position)
                 .Select(cp => new CollectionProductDto
                 {
-                    Id = cp.Id,
-                    ProductId = cp.ProductId,
-                    ProductName = cp.Product.Name,
-                    ProductPrice = cp.Product.BasePrice,
-                    ProductImage = null, // Add image field to Product model if needed
-                    Position = cp.Position,
-                    IsFeatured = cp.IsFeatured,
-                    AddedAt = cp.AddedAt
+                    Id = cp.Product.Id,
+                    Name = cp.Product.Name,
+                    BasePrice = cp.Product.BasePrice,
+                    Images = cp.Product.Images,
+                    Stock = cp.Product.Stock,
+                    Sku = null, // Product model doesn't have Sku field yet
+                    IsActive = cp.Product.IsActive
                 })
                 .ToListAsync();
 

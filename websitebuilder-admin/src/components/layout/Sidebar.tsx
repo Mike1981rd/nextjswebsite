@@ -83,7 +83,7 @@ const menuItems: MenuItem[] = [
   {
     id: 'productos',
     nameKey: 'navigation.productos',
-    href: '/productos',
+    href: '/dashboard/productos',
     icon: ProductsIcon,
     permission: 'products.read'
   },

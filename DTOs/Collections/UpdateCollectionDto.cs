@@ -32,5 +32,8 @@ namespace WebsiteBuilderAPI.DTOs.Collections
         public bool? PublishToSearchEngines { get; set; }
         
         public int? SortOrder { get; set; }
+        
+        // Product associations
+        public List<int>? ProductIds { get; set; }
     }
 }

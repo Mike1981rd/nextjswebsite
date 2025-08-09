@@ -1,4 +1,10 @@
 using Microsoft.AspNetCore.Http;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Formats.Gif;
 
 namespace WebsiteBuilderAPI.Services
 {
@@ -29,15 +35,31 @@ namespace WebsiteBuilderAPI.Services
                     Directory.CreateDirectory(uploadsFolder);
                 }
 
-                // Generate unique filename
-                var fileExtension = Path.GetExtension(file.FileName);
-                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                // Generate unique filename (always save as .jpg after processing)
+                var uniqueFileName = $"{Guid.NewGuid()}.jpg";
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                // Save file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                // Process image with ImageSharp to fix orientation
+                using (var inputStream = file.OpenReadStream())
+                using (var image = await Image.LoadAsync(inputStream))
                 {
-                    await file.CopyToAsync(fileStream);
+                    // AutoOrient fixes orientation based on EXIF metadata
+                    image.Mutate(x => x.AutoOrient());
+                    
+                    // Resize avatar to standard size (300x300)
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
+                        Size = new Size(300, 300),
+                        Mode = ResizeMode.Crop
+                    }));
+                    
+                    // Save processed image as JPEG with quality 85
+                    var encoder = new JpegEncoder
+                    {
+                        Quality = 85
+                    };
+                    
+                    await image.SaveAsync(filePath, encoder);
                 }
 
                 // Return full URL
@@ -45,7 +67,7 @@ namespace WebsiteBuilderAPI.Services
                 var baseUrl = $"{request?.Scheme}://{request?.Host}";
                 var fileUrl = $"{baseUrl}/uploads/avatars/{uniqueFileName}";
 
-                _logger.LogInformation($"Avatar uploaded successfully: {fileUrl}");
+                _logger.LogInformation($"Avatar uploaded and processed successfully: {fileUrl}");
                 return fileUrl;
             }
             catch (Exception ex)
@@ -66,20 +88,38 @@ namespace WebsiteBuilderAPI.Services
                     Directory.CreateDirectory(uploadsFolder);
                 }
 
-                // Generar nombre único para el archivo
-                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                // Generar nombre único para el archivo (siempre guardamos como .jpg después del procesamiento)
+                var uniqueFileName = $"{Guid.NewGuid()}.jpg";
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                // Guardar el archivo
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                // Procesar la imagen con ImageSharp para corregir orientación
+                using (var inputStream = file.OpenReadStream())
+                using (var image = await Image.LoadAsync(inputStream))
                 {
-                    await file.CopyToAsync(fileStream);
+                    // AutoOrient corrige automáticamente la orientación basándose en los metadatos EXIF
+                    image.Mutate(x => x.AutoOrient());
+                    
+                    // Opcional: Redimensionar si la imagen es muy grande (max 1920px de ancho)
+                    if (image.Width > 1920)
+                    {
+                        image.Mutate(x => x.Resize(1920, 0));
+                    }
+                    
+                    // Guardar la imagen procesada como JPEG con calidad 90
+                    var encoder = new JpegEncoder
+                    {
+                        Quality = 90
+                    };
+                    
+                    await image.SaveAsync(filePath, encoder);
                 }
 
-                // Retornar la ruta relativa
-                var fileUrl = $"/uploads/logos/{uniqueFileName}";
+                // Retornar la URL completa
+                var request = _httpContextAccessor.HttpContext?.Request;
+                var baseUrl = $"{request?.Scheme}://{request?.Host}";
+                var fileUrl = $"{baseUrl}/uploads/logos/{uniqueFileName}";
 
-                _logger.LogInformation($"Imagen subida exitosamente: {fileUrl}");
+                _logger.LogInformation($"Imagen subida y procesada exitosamente: {fileUrl}");
                 return fileUrl;
             }
             catch (Exception ex)

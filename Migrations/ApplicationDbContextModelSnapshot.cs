@@ -1279,12 +1279,24 @@ namespace WebsiteBuilderAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Barcode")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("BasePrice")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
                     b.Property<int>("CompanyId")
                         .HasColumnType("integer");
+
+                    b.Property<decimal?>("ComparePrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("ContinueSellingWhenOutOfStock")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("CostPerItem")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -1297,6 +1309,9 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<bool>("HasVariants")
                         .HasColumnType("boolean");
 
+                    b.Property<List<string>>("Images")
+                        .HasColumnType("text[]");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -1305,8 +1320,35 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<string>("ProductType")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("RequiresShipping")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SKU")
+                        .HasColumnType("text");
+
                     b.Property<int>("Stock")
                         .HasColumnType("integer");
+
+                    b.Property<List<string>>("Tags")
+                        .HasColumnType("text[]");
+
+                    b.Property<bool>("TrackQuantity")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Vendor")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("Weight")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("WeightUnit")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1357,6 +1399,21 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<string>("Attributes")
                         .HasColumnType("jsonb");
 
+                    b.Property<string>("Barcode")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("ComparePrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("CostPerItem")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -1372,8 +1429,17 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("SKU")
+                        .HasColumnType("text");
+
                     b.Property<int>("Stock")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Weight")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 

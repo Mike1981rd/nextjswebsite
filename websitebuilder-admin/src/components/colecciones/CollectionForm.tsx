@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/contexts/I18nContext';
 import { 
@@ -35,11 +35,22 @@ import {
   Link,
   Image as ImageIcon,
   Cloud,
-  Trash2
+  Trash2,
+  GripVertical,
+  X
 } from 'lucide-react';
 
 interface CollectionFormProps {
   collectionId?: number;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  isActive: boolean;
+  basePrice?: number;
+  stock?: number;
+  images?: string[];
 }
 
 export default function CollectionForm({ collectionId }: CollectionFormProps) {
@@ -71,6 +82,14 @@ export default function CollectionForm({ collectionId }: CollectionFormProps) {
 
   const [handleError, setHandleError] = useState('');
   const [autoGenerateHandle, setAutoGenerateHandle] = useState(true);
+  
+  // Products state
+  const [assignedProducts, setAssignedProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [showProductsDropdown, setShowProductsDropdown] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
+  const [draggedProduct, setDraggedProduct] = useState<number | null>(null);
+  const productsDropdownRef = useRef<HTMLDivElement>(null);
 
   // Get primary color from localStorage
   useEffect(() => {
@@ -87,6 +106,25 @@ export default function CollectionForm({ collectionId }: CollectionFormProps) {
       loadCollection();
     }
   }, [collectionId]);
+
+  // Load all products
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (productsDropdownRef.current && !productsDropdownRef.current.contains(event.target as Node)) {
+        setShowProductsDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const loadCollection = async () => {
     if (!collectionId) return;
@@ -211,7 +249,8 @@ export default function CollectionForm({ collectionId }: CollectionFormProps) {
           seoTitle: formData.seoTitle || undefined,
           seoDescription: formData.seoDescription || undefined,
           seoKeywords: formData.seoKeywords || undefined,
-          publishToSearchEngines: formData.publishToSearchEngines
+          publishToSearchEngines: formData.publishToSearchEngines,
+          productIds: formData.productIds
         };
         await updateCollection(collectionId, updateData);
       } else {
@@ -237,6 +276,7 @@ export default function CollectionForm({ collectionId }: CollectionFormProps) {
         if (formData.tikTok !== false) dataToSend.tikTok = formData.tikTok;
         if (formData.whatsAppBusiness !== false) dataToSend.whatsAppBusiness = formData.whatsAppBusiness;
         if (formData.publishToSearchEngines !== true) dataToSend.publishToSearchEngines = formData.publishToSearchEngines;
+        if (formData.productIds && formData.productIds.length > 0) dataToSend.productIds = formData.productIds;
         
         console.log('Minimal data being sent:', dataToSend);
         await createCollection(dataToSend);
@@ -252,13 +292,35 @@ export default function CollectionForm({ collectionId }: CollectionFormProps) {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // In a real implementation, upload to server and get URL
-      // For now, create a local URL
-      const url = URL.createObjectURL(file);
-      setFormData(prev => ({ ...prev, image: url }));
+      try {
+        // Create FormData
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Upload to server
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5266/api/upload/image', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(prev => ({ ...prev, image: data.url }));
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Error uploading image');
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        alert('Error uploading image');
+      }
     }
   };
 
@@ -285,6 +347,106 @@ export default function CollectionForm({ collectionId }: CollectionFormProps) {
       setSaving(false);
     }
   };
+
+  // Fetch all products
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5266/api/products?pageSize=100', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAllProducts(data.items || []);
+        
+        // If editing, load assigned products
+        if (collectionId) {
+          const collectionProductsResponse = await fetch(`http://localhost:5266/api/collections/${collectionId}/products`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (collectionProductsResponse.ok) {
+            const assignedData = await collectionProductsResponse.json();
+            setAssignedProducts(assignedData || []);
+            setFormData(prev => ({ 
+              ...prev, 
+              productIds: assignedData.map((p: Product) => p.id) 
+            }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  // Handle drag start
+  const handleDragStart = (e: React.DragEvent, productId: number) => {
+    setDraggedProduct(productId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  // Handle drag over
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  // Handle drop
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedProduct === null) return;
+    
+    const draggedIndex = assignedProducts.findIndex(p => p.id === draggedProduct);
+    if (draggedIndex === -1) return;
+    
+    const newProducts = [...assignedProducts];
+    const [draggedItem] = newProducts.splice(draggedIndex, 1);
+    newProducts.splice(targetIndex, 0, draggedItem);
+    
+    setAssignedProducts(newProducts);
+    setFormData(prev => ({ 
+      ...prev, 
+      productIds: newProducts.map(p => p.id) 
+    }));
+    setDraggedProduct(null);
+  };
+
+  // Add product to collection
+  const addProductToCollection = (product: Product) => {
+    if (!assignedProducts.find(p => p.id === product.id)) {
+      const newProducts = [...assignedProducts, product];
+      setAssignedProducts(newProducts);
+      setFormData(prev => ({ 
+        ...prev, 
+        productIds: newProducts.map(p => p.id) 
+      }));
+    }
+    setProductSearch('');
+    setShowProductsDropdown(false);
+  };
+
+  // Remove product from collection
+  const removeProductFromCollection = (productId: number) => {
+    const newProducts = assignedProducts.filter(p => p.id !== productId);
+    setAssignedProducts(newProducts);
+    setFormData(prev => ({ 
+      ...prev, 
+      productIds: newProducts.map(p => p.id) 
+    }));
+  };
+
+  // Filter products for search
+  const filteredProducts = allProducts.filter(product => 
+    !assignedProducts.find(p => p.id === product.id) &&
+    product.name.toLowerCase().includes(productSearch.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -709,6 +871,132 @@ export default function CollectionForm({ collectionId }: CollectionFormProps) {
                   </label>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Products Section */}
+        <div className="mt-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              {t('collections.products', 'Productos')}
+            </h3>
+            
+            {/* Product Search/Add */}
+            <div className="mb-4 relative" ref={productsDropdownRef}>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('collections.addProducts', 'Agregar productos')}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={productSearch}
+                  onChange={(e) => {
+                    setProductSearch(e.target.value);
+                    setShowProductsDropdown(true);
+                  }}
+                  onFocus={() => setShowProductsDropdown(true)}
+                  placeholder={t('collections.searchProducts', 'Buscar productos...')}
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-30 dark:bg-gray-700 dark:text-white"
+                  style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
+              
+              {/* Products Dropdown */}
+              {showProductsDropdown && filteredProducts.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {filteredProducts.map(product => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => addProductToCollection(product)}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        {product.images && product.images[0] ? (
+                          <img src={product.images[0]} alt={product.name} className="w-10 h-10 object-cover rounded" />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded" />
+                        )}
+                        <span className="text-gray-900 dark:text-white">{product.name}</span>
+                      </div>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        product.isActive 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                      }`}>
+                        {product.isActive ? t('common.active', 'ACTIVO') : t('common.inactive', 'INACTIVO')}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Assigned Products List */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('collections.assignedProducts', 'Productos asignados')} ({assignedProducts.length})
+              </label>
+              
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2 min-h-[200px]">
+                {assignedProducts.length === 0 ? (
+                  <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                    {t('collections.noProducts', 'No hay productos asignados a esta colección')}
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {assignedProducts.map((product, index) => (
+                      <div
+                        key={product.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, product.id)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                        className="bg-white dark:bg-gray-800 rounded-lg p-3 flex items-center justify-between cursor-move hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center gap-3">
+                          {/* Drag Handle */}
+                          <GripVertical className="h-5 w-5 text-gray-400" />
+                          
+                          {/* Product Info */}
+                          <div className="flex items-center gap-3">
+                            {product.images && product.images[0] ? (
+                              <img src={product.images[0]} alt={product.name} className="w-10 h-10 object-cover rounded" />
+                            ) : (
+                              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded" />
+                            )}
+                            <span className="font-medium text-gray-900 dark:text-white">{product.name}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            product.isActive 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                          }`}>
+                            {product.isActive ? t('common.active', 'ACTIVO') : t('common.inactive', 'INACTIVO')}
+                          </span>
+                          
+                          <button
+                            type="button"
+                            onClick={() => removeProductFromCollection(product.id)}
+                            className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                {t('collections.dragToReorder', 'Arrastra y suelta para reordenar los productos')}
+              </p>
             </div>
           </div>
         </div>

@@ -44,13 +44,12 @@ namespace WebsiteBuilderAPI.DTOs.Collections
     public class CollectionProductDto
     {
         public int Id { get; set; }
-        public int ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public decimal ProductPrice { get; set; }
-        public string? ProductImage { get; set; }
-        public int Position { get; set; }
-        public bool IsFeatured { get; set; }
-        public DateTime AddedAt { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal BasePrice { get; set; }
+        public List<string>? Images { get; set; }
+        public int Stock { get; set; }
+        public string? Sku { get; set; }
+        public bool IsActive { get; set; }
     }
     
     public class CollectionListDto

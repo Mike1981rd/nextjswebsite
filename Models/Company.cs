@@ -48,6 +48,7 @@ namespace WebsiteBuilderAPI.Models
         // Relaciones
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
         public ICollection<Product> Products { get; set; } = new List<Product>();
+        public ICollection<Collection> Collections { get; set; } = new List<Collection>();
         public ICollection<WebsitePage> WebsitePages { get; set; } = new List<WebsitePage>();
         public ThemeSettings? ThemeSettings { get; set; }
         public ICollection<NavigationMenu> NavigationMenus { get; set; } = new List<NavigationMenu>();
