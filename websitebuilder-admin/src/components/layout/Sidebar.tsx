@@ -74,18 +74,18 @@ const menuItems: MenuItem[] = [
     permission: 'customers.read'
   },
   {
+    id: 'colecciones',
+    nameKey: 'navigation.colecciones',
+    href: '/dashboard/colecciones',
+    icon: CollectionsIcon,
+    permission: 'collections.read'
+  },
+  {
     id: 'productos',
     nameKey: 'navigation.productos',
     href: '/productos',
     icon: ProductsIcon,
     permission: 'products.read'
-  },
-  {
-    id: 'colecciones',
-    nameKey: 'navigation.colecciones',
-    href: '/colecciones',
-    icon: CollectionsIcon,
-    permission: 'collections.read'
   },
   {
     id: 'notificaciones',

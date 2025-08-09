@@ -15,6 +15,8 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductVariant> ProductVariants { get; set; }
+        public DbSet<Collection> Collections { get; set; }
+        public DbSet<CollectionProduct> CollectionProducts { get; set; }
         public DbSet<WebsitePage> WebsitePages { get; set; }
         public DbSet<PageSection> PageSections { get; set; }
         public DbSet<ThemeSettings> ThemeSettings { get; set; }
@@ -97,6 +99,39 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasOne(e => e.Product)
                     .WithMany(p => p.Variants)
                     .HasForeignKey(e => e.ProductId);
+            });
+
+            // Configuración de Collection
+            modelBuilder.Entity<Collection>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Handle).IsRequired().HasMaxLength(255);
+                // Unique index that only applies to non-deleted collections
+                entity.HasIndex(e => new { e.CompanyId, e.Handle })
+                    .IsUnique()
+                    .HasFilter("\"DeletedAt\" IS NULL");  // PostgreSQL syntax for filtered index
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Company)
+                    .WithMany(c => c.Collections)
+                    .HasForeignKey(e => e.CompanyId);
+            });
+
+            // Configuración de CollectionProduct (tabla intermedia muchos a muchos)
+            modelBuilder.Entity<CollectionProduct>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.CollectionId, e.ProductId }).IsUnique();
+                entity.Property(e => e.AddedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne(e => e.Collection)
+                    .WithMany(c => c.CollectionProducts)
+                    .HasForeignKey(e => e.CollectionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Product)
+                    .WithMany(p => p.CollectionProducts)
+                    .HasForeignKey(e => e.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Configuración de WebsitePage

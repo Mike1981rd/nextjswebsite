@@ -1123,5 +1123,60 @@
       "pending": "Pendiente",
       "cancelled": "Cancelado"
     }
+  },
+  "collections": {
+    "title": "Colecciones",
+    "create": "CREAR COLECCIÓN",
+    "createTitle": "Crear colección",
+    "editTitle": "Editar colección",
+    "createFirst": "Crea tu primera colección",
+    "empty": "No se encontraron colecciones",
+    "searchPlaceholder": "Buscar colecciones...",
+    "selected": "{count} seleccionadas",
+    "productCount": "{count} productos",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar esta colección?",
+    "confirmBulkDelete": "¿Estás seguro de que quieres eliminar {count} colecciones?",
+    "deleteError": "Error al eliminar la colección",
+    "bulkDeleteError": "Error al eliminar las colecciones",
+    "loadError": "Error al cargar la colección",
+    "saveError": "Error al guardar la colección",
+    "moreInfo": "Más información sobre colecciones",
+    "fields": {
+      "title": "TÍTULO",
+      "products": "PRODUCTOS",
+      "conditions": "CONDICIONES DE LOS PRODUCTOS",
+      "description": "Descripción",
+      "handle": "Handle"
+    },
+    "titlePlaceholder": "ej., Colección de verano, Menos de 100 $, Nuestros favoritos",
+    "descriptionPlaceholder": "Escribe aquí la descripción de tu colección...",
+    "handleRequired": "El handle es requerido",
+    "handleExists": "Este handle ya existe",
+    "handleHelp": "El handle es la parte de la URL que identifica la colección. Se genera automáticamente desde el título.",
+    "status": {
+      "title": "Estado",
+      "help": "Las colecciones activas son visibles en tu tienda"
+    },
+    "channels": {
+      "title": "Canales de venta",
+      "onlineStore": "Tienda online",
+      "pointOfSale": "Punto de venta",
+      "help": "La colección estará disponible en los canales seleccionados"
+    },
+    "image": {
+      "title": "Imagen",
+      "placeholder": "Agregar imagen",
+      "hint": "o arrastra una imagen para subirla"
+    },
+    "seo": {
+      "title": "Publicación en motores de búsqueda",
+      "pageTitle": "Título de la página",
+      "pageTitlePlaceholder": "Título para motores de búsqueda",
+      "metaDescription": "Meta descripción",
+      "metaDescriptionPlaceholder": "Descripción breve para motores de búsqueda",
+      "keywords": "Palabras clave",
+      "keywordsPlaceholder": "palabra1, palabra2, palabra3",
+      "publish": "Publicar en motores de búsqueda"
+    }
   }
 }

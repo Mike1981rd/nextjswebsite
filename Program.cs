@@ -74,6 +74,7 @@ builder.Services.AddScoped<INotificationSettingsService, NotificationSettingsSer
 builder.Services.AddScoped<WebsiteBuilderAPI.Services.Encryption.IEncryptionService, WebsiteBuilderAPI.Services.Encryption.EncryptionService>();
 builder.Services.AddScoped<IUploadService, UploadService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ICollectionService, CollectionService>();
 
 // Servicios de pagos
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
@@ -141,6 +142,26 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Middleware de logging temporal para depuración
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"=== ERROR CAPTURADO ===");
+        Console.WriteLine($"Path: {context.Request.Path}");
+        Console.WriteLine($"Method: {context.Request.Method}");
+        Console.WriteLine($"Error: {ex.Message}");
+        Console.WriteLine($"Inner: {ex.InnerException?.Message}");
+        Console.WriteLine($"StackTrace: {ex.StackTrace}");
+        Console.WriteLine($"======================");
+        throw; // Re-throw para que siga el flujo normal
+    }
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

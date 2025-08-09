@@ -48,6 +48,9 @@
     "to": "to",
     "of": "of",
     "entries": "entries",
+    "remove": "Remove",
+    "selectFile": "Select File",
+    "saving": "Saving...",
     "upload": "Upload",
     "remove": "Remove",
     "active": "Active",
@@ -1082,6 +1085,61 @@
       "processing": "Processing",
       "pending": "Pending",
       "cancelled": "Cancelled"
+    }
+  },
+  "collections": {
+    "title": "Collections",
+    "create": "CREATE COLLECTION",
+    "createTitle": "Create collection",
+    "editTitle": "Edit collection", 
+    "createFirst": "Create your first collection",
+    "empty": "No collections found",
+    "searchPlaceholder": "Search collections...",
+    "selected": "{count} selected",
+    "productCount": "{count} products",
+    "confirmDelete": "Are you sure you want to delete this collection?",
+    "confirmBulkDelete": "Are you sure you want to delete {count} collections?",
+    "deleteError": "Error deleting collection",
+    "bulkDeleteError": "Error deleting collections",
+    "loadError": "Error loading collection",
+    "saveError": "Error saving collection",
+    "moreInfo": "More information about collections",
+    "fields": {
+      "title": "TITLE",
+      "products": "PRODUCTS",
+      "conditions": "PRODUCT CONDITIONS",
+      "description": "Description",
+      "handle": "Handle"
+    },
+    "titlePlaceholder": "e.g., Summer collection, Under $100, Our favorites",
+    "descriptionPlaceholder": "Write your collection description here...",
+    "handleRequired": "Handle is required",
+    "handleExists": "This handle already exists",
+    "handleHelp": "The handle is the part of the URL that identifies the collection. It is automatically generated from the title.",
+    "status": {
+      "title": "Status",
+      "help": "Active collections are visible in your store"
+    },
+    "channels": {
+      "title": "Sales Channels",
+      "onlineStore": "Online Store",
+      "pointOfSale": "Point of Sale",
+      "help": "The collection will be available in the selected channels"
+    },
+    "image": {
+      "title": "Image",
+      "placeholder": "Add image",
+      "hint": "or drag an image to upload"
+    },
+    "seo": {
+      "title": "Search engine publication",
+      "pageTitle": "Page title",
+      "pageTitlePlaceholder": "Title for search engines",
+      "metaDescription": "Meta description",
+      "metaDescriptionPlaceholder": "Brief description for search engines",
+      "keywords": "Keywords",
+      "keywordsPlaceholder": "word1, word2, word3",
+      "publish": "Publish to search engines"
     }
   }
 }
