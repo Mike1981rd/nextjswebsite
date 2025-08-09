@@ -48,6 +48,12 @@
     "note": "Nota",
     "back": "Atrás",
     "showing": "Mostrando",
+    "sessionExpired": "Sesión expirada",
+    "pleaseLogin": "Por favor, inicia sesión nuevamente",
+    "page": "Página",
+    "of": "de",
+    "previous": "Anterior",
+    "next": "Siguiente",
     "to": "a",
     "requiredFields": "Indica campos obligatorios",
     "of": "de",
@@ -1376,5 +1382,135 @@
     "enterPassword": "Ingrese la contraseña",
     "passwordMinLength": "Mínimo 6 caracteres",
     "confirmPassword": "Confirmar Contraseña"
+  },
+  "menus": {
+    "title": "Menús de Navegación",
+    "description": "Gestiona los menús de navegación de tu sitio web",
+    "create": "Agregar menú",
+    "createMenu": "Crear menú",
+    "createNew": "Crear Menú",
+    "createFirst": "Crear tu primer menú",
+    "untitled": "Sin título",
+    "addMenu": "Agregar menú",
+    "moreActions": "Más acciones",
+    "viewInStore": "Ver en tienda online",
+    "deleteMenu": "Eliminar menú",
+    "menuElements": "Elementos del menú",
+    "addElement": "Agregar elemento del menú",
+    "addChild": "Agregar elemento hijo",
+    "visibility": "Visibilidad",
+    "activeMenu": "Menú activo",
+    "menuIdentifier": "Identificador del menú",
+    "search": "Buscar",
+    "noResults": "No se encontraron resultados",
+    "edit": "Editar menú",
+    "noMenus": "No hay menús creados",
+    "searchPlaceholder": "Buscar menús...",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar el menú?",
+    "identifier": "ID",
+    "itemsCount": "elementos",
+    "activated": "Menú activado",
+    "activatedMessage": "El menú ahora está visible en el sitio",
+    "deactivated": "Menú desactivado",
+    "deactivatedMessage": "El menú ha sido ocultado del sitio",
+    "duplicated": "Menú duplicado",
+    "duplicatedMessage": "Se ha creado una copia del menú",
+    "deleted": "Menú eliminado",
+    "deletedMessage": "El menú ha sido eliminado correctamente",
+    "table": {
+      "name": "Nombre",
+      "type": "Tipo",
+      "items": "Elementos",
+      "status": "Estado",
+      "actions": "Acciones",
+      "label": "Etiqueta",
+      "link": "Enlace"
+    },
+    "types": {
+      "header": "Encabezado",
+      "footer": "Pie de página",
+      "sidebar": "Barra lateral",
+      "custom": "Personalizado"
+    },
+    "fields": {
+      "name": "Nombre",
+      "identifier": "Identificador",
+      "type": "Tipo de menú"
+    },
+    "placeholders": {
+      "name": "p. ej., Menú de barra lateral",
+      "label": "p. ej., Quiénes somos",
+      "link": "Busca o pega un enlace"
+    },
+    "help": {
+      "identifier": "Este identificador se usa para referenciar el menú en el código"
+    },
+    "sections": {
+      "items": "Elementos del menú"
+    },
+    "addItem": "Agregar elemento del menú",
+    "linkPicker": {
+      "title": "Elegir enlace"
+    },
+    "links": {
+      "onlineStore": "Tienda online",
+      "homePage": "Página de inicio",
+      "search": "Búsqueda",
+      "collections": "Colecciones",
+      "allCollections": "Todas las colecciones",
+      "collection": "Colección",
+      "products": "Productos",
+      "product": "Producto",
+      "pages": "Páginas",
+      "page": "Página",
+      "blog": "Blogs",
+      "policy": "Política"
+    },
+    "validation": {
+      "required": "Campos requeridos",
+      "requiredMessage": "Por favor completa el nombre y el identificador del menú",
+      "noItems": "Sin elementos",
+      "addAtLeastOne": "Agrega al menos un elemento al menú",
+      "emptyLabels": "Etiquetas vacías",
+      "allItemsNeedLabel": "Todos los elementos del menú deben tener una etiqueta",
+      "nameRequired": "Campo requerido",
+      "enterName": "Por favor ingresa un nombre para el menú"
+    },
+    "success": {
+      "created": "Menú creado",
+      "createdMessage": "El menú se ha creado exitosamente",
+      "updated": "Menú actualizado",
+      "updatedMessage": "Los cambios se han guardado correctamente",
+      "changesSaved": "Los cambios se han guardado",
+      "menuCreated": "El menú se ha creado exitosamente",
+      "duplicated": "Menú duplicado",
+      "copyCreated": "Se ha creado una copia del menú",
+      "deleted": "Menú eliminado",
+      "deletedMessage": "El menú ha sido eliminado exitosamente"
+    },
+    "confirm": {
+      "delete": "¿Estás seguro de que deseas eliminar este menú? Esta acción no se puede deshacer."
+    },
+    "info": {
+      "notImplemented": "Función no implementada",
+      "comingSoon": "Esta función estará disponible pronto"
+    },
+    "error": {
+      "save": "Error al guardar",
+      "loadFailed": "Error al cargar el menú",
+      "tryAgain": "Por favor, intenta nuevamente",
+      "networkError": "Error de conexión",
+      "checkConnection": "Verifica tu conexión a internet",
+      "duplicateIdentifier": "Identificador duplicado",
+      "identifierExists": "Ya existe un menú con ese identificador",
+      "validationFailed": "Error de validación",
+      "checkFields": "Verifica los campos del formulario",
+      "unexpectedError": "Ocurrió un error inesperado",
+      "toggleFailed": "Error al cambiar estado",
+      "duplicateFailed": "Error al duplicar",
+      "deleteFailed": "Error al eliminar",
+      "notFound": "Menú no encontrado",
+      "alreadyDeleted": "El menú ya ha sido eliminado"
+    }
   }
 }

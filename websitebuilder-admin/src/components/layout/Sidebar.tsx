@@ -124,7 +124,7 @@ const menuItems: MenuItem[] = [
       {
         id: 'navegacion',
         nameKey: 'navigation.navegacion',
-        href: '/navegacion',
+        href: '/dashboard/navigation-menus',
         icon: NavigationIcon,
         permission: 'navigation.read'
       },

@@ -1340,5 +1340,135 @@
     "enterPassword": "Enter password",
     "passwordMinLength": "Minimum 6 characters",
     "confirmPassword": "Confirm Password"
+  },
+  "menus": {
+    "title": "Navigation Menus",
+    "description": "Manage your website navigation menus",
+    "create": "Add menu",
+    "createMenu": "Create menu",
+    "createNew": "Create Menu",
+    "createFirst": "Create your first menu",
+    "untitled": "Untitled",
+    "addMenu": "Add menu",
+    "moreActions": "More actions",
+    "viewInStore": "View in online store",
+    "deleteMenu": "Delete menu",
+    "menuElements": "Menu elements",
+    "addElement": "Add menu element",
+    "addChild": "Add child element",
+    "visibility": "Visibility",
+    "activeMenu": "Active menu",
+    "menuIdentifier": "Menu identifier",
+    "search": "Search",
+    "noResults": "No results found",
+    "edit": "Edit menu",
+    "noMenus": "No menus created",
+    "searchPlaceholder": "Search menus...",
+    "confirmDelete": "Are you sure you want to delete this menu?",
+    "identifier": "ID",
+    "itemsCount": "items",
+    "activated": "Menu activated",
+    "activatedMessage": "The menu is now visible on the site",
+    "deactivated": "Menu deactivated",
+    "deactivatedMessage": "The menu has been hidden from the site",
+    "duplicated": "Menu duplicated",
+    "duplicatedMessage": "A copy of the menu has been created",
+    "deleted": "Menu deleted",
+    "deletedMessage": "The menu has been successfully deleted",
+    "table": {
+      "name": "Name",
+      "type": "Type",
+      "items": "Items",
+      "status": "Status",
+      "actions": "Actions",
+      "label": "Label",
+      "link": "Link"
+    },
+    "types": {
+      "header": "Header",
+      "footer": "Footer",
+      "sidebar": "Sidebar",
+      "custom": "Custom"
+    },
+    "fields": {
+      "name": "Name",
+      "identifier": "Identifier",
+      "type": "Menu type"
+    },
+    "placeholders": {
+      "name": "e.g., Sidebar menu",
+      "label": "e.g., About us",
+      "link": "Search or paste a link"
+    },
+    "help": {
+      "identifier": "This identifier is used to reference the menu in code"
+    },
+    "sections": {
+      "items": "Menu items"
+    },
+    "addItem": "Add menu item",
+    "linkPicker": {
+      "title": "Choose link"
+    },
+    "links": {
+      "onlineStore": "Online store",
+      "homePage": "Home page",
+      "search": "Search",
+      "collections": "Collections",
+      "allCollections": "All collections",
+      "collection": "Collection",
+      "products": "Products",
+      "product": "Product",
+      "pages": "Pages",
+      "page": "Page",
+      "blog": "Blogs",
+      "policy": "Policy"
+    },
+    "validation": {
+      "required": "Required fields",
+      "requiredMessage": "Please complete the menu name and identifier",
+      "noItems": "No items",
+      "addAtLeastOne": "Add at least one item to the menu",
+      "emptyLabels": "Empty labels",
+      "allItemsNeedLabel": "All menu items must have a label",
+      "nameRequired": "Required field",
+      "enterName": "Please enter a name for the menu"
+    },
+    "success": {
+      "created": "Menu created",
+      "createdMessage": "The menu has been created successfully",
+      "updated": "Menu updated",
+      "updatedMessage": "Changes have been saved successfully",
+      "changesSaved": "Changes have been saved",
+      "menuCreated": "The menu has been created successfully",
+      "duplicated": "Menu duplicated",
+      "copyCreated": "A copy of the menu has been created",
+      "deleted": "Menu deleted",
+      "deletedMessage": "The menu has been deleted successfully"
+    },
+    "confirm": {
+      "delete": "Are you sure you want to delete this menu? This action cannot be undone."
+    },
+    "info": {
+      "notImplemented": "Feature not implemented",
+      "comingSoon": "This feature will be available soon"
+    },
+    "error": {
+      "save": "Error saving",
+      "loadFailed": "Error loading menu",
+      "tryAgain": "Please try again",
+      "networkError": "Connection error",
+      "checkConnection": "Check your internet connection",
+      "duplicateIdentifier": "Duplicate identifier",
+      "identifierExists": "A menu with that identifier already exists",
+      "validationFailed": "Validation error",
+      "checkFields": "Check the form fields",
+      "unexpectedError": "An unexpected error occurred",
+      "toggleFailed": "Error changing status",
+      "duplicateFailed": "Error duplicating",
+      "deleteFailed": "Error deleting",
+      "notFound": "Menu not found",
+      "alreadyDeleted": "The menu has already been deleted"
+    }
   }
 }
