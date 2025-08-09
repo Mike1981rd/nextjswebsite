@@ -138,7 +138,7 @@ const menuItems: MenuItem[] = [
       {
         id: 'paginas',
         nameKey: 'navigation.paginas',
-        href: '/paginas',
+        href: '/dashboard/paginas',
         icon: PagesIcon,
         permission: 'pages.read'
       },

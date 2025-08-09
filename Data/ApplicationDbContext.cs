@@ -52,6 +52,9 @@ namespace WebsiteBuilderAPI.Data
         
         // Newsletter Subscribers
         public DbSet<NewsletterSubscriber> NewsletterSubscribers { get; set; }
+        
+        // Páginas CMS
+        public DbSet<Pagina> Paginas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -612,6 +615,58 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasIndex(e => e.OptInDate);
                 entity.HasIndex(e => e.Language);
                 entity.HasIndex(e => e.DeletedAt); // Para soft delete
+            });
+
+            // Configuración de Pagina
+            modelBuilder.Entity<Pagina>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Slug).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Content).HasColumnType("text");
+                entity.Property(e => e.PublishStatus).IsRequired().HasMaxLength(20).HasDefaultValue("draft");
+                entity.Property(e => e.Template).IsRequired().HasMaxLength(50).HasDefaultValue("default");
+                
+                // SEO fields
+                entity.Property(e => e.MetaTitle).HasMaxLength(255);
+                entity.Property(e => e.MetaDescription).HasMaxLength(500);
+                entity.Property(e => e.MetaKeywords).HasMaxLength(500);
+                entity.Property(e => e.OgImage).HasMaxLength(500);
+                entity.Property(e => e.OgTitle).HasMaxLength(255);
+                entity.Property(e => e.OgDescription).HasMaxLength(500);
+                
+                // Search engine control
+                entity.Property(e => e.CanonicalUrl).HasMaxLength(500);
+                entity.Property(e => e.Robots).HasMaxLength(100);
+                
+                // Timestamps
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relations
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                entity.HasOne(e => e.CreatedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .IsRequired(false);
+                
+                entity.HasOne(e => e.UpdatedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.UpdatedByUserId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .IsRequired(false);
+                
+                // Indices
+                entity.HasIndex(e => new { e.CompanyId, e.Slug }).IsUnique();
+                entity.HasIndex(e => e.IsVisible);
+                entity.HasIndex(e => e.PublishStatus);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasIndex(e => e.PublishedAt);
             });
         }
     }

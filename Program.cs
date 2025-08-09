@@ -77,6 +77,7 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICollectionService, CollectionService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<INewsletterSubscriberService, NewsletterSubscriberService>();
+builder.Services.AddScoped<IPaginasService, PaginasService>();
 
 // Servicios de pagos
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
