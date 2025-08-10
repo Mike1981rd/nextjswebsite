@@ -62,6 +62,11 @@ namespace WebsiteBuilderAPI.Data
         
         // Políticas
         public DbSet<Policy> Policies { get; set; }
+        
+        // Sistema de Disponibilidad
+        public DbSet<RoomAvailability> RoomAvailabilities { get; set; }
+        public DbSet<RoomBlockPeriod> RoomBlockPeriods { get; set; }
+        public DbSet<AvailabilityRule> AvailabilityRules { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -696,6 +701,92 @@ namespace WebsiteBuilderAPI.Data
                 
                 // Índice único para evitar duplicados de tipo por empresa
                 entity.HasIndex(e => new { e.CompanyId, e.Type }).IsUnique();
+            });
+            
+            // Configuración de RoomAvailability
+            modelBuilder.Entity<RoomAvailability>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Date).IsRequired();
+                entity.Property(e => e.IsAvailable).HasDefaultValue(true);
+                entity.Property(e => e.IsBlocked).HasDefaultValue(false);
+                entity.Property(e => e.BlockReason).HasMaxLength(255);
+                entity.Property(e => e.CustomPrice).HasPrecision(10, 2);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Índice único para evitar duplicados
+                entity.HasIndex(e => new { e.RoomId, e.Date }).IsUnique();
+                
+                // Relaciones
+                entity.HasOne(e => e.Room)
+                    .WithMany()
+                    .HasForeignKey(e => e.RoomId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Reservation)
+                    .WithMany()
+                    .HasForeignKey(e => e.ReservationId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+            
+            // Configuración de RoomBlockPeriod
+            modelBuilder.Entity<RoomBlockPeriod>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.StartDate).IsRequired();
+                entity.Property(e => e.EndDate).IsRequired();
+                entity.Property(e => e.Reason).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Notes).HasMaxLength(500);
+                entity.Property(e => e.RecurrencePattern).HasMaxLength(50);
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relaciones
+                entity.HasOne(e => e.Room)
+                    .WithMany()
+                    .HasForeignKey(e => e.RoomId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.CreatedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+            
+            // Configuración de AvailabilityRule
+            modelBuilder.Entity<AvailabilityRule>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.RuleType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.RuleValue).IsRequired().HasColumnType("jsonb");
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.Priority).HasDefaultValue(0);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relaciones
+                entity.HasOne(e => e.Room)
+                    .WithMany()
+                    .HasForeignKey(e => e.RoomId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                // Índices
+                entity.HasIndex(e => new { e.CompanyId, e.RoomId, e.RuleType });
+                entity.HasIndex(e => e.IsActive);
             });
         }
     }

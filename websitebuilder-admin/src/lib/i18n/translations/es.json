@@ -9,6 +9,13 @@
     "update": "Actualizar",
     "search": "Buscar [Ctrl + K]",
     "filter": "Filtrar",
+    "filters": "Filtros",
+    "clearAll": "Limpiar Todo",
+    "optional": "Opcional",
+    "saving": "Guardando...",
+    "days": "días",
+    "from": "Desde",
+    "to": "Hasta",
     "loading": "Cargando...",
     "error": "Error",
     "discard": "Descartar",
@@ -1343,6 +1350,7 @@
     "rolesUsuarios": "Roles y Usuarios",
     "clientes": "Clientes",
     "reservaciones": "Reservaciones",
+    "disponibilidad": "Disponibilidad",
     "metodosPago": "Métodos de Pago",
     "colecciones": "Colecciones",
     "productos": "Productos",
@@ -1809,5 +1817,116 @@
       "createError": "Error al crear la reservación",
       "connectionError": "Error de conexión al servidor"
     }
+  },
+  "availability": {
+    "title": "Disponibilidad de Habitaciones",
+    "subtitle": "Gestionar disponibilidad y precios de habitaciones",
+    "sync": "Sincronizar",
+    "export": "Exportar",
+    "blockPeriodButton": "Bloquear Período",
+    "rulesButton": "Reglas",
+    "today": "Hoy",
+    "showing": "Mostrando",
+    "rooms": "habitaciones",
+    "noData": "Sin datos de disponibilidad",
+    "enterPrice": "Ingrese precio personalizado:",
+    "enterMinNights": "Ingrese noches mínimas:",
+    "filters": {
+      "room": "Habitación",
+      "allRooms": "Todas las Habitaciones",
+      "view": "Vista",
+      "month": "Mes",
+      "week": "Semana",
+      "year": "Año"
+    },
+    "stats": {
+      "occupancy": "Tasa de Ocupación",
+      "available": "Disponibles Hoy",
+      "checkIns": "Check-ins Hoy",
+      "revenue": "Ingresos Proyectados"
+    },
+    "legend": {
+      "available": "Disponible",
+      "reserved": "Reservada",
+      "blocked": "Bloqueada",
+      "customPrice": "Precio Personalizado",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out"
+    },
+    "actions": {
+      "block": "Bloquear Seleccionadas",
+      "unblock": "Desbloquear Seleccionadas",
+      "setPrice": "Establecer Precio Personalizado",
+      "setMinNights": "Establecer Noches Mínimas"
+    },
+    "blockPeriod": {
+      "create": "Crear Período de Bloqueo",
+      "edit": "Editar Período de Bloqueo",
+      "rooms": "Seleccionar Habitaciones",
+      "allRoomsWarning": "No hay habitaciones seleccionadas - se aplicará a todas las habitaciones",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin",
+      "reason": "Motivo",
+      "notes": "Notas",
+      "notesPlaceholder": "Detalles adicionales...",
+      "recurring": "Bloqueo Recurrente",
+      "reasons": {
+        "maintenance": "Mantenimiento",
+        "renovation": "Renovación",
+        "privateUse": "Uso Privado",
+        "seasonal": "Cierre Estacional",
+        "other": "Otro"
+      },
+      "recurrence": {
+        "weekly": "Semanal",
+        "monthly": "Mensual",
+        "yearly": "Anual"
+      },
+      "warning": {
+        "title": "Importante",
+        "message": "Los períodos de bloqueo evitarán nuevas reservaciones. Las reservaciones existentes no se verán afectadas."
+      }
+    },
+    "rules": {
+      "title": "Reglas de Disponibilidad",
+      "description": "Gestionar reglas de negocio para disponibilidad y precios",
+      "addRule": "Agregar Regla",
+      "noRules": "No hay reglas configuradas",
+      "priority": "Prioridad",
+      "rule": "Regla",
+      "confirmDelete": "¿Está seguro de que desea eliminar esta regla?",
+      "types": {
+        "minNights": "Noches Mínimas",
+        "maxNights": "Noches Máximas",
+        "noCheckinDays": "Restricciones de Check-in",
+        "noCheckoutDays": "Restricciones de Check-out",
+        "advanceBooking": "Reserva Anticipada",
+        "seasonalPricing": "Precios de Temporada"
+      },
+      "form": {
+        "type": "Tipo de Regla",
+        "room": "Aplicar a Habitación",
+        "allRooms": "Todas las Habitaciones",
+        "priority": "Prioridad",
+        "active": "Activa",
+        "startDate": "Fecha de Inicio",
+        "endDate": "Fecha de Fin"
+      },
+      "config": {
+        "nights": "Número de Noches",
+        "days": "Seleccionar Días",
+        "maxDays": "Máximo de Días de Anticipación",
+        "adjustment": "Ajuste de Precio (%)"
+      }
+    }
+  },
+  "days": {
+    "sunday": "Domingo",
+    "monday": "Lunes",
+    "tuesday": "Martes",
+    "wednesday": "Miércoles",
+    "thursday": "Jueves",
+    "friday": "Viernes",
+    "saturday": "Sábado"
   }
 }

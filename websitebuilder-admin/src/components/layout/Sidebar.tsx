@@ -16,6 +16,7 @@ import {
   ClientsIcon,
   RoomsIcon,
   ReservationsIcon,
+  AvailabilityIcon,
   ProductsIcon,
   CollectionsIcon,
   PagesIcon,
@@ -162,6 +163,13 @@ const menuItems: MenuItem[] = [
         href: '/dashboard/reservaciones',
         icon: ReservationsIcon,
         permission: 'reservations.read'
+      },
+      {
+        id: 'disponibilidad',
+        nameKey: 'navigation.disponibilidad',
+        href: '/dashboard/disponibilidad',
+        icon: AvailabilityIcon,
+        permission: 'availability.read'
       }
     ]
   }
