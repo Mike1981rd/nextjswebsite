@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useI18n } from '@/contexts/I18nContext';
 import { StoreDetailsForm } from '@/components/empresa/StoreDetailsForm';
 import { TabsNavigation } from '@/components/empresa/TabsNavigation';
@@ -24,9 +25,9 @@ export default function EmpresaConfiguracionPage() {
         <nav className="flex mb-4 text-sm" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li>
-              <a href="/dashboard" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+              <Link href="/dashboard" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                 {t('navigation.dashboard')}
-              </a>
+              </Link>
             </li>
             <li className="text-gray-400 dark:text-gray-600">/</li>
             <li className="text-gray-700 dark:text-gray-300 font-medium">

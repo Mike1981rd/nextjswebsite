@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion } from 'framer-motion';
 import { useI18n } from '@/contexts/I18nContext';
-import { useCompany } from '@/hooks/useCompany';
+import { useCompany } from '@/contexts/CompanyContext';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { CountryFlag, countries, currencies } from '@/components/ui/CountryFlag';
 import * as Select from '@radix-ui/react-select';

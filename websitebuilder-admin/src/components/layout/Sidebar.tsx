@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn, buildAssetUrl } from '@/lib/utils';
 import { useI18n } from '@/contexts/I18nContext';
-import { useCompany } from '@/hooks/useCompany';
+import { useCompany } from '@/contexts/CompanyContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import Image from 'next/image';
 import {
@@ -56,7 +56,7 @@ const menuItems: MenuItem[] = [
   {
     id: 'empresa',
     nameKey: 'navigation.empresa',
-    href: '/dashboard/empresa',
+    href: '/dashboard/empresa/configuracion',
     icon: CompanyIcon,
     permission: 'company.read'
   },

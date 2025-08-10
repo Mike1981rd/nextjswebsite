@@ -59,6 +59,7 @@
     "error": "Error",
     "discard": "Descartar",
     "saveChanges": "Guardar Cambios",
+    "pageOf": "Página {{current}} de {{total}}",
     "saving": "Guardando",
     "saved": "Guardado",
     "saveSuccess": "Cliente guardado exitosamente",

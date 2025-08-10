@@ -24,17 +24,31 @@ namespace WebsiteBuilderAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Login attempt with invalid model state for email: {Email}", loginDto?.Email);
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.LoginAsync(loginDto);
-            if (result == null)
+            try
             {
-                return Unauthorized(new { message = "Email o contraseña incorrectos" });
-            }
+                _logger.LogDebug("Login attempt for user: {Email}", loginDto.Email);
+                
+                var result = await _authService.LoginAsync(loginDto);
+                if (result == null)
+                {
+                    _logger.LogWarning("Failed login attempt for email: {Email} - Invalid credentials", loginDto.Email);
+                    return Unauthorized(new { message = "Email o contraseña incorrectos" });
+                }
 
-            _logger.LogInformation($"Usuario {loginDto.Email} inició sesión exitosamente");
-            return Ok(result);
+                _logger.LogInformation("Successful login for user: {Email} with UserId: {UserId}", 
+                    loginDto.Email, result.User?.Id);
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during login attempt for email: {Email}", loginDto.Email);
+                return StatusCode(500, new { message = "Error interno del servidor durante el login" });
+            }
         }
 
         [HttpPost("register")]
@@ -43,17 +57,31 @@ namespace WebsiteBuilderAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("Registration attempt with invalid model state");
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.RegisterAsync(registerDto);
-            if (result == null)
+            try
             {
-                return BadRequest(new { message = "El email ya está registrado" });
-            }
+                _logger.LogDebug("Registration attempt for email: {Email}", registerDto.Email);
+                
+                var result = await _authService.RegisterAsync(registerDto);
+                if (result == null)
+                {
+                    _logger.LogWarning("Registration failed - Email already exists: {Email}", registerDto.Email);
+                    return BadRequest(new { message = "El email ya está registrado" });
+                }
 
-            _logger.LogInformation($"Nuevo usuario registrado: {registerDto.Email}");
-            return Ok(result);
+                _logger.LogInformation("New user registered successfully: {Email} with UserId: {UserId}", 
+                    registerDto.Email, result.User?.Id);
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during user registration for email: {Email}", registerDto.Email);
+                return StatusCode(500, new { message = "Error interno del servidor durante el registro" });
+            }
         }
 
         [HttpGet("me")]

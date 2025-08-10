@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useI18n } from '@/contexts/I18nContext';
 import PaymentsTab from './PaymentsTab';
 import { TabsNavigation } from '@/components/empresa/TabsNavigation';
@@ -14,9 +15,9 @@ export default function PaymentsPage() {
         <nav className="flex mb-4 text-xs sm:text-sm overflow-x-auto" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2 whitespace-nowrap">
             <li>
-              <a href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+              <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                 {t('navigation.dashboard', 'Dashboard')}
-              </a>
+              </Link>
             </li>
             <li className="text-gray-400 dark:text-gray-500">/</li>
             <li className="text-gray-700 font-medium dark:text-gray-300">

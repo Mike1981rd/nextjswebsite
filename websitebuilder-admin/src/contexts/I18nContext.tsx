@@ -7,7 +7,7 @@ type Language = 'es' | 'en';
 interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string, defaultValue?: string) => string;
+  t: (key: string, params?: Record<string, any>) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -72,27 +72,55 @@ export function I18nProvider({ children }: I18nProviderProps) {
     }
   };
 
-  const t = (key: string, defaultValue?: string): string => {
+  const t = (key: string, params?: Record<string, any>): string => {
     if (!isLoaded) {
-      return defaultValue || key;
+      return key;
     }
 
-    const translation = getNestedValue(translations[language], key);
+    let translation = getNestedValue(translations[language], key);
     
-    if (translation) {
-      return translation;
+    // Si no encuentra traducción, intentar con fallback a español
+    if (!translation && language !== 'es') {
+      translation = getNestedValue(translations.es, key);
+    }
+    
+    // Si aún no hay traducción, devolver la key
+    if (!translation) {
+      return key;
     }
 
-    // Fallback a español si no encuentra en el idioma actual
-    if (language !== 'es') {
-      const fallback = getNestedValue(translations.es, key);
-      if (fallback) {
-        return fallback;
+    // Si la traducción es un objeto con title y count (caso especial)
+    if (typeof translation === 'object' && translation !== null) {
+      // Buscar la propiedad más relevante
+      if ('title' in translation) {
+        translation = translation.title;
+      } else if ('text' in translation) {
+        translation = translation.text;
+      } else {
+        // Si es un objeto sin propiedades conocidas, convertir a string
+        translation = JSON.stringify(translation);
       }
     }
 
-    // Último fallback: devolver defaultValue o la key
-    return defaultValue || key;
+    // Convertir a string si no lo es
+    if (typeof translation !== 'string') {
+      return String(translation);
+    }
+
+    // Si hay parámetros, realizar interpolación
+    if (params) {
+      let result = translation;
+      Object.keys(params).forEach(param => {
+        // Soportar tanto {param} como {{param}}
+        const regex1 = new RegExp(`\\{\\{${param}\\}\\}`, 'g');
+        const regex2 = new RegExp(`\\{${param}\\}`, 'g');
+        result = result.replace(regex1, String(params[param]));
+        result = result.replace(regex2, String(params[param]));
+      });
+      return result;
+    }
+
+    return translation;
   };
 
   const value = {

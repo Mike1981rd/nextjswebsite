@@ -4,6 +4,7 @@ import "./globals.css";
 import "@/styles/flags.css";
 import "flag-icons/css/flag-icons.min.css";
 import { Providers } from "./providers";
+import { LoggerInitializer } from "@/components/LoggerInitializer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +34,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>
+          <LoggerInitializer />
           {children}
         </Providers>
       </body>

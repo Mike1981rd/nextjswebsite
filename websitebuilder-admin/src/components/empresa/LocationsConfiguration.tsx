@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { CountryFlag, countries } from '@/components/ui/CountryFlag';
 import { 
@@ -63,6 +63,7 @@ const usStates = [
 
 export function LocationsConfiguration({ primaryColor }: LocationsConfigurationProps) {
   const { t } = useI18n();
+  const fetchInitiatedRef = useRef(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -107,6 +108,8 @@ export function LocationsConfiguration({ primaryColor }: LocationsConfigurationP
   };
 
   useEffect(() => {
+    if (fetchInitiatedRef.current) return;
+    fetchInitiatedRef.current = true;
     fetchLocations();
   }, []);
 

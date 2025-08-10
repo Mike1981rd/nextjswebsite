@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/contexts/I18nContext';
 import { ShieldIcon, PlusIcon, UsersIcon, CopyIcon, Trash2Icon } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface Role {
   id: number;
@@ -24,31 +25,18 @@ export function RolesTab({ primaryColor }: RolesTabProps) {
   const { t } = useI18n();
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const fetchInitiatedRef = useRef(false);
 
   useEffect(() => {
+    if (fetchInitiatedRef.current) return;
+    fetchInitiatedRef.current = true;
     fetchRoles();
   }, []);
 
   const fetchRoles = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5266/api/roles', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Roles data received:', data);
-        data.forEach((role: Role) => {
-          console.log(`Role: ${role.name}, UserCount: ${role.userCount}, Avatars: ${role.avatars?.length || 0}`);
-        });
-        setRoles(data);
-      } else {
-        console.error('Error fetching roles:', response.status);
-      }
+      const response = await api.get('/roles');
+      setRoles(response.data);
     } catch (error) {
       console.error('Error fetching roles:', error);
     } finally {

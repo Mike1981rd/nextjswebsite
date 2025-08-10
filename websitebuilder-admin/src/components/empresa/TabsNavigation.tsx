@@ -34,40 +34,36 @@ export function TabsNavigation() {
     {
       id: 'store-details',
       label: t('empresa.tabs.storeDetails', 'Store Details'),
-      href: '/empresa/configuracion'
+      href: '/dashboard/empresa/configuracion'
     },
     {
       id: 'payments',
       label: t('empresa.tabs.payments', 'Payments'),
-      href: '/empresa/payments'
+      href: '/dashboard/empresa/payments'
     },
     {
       id: 'checkout',
       label: t('empresa.tabs.checkout', 'Checkout'),
-      href: '/empresa/checkout'
+      href: '/dashboard/empresa/checkout'
     },
     {
       id: 'shipping-delivery',
       label: t('empresa.tabs.shippingDelivery', 'Shipping & Delivery'),
-      href: '/empresa/shipping'
+      href: '/dashboard/empresa/shipping'
     },
     {
       id: 'locations',
       label: t('empresa.tabs.locations', 'Locations'),
-      href: '/empresa/locations'
+      href: '/dashboard/empresa/locations'
     },
     {
       id: 'notifications',
       label: t('empresa.tabs.notifications', 'Notifications'),
-      href: '/empresa/notifications'
+      href: '/dashboard/empresa/notifications'
     }
   ];
 
   const isActive = (href: string) => {
-    // Check if it's the dashboard route
-    if (pathname.includes('/dashboard')) {
-      return pathname.includes(href.replace('/empresa', '/dashboard/empresa'));
-    }
     return pathname === href;
   };
 

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Settings, Check, X, AlertCircle, Loader2, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useI18n } from '@/contexts/I18nContext';
-import { useCompany } from '@/hooks/useCompany';
+import { useCompany } from '@/contexts/CompanyContext';
 import { paymentService, PaymentProvider as PaymentProviderDto } from '@/lib/api/payment.service';
 // Modal removed - now using full page configuration
 import { toast } from 'react-hot-toast';
@@ -60,9 +60,12 @@ export default function PaymentsTab() {
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const fetchInitiatedRef = useRef(false);
 
   // Load providers from backend
   useEffect(() => {
+    if (fetchInitiatedRef.current && refreshKey === 0) return;
+    fetchInitiatedRef.current = true;
     loadProviders();
   }, [refreshKey]);
 

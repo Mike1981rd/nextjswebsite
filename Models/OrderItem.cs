@@ -16,13 +16,14 @@ namespace WebsiteBuilderAPI.Models
         [MaxLength(200)]
         public string ProductName { get; set; } = string.Empty;
         
-        [MaxLength(255)]
+        [Column(TypeName = "text")]
         public string? ProductImage { get; set; }
         
         [MaxLength(100)]
         public string? ProductSku { get; set; }
         
         // Atributos del producto (Storage: 128gb, Size: 8UK, etc.) en JSON
+        [Column(TypeName = "text")]
         public string? ProductAttributes { get; set; }
         
         // Cantidades y precios
@@ -44,6 +45,7 @@ namespace WebsiteBuilderAPI.Models
         public bool IsSelected { get; set; } = false;
         
         // Notas adicionales
+        [MaxLength(1000)]
         public string? Notes { get; set; }
         
         // Navegación

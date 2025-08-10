@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/contexts/I18nContext';
 import { AlertCircle, Phone, Mail, Building2, MapPin, Home, User } from 'lucide-react';
@@ -22,6 +22,7 @@ export function CheckoutConfiguration() {
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const fetchInitiatedRef = useRef(false);
   
   // Estado para los campos de configuración
   const [contactMethod, setContactMethod] = useState<'phone' | 'email'>('email');
@@ -33,6 +34,9 @@ export function CheckoutConfiguration() {
   
   // Get primary color from localStorage
   useEffect(() => {
+    if (fetchInitiatedRef.current) return;
+    fetchInitiatedRef.current = true;
+    
     const settings = localStorage.getItem('ui-settings');
     if (settings) {
       try {

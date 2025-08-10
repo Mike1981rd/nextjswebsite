@@ -11,6 +11,7 @@ import { Eye, EyeOff, Languages } from 'lucide-react';
 import { FaFacebookF, FaTwitter, FaGithub, FaGoogle } from 'react-icons/fa';
 import { api } from '@/lib/api';
 import { buildAssetUrl } from '@/lib/utils';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
   const [companyConfig, setCompanyConfig] = useState<{ name?: string; logo?: string; logoSize?: number } | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
 
   // Load company configuration
@@ -36,6 +38,9 @@ export default function LoginPage() {
       } catch (error) {
         console.error('Error loading company config:', error);
         // Continue without company config
+      } finally {
+        // Mark initialization as complete after loading config
+        setIsInitializing(false);
       }
     };
     
@@ -75,6 +80,11 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Show loading screen while initializing
+  if (isInitializing) {
+    return <LoadingScreen message="Initializing..." showLogo={false} />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">

@@ -59,6 +59,7 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
+    "pageOf": "Page {{current}} of {{total}}",
     "saveSuccess": "Customer saved successfully",
     "confirm": "Confirm",
     "close": "Close",

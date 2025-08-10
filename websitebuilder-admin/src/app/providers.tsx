@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { I18nProvider } from '@/contexts/I18nContext';
+import { CompanyProvider } from '@/contexts/CompanyContext';
 import { ThemeLoader } from '@/components/ui/ThemeLoader';
 import { Toaster } from 'react-hot-toast';
 
@@ -28,31 +29,33 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider>
       <AuthProvider>
-        <ThemeLoader />
-        <Toaster 
-          position="top-right"
-          reverseOrder={false}
-          gutter={8}
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-              fontSize: '14px',
-            },
-            success: {
+        <CompanyProvider>
+          <ThemeLoader />
+          <Toaster 
+            position="top-right"
+            reverseOrder={false}
+            gutter={8}
+            toastOptions={{
+              duration: 4000,
               style: {
-                background: '#22c55e',
+                background: '#363636',
+                color: '#fff',
+                fontSize: '14px',
               },
-            },
-            error: {
-              style: {
-                background: '#ef4444',
+              success: {
+                style: {
+                  background: '#22c55e',
+                },
               },
-            },
-          }}
-        />
-        {children}
+              error: {
+                style: {
+                  background: '#ef4444',
+                },
+              },
+            }}
+          />
+          {children}
+        </CompanyProvider>
       </AuthProvider>
     </I18nProvider>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/contexts/I18nContext';
 import { Plus, Trash2, Edit2, MoreVertical, Package, Globe, DollarSign } from 'lucide-react';
@@ -34,6 +34,7 @@ export function ShippingConfiguration() {
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const fetchInitiatedRef = useRef(false);
   
   // State for shipping zones
   const [shippingZones, setShippingZones] = useState<ShippingZone[]>([]);
@@ -47,6 +48,9 @@ export function ShippingConfiguration() {
   
   // Get primary color from localStorage
   useEffect(() => {
+    if (fetchInitiatedRef.current) return;
+    fetchInitiatedRef.current = true;
+    
     const settings = localStorage.getItem('ui-settings');
     if (settings) {
       try {

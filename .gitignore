@@ -110,3 +110,6 @@ lerna-debug.log*
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/tasks.json
+# Serilog log files
+logs/
+*.log
