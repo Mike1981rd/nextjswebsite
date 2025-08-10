@@ -3,12 +3,16 @@
 Load all project context and provide comprehensive session summary: $ARGUMENTS
 
 ## Load Context Files
-First, let me load all the essential project files:
+First, let me load all the essential project files in this specific order:
 
 1. Read CLAUDE.md for workflow rules and project constraints
-2. Read all blueprint files (blueprint1.md, blueprint2.md, blueprint3.md)
-3. Read PROJECT-PROGRESS.md for current status
-4. Check for any other relevant context files
+2. Read CLAUDEBK1.md for base rules and architecture (lines 1-501)
+3. Read CLAUDEBK2.md for UI patterns and troubleshooting (lines 502-895)
+4. Read blueprint1.md for project overview and problems to solve
+5. Read blueprint2.md for system architecture details
+6. Read blueprint3.md for implementation details and modules
+7. Read PROJECT-PROGRESS.md for current status
+8. Check for any other relevant context files (SistemaDisponibilidad.md, etc.)
 
 ## Session Summary Generation
 

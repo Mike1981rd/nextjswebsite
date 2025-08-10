@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Formats.Gif;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace WebsiteBuilderAPI.Services
 {
@@ -88,30 +90,54 @@ namespace WebsiteBuilderAPI.Services
                     Directory.CreateDirectory(uploadsFolder);
                 }
 
-                // Generar nombre único para el archivo (siempre guardamos como .jpg después del procesamiento)
-                var uniqueFileName = $"{Guid.NewGuid()}.jpg";
+                // Obtener la extensión original del archivo
+                var originalExtension = Path.GetExtension(file.FileName).ToLower();
+                if (string.IsNullOrEmpty(originalExtension))
+                {
+                    // Si no tiene extensión, determinar por content type
+                    originalExtension = file.ContentType.ToLower() switch
+                    {
+                        "image/png" => ".png",
+                        "image/webp" => ".webp",
+                        "image/gif" => ".gif",
+                        "image/jpeg" => ".jpg",
+                        "image/jpg" => ".jpg",
+                        _ => ".jpg"
+                    };
+                }
+
+                // Generar nombre único manteniendo la extensión original
+                var uniqueFileName = $"{Guid.NewGuid()}{originalExtension}";
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                // Procesar la imagen con ImageSharp para corregir orientación
-                using (var inputStream = file.OpenReadStream())
-                using (var image = await Image.LoadAsync(inputStream))
+                // OPCIÓN 1: Guardar SIN PROCESAR para PNG (mantiene transparencia garantizada)
+                if (originalExtension == ".png")
                 {
-                    // AutoOrient corrige automáticamente la orientación basándose en los metadatos EXIF
-                    image.Mutate(x => x.AutoOrient());
-                    
-                    // Opcional: Redimensionar si la imagen es muy grande (max 1920px de ancho)
-                    if (image.Width > 1920)
+                    // Guardar el PNG tal cual, sin procesamiento
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        image.Mutate(x => x.Resize(1920, 0));
+                        await file.CopyToAsync(stream);
                     }
-                    
-                    // Guardar la imagen procesada como JPEG con calidad 90
-                    var encoder = new JpegEncoder
+                    _logger.LogInformation($"PNG guardado sin procesamiento para preservar transparencia");
+                }
+                else
+                {
+                    // Para otros formatos, procesar con ImageSharp
+                    using (var inputStream = file.OpenReadStream())
+                    using (var image = await Image.LoadAsync(inputStream))
                     {
-                        Quality = 90
-                    };
-                    
-                    await image.SaveAsync(filePath, encoder);
+                        // AutoOrient corrige automáticamente la orientación basándose en los metadatos EXIF
+                        image.Mutate(x => x.AutoOrient());
+                        
+                        // Opcional: Redimensionar si la imagen es muy grande (max 1920px de ancho)
+                        if (image.Width > 1920)
+                        {
+                            image.Mutate(x => x.Resize(1920, 0));
+                        }
+                        
+                        // Guardar con encoder por defecto según extensión
+                        await image.SaveAsync(filePath);
+                    }
                 }
 
                 // Retornar la URL completa
@@ -119,7 +145,7 @@ namespace WebsiteBuilderAPI.Services
                 var baseUrl = $"{request?.Scheme}://{request?.Host}";
                 var fileUrl = $"{baseUrl}/uploads/logos/{uniqueFileName}";
 
-                _logger.LogInformation($"Imagen subida y procesada exitosamente: {fileUrl}");
+                _logger.LogInformation($"Imagen subida exitosamente: {fileUrl}");
                 return fileUrl;
             }
             catch (Exception ex)
