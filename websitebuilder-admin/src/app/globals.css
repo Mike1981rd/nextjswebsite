@@ -47,6 +47,16 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
   
+  /* Hide scrollbar utility classes */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
   /* Toast animations */
   @keyframes slide-in {
     from {

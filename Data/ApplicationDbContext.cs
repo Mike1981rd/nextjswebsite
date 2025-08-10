@@ -50,6 +50,10 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<CustomerCoupon> CustomerCoupons { get; set; }
         public DbSet<CustomerSecurityQuestion> CustomerSecurityQuestions { get; set; }
         
+        // Entidades de reservaciones
+        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<ReservationPayment> ReservationPayments { get; set; }
+        
         // Newsletter Subscribers
         public DbSet<NewsletterSubscriber> NewsletterSubscribers { get; set; }
         

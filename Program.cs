@@ -81,6 +81,7 @@ builder.Services.AddScoped<IPaginasService, PaginasService>();
 builder.Services.AddScoped<IPolicyService, PolicyService>();
 builder.Services.AddScoped<INavigationMenuService, NavigationMenuService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 
 // Servicios de pagos
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();

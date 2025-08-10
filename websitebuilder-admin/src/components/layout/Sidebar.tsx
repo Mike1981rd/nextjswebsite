@@ -159,7 +159,7 @@ const menuItems: MenuItem[] = [
       {
         id: 'reservaciones',
         nameKey: 'navigation.reservaciones',
-        href: '/reservaciones',
+        href: '/dashboard/reservaciones',
         icon: ReservationsIcon,
         permission: 'reservations.read'
       }
@@ -419,6 +419,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                   fill
                   className="object-contain"
                   sizes={`${sidebarLogoSize}px`}
+                  priority
                 />
               </div>
             ) : (
@@ -491,6 +492,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                   fill
                   className="object-contain"
                   sizes={`${sidebarLogoSize}px`}
+                  priority
                 />
               </div>
             ) : (
@@ -560,6 +562,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                     fill
                     className="object-contain"
                     sizes={`${sidebarLogoSize}px`}
+                    priority
                   />
                 </div>
               ) : (
