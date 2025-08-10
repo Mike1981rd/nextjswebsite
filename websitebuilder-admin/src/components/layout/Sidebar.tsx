@@ -118,7 +118,7 @@ const menuItems: MenuItem[] = [
       {
         id: 'orders',
         nameKey: 'navigation.orders',
-        href: '/orders',
+        href: '/dashboard/orders',
         icon: OrdersIcon,
         permission: 'orders.read'
       },

@@ -63,6 +63,12 @@ namespace WebsiteBuilderAPI.Data
         // Políticas
         public DbSet<Policy> Policies { get; set; }
         
+        // Orders (E-commerce)
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<OrderPayment> OrderPayments { get; set; }
+        public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
+        
         // Sistema de Disponibilidad
         public DbSet<RoomAvailability> RoomAvailabilities { get; set; }
         public DbSet<RoomBlockPeriod> RoomBlockPeriods { get; set; }
@@ -787,6 +793,151 @@ namespace WebsiteBuilderAPI.Data
                 // Índices
                 entity.HasIndex(e => new { e.CompanyId, e.RoomId, e.RuleType });
                 entity.HasIndex(e => e.IsActive);
+            });
+            
+            // Configuración de Order
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.OrderNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.OrderStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.PaymentStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.DeliveryStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.SubTotal).HasPrecision(10, 2);
+                entity.Property(e => e.DiscountAmount).HasPrecision(10, 2);
+                entity.Property(e => e.TaxAmount).HasPrecision(10, 2);
+                entity.Property(e => e.ShippingAmount).HasPrecision(10, 2);
+                entity.Property(e => e.TotalAmount).HasPrecision(10, 2);
+                entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
+                entity.Property(e => e.CustomerName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.CustomerEmail).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ShippingAddressSnapshot).HasColumnType("jsonb");
+                entity.Property(e => e.BillingAddressSnapshot).HasColumnType("jsonb");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relaciones
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.Customer)
+                    .WithMany()
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.ShippingAddress)
+                    .WithMany()
+                    .HasForeignKey(e => e.ShippingAddressId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.BillingAddress)
+                    .WithMany()
+                    .HasForeignKey(e => e.BillingAddressId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Índices
+                entity.HasIndex(e => e.OrderNumber).IsUnique();
+                entity.HasIndex(e => e.CompanyId);
+                entity.HasIndex(e => e.CustomerId);
+                entity.HasIndex(e => e.OrderStatus);
+                entity.HasIndex(e => e.PaymentStatus);
+                entity.HasIndex(e => e.DeliveryStatus);
+                entity.HasIndex(e => e.OrderDate);
+                entity.HasIndex(e => new { e.CompanyId, e.OrderStatus });
+            });
+            
+            // Configuración de OrderItem
+            modelBuilder.Entity<OrderItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ProductName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.ProductAttributes).HasColumnType("jsonb");
+                entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
+                entity.Property(e => e.DiscountAmount).HasPrecision(10, 2);
+                entity.Property(e => e.TaxAmount).HasPrecision(10, 2);
+                entity.Property(e => e.TotalPrice).HasPrecision(10, 2);
+                
+                // Relaciones
+                entity.HasOne(e => e.Order)
+                    .WithMany(o => o.OrderItems)
+                    .HasForeignKey(e => e.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Product)
+                    .WithMany()
+                    .HasForeignKey(e => e.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.ProductVariant)
+                    .WithMany()
+                    .HasForeignKey(e => e.ProductVariantId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Índices
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.ProductId);
+            });
+            
+            // Configuración de OrderPayment
+            modelBuilder.Entity<OrderPayment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Amount).HasPrecision(10, 2);
+                entity.Property(e => e.RefundAmount).HasPrecision(10, 2);
+                entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.GatewayResponse).HasColumnType("jsonb");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relaciones
+                entity.HasOne(e => e.Order)
+                    .WithMany(o => o.OrderPayments)
+                    .HasForeignKey(e => e.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.PaymentProvider)
+                    .WithMany()
+                    .HasForeignKey(e => e.PaymentProviderId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                    
+                entity.HasOne(e => e.CustomerPaymentMethod)
+                    .WithMany()
+                    .HasForeignKey(e => e.CustomerPaymentMethodId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Índices
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.TransactionId);
+                entity.HasIndex(e => e.Status);
+            });
+            
+            // Configuración de OrderStatusHistory
+            modelBuilder.Entity<OrderStatusHistory>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.StatusType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Metadata).HasColumnType("jsonb");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relaciones
+                entity.HasOne(e => e.Order)
+                    .WithMany(o => o.OrderStatusHistories)
+                    .HasForeignKey(e => e.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                // Índices
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.StatusType);
+                entity.HasIndex(e => e.Timestamp);
             });
         }
     }

@@ -1,4 +1,43 @@
 {
+  "createOrder": "Create Order",
+  "createOrderSubtitle": "Complete the new order details",
+  "selectCustomer": "Select Customer",
+  "searchCustomer": "Search customer...",
+  "addProducts": "Add Products",
+  "searchProducts": "Search products...",
+  "shippingAddress": "Shipping Address",
+  "billingPayment": "Billing & Payment",
+  "reviewOrder": "Review Order",
+  "orderSummary": "Order Summary",
+  "noProductsAdded": "No products added",
+  "selectCustomerFirst": "Please select a customer first",
+  "addProductsFirst": "Please add products first",
+  "createSuccess": "Order created successfully",
+  "createError": "Error creating order",
+  "inStock": "In stock",
+  "street": "Street",
+  "apartment": "Apartment/Suite",
+  "city": "City",
+  "state": "State/Province",
+  "postalCode": "Postal Code",
+  "country": "Country",
+  "phone": "Phone",
+  "sameAsShipping": "Same as shipping address",
+  "paymentMethod": "Payment Method",
+  "paymentNotes": "Payment Notes",
+  "notesPlaceholder": "Add notes about this order...",
+  "discount": "Discount",
+  "tax": "Tax",
+  "subtotal": "Subtotal",
+  "total": "Total",
+  "shippingCost": "Shipping Cost",
+  "notes": "Notes",
+  "payment": {
+    "card": "Card",
+    "cash": "Cash",
+    "transfer": "Transfer",
+    "paypal": "PayPal"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -1865,5 +1904,199 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday"
+  },
+  "orders": {
+    "title": "Orders",
+    "subtitle": "Manage all your store orders",
+    "addOrder": "New Order",
+    "createOrder": "Create Order",
+    "createOrderSubtitle": "Complete the new order details",
+    "selectCustomer": "Select Customer",
+    "searchCustomer": "Search customer...",
+    "addProducts": "Add Products",
+    "searchProducts": "Search products...",
+    "shippingAddress": "Shipping Address",
+    "billingPayment": "Billing & Payment",
+    "reviewOrder": "Review Order",
+    "orderSummary": "Order Summary",
+    "noProductsAdded": "No products added",
+    "selectCustomerFirst": "Please select a customer first",
+    "addProductsFirst": "Please add products first",
+    "createSuccess": "Order created successfully",
+    "createError": "Error creating order",
+    "inStock": "In stock",
+    "street": "Street",
+    "apartment": "Apartment/Suite",
+    "city": "City",
+    "state": "State/Province",
+    "postalCode": "Postal Code",
+    "country": "Country",
+    "phone": "Phone",
+    "sameAsShipping": "Same as shipping address",
+    "paymentMethod": "Payment Method",
+    "paymentNotes": "Payment Notes",
+    "notesPlaceholder": "Add notes about this order...",
+    "discount": "Discount",
+    "tax": "Tax",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "orderDetails": "Order Details",
+    "placed": "Placed on",
+    "noOrders": "No orders to display",
+    "items": "items",
+    "fetchError": "Error loading orders",
+    "deleteSuccess": "Order deleted successfully",
+    "deleteError": "Error deleting order",
+    "selectOrdersFirst": "Select orders first",
+    "confirmBulkDelete": "Delete {{count}} orders?",
+    "bulkDeleteSuccess": "Orders deleted successfully",
+    "bulkDeleteError": "Error deleting orders",
+    "searchPlaceholder": "Search by number, customer or email...",
+    "filterByStatus": "Filter by status",
+    "filterByPayment": "Filter by payment",
+    "filterByDelivery": "Filter by delivery",
+    "selectedCount": "{{count}} orders selected",
+    "deleteConfirmTitle": "Delete Order",
+    "deleteConfirmMessage": "Are you sure you want to delete this order? This action cannot be undone.",
+    "paymentUpdateSuccess": "Payment status updated",
+    "paymentUpdateError": "Error updating payment status",
+    "shippingUpdateSuccess": "Shipping status updated",
+    "shippingUpdateError": "Error updating shipping status",
+    "refundSuccess": "Refund processed successfully",
+    "refundError": "Error processing refund",
+    "exportingPDF": "Exporting to PDF...",
+    "metrics": {
+      "pendingPayment": "Pending Payment",
+      "completed": "Completed",
+      "refunded": "Refunded",
+      "failed": "Failed",
+      "todayOrders": "Today's Orders",
+      "thisMonth": "This Month",
+      "totalRevenue": "Total Revenue",
+      "avgOrderValue": "Average Order Value"
+    },
+    "table": {
+      "order": "Order",
+      "date": "Date",
+      "customer": "Customer",
+      "payment": "Payment",
+      "status": "Status",
+      "delivery": "Delivery",
+      "method": "Method",
+      "amount": "Amount"
+    },
+    "status": {
+      "order": {
+        "pending": "Pending",
+        "processing": "Processing",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "payment": {
+        "pending": "Pending",
+        "paid": "Paid",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "refunded": "Refunded",
+        "partialrefund": "Partial Refund"
+      },
+      "delivery": {
+        "pending": "Pending",
+        "readytopickup": "Ready to Pickup",
+        "dispatched": "Dispatched",
+        "outfordelivery": "Out for Delivery",
+        "delivered": "Delivered"
+      }
+    },
+    "actions": {
+      "title": "Actions",
+      "updatePayment": "Update Payment",
+      "updateShipping": "Update Shipping",
+      "processRefund": "Process Refund"
+    },
+    "export": {
+      "title": "Orders Report",
+      "orderNumber": "Order Number",
+      "date": "Date",
+      "customer": "Customer",
+      "email": "Email",
+      "orderStatus": "Order Status",
+      "paymentStatus": "Payment Status",
+      "deliveryStatus": "Delivery Status",
+      "amount": "Amount",
+      "noData": "No data to export",
+      "successCSV": "CSV file exported successfully",
+      "successExcel": "Excel file exported successfully",
+      "successPDF": "PDF file exported successfully",
+      "error": "Error exporting",
+      "exportDate": "Export Date"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "estimated": "Estimated",
+      "noEvents": "No events in timeline"
+    },
+    "customer": {
+      "title": "Customer Information",
+      "id": "Customer ID",
+      "viewProfile": "View Customer Profile"
+    },
+    "shipping": {
+      "address": "Shipping Address",
+      "tracking": "Tracking Number",
+      "trackPackage": "Track Package"
+    },
+    "billing": {
+      "address": "Billing Address"
+    },
+    "items": {
+      "title": "Order Items",
+      "count": "items"
+    },
+    "summary": {
+      "title": "Order Summary",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "tax": "Tax",
+      "shipping": "Shipping",
+      "total": "Total",
+      "paidWith": "Paid with"
+    },
+    "notes": "Notes",
+    "modals": {
+      "updatePayment": {
+        "title": "Update Payment Status",
+        "description": "Update the payment status for this order",
+        "status": "Payment Status",
+        "method": "Payment Method",
+        "notes": "Notes",
+        "notesPlaceholder": "Add notes about this update..."
+      },
+      "updateShipping": {
+        "title": "Update Shipping Status",
+        "description": "Update the shipping status for this order",
+        "status": "Delivery Status",
+        "tracking": "Tracking Number",
+        "trackingPlaceholder": "Enter tracking number",
+        "notes": "Notes",
+        "notesPlaceholder": "Add notes about this update..."
+      },
+      "refund": {
+        "title": "Process Refund",
+        "description": "Process a full or partial refund for this order",
+        "amount": "Refund Amount",
+        "maxAmount": "Maximum amount",
+        "reason": "Refund Reason",
+        "reasons": {
+          "customerRequest": "Customer Request",
+          "productIssue": "Product Issue",
+          "shippingIssue": "Shipping Issue",
+          "other": "Other"
+        },
+        "notes": "Notes",
+        "notesPlaceholder": "Additional details about the refund...",
+        "process": "Process Refund"
+      }
+    }
   }
 }

@@ -1,4 +1,43 @@
 {
+  "createOrder": "Crear Orden",
+  "createOrderSubtitle": "Complete los detalles de la nueva orden",
+  "selectCustomer": "Seleccionar Cliente",
+  "searchCustomer": "Buscar cliente...",
+  "addProducts": "Agregar Productos",
+  "searchProducts": "Buscar productos...",
+  "shippingAddress": "Dirección de Envío",
+  "billingPayment": "Facturación y Pago",
+  "reviewOrder": "Revisar Orden",
+  "orderSummary": "Resumen del Pedido",
+  "noProductsAdded": "No hay productos agregados",
+  "selectCustomerFirst": "Por favor seleccione un cliente primero",
+  "addProductsFirst": "Por favor agregue productos primero",
+  "createSuccess": "Orden creada exitosamente",
+  "createError": "Error al crear la orden",
+  "inStock": "En stock",
+  "street": "Calle",
+  "apartment": "Apartamento/Suite",
+  "city": "Ciudad",
+  "state": "Estado/Provincia",
+  "postalCode": "Código Postal",
+  "country": "País",
+  "phone": "Teléfono",
+  "sameAsShipping": "Igual que dirección de envío",
+  "paymentMethod": "Método de Pago",
+  "paymentNotes": "Notas de Pago",
+  "notesPlaceholder": "Agregar notas sobre esta orden...",
+  "discount": "Descuento",
+  "tax": "Impuestos",
+  "subtotal": "Subtotal",
+  "total": "Total",
+  "shippingCost": "Costo de Envío",
+  "notes": "Notas",
+  "payment": {
+    "card": "Tarjeta",
+    "cash": "Efectivo",
+    "transfer": "Transferencia",
+    "paypal": "PayPal"
+  },
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -1928,5 +1967,197 @@
     "thursday": "Jueves",
     "friday": "Viernes",
     "saturday": "Sábado"
+  },
+  "orders": {
+    "title": "Órdenes",
+    "subtitle": "Gestiona todas las órdenes de tu tienda",
+    "addOrder": "Nueva Orden",
+    "createOrder": "Crear Orden",
+    "createOrderSubtitle": "Complete los detalles de la nueva orden",
+    "selectCustomer": "Seleccionar Cliente",
+    "searchCustomer": "Buscar cliente...",
+    "addProducts": "Agregar Productos",
+    "searchProducts": "Buscar productos...",
+    "shippingAddress": "Dirección de Envío",
+    "billingPayment": "Facturación y Pago",
+    "reviewOrder": "Revisar Orden",
+    "orderSummary": "Resumen del Pedido",
+    "noProductsAdded": "No hay productos agregados",
+    "selectCustomerFirst": "Por favor seleccione un cliente primero",
+    "addProductsFirst": "Por favor agregue productos primero",
+    "createSuccess": "Orden creada exitosamente",
+    "createError": "Error al crear la orden",
+    "inStock": "En stock",
+    "street": "Calle",
+    "apartment": "Apartamento/Suite",
+    "city": "Ciudad",
+    "state": "Estado/Provincia",
+    "postalCode": "Código Postal",
+    "country": "País",
+    "phone": "Teléfono",
+    "sameAsShipping": "Igual que dirección de envío",
+    "paymentMethod": "Método de Pago",
+    "paymentNotes": "Notas de Pago",
+    "notesPlaceholder": "Agregar notas sobre esta orden...",
+    "discount": "Descuento",
+    "tax": "Impuestos",
+    "orderDetails": "Detalles de la Orden",
+    "placed": "Realizada el",
+    "noOrders": "No hay órdenes para mostrar",
+    "items": "artículos",
+    "fetchError": "Error al cargar las órdenes",
+    "deleteSuccess": "Orden eliminada exitosamente",
+    "deleteError": "Error al eliminar la orden",
+    "selectOrdersFirst": "Selecciona órdenes primero",
+    "confirmBulkDelete": "¿Eliminar {{count}} órdenes?",
+    "bulkDeleteSuccess": "Órdenes eliminadas exitosamente",
+    "bulkDeleteError": "Error al eliminar las órdenes",
+    "searchPlaceholder": "Buscar por número, cliente o email...",
+    "filterByStatus": "Filtrar por estado",
+    "filterByPayment": "Filtrar por pago",
+    "filterByDelivery": "Filtrar por entrega",
+    "selectedCount": "{{count}} órdenes seleccionadas",
+    "deleteConfirmTitle": "Eliminar Orden",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar esta orden? Esta acción no se puede deshacer.",
+    "paymentUpdateSuccess": "Estado de pago actualizado",
+    "paymentUpdateError": "Error al actualizar el estado de pago",
+    "shippingUpdateSuccess": "Estado de envío actualizado",
+    "shippingUpdateError": "Error al actualizar el estado de envío",
+    "refundSuccess": "Reembolso procesado exitosamente",
+    "refundError": "Error al procesar el reembolso",
+    "exportingPDF": "Exportando a PDF...",
+    "metrics": {
+      "pendingPayment": "Pago Pendiente",
+      "completed": "Completadas",
+      "refunded": "Reembolsadas",
+      "failed": "Fallidas",
+      "todayOrders": "Órdenes Hoy",
+      "thisMonth": "Este Mes",
+      "totalRevenue": "Ingresos Totales",
+      "avgOrderValue": "Valor Promedio"
+    },
+    "table": {
+      "order": "Orden",
+      "date": "Fecha",
+      "customer": "Cliente",
+      "payment": "Pago",
+      "status": "Estado",
+      "delivery": "Entrega",
+      "method": "Método",
+      "amount": "Monto"
+    },
+    "status": {
+      "order": {
+        "pending": "Pendiente",
+        "processing": "Procesando",
+        "completed": "Completada",
+        "cancelled": "Cancelada"
+      },
+      "payment": {
+        "pending": "Pendiente",
+        "paid": "Pagado",
+        "failed": "Fallido",
+        "cancelled": "Cancelado",
+        "refunded": "Reembolsado",
+        "partialrefund": "Reembolso Parcial"
+      },
+      "delivery": {
+        "pending": "Pendiente",
+        "readytopickup": "Listo para Recoger",
+        "dispatched": "Despachado",
+        "outfordelivery": "En Camino",
+        "delivered": "Entregado"
+      }
+    },
+    "actions": {
+      "title": "Acciones",
+      "updatePayment": "Actualizar Pago",
+      "updateShipping": "Actualizar Envío",
+      "processRefund": "Procesar Reembolso"
+    },
+    "export": {
+      "title": "Reporte de Órdenes",
+      "orderNumber": "Número de Orden",
+      "date": "Fecha",
+      "customer": "Cliente",
+      "email": "Email",
+      "orderStatus": "Estado de Orden",
+      "paymentStatus": "Estado de Pago",
+      "deliveryStatus": "Estado de Entrega",
+      "amount": "Monto",
+      "noData": "No hay datos para exportar",
+      "successCSV": "Archivo CSV exportado exitosamente",
+      "successExcel": "Archivo Excel exportado exitosamente",
+      "successPDF": "Archivo PDF exportado exitosamente",
+      "error": "Error al exportar",
+      "exportDate": "Fecha de Exportación"
+    },
+    "timeline": {
+      "title": "Línea de Tiempo",
+      "estimated": "Estimado",
+      "noEvents": "No hay eventos en la línea de tiempo"
+    },
+    "customer": {
+      "title": "Información del Cliente",
+      "id": "ID Cliente",
+      "viewProfile": "Ver Perfil del Cliente"
+    },
+    "shipping": {
+      "address": "Dirección de Envío",
+      "tracking": "Número de Seguimiento",
+      "trackPackage": "Rastrear Paquete"
+    },
+    "billing": {
+      "address": "Dirección de Facturación"
+    },
+    "items": {
+      "title": "Artículos del Pedido",
+      "count": "artículos"
+    },
+    "summary": {
+      "title": "Resumen del Pedido",
+      "subtotal": "Subtotal",
+      "discount": "Descuento",
+      "tax": "Impuestos",
+      "shipping": "Envío",
+      "total": "Total",
+      "paidWith": "Pagado con"
+    },
+    "notes": "Notas",
+    "modals": {
+      "updatePayment": {
+        "title": "Actualizar Estado de Pago",
+        "description": "Actualiza el estado del pago de esta orden",
+        "status": "Estado de Pago",
+        "method": "Método de Pago",
+        "notes": "Notas",
+        "notesPlaceholder": "Agregar notas sobre esta actualización..."
+      },
+      "updateShipping": {
+        "title": "Actualizar Estado de Envío",
+        "description": "Actualiza el estado del envío de esta orden",
+        "status": "Estado de Entrega",
+        "tracking": "Número de Seguimiento",
+        "trackingPlaceholder": "Ingresa el número de seguimiento",
+        "notes": "Notas",
+        "notesPlaceholder": "Agregar notas sobre esta actualización..."
+      },
+      "refund": {
+        "title": "Procesar Reembolso",
+        "description": "Procesa un reembolso total o parcial para esta orden",
+        "amount": "Monto a Reembolsar",
+        "maxAmount": "Monto máximo",
+        "reason": "Razón del Reembolso",
+        "reasons": {
+          "customerRequest": "Solicitud del Cliente",
+          "productIssue": "Problema con el Producto",
+          "shippingIssue": "Problema de Envío",
+          "other": "Otro"
+        },
+        "notes": "Notas",
+        "notesPlaceholder": "Detalles adicionales sobre el reembolso...",
+        "process": "Procesar Reembolso"
+      }
+    }
   }
 }

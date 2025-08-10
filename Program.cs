@@ -83,6 +83,7 @@ builder.Services.AddScoped<INavigationMenuService, NavigationMenuService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 // Servicios de pagos
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
