@@ -1,26 +1,39 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Globalization;
+using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using WebsiteBuilderAPI.DTOs;
 using WebsiteBuilderAPI.Services;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace WebsiteBuilderAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class OrdersController : ControllerBase
+    public partial class OrdersController : ControllerBase
     {
         private readonly IOrderService _orderService;
         private readonly ILogger<OrdersController> _logger;
+        private readonly ICompanyService _companyService;
+        private readonly IWebHostEnvironment _environment;
 
-        public OrdersController(IOrderService orderService, ILogger<OrdersController> logger)
+        public OrdersController(
+            IOrderService orderService, 
+            ILogger<OrdersController> logger,
+            ICompanyService companyService,
+            IWebHostEnvironment environment)
         {
             _orderService = orderService;
             _logger = logger;
+            _companyService = companyService;
+            _environment = environment;
         }
 
         /// <summary>
@@ -108,7 +121,7 @@ namespace WebsiteBuilderAPI.Controllers
 
                 var order = await _orderService.CreateAsync(companyId, dto);
                 
-                _logger.LogInformation($"Order {order.OrderNumber} created successfully");
+                _logger.LogInformation($"Order {order.Id} created successfully");
                 return CreatedAtAction(nameof(GetById), new { id = order.Id }, order);
             }
             catch (InvalidOperationException ex)
@@ -146,6 +159,10 @@ namespace WebsiteBuilderAPI.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
             catch (Exception ex)
             {

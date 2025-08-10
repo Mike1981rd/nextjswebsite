@@ -70,6 +70,41 @@ WebsiteBuilderAPI/
 └── CLAUDE.md          # Este archivo - Configuración del comando
 ```
 
+### ⚠️ REGLA CRÍTICA DE TRADUCCIONES i18n
+
+**IMPORTANTE**: Al implementar CUALQUIER módulo nuevo o modificar uno existente:
+
+1. **SIEMPRE** agregar todas las traducciones necesarias a AMBOS archivos:
+   - `/src/lib/i18n/translations/es.json`
+   - `/src/lib/i18n/translations/en.json`
+
+2. **NUNCA** crear secciones duplicadas del mismo módulo en los JSON
+   - Si ya existe una sección (ej: "customers"), agregar las claves ahí
+   - NO crear una segunda sección "customers" más abajo
+
+3. **VERIFICAR** antes de implementar:
+   - Buscar si ya existe la sección: `grep '"moduleName":' es.json`
+   - Si existe, agregar las claves faltantes en esa sección
+   - Si no existe, crear UNA SOLA sección nueva
+
+4. **ESTRUCTURA CORRECTA**:
+   ```json
+   "moduleName": {
+     "title": "Título",
+     "subtitle": "Subtítulo",
+     "table": {
+       "column1": "COLUMNA 1",
+       "column2": "COLUMNA 2"
+     },
+     "status": {
+       "active": "Activo",
+       "inactive": "Inactivo"
+     }
+   }
+   ```
+
+5. **DOCUMENTACIÓN**: Ver `/docs/implementations/features/2025-08-i18n-system.md`
+
 ### 🚫 REGLAS CRÍTICAS DE EJECUCIÓN
 
 **NUNCA EJECUTAR EL FRONTEND DESDE WSL/LINUX**

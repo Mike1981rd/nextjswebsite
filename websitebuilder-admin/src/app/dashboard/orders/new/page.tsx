@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/contexts/I18nContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar } from '@/components/ui/Avatar';
 import { Separator } from '@/components/ui/separator';
 import { 
   ArrowLeft,
@@ -172,21 +172,32 @@ export default function NewOrderPage() {
 
   // Search customers with debounce
   useEffect(() => {
+    // Don't search if a customer is already selected and the search matches their name
+    if (selectedCustomer && customerSearch === selectedCustomer.fullName) {
+      return;
+    }
+    
     const timer = setTimeout(() => {
-      if (customerSearch.length > 0) {
-        searchCustomers();
+      searchCustomers();
+      if (customerSearch.length > 0 && !selectedCustomer) {
         setShowCustomerDropdown(true);
-      } else {
-        setCustomers([]);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [customerSearch]);
+  }, [customerSearch, selectedCustomer]);
+
+  // Load initial customers when dropdown opens
+  useEffect(() => {
+    if (showCustomerDropdown && customers.length === 0 && customerSearch.length === 0) {
+      searchCustomers();
+    }
+  }, [showCustomerDropdown]);
 
   const searchCustomers = async () => {
     try {
       setLoadingCustomers(true);
-      const response = await fetch(`http://localhost:5266/api/customers?search=${customerSearch}&size=10`, {
+      const searchParam = customerSearch ? `search=${customerSearch}&` : '';
+      const response = await fetch(`http://localhost:5266/api/customers?${searchParam}size=10`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
@@ -205,20 +216,26 @@ export default function NewOrderPage() {
   // Search products with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
+      searchProducts();
       if (productSearch.length > 0) {
-        searchProducts();
         setShowProductDropdown(true);
-      } else {
-        setProducts([]);
       }
     }, 300);
     return () => clearTimeout(timer);
   }, [productSearch]);
 
+  // Load initial products when dropdown opens
+  useEffect(() => {
+    if (showProductDropdown && products.length === 0 && productSearch.length === 0) {
+      searchProducts();
+    }
+  }, [showProductDropdown]);
+
   const searchProducts = async () => {
     try {
       setLoadingProducts(true);
-      const response = await fetch(`http://localhost:5266/api/products?search=${productSearch}&pageSize=10`, {
+      const searchParam = productSearch ? `search=${productSearch}&` : '';
+      const response = await fetch(`http://localhost:5266/api/products?${searchParam}pageSize=10`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
@@ -236,8 +253,9 @@ export default function NewOrderPage() {
 
   const selectCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
-    setCustomerSearch(customer.fullName);
+    setCustomerSearch(''); // Clear search instead of setting to customer name
     setShowCustomerDropdown(false);
+    setCustomers([]); // Clear the customer list
     
     // Auto-fill addresses if available
     if (customer.defaultShippingAddress) {
@@ -250,6 +268,11 @@ export default function NewOrderPage() {
 
   const addProduct = (product: Product) => {
     const existingItem = orderItems.find(item => item.productId === product.id);
+    
+    // Close dropdown and clear search
+    setProductSearch('');
+    setShowProductDropdown(false);
+    setProducts([]);
     
     if (existingItem) {
       updateQuantity(product.id, existingItem.quantity + 1);
@@ -465,13 +488,17 @@ export default function NewOrderPage() {
                         value={customerSearch}
                         onChange={(e) => setCustomerSearch(e.target.value)}
                         onFocus={() => setShowCustomerDropdown(true)}
+                        onClick={() => setShowCustomerDropdown(true)}
                         className="w-full pl-10 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                       />
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <ChevronDown 
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+                        onClick={() => setShowCustomerDropdown(!showCustomerDropdown)}
+                      />
                     </div>
 
                     {/* Dropdown Results */}
-                    {(showCustomerDropdown || customerSearch.length > 0) && (
+                    {showCustomerDropdown && (
                       <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-64 overflow-y-auto">
                         {loadingCustomers ? (
                           <div className="p-4 text-center text-gray-500 dark:text-gray-400">
@@ -484,12 +511,12 @@ export default function NewOrderPage() {
                               onClick={() => selectCustomer(customer)}
                               className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left border-b border-gray-100 dark:border-gray-700 last:border-0"
                             >
-                              <Avatar className="h-10 w-10 flex-shrink-0">
-                                <AvatarImage src={customer.avatar} />
-                                <AvatarFallback className="bg-primary/10 text-primary">
-                                  {getInitials(customer.fullName)}
-                                </AvatarFallback>
-                              </Avatar>
+                              <Avatar 
+                                src={customer.avatar} 
+                                name={customer.fullName}
+                                size="md"
+                                className="h-10 w-10 flex-shrink-0"
+                              />
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-gray-900 dark:text-white truncate">
                                   {customer.fullName}
@@ -519,12 +546,12 @@ export default function NewOrderPage() {
                     <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={selectedCustomer.avatar} />
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {getInitials(selectedCustomer.fullName)}
-                            </AvatarFallback>
-                          </Avatar>
+                          <Avatar 
+                            src={selectedCustomer.avatar} 
+                            name={selectedCustomer.fullName}
+                            size="lg"
+                            className="h-12 w-12"
+                          />
                           <div>
                             <p className="font-medium text-gray-900 dark:text-white">
                               {selectedCustomer.fullName}
@@ -587,13 +614,17 @@ export default function NewOrderPage() {
                         value={productSearch}
                         onChange={(e) => setProductSearch(e.target.value)}
                         onFocus={() => setShowProductDropdown(true)}
+                        onClick={() => setShowProductDropdown(true)}
                         className="w-full pl-10 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
                       />
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <ChevronDown 
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+                        onClick={() => setShowProductDropdown(!showProductDropdown)}
+                      />
                     </div>
 
                     {/* Product Dropdown */}
-                    {(showProductDropdown || productSearch.length > 0) && (
+                    {showProductDropdown && (
                       <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-64 overflow-y-auto">
                         {loadingProducts ? (
                           <div className="p-4 text-center text-gray-500 dark:text-gray-400">
@@ -914,11 +945,15 @@ export default function NewOrderPage() {
                       {['card', 'cash', 'transfer', 'paypal'].map(method => (
                         <button
                           key={method}
-                          onClick={() => setPaymentMethod(method)}
-                          className={`p-3 rounded-lg border-2 transition-all ${
+                          type="button"
+                          onClick={() => {
+                            console.log('Payment method selected:', method);
+                            setPaymentMethod(method);
+                          }}
+                          className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${
                             paymentMethod === method 
-                              ? 'border-primary bg-primary/5 dark:bg-primary/10' 
-                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                              ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 ring-2 ring-orange-500/50' 
+                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-800'
                           }`}
                         >
                           <div className="text-2xl mb-1">
@@ -927,7 +962,11 @@ export default function NewOrderPage() {
                             {method === 'transfer' && '🏦'}
                             {method === 'paypal' && '🅿️'}
                           </div>
-                          <p className="text-xs capitalize text-gray-700 dark:text-gray-300">
+                          <p className={`text-xs capitalize ${
+                            paymentMethod === method
+                              ? 'text-orange-600 dark:text-orange-400 font-semibold'
+                              : 'text-gray-700 dark:text-gray-300'
+                          }`}>
                             {t(`payment.${method}`) || method}
                           </p>
                         </button>

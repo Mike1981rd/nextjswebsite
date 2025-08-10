@@ -770,7 +770,7 @@ export default function CustomerOverviewTab({
               {/* Currency */}
               <div className="w-11/12 md:w-full">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  {t('customers.fields.currency', 'Preferred Currency')}
+                  {t('customers.fields.preferredCurrency', 'Preferred Currency')}
                 </label>
                 {isEditing ? (
                   <select

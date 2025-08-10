@@ -82,7 +82,7 @@ export function CustomersList() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm(t('customers.confirmDelete', 'Are you sure you want to delete this customer?'))) {
+    if (confirm(t('customers.confirmDelete'))) {
       try {
         await customerAPI.deleteCustomer(id);
         await fetchCustomers();
@@ -95,8 +95,8 @@ export function CustomersList() {
   const handleToggleStatus = async (customer: Customer) => {
     const newStatus = customer.status === 'Active' ? 'Inactive' : 'Active';
     const confirmMessage = customer.status === 'Active' 
-      ? t('customers.confirmDeactivate', 'Are you sure you want to deactivate this customer?')
-      : t('customers.confirmActivate', 'Are you sure you want to activate this customer?');
+      ? t('customers.confirmDeactivate')
+      : t('customers.confirmActivate');
     
     if (confirm(confirmMessage)) {
       try {
@@ -164,10 +164,10 @@ export function CustomersList() {
       <div className="flex flex-col sm:flex-row justify-between items-center sm:items-center gap-4 mb-6">
         <div className="text-center sm:text-left">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {t('customers.title', 'All Customers')}
+            {t('customers.title')}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {t('customers.subtitle', 'Manage your customer base')}
+            {t('customers.subtitle')}
           </p>
         </div>
         
@@ -177,7 +177,7 @@ export function CustomersList() {
           style={{ backgroundColor: primaryColor }}
         >
           <Plus className="w-4 h-4" />
-          {t('customers.addCustomer', 'Add Customer')}
+          {t('customers.addCustomer')}
         </button>
       </div>
 
@@ -190,7 +190,7 @@ export function CustomersList() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder={t('customers.searchPlaceholder', 'Search Order')}
+                placeholder={t('customers.searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2"
                 style={{ '--tw-ring-color': primaryColor } as any}
                 value={filters.search}
@@ -224,7 +224,7 @@ export function CustomersList() {
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <Download className="w-4 h-4" />
-              {t('common.export', 'Export')}
+              {t('common.export')}
             </button>
             
             {showExportMenu && (
@@ -270,22 +270,22 @@ export function CustomersList() {
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('customers.table.customer', 'CUSTOMER')}
+                  {t('customers.table.customer')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('customers.table.customerId', 'CUSTOMER ID')}
+                  {t('customers.table.customerId')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('customers.table.country', 'COUNTRY')}
+                  {t('customers.table.country')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('customers.table.orders', 'ORDER')}
+                  {t('customers.table.orders')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('customers.table.totalSpent', 'TOTAL SPENT')}
+                  {t('customers.table.totalSpent')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('customers.table.actions', 'ACTIONS')}
+                  {t('customers.table.actions')}
                 </th>
               </tr>
             </thead>
@@ -293,13 +293,13 @@ export function CustomersList() {
               {loading ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                    {t('common.loading', 'Loading...')}
+                    {t('common.loading')}
                   </td>
                 </tr>
               ) : customers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                    {t('customers.noResults', 'No customers found')}
+                    {t('customers.noResults')}
                   </td>
                 </tr>
               ) : (
@@ -358,14 +358,14 @@ export function CustomersList() {
                         <button
                           onClick={() => router.push(`/dashboard/clientes/${customer.id}`)}
                           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
-                          title={t('common.edit', 'Edit')}
+                          title={t('common.edit')}
                         >
                           <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(customer)}
                           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
-                          title={customer.status === 'Active' ? t('customers.deactivate', 'Deactivate') : t('customers.activate', 'Activate')}
+                          title={customer.status === 'Active' ? t('customers.deactivate') : t('customers.activate')}
                         >
                           {customer.status === 'Active' ? (
                             <UserX className="w-4 h-4 text-orange-500" />
@@ -386,11 +386,11 @@ export function CustomersList() {
         <div className="sm:hidden">
           {loading ? (
             <div className="p-4 text-center text-gray-500">
-              {t('common.loading', 'Loading...')}
+              {t('common.loading')}
             </div>
           ) : customers.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
-              {t('customers.noResults', 'No customers found')}
+              {t('customers.noResults')}
             </div>
           ) : (
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -439,21 +439,21 @@ export function CustomersList() {
                   
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <span className="text-gray-500 dark:text-gray-400">{t('customers.email', 'Email')}: </span>
+                      <span className="text-gray-500 dark:text-gray-400">{t('customers.email')}: </span>
                       <span className="text-gray-900 dark:text-white">{customer.email}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 dark:text-gray-400">{t('customers.country', 'Country')}: </span>
+                      <span className="text-gray-500 dark:text-gray-400">{t('customers.country')}: </span>
                       <span className="text-gray-900 dark:text-white">
                         {getCountryFlag(customer.country)} {customer.country}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500 dark:text-gray-400">{t('customers.totalOrders', 'Orders')}: </span>
+                      <span className="text-gray-500 dark:text-gray-400">{t('customers.totalOrders')}: </span>
                       <span className="text-gray-900 dark:text-white">{customer.totalOrders}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 dark:text-gray-400">{t('customers.spent', 'Spent')}: </span>
+                      <span className="text-gray-500 dark:text-gray-400">{t('customers.spent')}: </span>
                       <span className="text-gray-900 dark:text-white">${customer.totalSpent.toFixed(2)}</span>
                     </div>
                   </div>
@@ -467,7 +467,7 @@ export function CustomersList() {
         <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              {t('common.showing', 'Showing')} {((filters.page! - 1) * filters.size!) + 1} {t('common.to', 'to')} {Math.min(filters.page! * filters.size!, totalCount)} {t('common.of', 'of')} {totalCount} {t('common.entries', 'entries')}
+              {t('common.showing')} {((filters.page! - 1) * filters.size!) + 1} {t('common.to')} {Math.min(filters.page! * filters.size!, totalCount)} {t('common.of')} {totalCount} {t('common.entries')}
             </p>
             
             <div className="flex items-center gap-2">

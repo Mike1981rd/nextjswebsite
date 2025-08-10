@@ -1,18 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/contexts/I18nContext';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/Avatar';
 import { 
   Eye, 
-  MoreVertical, 
   Edit, 
-  Trash2,
-  CreditCard,
-  Truck,
-  RotateCcw
+  Trash2
 } from 'lucide-react';
 
 interface Order {
@@ -42,43 +38,6 @@ interface OrdersTableProps {
   isLoading?: boolean;
   onDelete?: (id: number) => void;
   onStatusUpdate?: (id: number, type: string) => void;
-}
-
-// Simple Dropdown Component
-function Dropdown({ 
-  children, 
-  trigger 
-}: { 
-  children: React.ReactNode; 
-  trigger: React.ReactNode;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <div onClick={() => setIsOpen(!isOpen)}>
-        {trigger}
-      </div>
-      {isOpen && (
-        <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5">
-          <div className="py-1" onClick={() => setIsOpen(false)}>
-            {children}
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 export function OrdersTable({ 
@@ -256,12 +215,12 @@ export function OrdersTable({
               </td>
               <td className="px-4 py-4 whitespace-nowrap">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={order.customerAvatar} alt={order.customerName} />
-                    <AvatarFallback className="text-xs">
-                      {order.customerName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <Avatar 
+                    src={order.customerAvatar} 
+                    name={order.customerName}
+                    size="sm"
+                    className="h-8 w-8"
+                  />
                   <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {order.customerName}
@@ -295,76 +254,17 @@ export function OrdersTable({
                 {formatCurrency(order.totalAmount, order.currency)}
               </td>
               <td className="px-4 py-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
-                <Dropdown
-                  trigger={
-                    <Button variant="ghost" size="sm">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  }
-                >
-                  <button
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => router.push(`/dashboard/orders/${order.id}`)}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                    title={t('common.view')}
                   >
-                    <Eye className="mr-2 h-4 w-4" />
-                    {t('common.view')}
-                  </button>
-                  
-                  {order.canEdit && (
-                    <button
-                      onClick={() => router.push(`/dashboard/orders/${order.id}/edit`)}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      {t('common.edit')}
-                    </button>
-                  )}
-
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-
-                  {order.paymentStatus === 'Pending' && (
-                    <button
-                      onClick={() => onStatusUpdate?.(order.id, 'payment')}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      {t('orders.actions.updatePayment')}
-                    </button>
-                  )}
-
-                  {order.deliveryStatus !== 'Delivered' && (
-                    <button
-                      onClick={() => onStatusUpdate?.(order.id, 'shipping')}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      <Truck className="mr-2 h-4 w-4" />
-                      {t('orders.actions.updateShipping')}
-                    </button>
-                  )}
-
-                  {order.canRefund && (
-                    <button
-                      onClick={() => onStatusUpdate?.(order.id, 'refund')}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      <RotateCcw className="mr-2 h-4 w-4" />
-                      {t('orders.actions.processRefund')}
-                    </button>
-                  )}
-
-                  {order.canDelete && (
-                    <>
-                      <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                      <button
-                        onClick={() => onDelete?.(order.id)}
-                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t('common.delete')}
-                      </button>
-                    </>
-                  )}
-                </Dropdown>
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </div>
               </td>
             </tr>
           ))}

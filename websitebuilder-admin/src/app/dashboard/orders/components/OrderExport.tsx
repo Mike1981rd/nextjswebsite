@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Download, FileText, FileSpreadsheet, File, X } from 'lucide-react';
 
 interface Order {

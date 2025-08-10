@@ -43,6 +43,10 @@ try
 {
     Log.Information("🚀 Starting WebsiteBuilder API Application");
     
+    // Configurar el AppContext para manejar fechas UTC con PostgreSQL
+    AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", false);
+    AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", false);
+    
     var builder = WebApplication.CreateBuilder(args);
 
     // Usar Serilog en lugar del logger por defecto

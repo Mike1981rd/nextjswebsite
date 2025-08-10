@@ -37,7 +37,8 @@ class FrontendLogger {
   constructor() {
     this.originalConsoleError = console.error;
     this.originalConsoleWarn = console.warn;
-    this.originalFetch = window.fetch;
+    // Don't access window.fetch in constructor - it might not be available (SSR)
+    this.originalFetch = typeof window !== 'undefined' ? window.fetch.bind(window) : fetch;
   }
 
   /**
@@ -45,6 +46,15 @@ class FrontendLogger {
    */
   init(): void {
     if (this.isInitialized) return;
+    
+    // Save the original fetch if we haven't already (in case init is called multiple times)
+    if (typeof window !== 'undefined' && window.fetch !== this.originalFetch) {
+      // Check if fetch has already been intercepted (has _url property from XMLHttpRequest intercept)
+      const currentFetch = window.fetch;
+      if (!currentFetch.toString().includes('originalFetch')) {
+        this.originalFetch = currentFetch.bind(window);
+      }
+    }
     
     this.interceptConsole();
     this.interceptNetworkRequests();
@@ -60,13 +70,34 @@ class FrontendLogger {
    * Intercept console.error and console.warn
    */
   private interceptConsole(): void {
-    // Intercept console.error
+    // Intercept console.error (including React warnings in development)
     console.error = (...args: any[]) => {
       this.originalConsoleError.apply(console, args);
-      this.log('error', 'console', this.formatConsoleMessage(args), {
-        args,
-        stack: new Error().stack
-      });
+      
+      // Check if it's a React warning (they use console.error in development)
+      const message = this.formatConsoleMessage(args);
+      const isReactWarning = message.includes('Warning:') || 
+                            message.includes('React.') ||
+                            message.includes('ReactDOM.') ||
+                            message.includes('Invalid prop') ||
+                            message.includes('Failed prop type') ||
+                            message.includes('type is invalid');
+      
+      // Always log React warnings, even in batches
+      if (isReactWarning) {
+        this.log('warn', 'react-warning', message, {
+          args,
+          stack: new Error().stack,
+          isReactWarning: true
+        });
+        // Flush React warnings immediately for debugging
+        this.flush();
+      } else {
+        this.log('error', 'console', message, {
+          args,
+          stack: new Error().stack
+        });
+      }
     };
 
     // Intercept console.warn
@@ -278,7 +309,7 @@ class FrontendLogger {
 
     try {
       // Use original fetch to avoid recursive logging
-      await this.originalFetch(`${this.API_URL}/api/logs/frontend`, {
+      await this.originalFetch(`${this.API_URL}/logs/frontend`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -353,8 +384,9 @@ class FrontendLogger {
 const logger = new FrontendLogger();
 
 // Auto-initialize if in browser
-if (typeof window !== 'undefined') {
-  logger.init();
-}
+// Commented out - initialization is handled by LoggerInitializer component
+// if (typeof window !== 'undefined') {
+//   logger.init();
+// }
 
 export default logger;

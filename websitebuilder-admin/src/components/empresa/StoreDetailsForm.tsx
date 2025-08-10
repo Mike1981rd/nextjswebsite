@@ -327,10 +327,10 @@ export function StoreDetailsForm() {
                 style={inputFocusStyle}
               >
                 <Select.Value>
-                  {watch('country') ? (
+                  {watch('country') && countries[watch('country') as keyof typeof countries] ? (
                     <div className="flex items-center gap-2">
                       <CountryFlag code={countries[watch('country') as keyof typeof countries].flag} />
-                      <span>{t(`countries.${watch('country')}`, countries[watch('country') as keyof typeof countries].name)}</span>
+                      <span>{countries[watch('country') as keyof typeof countries].name}</span>
                     </div>
                   ) : (
                     <span className="text-gray-500">{t('empresa.billing.countryPlaceholder', 'Country/region')}</span>
@@ -355,7 +355,7 @@ export function StoreDetailsForm() {
                             className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
                           >
                             <CountryFlag code={country.flag} />
-                            <Select.ItemText>{t(`countries.${code}`, country.name)}</Select.ItemText>
+                            <Select.ItemText>{country.name}</Select.ItemText>
                             <Select.ItemIndicator className="ml-auto">
                               <Check className="h-4 w-4" style={{ color: primaryColor }} />
                             </Select.ItemIndicator>
@@ -376,7 +376,7 @@ export function StoreDetailsForm() {
                             className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
                           >
                             <CountryFlag code={country.flag} />
-                            <Select.ItemText>{t(`countries.${code}`, country.name)}</Select.ItemText>
+                            <Select.ItemText>{country.name}</Select.ItemText>
                             <Select.ItemIndicator className="ml-auto">
                               <Check className="h-4 w-4" style={{ color: primaryColor }} />
                             </Select.ItemIndicator>
@@ -397,7 +397,7 @@ export function StoreDetailsForm() {
                             className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
                           >
                             <CountryFlag code={country.flag} />
-                            <Select.ItemText>{t(`countries.${code}`, country.name)}</Select.ItemText>
+                            <Select.ItemText>{country.name}</Select.ItemText>
                             <Select.ItemIndicator className="ml-auto">
                               <Check className="h-4 w-4" style={{ color: primaryColor }} />
                             </Select.ItemIndicator>
@@ -418,7 +418,7 @@ export function StoreDetailsForm() {
                             className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
                           >
                             <CountryFlag code={country.flag} />
-                            <Select.ItemText>{t(`countries.${code}`, country.name)}</Select.ItemText>
+                            <Select.ItemText>{country.name}</Select.ItemText>
                             <Select.ItemIndicator className="ml-auto">
                               <Check className="h-4 w-4" style={{ color: primaryColor }} />
                             </Select.ItemIndicator>
@@ -439,7 +439,7 @@ export function StoreDetailsForm() {
                             className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
                           >
                             <CountryFlag code={country.flag} />
-                            <Select.ItemText>{t(`countries.${code}`, country.name)}</Select.ItemText>
+                            <Select.ItemText>{country.name}</Select.ItemText>
                             <Select.ItemIndicator className="ml-auto">
                               <Check className="h-4 w-4" style={{ color: primaryColor }} />
                             </Select.ItemIndicator>

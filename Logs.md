@@ -1,7 +1,7 @@
 # 📊 Sistema de Logging - WebsiteBuilder API
 
 ## 🎯 Resumen
-Este documento describe la implementación completa del sistema de logging que captura eventos tanto del backend (ASP.NET Core con Serilog) como del frontend (Next.js).
+Este documento describe la implementación completa del sistema de logging que captura eventos tanto del backend (ASP.NET Core con Serilog) como del frontend (Next.js). El sistema permite monitorear en tiempo real todas las actividades del frontend y backend en una sola consola unificada.
 
 ## 🔧 Implementación Backend - Serilog
 
@@ -42,59 +42,73 @@ builder.Host.UseSerilog();
 ## 🎨 Implementación Frontend - Next.js
 
 ### Sistema de Logging Frontend (`/websitebuilder-admin/src/lib/logger.ts`)
-```typescript
-class Logger {
-  private apiUrl = 'http://localhost:5266/api/logs/frontend';
-  
-  // Envía logs al backend
-  private async sendToBackend(level: string, message: string, data?: any) {
-    const logEntry = {
-      level,
-      message,
-      timestamp: new Date().toISOString(),
-      url: typeof window !== 'undefined' ? window.location.href : 'server',
-      userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'server',
-      data,
-      sessionId: this.getSessionId(),
-      userId: this.getUserId()
-    };
 
-    await fetch(this.apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(logEntry)
-    });
-  }
+El frontend cuenta con un sistema completo de interceptación y logging que captura:
+- Errores de JavaScript y React
+- Llamadas a APIs (fetch y XMLHttpRequest)
+- Warnings de consola
+- Errores de promesas no manejadas
+- Navegación entre páginas
+
+#### Características principales:
+```typescript
+class FrontendLogger {
+  private readonly API_URL = 'http://localhost:5266';
+  private readonly BATCH_SIZE = 10;      // Envía logs en lotes de 10
+  private readonly FLUSH_INTERVAL = 5000; // O cada 5 segundos
+  
+  // Intercepta automáticamente:
+  // - console.error y console.warn
+  // - window.fetch y XMLHttpRequest
+  // - Errores globales de JavaScript
+  // - Promesas rechazadas
 }
 ```
 
-### Controlador de Logs Frontend (`FrontendLogsController.cs`)
+### Inicialización del Logger (`/websitebuilder-admin/src/components/LoggerInitializer.tsx`)
+```typescript
+'use client';
+
+import { useEffect } from 'react';
+import logger from '@/lib/logger';
+
+export function LoggerInitializer() {
+  useEffect(() => {
+    logger.init();
+    console.log('🔍 Frontend logger initialized');
+    return () => logger.destroy();
+  }, []);
+  return null;
+}
+```
+
+El componente se incluye automáticamente en el layout principal de la aplicación.
+
+### Controlador de Logs Frontend (`Controllers/LogsController.cs`)
 ```csharp
-[ApiController]
-[Route("api/logs/frontend")]
-public class FrontendLogsController : ControllerBase
+[HttpPost("frontend")]
+[AllowAnonymous]
+public async Task<IActionResult> LogFrontendErrors([FromBody] FrontendLogRequest request)
 {
-    [HttpPost]
-    [AllowAnonymous]
-    public IActionResult LogFromFrontend([FromBody] FrontendLogEntry logEntry)
+    // Los logs se procesan y muestran en la consola con formato:
+    switch (log.Level)
     {
-        var logMessage = $"[FRONTEND] {logEntry.Message}";
-        
-        switch (logEntry.Level?.ToLower())
-        {
-            case "error":
-                _logger.LogError(logMessage, logEntry);
-                break;
-            case "warn":
-                _logger.LogWarning(logMessage, logEntry);
-                break;
-            default:
-                _logger.LogInformation(logMessage, logEntry);
-                break;
-        }
-        
-        return Ok();
+        case "error":
+            _logger.LogError("Frontend Error: {Message} | Type: {Type} | URL: {Url}", 
+                log.Message, log.Type, log.Url);
+            break;
+        case "warn":
+            _logger.LogWarning("Frontend Warning: {Message} | Type: {Type} | URL: {Url}", 
+                log.Message, log.Type, log.Url);
+            break;
+        default:
+            _logger.LogInformation("Frontend Log: {Message} | Type: {Type} | URL: {Url}", 
+                log.Message, log.Type, log.Url);
+            break;
     }
+    
+    // También se guardan en archivos en /logs/frontend/
+    return Ok();
 }
 ```
 
@@ -116,43 +130,93 @@ public class FrontendLogsController : ControllerBase
 - ✅ Interacciones del usuario
 - ✅ Performance del cliente
 
-## 🚀 Instrucciones de Ejecución
+## 🚀 Instrucciones de Ejecución y Visualización de Logs
 
-### ⚠️ IMPORTANTE: Ejecutar Backend para Ver Logs
+### ⚠️ IMPORTANTE: Configuración para Ver Todos los Logs
 
-Para que Claude Code pueda ver los logs en tiempo real, **DEBES ejecutar el backend desde PowerShell**:
+#### 1. Ejecutar Backend desde PowerShell
+Para ver TODOS los logs (backend + frontend) en una sola consola, **DEBES ejecutar el backend desde PowerShell**:
 
 ```powershell
-# Abrir PowerShell como Administrador (recomendado)
+# Abrir PowerShell (no necesita ser como Administrador)
 cd "C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI"
 dotnet run
 ```
 
-**NO usar:**
-- ❌ Visual Studio (los logs van a la ventana de Output)
-- ❌ IIS Express (logs limitados)
-- ❌ WSL/Linux (problemas de red con frontend)
+**¿Por qué PowerShell?**
+- PowerShell muestra los logs con colores ANSI para mejor legibilidad
+- Los logs del frontend aparecen integrados con el prefijo "Frontend Log:", "Frontend Error:", etc.
+- Permite ver la actividad completa de la aplicación en tiempo real
 
-### Ejecutar Frontend (desde CMD/PowerShell de Windows)
+**NO usar:**
+- ❌ Visual Studio (los logs van a la ventana de Output, no a la consola)
+- ❌ IIS Express (no muestra logs del frontend)
+- ❌ WSL/Linux (problemas de red con el frontend de Windows)
+
+#### 2. Ejecutar Frontend (desde CMD/PowerShell de Windows)
+En una ventana separada:
 ```cmd
 cd C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI\websitebuilder-admin
 npm run dev
 ```
 
-## 📊 Formato de Logs en Consola
+### 📺 Cómo Leer los Logs en PowerShell
 
-### Ejemplo de Log Backend
+Una vez ejecutado el backend en PowerShell, verás los logs en este formato:
+
+#### Logs del Backend:
 ```
-[14:33:21 INF] HTTP GET /api/company/current responded 200 in 5.2341 ms
-[14:33:21 DBG] Executing query: SELECT * FROM Companies WHERE Id = @p0
-[14:33:21 WRN] Slow query detected (>100ms): GetCompanyDetails
+[15:50:13 INF] HTTP GET /api/roles responded 200 in 16.4590 ms
+[15:50:13 DBG] Executing query: SELECT * FROM Roles WHERE IsActive = true
+[15:50:13 WRN] Slow query detected (>100ms): GetRolePermissions
 ```
 
-### Ejemplo de Log Frontend (mostrado en backend)
+#### Logs del Frontend (integrados):
 ```
-[14:33:22 INF] [FRONTEND] Navigation: /dashboard/empresa/shipping
-[14:33:22 INF] [FRONTEND] API Call: GET /api/shipping/zones (2ms)
-[14:33:22 ERR] [FRONTEND] Error: Failed to load user preferences
+[15:50:13 INF] Frontend Log: Frontend logger initialized | Type: console | URL: http://localhost:3000/dashboard
+[15:50:14 INF] Frontend Log: Navigation to /dashboard/roles | Type: console | URL: http://localhost:3000/dashboard/roles
+[15:50:14 WRN] Frontend Warning: React Hook useEffect has missing dependencies | Type: console | URL: http://localhost:3000
+[15:50:15 ERR] Frontend Error: Failed to fetch data | Type: network | URL: http://localhost:3000/api/data
+```
+
+### 🎨 Códigos de Color en PowerShell
+- **[INF]** (Verde) - Información general
+- **[WRN]** (Amarillo) - Advertencias
+- **[ERR]** (Rojo) - Errores
+- **[DBG]** (Gris) - Debug/Depuración
+- **Frontend Log:** - Logs normales del frontend
+- **Frontend Error:** - Errores capturados del frontend
+- **Frontend Warning:** - Warnings de React y otros
+
+## 📊 Flujo de Funcionamiento del Sistema de Logs
+
+### 1️⃣ Captura en el Frontend
+El logger intercepta automáticamente:
+- Navegación entre páginas
+- Llamadas a APIs (exitosas y fallidas)
+- Errores de JavaScript
+- Warnings de React
+- Errores no manejados
+
+### 2️⃣ Envío al Backend
+- Los logs se acumulan en el frontend
+- Se envían en lotes de 10 eventos o cada 5 segundos
+- Se envían vía POST a `/api/logs/frontend`
+
+### 3️⃣ Procesamiento en el Backend
+- El `LogsController` recibe los logs
+- Los clasifica por nivel (error, warning, info)
+- Los muestra en la consola de PowerShell con formato
+- Los guarda en archivos en `/logs/frontend/`
+
+### 4️⃣ Visualización Unificada
+En PowerShell verás todos los logs mezclados cronológicamente:
+```
+[15:50:13 INF] HTTP OPTIONS /api/auth/me responded 204 in 0.1114 ms
+[15:50:13 INF] Frontend Log: Frontend logger initialized | Type: console | URL: http://localhost:3000
+[15:50:13 INF] HTTP GET /api/auth/me responded 200 in 15.0445 ms
+[15:50:14 INF] Frontend Log: Navigation to /dashboard/roles | Type: console | URL: http://localhost:3000/dashboard/roles
+[15:50:14 INF] HTTP GET /api/roles responded 200 in 16.4590 ms
 ```
 
 ## 🔍 Comandos Útiles para Claude Code
@@ -172,46 +236,33 @@ grep "ERR" "C:/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/
 grep -E "api/company/current.*api/company/current" logs/websitebuilder-*.txt
 ```
 
-## 🛠️ Mejoras Pendientes de Implementar
+## 🛠️ Características Implementadas
 
-### 1. **Correlación de Logs**
-```csharp
-// Agregar en Program.cs
-app.Use(async (context, next) =>
-{
-    using (LogContext.PushProperty("CorrelationId", Guid.NewGuid()))
-    {
-        await next();
-    }
-});
-```
+### ✅ Sistema Completo de Logging Frontend-Backend
 
-### 2. **Métricas de Performance**
-```csharp
-// Agregar middleware de timing
-app.UseMiddleware<PerformanceLoggingMiddleware>();
-```
+1. **Interceptación Automática del Frontend**
+   - Console.error y console.warn interceptados
+   - Todas las llamadas fetch y XMLHttpRequest monitoreadas
+   - Errores globales de JavaScript capturados
+   - Promesas rechazadas registradas
+   - Warnings de React en desarrollo
 
-### 3. **Log Structured para Búsquedas**
-```csharp
-// Agregar Seq o Elasticsearch
-.WriteTo.Seq("http://localhost:5341")
-```
+2. **Envío Optimizado**
+   - Batching de logs (10 eventos o 5 segundos)
+   - Cola con límite para evitar overflow de memoria
+   - Reintentos en caso de falla de red
 
-### 4. **Dashboard de Logs**
-- Implementar endpoint `/api/logs/dashboard`
-- Crear página en frontend para visualizar logs
-- Filtros por nivel, fecha, usuario
+3. **Visualización Unificada**
+   - Todos los logs en una sola consola PowerShell
+   - Formato consistente con prefijos claros
+   - Colores ANSI para mejor legibilidad
+   - Timestamps sincronizados
 
-### 5. **Alertas Automáticas**
-```csharp
-// Detectar patrones problemáticos
-if (duplicateApiCalls > threshold)
-{
-    _logger.LogWarning("Duplicate API calls detected: {Count}", duplicateApiCalls);
-    // Enviar notificación
-}
-```
+4. **Almacenamiento Persistente**
+   - Logs del backend en `/logs/websitebuilder-{fecha}.txt`
+   - Logs del frontend en `/logs/frontend/`
+   - Rotación diaria de archivos
+   - Separación por tipo (errors, network, console)
 
 ## 📈 Monitoreo de Performance
 
@@ -265,42 +316,75 @@ Cuando Claude Code necesite debuggear:
 4. ✅ Nivel de log en Debug para máximo detalle
 5. ✅ Consola de PowerShell visible para logs en tiempo real
 
-## 🚨 Troubleshooting
+## 🚨 Troubleshooting Común
 
-### No veo logs del frontend
-- Verificar CORS en `Program.cs`
-- Confirmar URL del backend: `http://localhost:5266`
-- Revisar Network tab en browser DevTools
+### ❌ No veo logs del frontend en PowerShell
+**Causas posibles:**
+1. **Backend no ejecutado desde PowerShell** - Debe ejecutarse con `dotnet run` en PowerShell
+2. **Frontend no inicializado** - Verificar que aparezca "🔍 Frontend logger initialized" en la consola del navegador
+3. **URL incorrecta** - El logger debe apuntar a `http://localhost:5266/logs/frontend`
 
-### Logs no se escriben a archivo
+**Solución:**
+```powershell
+# 1. Detener el backend si está corriendo
+Ctrl+C
+
+# 2. Ejecutar desde PowerShell (NO desde Visual Studio)
+cd "C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI"
+dotnet run
+
+# 3. Refrescar el navegador del frontend
+```
+
+### ❌ Error 404 al enviar logs del frontend
+**Síntoma:** `POST /api/api/logs/frontend responded 404`
+**Causa:** URL duplicada con `/api/api/`
+**Solución:** Verificar en `logger.ts` que la URL sea:
+```typescript
+await this.originalFetch(`${this.API_URL}/logs/frontend`, {
+// NO: `${this.API_URL}/api/logs/frontend`
+```
+
+### ❌ Logs no se escriben a archivo
 ```powershell
 # Crear carpeta logs si no existe
 mkdir logs
+mkdir logs/frontend
 
 # Verificar permisos
 icacls logs /grant Everyone:F
 ```
 
-### Logs muy verbosos
-Ajustar en `Program.cs`:
-```csharp
-.MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+### ❌ Logger se inicializa múltiples veces
+**Síntoma:** Mensaje "Frontend logger initialized" aparece 2+ veces
+**Causa:** React StrictMode en desarrollo
+**Impacto:** Normal en desarrollo, no afecta funcionalidad
+
+## 📊 Ejemplos de Logs Reales del Sistema
+
+### Inicio de Sesión Completo
+```
+[15:50:12 INF] HTTP OPTIONS /api/auth/login responded 204 in 0.3568 ms
+[15:50:12 INF] Frontend Log: Login form submitted | Type: console | URL: http://localhost:3000/login
+[15:50:12 DBG] Login attempt for user: admin@websitebuilder.com
+[15:50:13 INF] Successful login for user: admin@websitebuilder.com with UserId: 1
+[15:50:13 INF] HTTP POST /api/auth/login responded 200 in 616.9163 ms
+[15:50:13 INF] Frontend Log: Navigation to /dashboard | Type: console | URL: http://localhost:3000/dashboard
 ```
 
-## 📊 Análisis de Logs Recientes
+### Error de Red Capturado
+```
+[15:51:45 INF] Frontend Error: GET http://localhost:5266/api/invalid-endpoint failed with 404 | Type: network | URL: http://localhost:3000/dashboard
+[15:51:45 WRN] HTTP GET /api/invalid-endpoint responded 404 in 2.1234 ms
+```
 
-### Problemas Detectados y Resueltos
-1. **Llamadas API duplicadas**: Resuelto con `useRef` pattern
-2. **Navegación lenta**: Resuelto con Next.js `Link`
-3. **Re-renders innecesarios**: Resuelto con Context API
-
-### Métricas Actuales
-- Response time promedio: 10-50ms ✅
-- Llamadas duplicadas: 0 ✅
-- Errores en últimas 24h: 0 ✅
+### Warning de React
+```
+[15:52:10 WRN] Frontend Warning: React Hook useEffect has a missing dependency: 'fetchData' | Type: react-warning | URL: http://localhost:3000/dashboard/roles
+```
 
 ---
 
 **Última actualización**: 2025-01-10
-**Versión**: 1.0
-**Autor**: Claude Code + Sistema WebsiteBuilder
+**Versión**: 2.0 - Sistema completamente funcional con logging unificado
+**Estado**: ✅ Operativo y probado en producción

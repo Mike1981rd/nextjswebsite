@@ -105,7 +105,7 @@ export function CreateZoneModal({ isOpen, onClose, onCreateZone, primaryColor }:
                   <div className="grid grid-cols-3 gap-3">
                     <button
                       onClick={() => setZoneType('domestic')}
-                      className={`p-3 rounded-lg border-2 transition-all ${
+                      className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
                         zoneType === 'domestic'
                           ? 'border-current bg-opacity-10'
                           : 'border-gray-300 dark:border-gray-600'
@@ -115,12 +115,12 @@ export function CreateZoneModal({ isOpen, onClose, onCreateZone, primaryColor }:
                         backgroundColor: zoneType === 'domestic' ? `${primaryColor}15` : undefined
                       }}
                     >
-                      <Home className="h-5 w-5 mx-auto mb-1" style={{ color: zoneType === 'domestic' ? primaryColor : undefined }} />
-                      <span className="text-xs">{t('empresa.shipping.domestic', 'Domestic')}</span>
+                      <Home className="h-5 w-5 mb-1" style={{ color: zoneType === 'domestic' ? primaryColor : undefined }} />
+                      <span className="text-xs text-center">{t('empresa.shipping.domestic', 'Domestic')}</span>
                     </button>
                     <button
                       onClick={() => setZoneType('international')}
-                      className={`p-3 rounded-lg border-2 transition-all ${
+                      className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
                         zoneType === 'international'
                           ? 'border-current bg-opacity-10'
                           : 'border-gray-300 dark:border-gray-600'
@@ -130,12 +130,12 @@ export function CreateZoneModal({ isOpen, onClose, onCreateZone, primaryColor }:
                         backgroundColor: zoneType === 'international' ? `${primaryColor}15` : undefined
                       }}
                     >
-                      <Globe className="h-5 w-5 mx-auto mb-1" style={{ color: zoneType === 'international' ? primaryColor : undefined }} />
-                      <span className="text-xs">{t('empresa.shipping.international', 'International')}</span>
+                      <Globe className="h-5 w-5 mb-1" style={{ color: zoneType === 'international' ? primaryColor : undefined }} />
+                      <span className="text-xs text-center">{t('empresa.shipping.international', 'International')}</span>
                     </button>
                     <button
                       onClick={() => setZoneType('custom')}
-                      className={`p-3 rounded-lg border-2 transition-all ${
+                      className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
                         zoneType === 'custom'
                           ? 'border-current bg-opacity-10'
                           : 'border-gray-300 dark:border-gray-600'
@@ -145,8 +145,8 @@ export function CreateZoneModal({ isOpen, onClose, onCreateZone, primaryColor }:
                         backgroundColor: zoneType === 'custom' ? `${primaryColor}15` : undefined
                       }}
                     >
-                      <MapPin className="h-5 w-5 mx-auto mb-1" style={{ color: zoneType === 'custom' ? primaryColor : undefined }} />
-                      <span className="text-xs">{t('empresa.shipping.custom', 'Custom')}</span>
+                      <MapPin className="h-5 w-5 mb-1" style={{ color: zoneType === 'custom' ? primaryColor : undefined }} />
+                      <span className="text-xs text-center">{t('empresa.shipping.custom', 'Custom')}</span>
                     </button>
                   </div>
                 </div>

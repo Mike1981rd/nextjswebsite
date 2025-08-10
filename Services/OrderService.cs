@@ -228,35 +228,36 @@ namespace WebsiteBuilderAPI.Services
         public async Task<OrderMetricsDto> GetMetricsAsync(int companyId)
         {
             var today = DateTime.UtcNow.Date;
-            var startOfMonth = new DateTime(today.Year, today.Month, 1);
+            var startOfMonth = new DateTime(today.Year, today.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var todayUtc = DateTime.SpecifyKind(today, DateTimeKind.Utc);
+
+            // Obtener todas las órdenes de la compañía para evitar múltiples queries con comparaciones de fecha
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == companyId)
+                .Select(o => new
+                {
+                    o.OrderStatus,
+                    o.PaymentStatus,
+                    o.OrderDate,
+                    o.TotalAmount
+                })
+                .ToListAsync();
+
+            // Filtrar en memoria para evitar problemas con timezone
+            var todayOrders = orders.Where(o => o.OrderDate.Date == today.Date);
+            var thisMonthOrders = orders.Where(o => o.OrderDate >= startOfMonth);
+            var paidOrders = orders.Where(o => o.PaymentStatus == "Paid");
 
             return new OrderMetricsDto
             {
-                PendingPayment = await _context.Orders
-                    .CountAsync(o => o.CompanyId == companyId && o.PaymentStatus == "Pending"),
-                    
-                Completed = await _context.Orders
-                    .CountAsync(o => o.CompanyId == companyId && o.OrderStatus == "Completed"),
-                    
-                Refunded = await _context.Orders
-                    .CountAsync(o => o.CompanyId == companyId && o.PaymentStatus == "Refunded"),
-                    
-                Failed = await _context.Orders
-                    .CountAsync(o => o.CompanyId == companyId && o.PaymentStatus == "Failed"),
-                    
-                TodayOrders = await _context.Orders
-                    .CountAsync(o => o.CompanyId == companyId && o.OrderDate.Date == today),
-                    
-                ThisMonthOrders = await _context.Orders
-                    .CountAsync(o => o.CompanyId == companyId && o.OrderDate >= startOfMonth),
-                    
-                TotalRevenue = await _context.Orders
-                    .Where(o => o.CompanyId == companyId && o.PaymentStatus == "Paid")
-                    .SumAsync(o => o.TotalAmount),
-                    
-                AverageOrderValue = await _context.Orders
-                    .Where(o => o.CompanyId == companyId && o.PaymentStatus == "Paid")
-                    .AverageAsync(o => (decimal?)o.TotalAmount) ?? 0
+                PendingPayment = orders.Count(o => o.PaymentStatus == "Pending"),
+                Completed = orders.Count(o => o.OrderStatus == "Completed"),
+                Refunded = orders.Count(o => o.PaymentStatus == "Refunded"),
+                Failed = orders.Count(o => o.PaymentStatus == "Failed"),
+                TodayOrders = todayOrders.Count(),
+                ThisMonthOrders = thisMonthOrders.Count(),
+                TotalRevenue = paidOrders.Sum(o => o.TotalAmount),
+                AverageOrderValue = paidOrders.Any() ? paidOrders.Average(o => o.TotalAmount) : 0
             };
         }
 

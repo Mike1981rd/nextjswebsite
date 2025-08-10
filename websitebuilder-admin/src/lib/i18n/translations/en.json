@@ -69,6 +69,9 @@
     "profile": "Profile",
     "logout": "Logout",
     "login": "Login",
+    "print": "Print",
+    "all": "All",
+    "generated": "Generated on",
     "welcome": "Welcome",
     "requiredFields": "Indicates required fields",
     "total": "Total",
@@ -362,6 +365,32 @@
       "practice2": "Suffixes can include the year for better organization",
       "practice3": "Avoid special characters that might cause problems",
       "practice4": "Keep the format consistent once established"
+    },
+    "shipping": {
+      "title": "Shipping zones",
+      "description": "Choose where you ship and how much you charge for shipping at check out.",
+      "noZones": "No shipping zones configured",
+      "createZone": "Create zone",
+      "createFirstZone": "Create your first zone",
+      "zoneCreated": "Shipping zone created",
+      "zoneDeleted": "Zone deleted",
+      "deleteZoneTitle": "Delete Shipping Zone",
+      "deleteZoneMessage": "Are you sure you want to delete this zone? This will remove all associated rates.",
+      "settingsSaved": "Shipping settings saved successfully",
+      "saveFailed": "Failed to save shipping settings",
+      "rateDeleted": "Rate deleted",
+      "createFailed": "Failed to create zone",
+      "createZoneTitle": "Create Shipping Zone",
+      "zoneName": "Zone name",
+      "zoneNamePlaceholder": "e.g., North America, Europe",
+      "zoneType": "Zone type",
+      "domestic": "Domestic",
+      "international": "International",
+      "custom": "Custom",
+      "countries": "Countries",
+      "selectCountries": "Select countries",
+      "noCountries": "No countries selected",
+      "activeZone": "Active zone"
     }
   },
   "countries": {
@@ -966,7 +995,7 @@
       "taxId": "Tax ID",
       "loyaltyTier": "Loyalty Tier",
       "language": "Preferred Language",
-      "currency": "Preferred Currency",
+      "preferredCurrency": "Preferred Currency",
       "companyName": "Company Name"
     },
     "placeholders": {
@@ -1058,7 +1087,12 @@
       "loyaltyTier": "Loyalty Tier",
       "language": "Language",
       "memberSince": "Member Since",
-      "lastActivity": "Last Activity"
+      "lastActivity": "Last Activity",
+      "country": "Country",
+      "taxId": "Tax ID",
+      "preferredCurrency": "Preferred Currency",
+      "companyName": "Company Name",
+      "birthDate": "Birth Date"
     },
     "gender": {
       "male": "Male",
@@ -1253,14 +1287,6 @@
     "french": "Français",
     "portuguese": "Português"
   },
-  "orders": {
-    "status": {
-      "delivered": "Delivered",
-      "processing": "Processing",
-      "pending": "Pending",
-      "cancelled": "Cancelled"
-    }
-  },
   "collections": {
     "title": "Collections",
     "create": "CREATE COLLECTION",
@@ -1369,34 +1395,6 @@
     "lastNameRequired": "Last name is required",
     "passwordMinLength": "Password must be at least 6 characters",
     "passwordMismatch": "Passwords do not match"
-  },
-  "customers": {
-    "personalInfo": "Personal Information",
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "enterFirstName": "Enter first name",
-    "enterLastName": "Enter last name",
-    "phone": "Phone",
-    "enterPhone": "Enter phone number",
-    "country": "Country",
-    "birthDate": "Birth Date",
-    "gender": "Gender",
-    "selectGender": "Select gender",
-    "male": "Male",
-    "female": "Female",
-    "other": "Other",
-    "addressInfo": "Address Information",
-    "address": "Address",
-    "enterAddress": "Enter address",
-    "city": "City",
-    "enterCity": "Enter city",
-    "postalCode": "Postal Code",
-    "enterPostalCode": "Enter postal code",
-    "accountInfo": "Account Information",
-    "password": "Password",
-    "enterPassword": "Enter password",
-    "passwordMinLength": "Minimum 6 characters",
-    "confirmPassword": "Confirm Password"
   },
   "menus": {
     "title": "Navigation Menus",
@@ -1909,6 +1907,12 @@
   "orders": {
     "title": "Orders",
     "subtitle": "Manage all your store orders",
+    "status": {
+      "delivered": "Delivered",
+      "processing": "Processing",
+      "pending": "Pending",
+      "cancelled": "Cancelled"
+    },
     "addOrder": "New Order",
     "createOrder": "Create Order",
     "createOrderSubtitle": "Complete the new order details",
@@ -1952,6 +1956,8 @@
     "confirmBulkDelete": "Delete {{count}} orders?",
     "bulkDeleteSuccess": "Orders deleted successfully",
     "bulkDeleteError": "Error deleting orders",
+    "exportError": "Unable to export PDF. Would you like to print instead?",
+    "printInstead": "Use Print to save as PDF",
     "searchPlaceholder": "Search by number, customer or email...",
     "filterByStatus": "Filter by status",
     "filterByPayment": "Filter by payment",

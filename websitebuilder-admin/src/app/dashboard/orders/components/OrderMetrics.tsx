@@ -1,7 +1,7 @@
 'use client';
 
 import { useI18n } from '@/contexts/I18nContext';
-import { Card } from '@/components/ui/card';
+import { Card } from '@/components/ui/Card';
 import { 
   Clock, 
   CheckCircle, 

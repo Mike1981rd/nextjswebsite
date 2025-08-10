@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { Plus, Search, Filter, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { OrderMetrics } from './components/OrderMetrics';

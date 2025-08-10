@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useI18n } from '@/contexts/I18nContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar } from '@/components/ui/Avatar';
 import { Separator } from '@/components/ui/separator';
 import { 
   ArrowLeft, 
@@ -283,9 +283,44 @@ export default function OrderDetailsPage() {
     window.print();
   };
 
-  const handleExportPDF = () => {
-    // Implementar exportación a PDF
-    // Exporting to PDF
+  const handleExportPDF = async () => {
+    try {
+      // Create the API endpoint URL for PDF generation
+      const response = await fetch(`http://localhost:5266/api/orders/${id}/export-pdf`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Get the PDF blob
+      const blob = await response.blob();
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `order-${order.formattedOrderNumber}.pdf`;
+      
+      // Trigger the download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      // Fallback to browser print as PDF
+      if (window.confirm(t('orders.exportError') + '\n\n' + t('orders.printInstead'))) {
+        window.print();
+      }
+    }
   };
 
   if (isLoading || !order) {
@@ -334,12 +369,6 @@ export default function OrderDetailsPage() {
             <Download className="mr-2 h-4 w-4" />
             PDF
           </Button>
-          {order.canEdit && (
-            <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/orders/${id}/edit`)}>
-              <Edit className="mr-2 h-4 w-4" />
-              {t('common.edit')}
-            </Button>
-          )}
         </div>
       </div>
 
@@ -350,57 +379,58 @@ export default function OrderDetailsPage() {
         {getStatusBadge(order.deliveryStatus, 'delivery')}
       </div>
 
-      {/* Main Content - 3 Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Timeline */}
-        <div className="lg:col-span-1 space-y-6">
-          <OrderTimeline 
-            events={order.statusHistory} 
-            currentStatus={order.orderStatus}
-          />
+      {/* Main Content - Reorganized Layout */}
+      <div className="space-y-6">
+        {/* First Row - Timeline and Customer Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Timeline */}
+          <div className="lg:col-span-1">
+            <OrderTimeline 
+              events={order.statusHistory} 
+              currentStatus={order.orderStatus}
+            />
+          </div>
           
-          {/* Actions */}
-          <Card className="p-4">
-            <h3 className="font-semibold mb-4">{t('orders.actions.title')}</h3>
-            <div className="space-y-2">
-              {order.paymentStatus === 'Pending' && (
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => setPaymentModalOpen(true)}
-                >
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  {t('orders.actions.updatePayment')}
-                </Button>
-              )}
-              
-              {order.deliveryStatus !== 'Delivered' && (
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => setShippingModalOpen(true)}
-                >
-                  <Truck className="mr-2 h-4 w-4" />
-                  {t('orders.actions.updateShipping')}
-                </Button>
-              )}
-              
-              {order.canRefund && (
-                <Button 
-                  className="w-full justify-start" 
-                  variant="outline"
-                  onClick={() => setRefundModalOpen(true)}
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  {t('orders.actions.processRefund')}
-                </Button>
-              )}
-            </div>
+          {/* Customer Information */}
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span>{t('orders.items.title')}</span>
+                <Badge variant="secondary">{order.itemCount} {t('orders.items.count')}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {order.items.map((item) => (
+                <div key={item.id} className="flex gap-3">
+                  {item.productImage && (
+                    <img 
+                      src={item.productImage} 
+                      alt={item.productName}
+                      className="w-16 h-16 object-cover rounded-md"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{item.productName}</p>
+                    {item.productSku && (
+                      <p className="text-xs text-muted-foreground">SKU: {item.productSku}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-sm text-muted-foreground">
+                        {item.quantity} x {formatCurrency(item.unitPrice)}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {formatCurrency(item.totalPrice)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
           </Card>
         </div>
 
-        {/* Center Column - Order Details */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* Right Side - Customer & Payment Details */}
+        <div className="space-y-6">
           {/* Customer Information */}
           <Card>
             <CardHeader>
@@ -408,12 +438,12 @@ export default function OrderDetailsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={order.customerAvatar} alt={order.customerName} />
-                  <AvatarFallback>
-                    {order.customerName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <Avatar 
+                  src={order.customerAvatar} 
+                  name={order.customerName}
+                  size="lg"
+                  className="h-12 w-12"
+                />
                 <div>
                   <p className="font-medium">{order.customerName}</p>
                   <p className="text-sm text-muted-foreground">
@@ -439,7 +469,7 @@ export default function OrderDetailsPage() {
                 variant="outline" 
                 size="sm" 
                 className="w-full"
-                onClick={() => router.push(`/dashboard/customers/${order.customerId}`)}
+                onClick={() => router.push(`/dashboard/clientes/${order.customerId}`)}
               >
                 {t('orders.customer.viewProfile')}
               </Button>
@@ -506,47 +536,6 @@ export default function OrderDetailsPage() {
               </CardContent>
             </Card>
           )}
-        </div>
-
-        {/* Right Column - Order Items & Summary */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Order Items */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center justify-between">
-                <span>{t('orders.items.title')}</span>
-                <Badge variant="secondary">{order.itemCount} {t('orders.items.count')}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {order.items.map((item) => (
-                <div key={item.id} className="flex gap-3">
-                  {item.productImage && (
-                    <img 
-                      src={item.productImage} 
-                      alt={item.productName}
-                      className="w-16 h-16 object-cover rounded-md"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{item.productName}</p>
-                    {item.productSku && (
-                      <p className="text-xs text-muted-foreground">SKU: {item.productSku}</p>
-                    )}
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-sm text-muted-foreground">
-                        {item.quantity} x {formatCurrency(item.unitPrice)}
-                      </span>
-                      <span className="text-sm font-medium">
-                        {formatCurrency(item.totalPrice)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
           {/* Order Summary */}
           <Card>
             <CardHeader>
@@ -589,6 +578,47 @@ export default function OrderDetailsPage() {
                     {order.paymentMethodLast4 && ` ****${order.paymentMethodLast4}`}
                   </p>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">{t('orders.actions.title')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {order.paymentStatus === 'Pending' && (
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => setPaymentModalOpen(true)}
+                >
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  {t('orders.actions.updatePayment')}
+                </Button>
+              )}
+              
+              {order.deliveryStatus !== 'Delivered' && (
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => setShippingModalOpen(true)}
+                >
+                  <Truck className="mr-2 h-4 w-4" />
+                  {t('orders.actions.updateShipping')}
+                </Button>
+              )}
+              
+              {order.canRefund && (
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => setRefundModalOpen(true)}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {t('orders.actions.processRefund')}
+                </Button>
               )}
             </CardContent>
           </Card>
