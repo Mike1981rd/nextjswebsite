@@ -153,7 +153,7 @@ const menuItems: MenuItem[] = [
       {
         id: 'dominios',
         nameKey: 'navigation.dominios',
-        href: '/dominios',
+        href: '/dashboard/dominios',
         icon: DomainsIcon,
         permission: 'domains.read'
       },

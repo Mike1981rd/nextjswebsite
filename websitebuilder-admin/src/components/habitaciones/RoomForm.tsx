@@ -121,13 +121,23 @@ export default function RoomForm({
     { value: 'interior', label: t('rooms.views.interior', 'Vista Interior') }
   ];
 
-  // Amenidades predefinidas
+  // Amenidades predefinidas - usando keys que serán traducidas en el render
   const commonAmenities = [
-    'WiFi', 'TV', 'Minibar', t('rooms.amenities.ac', 'Aire Acondicionado'), t('rooms.amenities.heating', 'Calefacción'),
-    t('rooms.amenities.safe', 'Caja Fuerte'), t('rooms.amenities.balcony', 'Balcón'), t('rooms.amenities.terrace', 'Terraza'), 
-    'Jacuzzi', t('rooms.amenities.seaview', 'Vista al Mar'),
-    t('rooms.amenities.kitchen', 'Cocina'), t('rooms.amenities.microwave', 'Microondas'), t('rooms.amenities.coffee', 'Cafetera'), 
-    t('rooms.amenities.hairdryer', 'Secador de Pelo'), t('rooms.amenities.iron', 'Plancha')
+    { key: 'wifi', label: 'WiFi' },
+    { key: 'tv', label: 'TV' },
+    { key: 'minibar', label: 'Minibar' },
+    { key: 'ac', label: 'Aire Acondicionado' },
+    { key: 'heating', label: 'Calefacción' },
+    { key: 'safe', label: 'Caja Fuerte' },
+    { key: 'balcony', label: 'Balcón' },
+    { key: 'terrace', label: 'Terraza' },
+    { key: 'jacuzzi', label: 'Jacuzzi' },
+    { key: 'seaview', label: 'Vista al Mar' },
+    { key: 'kitchen', label: 'Cocina' },
+    { key: 'microwave', label: 'Microondas' },
+    { key: 'coffee', label: 'Cafetera' },
+    { key: 'hairdryer', label: 'Secador de Pelo' },
+    { key: 'iron', label: 'Plancha' }
   ];
 
   const validateForm = (): boolean => {
@@ -702,7 +712,7 @@ export default function RoomForm({
             {/* Amenidades */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('rooms.amenities', 'Amenidades')}
+                {t('rooms.amenitiesLabel', 'Amenidades')}
               </label>
               
               {/* Amenidades predefinidas */}
@@ -711,28 +721,35 @@ export default function RoomForm({
                   {t('rooms.quickAdd', 'Agregar rápido')}:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {commonAmenities.map(amenity => (
-                    <button
-                      key={amenity}
-                      type="button"
-                      onClick={() => {
-                        if (!formData.amenities?.includes(amenity)) {
-                          setFormData({
-                            ...formData,
-                            amenities: [...(formData.amenities || []), amenity]
-                          });
-                        }
-                      }}
-                      disabled={formData.amenities?.includes(amenity)}
-                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                        formData.amenities?.includes(amenity)
-                          ? 'bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      {amenity}
-                    </button>
-                  ))}
+                  {commonAmenities.map(amenity => {
+                    // Obtener la traducción correcta para amenidades que tienen traducción
+                    const amenityLabel = ['wifi', 'tv', 'minibar', 'jacuzzi'].includes(amenity.key) 
+                      ? amenity.label 
+                      : t(`rooms.amenities.${amenity.key}`, amenity.label);
+                    
+                    return (
+                      <button
+                        key={amenity.key}
+                        type="button"
+                        onClick={() => {
+                          if (!formData.amenities?.includes(amenityLabel)) {
+                            setFormData({
+                              ...formData,
+                              amenities: [...(formData.amenities || []), amenityLabel]
+                            });
+                          }
+                        }}
+                        disabled={formData.amenities?.includes(amenityLabel)}
+                        className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                          formData.amenities?.includes(amenityLabel)
+                            ? 'bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {amenityLabel}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

@@ -132,10 +132,11 @@ try
     builder.Services.AddScoped<IPaginasService, PaginasService>();
     builder.Services.AddScoped<IPolicyService, PolicyService>();
     builder.Services.AddScoped<INavigationMenuService, NavigationMenuService>();
-    builder.Services.AddScoped<RoomService>();
+    builder.Services.AddScoped<IRoomService, RoomService>();
     builder.Services.AddScoped<IReservationService, ReservationService>();
     builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
     builder.Services.AddScoped<IOrderService, OrderService>();
+    builder.Services.AddScoped<IDomainService, DomainService>();
 
     // Registrar repositorios
     builder.Services.AddScoped<PaymentProviderRepository>();

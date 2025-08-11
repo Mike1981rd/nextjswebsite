@@ -13,6 +13,7 @@ Cuando el usuario ejecute `/init-session`, **DEBES OBLIGATORIAMENTE**:
    3. blueprint3.md - UI/UX y componentes frontend
    4. CLAUDEBK1.md - Reglas base y contexto del proyecto
    5. CLAUDEBK2.md - Patterns, troubleshooting y workflow
+   6. logs.md - Sistema de logging y diagnóstico
    ```
 
 2. **USAR LA HERRAMIENTA Read** para cada archivo:
@@ -23,6 +24,7 @@ Cuando el usuario ejecute `/init-session`, **DEBES OBLIGATORIAMENTE**:
    Read("blueprint3.md")  # DEBE ejecutarse
    Read("CLAUDEBK1.md")   # DEBE ejecutarse
    Read("CLAUDEBK2.md")   # DEBE ejecutarse
+   Read("logs.md")        # DEBE ejecutarse
    ```
 
 3. **CONFIRMAR LECTURA** mostrando este mensaje EXACTO:
@@ -34,6 +36,7 @@ Cuando el usuario ejecute `/init-session`, **DEBES OBLIGATORIAMENTE**:
    ✅ blueprint3.md cargado - Componentes UI Next.js 14
    ✅ CLAUDEBK1.md cargado - Reglas base del proyecto
    ✅ CLAUDEBK2.md cargado - Troubleshooting y patterns
+   ✅ logs.md cargado - Sistema de logging y diagnóstico
    
    🚀 SESIÓN INICIALIZADA - WebsiteBuilder API
    Stack: ASP.NET Core 8 + Next.js 14 + PostgreSQL
@@ -67,6 +70,7 @@ WebsiteBuilderAPI/
 ├── blueprint3.md      # 🎯 CRÍTICO: Implementación frontend
 ├── CLAUDEBK1.md       # Reglas base (líneas 1-501)
 ├── CLAUDEBK2.md       # UI patterns (líneas 502-895)
+├── logs.md            # 🎯 CRÍTICO: Sistema de logging
 └── CLAUDE.md          # Este archivo - Configuración del comando
 ```
 
@@ -191,6 +195,9 @@ Claude: 📚 LEYENDO ARCHIVOS DE CONFIGURACIÓN...
 [Lee CLAUDEBK2.md con herramienta Read]
 ✅ CLAUDEBK2.md cargado - Troubleshooting y patterns
 
+[Lee logs.md con herramienta Read]
+✅ logs.md cargado - Sistema de logging y diagnóstico
+
 🚀 SESIÓN INICIALIZADA - WebsiteBuilder API
 Stack: ASP.NET Core 8 + Next.js 14 + PostgreSQL
 
@@ -219,5 +226,5 @@ Claude: Entendido, he cargado el contexto del proyecto WebsiteBuilder.  ❌ INCO
 ---
 
 **Última actualización:** 2025-01-10
-**Versión:** 3.0 (Forzar lectura de blueprints)
-**Crítico:** Los archivos blueprint DEBEN leerse SIEMPRE
+**Versión:** 3.1 (Incluye logs.md en lectura obligatoria)
+**Crítico:** Los archivos blueprint y logs DEBEN leerse SIEMPRE
