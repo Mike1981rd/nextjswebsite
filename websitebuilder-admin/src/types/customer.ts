@@ -28,16 +28,8 @@ export interface CustomerDto {
 }
 
 export interface CustomerDetailDto extends CustomerDto {
-  firstName?: string;
-  lastName?: string;
-  birthDate?: string;
-  gender?: string;
-  preferredLanguage?: string;
-  preferredCurrency?: string;
-  companyName?: string;
-  taxId?: string;
+  // Additional properties not in base CustomerDto
   country?: string;
-  phoneNumber?: string;
   addresses?: CustomerAddressDto[];
   paymentMethods?: CustomerPaymentMethodDto[];
   notificationPreferences?: any;

@@ -129,20 +129,20 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
     #region Typography Configuration
     public class TypographyConfig
     {
-        public FontConfig Heading1 { get; set; }
-        public FontConfig Heading2 { get; set; }
-        public FontConfig Body { get; set; }
-        public FontConfig Button { get; set; }
-        public FontConfig Link { get; set; }
+        public FontConfig headings { get; set; }
+        public FontConfig body { get; set; }
+        public FontConfig menu { get; set; }
+        public FontConfig productCardName { get; set; }
+        public FontConfig buttons { get; set; }
     }
 
     public class FontConfig
     {
-        public string FontFamily { get; set; }
-        public int FontSize { get; set; }
-        public string FontWeight { get; set; }
-        public float LineHeight { get; set; }
-        public int LetterSpacing { get; set; }
+        public string fontFamily { get; set; }
+        public string fontWeight { get; set; }
+        public bool? useUppercase { get; set; }
+        public int? fontSize { get; set; }
+        public decimal? letterSpacing { get; set; }
     }
     #endregion
 

@@ -7,7 +7,7 @@ type Language = 'es' | 'en';
 interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string, params?: Record<string, any>) => string;
+  t: (key: string, defaultValue?: string, params?: Record<string, any>) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -72,10 +72,10 @@ export function I18nProvider({ children }: I18nProviderProps) {
     }
   };
 
-  const t = (key: string, params?: Record<string, any>): string => {
+  const t = (key: string, defaultValue?: string, params?: Record<string, any>): string => {
     if (!isLoaded) {
       console.log('Traducciones no cargadas para:', key);
-      return key;
+      return defaultValue || key;
     }
 
     // Debug para navigation.editor
@@ -94,9 +94,9 @@ export function I18nProvider({ children }: I18nProviderProps) {
       translation = getNestedValue(translations.es, key);
     }
     
-    // Si aún no hay traducción, devolver la key
+    // Si aún no hay traducción, devolver el default o la key
     if (!translation) {
-      return key;
+      return defaultValue || key;
     }
 
     // Si la traducción es un objeto con title y count (caso especial)

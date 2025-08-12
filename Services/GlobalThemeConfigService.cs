@@ -48,6 +48,17 @@ namespace WebsiteBuilderAPI.Services
                 _logger.LogInformation("Creating default theme config for company {CompanyId}", companyId);
                 config = await CreateDefaultConfigAsync(companyId);
             }
+            else
+            {
+                // Ensure we always have 5 color schemes
+                if (config.ColorSchemes == null || config.ColorSchemes.Schemes == null || config.ColorSchemes.Schemes.Count < 5)
+                {
+                    _logger.LogInformation("Updating color schemes to have 5 schemes for company {CompanyId}", companyId);
+                    config.ColorSchemes = GetDefaultColorSchemes();
+                    config.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             _cache.Set(cacheKey, config, CACHE_DURATION);
             return config;
@@ -451,45 +462,45 @@ namespace WebsiteBuilderAPI.Services
 
         private TypographyConfig GetDefaultTypography() => new TypographyConfig
         {
-            Heading1 = new FontConfig 
+            headings = new FontConfig 
             { 
-                FontFamily = "Poppins", 
-                FontSize = 40, 
-                FontWeight = "600", 
-                LineHeight = 1.2f, 
-                LetterSpacing = 0 
+                fontFamily = "Playfair Display", 
+                fontSize = 100, 
+                fontWeight = "400", 
+                useUppercase = false, 
+                letterSpacing = -1.7m 
             },
-            Heading2 = new FontConfig 
+            body = new FontConfig 
             { 
-                FontFamily = "Poppins", 
-                FontSize = 24, 
-                FontWeight = "600", 
-                LineHeight = 1.3f, 
-                LetterSpacing = 0 
+                fontFamily = "Poppins", 
+                fontSize = 15, 
+                fontWeight = "400", 
+                useUppercase = false, 
+                letterSpacing = 0 
             },
-            Body = new FontConfig 
+            menu = new FontConfig 
             { 
-                FontFamily = "Montserrat", 
-                FontSize = 16, 
-                FontWeight = "400", 
-                LineHeight = 1.5f, 
-                LetterSpacing = 0 
+                fontFamily = "Poppins", 
+                fontSize = 94, 
+                fontWeight = "400", 
+                useUppercase = false, 
+                letterSpacing = 0 
             },
-            Button = new FontConfig 
+            productCardName = new FontConfig 
             { 
-                FontFamily = "Montserrat", 
-                FontSize = 16, 
-                FontWeight = "600", 
-                LineHeight = 1.2f, 
-                LetterSpacing = 1 
+                fontFamily = "Assistant", 
+                fontSize = 100, 
+                fontWeight = "400", 
+                useUppercase = false, 
+                letterSpacing = 0 
             },
-            Link = new FontConfig 
+            buttons = new FontConfig 
             { 
-                FontFamily = "Montserrat", 
-                FontSize = 16, 
-                FontWeight = "400", 
-                LineHeight = 1.5f, 
-                LetterSpacing = 0 
+                fontFamily = "Assistant", 
+                fontSize = 100, 
+                fontWeight = "400", 
+                useUppercase = false, 
+                letterSpacing = 0 
             }
         };
 
@@ -501,7 +512,7 @@ namespace WebsiteBuilderAPI.Services
                 new ColorScheme
                 {
                     Id = "scheme-1",
-                    Name = "Esquema 1",
+                    Name = "Scheme 1",
                     Text = "#000000",
                     Background = "#FFFFFF",
                     Foreground = "#F5E076",
@@ -512,6 +523,66 @@ namespace WebsiteBuilderAPI.Services
                     OutlineButton = "#990F02",
                     OutlineButtonText = "#000000",
                     ImageOverlay = "rgba(0, 0, 0, 0.1)"
+                },
+                new ColorScheme
+                {
+                    Id = "scheme-2",
+                    Name = "Scheme 2",
+                    Text = "#FFFFFF",
+                    Background = "#000000",
+                    Foreground = "#333333",
+                    Border = "#FFFFFF",
+                    Link = "#66B2FF",
+                    SolidButton = "#FFFFFF",
+                    SolidButtonText = "#000000",
+                    OutlineButton = "#FFFFFF",
+                    OutlineButtonText = "#FFFFFF",
+                    ImageOverlay = "rgba(255, 255, 255, 0.1)"
+                },
+                new ColorScheme
+                {
+                    Id = "scheme-3",
+                    Name = "Scheme 3",
+                    Text = "#2C3E50",
+                    Background = "#ECF0F1",
+                    Foreground = "#3498DB",
+                    Border = "#BDC3C7",
+                    Link = "#E74C3C",
+                    SolidButton = "#E74C3C",
+                    SolidButtonText = "#FFFFFF",
+                    OutlineButton = "#2C3E50",
+                    OutlineButtonText = "#2C3E50",
+                    ImageOverlay = "rgba(52, 152, 219, 0.1)"
+                },
+                new ColorScheme
+                {
+                    Id = "scheme-4",
+                    Name = "Scheme 4",
+                    Text = "#F8F9FA",
+                    Background = "#212529",
+                    Foreground = "#6C757D",
+                    Border = "#495057",
+                    Link = "#FFC107",
+                    SolidButton = "#FFC107",
+                    SolidButtonText = "#212529",
+                    OutlineButton = "#F8F9FA",
+                    OutlineButtonText = "#F8F9FA",
+                    ImageOverlay = "rgba(108, 117, 125, 0.2)"
+                },
+                new ColorScheme
+                {
+                    Id = "scheme-5",
+                    Name = "Scheme 5",
+                    Text = "#1A202C",
+                    Background = "#F7FAFC",
+                    Foreground = "#9AE6B4",
+                    Border = "#CBD5E0",
+                    Link = "#3182CE",
+                    SolidButton = "#48BB78",
+                    SolidButtonText = "#FFFFFF",
+                    OutlineButton = "#3182CE",
+                    OutlineButtonText = "#3182CE",
+                    ImageOverlay = "rgba(154, 230, 180, 0.1)"
                 }
             }
         };

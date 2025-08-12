@@ -387,6 +387,9 @@ const useThemeConfigStore = create<ThemeConfigState>()(
           const { companyId, config } = get();
           if (!companyId || !config) return;
 
+          // Store the original for rollback
+          const originalTypography = config.typography;
+
           set((state) => {
             if (state.config) {
               state.config.typography = typography;
@@ -396,6 +399,8 @@ const useThemeConfigStore = create<ThemeConfigState>()(
 
           try {
             const updated = await themeConfigApi.updateTypography(companyId, typography);
+            
+            // The API already handles conversion, just use the returned value
             set((state) => {
               if (state.config) {
                 state.config.typography = updated;
@@ -404,8 +409,8 @@ const useThemeConfigStore = create<ThemeConfigState>()(
             });
           } catch (error: any) {
             set((state) => {
-              if (state.config && config) {
-                state.config.typography = config.typography;
+              if (state.config) {
+                state.config.typography = originalTypography;
               }
               state.error = error.message;
             });
@@ -685,7 +690,12 @@ const useThemeConfigStore = create<ThemeConfigState>()(
           try {
             await themeConfigApi.resetModule(companyId, moduleName);
             // Refetch the specific module
-            await get()[`fetch${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}` as keyof ThemeConfigState](companyId);
+            const state = get();
+            const methodName = `fetch${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}` as keyof ThemeConfigState;
+            const method = state[methodName];
+            if (typeof method === 'function') {
+              await method(companyId);
+            }
           } catch (error: any) {
             set((state) => {
               state.error = error.message;

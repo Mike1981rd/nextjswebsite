@@ -60,7 +60,7 @@ export interface ColorSchemesConfig {
 
 /**
  * Default color schemes configuration
- * Includes one default scheme as per specifications
+ * Includes 5 default schemes as per specifications
  */
 export const defaultColorSchemes: ColorSchemesConfig = {
   defaultScheme: 'scheme-1',
@@ -78,6 +78,62 @@ export const defaultColorSchemes: ColorSchemesConfig = {
       outlineButton: '#990F02',
       outlineButtonText: '#000000',
       imageOverlay: 'rgba(0, 0, 0, 0.1)'
+    },
+    {
+      id: 'scheme-2',
+      name: 'Scheme 2',
+      text: '#FFFFFF',
+      background: '#000000',
+      foreground: '#333333',
+      border: '#FFFFFF',
+      link: '#66B2FF',
+      solidButton: '#FFFFFF',
+      solidButtonText: '#000000',
+      outlineButton: '#FFFFFF',
+      outlineButtonText: '#FFFFFF',
+      imageOverlay: 'rgba(255, 255, 255, 0.1)'
+    },
+    {
+      id: 'scheme-3',
+      name: 'Scheme 3',
+      text: '#2C3E50',
+      background: '#ECF0F1',
+      foreground: '#3498DB',
+      border: '#BDC3C7',
+      link: '#E74C3C',
+      solidButton: '#E74C3C',
+      solidButtonText: '#FFFFFF',
+      outlineButton: '#2C3E50',
+      outlineButtonText: '#2C3E50',
+      imageOverlay: 'rgba(52, 152, 219, 0.1)'
+    },
+    {
+      id: 'scheme-4',
+      name: 'Scheme 4',
+      text: '#F8F9FA',
+      background: '#212529',
+      foreground: '#6C757D',
+      border: '#495057',
+      link: '#FFC107',
+      solidButton: '#FFC107',
+      solidButtonText: '#212529',
+      outlineButton: '#F8F9FA',
+      outlineButtonText: '#F8F9FA',
+      imageOverlay: 'rgba(108, 117, 125, 0.2)'
+    },
+    {
+      id: 'scheme-5',
+      name: 'Scheme 5',
+      text: '#1A202C',
+      background: '#F7FAFC',
+      foreground: '#9AE6B4',
+      border: '#CBD5E0',
+      link: '#3182CE',
+      solidButton: '#48BB78',
+      solidButtonText: '#FFFFFF',
+      outlineButton: '#3182CE',
+      outlineButtonText: '#3182CE',
+      imageOverlay: 'rgba(154, 230, 180, 0.1)'
     }
   ]
 };
@@ -134,10 +190,11 @@ export function createColorScheme(
   baseScheme?: ColorScheme
 ): ColorScheme {
   const timestamp = Date.now();
-  const newScheme: ColorScheme = {
-    id: `scheme-${timestamp}`,
-    name,
-    ...(baseScheme ? { ...baseScheme, id: `scheme-${timestamp}`, name } : {
+  const newScheme: ColorScheme = baseScheme 
+    ? { ...baseScheme, id: `scheme-${timestamp}`, name }
+    : {
+      id: `scheme-${timestamp}`,
+      name,
       text: '#000000',
       background: '#FFFFFF',
       foreground: '#F5E076',
@@ -148,8 +205,7 @@ export function createColorScheme(
       outlineButton: '#000000',
       outlineButtonText: '#000000',
       imageOverlay: 'rgba(0, 0, 0, 0.1)'
-    })
-  };
+    };
   
   return newScheme;
 }

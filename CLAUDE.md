@@ -266,8 +266,55 @@ Current Phase: Phase 1 - TypeScript Types (75% complete)
 [... más detalles ...]
 ```
 
+## 🗺️ MAPA DE ARCHIVOS CRÍTICOS - NO CONFUNDIR
+
+### ⚠️ WEBSITE BUILDER - ARCHIVOS CORRECTOS SEGÚN CONTEXTO
+
+El Website Builder tiene **DOS interfaces diferentes** que NO deben confundirse:
+
+#### 1️⃣ **EDITOR del Website Builder** (`/editor`)
+Ubicación: `http://localhost:3000/editor`
+- **SIN sidebar del dashboard**
+- **Interfaz dedicada para construir sitios**
+
+| Componente | Archivo Correcto | Descripción |
+|------------|------------------|-------------|
+| Layout Principal | `/src/app/editor/page.tsx` | Página principal del editor |
+| Panel Lateral | `/src/components/editor/EditorSidebar.tsx` | Sidebar del editor (NO del dashboard) |
+| Configuraciones Globales | `/src/components/editor/GlobalSettingsPanel.tsx` | Panel de settings DENTRO del editor |
+| Preview | `/src/components/editor/EditorPreview.tsx` | Área de preview |
+| Config de Sección | `/src/components/editor/ConfigPanel.tsx` | Configuración por sección |
+
+#### 2️⃣ **DASHBOARD - Configuración Global** (`/dashboard/global-settings`)
+Ubicación: `http://localhost:3000/dashboard/global-settings`
+- **CON sidebar del dashboard**
+- **Parte del sistema administrativo general**
+
+| Componente | Archivo Correcto | Descripción |
+|------------|------------------|-------------|
+| Página de Settings | `/src/app/dashboard/global-settings/page.tsx` | Configuración desde el dashboard |
+| Layout Dashboard | `/src/app/dashboard/layout.tsx` | Layout con sidebar |
+
+### 🚨 REGLA DE ORO
+**SIEMPRE pregunta al usuario**: "¿Estás en el EDITOR (/editor) o en el DASHBOARD (/dashboard)?"
+- Si está en `/editor` → Usa archivos de `/components/editor/`
+- Si está en `/dashboard` → Usa archivos de `/app/dashboard/`
+
+### 📝 Ejemplo de Error Común
+```
+❌ INCORRECTO:
+Usuario: "No veo los sliders en configuraciones globales"
+Claude: *modifica /app/dashboard/global-settings/page.tsx*
+
+✅ CORRECTO:
+Usuario: "No veo los sliders en configuraciones globales"
+Claude: "¿Estás en /editor o en /dashboard/global-settings?"
+Usuario: "En /editor"
+Claude: *modifica /components/editor/GlobalSettingsPanel.tsx*
+```
+
 ---
 
-**Última actualización:** 2025-01-11
-**Versión:** 3.2 (Incluye comando /init-websitebuilder)
+**Última actualización:** 2025-01-12
+**Versión:** 3.3 (Incluye mapa de archivos críticos)
 **Crítico:** Los archivos blueprint y logs DEBEN leerse SIEMPRE

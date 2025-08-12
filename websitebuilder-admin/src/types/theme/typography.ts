@@ -11,6 +11,9 @@ export interface FontConfig {
   /** Font family name (e.g., 'Playfair Display', 'Poppins') */
   fontFamily: string;
   
+  /** Font weight (e.g., '400' for normal, '700' for bold) */
+  fontWeight?: string;
+  
   /** Whether to use uppercase transformation */
   useUppercase?: boolean;
   
@@ -49,27 +52,35 @@ export interface TypographyConfig {
 export const defaultTypography: TypographyConfig = {
   headings: {
     fontFamily: 'Playfair Display',
+    fontWeight: '400',
     useUppercase: false,
+    fontSize: 100,
     letterSpacing: -1.7
   },
   body: {
     fontFamily: 'Poppins',
-    fontSize: 15
+    fontWeight: '400',
+    useUppercase: false,
+    fontSize: 15,
+    letterSpacing: 0
   },
   menu: {
     fontFamily: 'Poppins',
+    fontWeight: '400',
     useUppercase: false,
     fontSize: 94,
     letterSpacing: 0
   },
   productCardName: {
     fontFamily: 'Assistant',
+    fontWeight: '400',
     useUppercase: false,
     fontSize: 100, // 100% = inherit from parent
     letterSpacing: 0
   },
   buttons: {
     fontFamily: 'Assistant',
+    fontWeight: '400',
     useUppercase: false,
     fontSize: 100, // 100% = inherit from parent
     letterSpacing: 0
@@ -135,6 +146,10 @@ export function fontConfigToCSS(config: FontConfig): Record<string, string> {
   const css: Record<string, string> = {
     fontFamily: `'${config.fontFamily}', sans-serif`
   };
+  
+  if (config.fontWeight !== undefined) {
+    css.fontWeight = config.fontWeight;
+  }
   
   if (config.useUppercase) {
     css.textTransform = 'uppercase';
