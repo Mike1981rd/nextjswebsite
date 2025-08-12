@@ -16,12 +16,12 @@ export default function PaymentsPage() {
           <ol className="flex items-center space-x-2 whitespace-nowrap">
             <li>
               <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                {t('navigation.dashboard', 'Dashboard')}
+                {t('navigation.dashboard')}
               </Link>
             </li>
             <li className="text-gray-400 dark:text-gray-500">/</li>
             <li className="text-gray-700 font-medium dark:text-gray-300">
-              {t('navigation.payments', 'Payments')}
+              {t('navigation.payments')}
             </li>
           </ol>
         </nav>

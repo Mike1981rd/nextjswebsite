@@ -82,8 +82,8 @@ export default function HabitacionesPage() {
   };
 
   const handleDelete = async (room: Room) => {
-    const confirmMessage = t('rooms.confirmDelete', `¿Está seguro de que desea eliminar la habitación "${room.name}"?`) + 
-      '\n\n' + t('rooms.deleteWarning', 'Esta acción no se puede deshacer.');
+    const confirmMessage = t('rooms.confirmDelete', { roomName: room.name }) + 
+      '\n\n' + t('rooms.deleteWarning');
     
     if (!confirm(confirmMessage)) {
       return;
@@ -151,8 +151,8 @@ export default function HabitacionesPage() {
 
       // Mostrar mensaje de éxito
       const statusMessage = newStatus 
-        ? t('rooms.activatedSuccess', `La habitación "${room.name}" ha sido activada`)
-        : t('rooms.deactivatedSuccess', `La habitación "${room.name}" ha sido desactivada`);
+        ? t('rooms.activatedSuccess', { roomName: room.name })
+        : t('rooms.deactivatedSuccess', { roomName: room.name });
       
       // Crear un mensaje temporal
       const successDiv = document.createElement('div');
@@ -190,12 +190,12 @@ export default function HabitacionesPage() {
         <ol className="flex items-center space-x-2">
           <li>
             <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-              {t('navigation.dashboard', 'Dashboard')}
+              {t('navigation.dashboard')}
             </Link>
           </li>
           <li className="text-gray-400 dark:text-gray-500">/</li>
           <li className="text-gray-700 font-medium dark:text-gray-300">
-            {t('navigation.habitaciones', 'Habitaciones')}
+            {t('navigation.habitaciones')}
           </li>
         </ol>
       </nav>
@@ -203,7 +203,7 @@ export default function HabitacionesPage() {
       {/* Mobile Title */}
       <div className="sm:hidden mb-4 px-4 pt-4">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-          {t('rooms.title', 'Habitaciones')}
+          {t('rooms.title')}
         </h1>
       </div>
 
@@ -213,10 +213,10 @@ export default function HabitacionesPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {t('rooms.manage', 'Gestionar Habitaciones')}
+                {t('rooms.manage')}
               </h2>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {t('rooms.description', 'Administra las habitaciones de tu hotel')}
+                {t('rooms.description')}
               </p>
             </div>
             <button
@@ -225,7 +225,7 @@ export default function HabitacionesPage() {
               style={{ backgroundColor: primaryColor }}
             >
               <PlusCircleIcon className="h-5 w-5" />
-              <span>{t('rooms.new', 'Nueva Habitación')}</span>
+              <span>{t('rooms.new')}</span>
             </button>
           </div>
 
@@ -234,7 +234,7 @@ export default function HabitacionesPage() {
             <div className="flex-1">
               <input
                 type="text"
-                placeholder={t('rooms.searchPlaceholder', 'Buscar por nombre, código o tipo...')}
+                placeholder={t('rooms.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-30 dark:bg-gray-700 dark:text-white transition-all"
@@ -251,7 +251,7 @@ export default function HabitacionesPage() {
                 }`}
                 style={filterActive === 'all' ? { backgroundColor: primaryColor } : {}}
               >
-                {t('common.all', 'Todas')}
+                {t('common.all')}
               </button>
               <button
                 onClick={() => setFilterActive('active')}
@@ -262,7 +262,7 @@ export default function HabitacionesPage() {
                 }`}
                 style={filterActive === 'active' ? { backgroundColor: primaryColor } : {}}
               >
-                {t('common.active', 'Activas')}
+                {t('common.active')}
               </button>
               <button
                 onClick={() => setFilterActive('inactive')}
@@ -273,7 +273,7 @@ export default function HabitacionesPage() {
                 }`}
                 style={filterActive === 'inactive' ? { backgroundColor: primaryColor } : {}}
               >
-                {t('common.inactive', 'Inactivas')}
+                {t('common.inactive')}
               </button>
             </div>
           </div>
@@ -281,17 +281,17 @@ export default function HabitacionesPage() {
           {/* Resumen */}
           <div className="mt-4 flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">{t('rooms.total', 'Total')}:</span>
+              <span className="text-gray-500 dark:text-gray-400">{t('rooms.total')}:</span>
               <span className="font-semibold text-gray-900 dark:text-white">{rooms.length}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">{t('rooms.active', 'Activas')}:</span>
+              <span className="text-gray-500 dark:text-gray-400">{t('rooms.active')}:</span>
               <span className="font-semibold text-green-600 dark:text-green-400">
                 {rooms.filter(r => r.isActive).length}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400">{t('rooms.inactive', 'Inactivas')}:</span>
+              <span className="text-gray-500 dark:text-gray-400">{t('rooms.inactive')}:</span>
               <span className="font-semibold text-gray-600 dark:text-gray-400">
                 {rooms.filter(r => !r.isActive).length}
               </span>
@@ -314,7 +314,7 @@ export default function HabitacionesPage() {
               </svg>
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-                  {t('common.errorOccurred', 'Ha ocurrido un error')}
+                  {t('common.errorOccurred')}
                 </h3>
                 <p className="text-sm text-red-600 dark:text-red-400 mt-1">{error}</p>
                 <button
@@ -324,7 +324,7 @@ export default function HabitacionesPage() {
                   }}
                   className="mt-3 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 underline"
                 >
-                  {t('common.tryAgain', 'Intentar de nuevo')}
+                  {t('common.tryAgain')}
                 </button>
               </div>
             </div>

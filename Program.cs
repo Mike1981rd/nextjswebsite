@@ -113,6 +113,10 @@ try
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    
+    // Add memory cache for theme configuration performance
+    builder.Services.AddMemoryCache();
+    builder.Services.AddDistributedMemoryCache(); // For development, use Redis in production
 
     // Register Services - Logging which services are being registered
     Log.Debug("Registering application services");
@@ -137,6 +141,13 @@ try
     builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
     builder.Services.AddScoped<IOrderService, OrderService>();
     builder.Services.AddScoped<IDomainService, DomainService>();
+    builder.Services.AddScoped<IGlobalThemeConfigService, GlobalThemeConfigService>();
+    builder.Services.AddScoped<IWebsiteBuilderService, WebsiteBuilderService>();
+    builder.Services.AddScoped<IWebsiteBuilderCacheService, WebsiteBuilderCacheService>();
+    
+    // Register Structural Components services (Phase 2)
+    builder.Services.AddScoped<IStructuralComponentsService, StructuralComponentsService>();
+    builder.Services.AddScoped<IEditorHistoryService, EditorHistoryService>();
 
     // Registrar repositorios
     builder.Services.AddScoped<PaymentProviderRepository>();

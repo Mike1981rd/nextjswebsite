@@ -31,7 +31,8 @@ import {
   NotificationIcon,
   OrdersIcon,
   SubscribersIcon,
-  NavigationIcon
+  NavigationIcon,
+  EditorIcon
 } from '@/components/ui/Icons';
 
 // Define menu item type
@@ -108,6 +109,13 @@ const menuItems: MenuItem[] = [
     icon: WebsiteIcon,
     permission: 'website.read',
     children: [
+      {
+        id: 'editor',
+        nameKey: 'navigation.editor',
+        href: '/editor',
+        icon: EditorIcon,
+        permission: 'website.editor'
+      },
       {
         id: 'whatsapp',
         nameKey: 'navigation.whatsapp',

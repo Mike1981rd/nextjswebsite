@@ -65,18 +65,18 @@ export default function NuevaHabitacionPage() {
         <ol className="flex items-center space-x-2">
           <li>
             <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-              {t('navigation.dashboard', 'Dashboard')}
+              {t('navigation.dashboard')}
             </Link>
           </li>
           <li className="text-gray-400 dark:text-gray-500">/</li>
           <li>
             <Link href="/dashboard/habitaciones" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-              {t('navigation.habitaciones', 'Habitaciones')}
+              {t('navigation.habitaciones')}
             </Link>
           </li>
           <li className="text-gray-400 dark:text-gray-500">/</li>
           <li className="text-gray-700 font-medium dark:text-gray-300">
-            {t('rooms.new', 'Nueva Habitación')}
+            {t('rooms.new')}
           </li>
         </ol>
       </nav>
@@ -88,10 +88,10 @@ export default function NuevaHabitacionPage() {
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-2"
         >
           <ArrowLeftIcon className="h-5 w-5" />
-          <span>{t('common.back', 'Volver')}</span>
+          <span>{t('common.back')}</span>
         </button>
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-          {t('rooms.new', 'Nueva Habitación')}
+          {t('rooms.new')}
         </h1>
       </div>
 
@@ -100,10 +100,10 @@ export default function NuevaHabitacionPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
           <div className="p-4 sm:p-6 border-b dark:border-gray-700">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('rooms.createNew', 'Crear Nueva Habitación')}
+              {t('rooms.createNew')}
             </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {t('rooms.createDescription', 'Completa la información para agregar una nueva habitación')}
+              {t('rooms.createDescription')}
             </p>
           </div>
           

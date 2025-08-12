@@ -16,12 +16,12 @@ export default function EmpresaCheckoutPage() {
           <ol className="flex items-center space-x-2">
             <li>
               <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                {t('navigation.dashboard', 'Dashboard')}
+                {t('navigation.dashboard')}
               </Link>
             </li>
             <li className="text-gray-400 dark:text-gray-500">/</li>
             <li className="text-gray-700 font-medium dark:text-gray-300">
-              {t('navigation.checkout', 'Checkout')}
+              {t('navigation.checkout')}
             </li>
           </ol>
         </nav>
@@ -29,7 +29,7 @@ export default function EmpresaCheckoutPage() {
         {/* Mobile Title - Only shows on mobile */}
         <div className="sm:hidden mb-4">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {t('navigation.checkout', 'Checkout')}
+            {t('navigation.checkout')}
           </h1>
         </div>
         

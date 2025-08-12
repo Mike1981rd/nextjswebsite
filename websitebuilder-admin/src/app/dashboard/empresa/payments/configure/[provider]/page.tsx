@@ -411,6 +411,8 @@ export default function ConfigureProviderPage() {
       const configData = {
         provider,
         name: config.name,
+        isTestMode: true,
+        transactionFee: 0,
         ...formData
       };
 
@@ -472,7 +474,7 @@ export default function ConfigureProviderPage() {
             <li className="text-gray-400 dark:text-gray-500">/</li>
             <li>
               <a href="/empresa/payments" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                {t('navigation.payments', 'Payments')}
+                {t('navigation.payments')}
               </a>
             </li>
             <li className="text-gray-400 dark:text-gray-500">/</li>

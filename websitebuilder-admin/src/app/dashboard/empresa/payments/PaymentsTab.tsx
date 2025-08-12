@@ -69,22 +69,21 @@ export default function PaymentsTab() {
     loadProviders();
   }, [refreshKey]);
 
-  // Get primary color from company or localStorage
+  // Get primary color from localStorage
   useEffect(() => {
-    if (company?.primaryColor) {
-      setPrimaryColor(company.primaryColor);
-    } else {
-      const settings = localStorage.getItem('ui-settings');
-      if (settings) {
-        try {
-          const parsed = JSON.parse(settings);
-          setPrimaryColor(parsed.primaryColor || '#22c55e');
-        } catch (e) {
-          console.error('Error parsing settings:', e);
-        }
+    const settings = localStorage.getItem('ui-settings');
+    if (settings) {
+      try {
+        const parsed = JSON.parse(settings);
+        setPrimaryColor(parsed.primaryColor || '#22c55e');
+      } catch (e) {
+        console.error('Error parsing settings:', e);
+        setPrimaryColor('#22c55e');
       }
+    } else {
+      setPrimaryColor('#22c55e');
     }
-  }, [company]);
+  }, []);
 
   const loadProviders = async () => {
     try {

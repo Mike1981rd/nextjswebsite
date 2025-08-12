@@ -29,12 +29,12 @@ export default function LocationsPage() {
         <ol className="flex items-center space-x-2">
           <li>
             <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-              {t('navigation.dashboard', 'Dashboard')}
+              {t('navigation.dashboard')}
             </Link>
           </li>
           <li className="text-gray-400 dark:text-gray-500">/</li>
           <li className="text-gray-700 font-medium dark:text-gray-300">
-            {t('navigation.locations', 'Locations')}
+            {t('navigation.locations')}
           </li>
         </ol>
       </nav>
@@ -42,14 +42,14 @@ export default function LocationsPage() {
       {/* Mobile Title */}
       <div className="sm:hidden mb-4">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-          {t('navigation.locations', 'Locations')}
+          {t('navigation.locations')}
         </h1>
       </div>
 
       {/* Desktop Title */}
       <div className="hidden sm:block mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-          {t('empresa.title', 'Settings')}
+          {t('empresa.title')}
         </h1>
       </div>
 

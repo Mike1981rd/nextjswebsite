@@ -1,22 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/contexts/I18nContext';
 import { StoreDetailsForm } from '@/components/empresa/StoreDetailsForm';
 import { TabsNavigation } from '@/components/empresa/TabsNavigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, AlertCircle, Settings } from 'lucide-react';
 
 export default function EmpresaConfiguracionPage() {
   const { t, language } = useI18n();
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-
-  const handleSaveStatusChange = (status: 'idle' | 'saving' | 'saved' | 'error') => {
-    setSaveStatus(status);
-  };
 
   return (
     <div className="h-full bg-gray-50 dark:bg-gray-900">
@@ -41,7 +31,7 @@ export default function EmpresaConfiguracionPage() {
         
         {/* Store Details Form */}
         <div className="mt-6">
-          <StoreDetailsForm onSaveStatusChange={handleSaveStatusChange} />
+          <StoreDetailsForm />
         </div>
       </div>
     </div>

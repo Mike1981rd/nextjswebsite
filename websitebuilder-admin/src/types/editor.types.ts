@@ -1,0 +1,320 @@
+// Types for the Website Builder Editor
+
+export interface Section {
+  id: string;
+  type: SectionType;
+  name: string;
+  visible: boolean;
+  settings: Record<string, any>;
+  sortOrder: number;
+}
+
+export enum SectionType {
+  // Header Group
+  ANNOUNCEMENT_BAR = 'announcement_bar',
+  HEADER = 'header',
+  IMAGE_BANNER = 'image_banner',
+  
+  // Aside Group
+  CART_DRAWER = 'cart_drawer',
+  SEARCH_DRAWER = 'search_drawer',
+  
+  // Template Sections
+  SLIDESHOW = 'slideshow',
+  COLLAGE = 'collage',
+  IMAGE_WITH_TEXT = 'image_with_text',
+  GALLERY = 'gallery',
+  CONTACT_FORM = 'contact_form',
+  NEWSLETTER = 'newsletter',
+  FEATURED_PRODUCT = 'featured_product',
+  FEATURED_COLLECTION = 'featured_collection',
+  TESTIMONIALS = 'testimonials',
+  FAQ = 'faq',
+  VIDEOS = 'videos',
+  RICH_TEXT = 'rich_text',
+  MULTICOLUMN = 'multicolumn',
+  
+  // Footer Group
+  FOOTER = 'footer',
+  
+  // Product Page Specific
+  PRODUCT_INFORMATION = 'product_information'
+}
+
+export interface SectionGroup {
+  id: string;
+  name: string;
+  sections: Section[];
+  isCollapsed: boolean;
+  canAddSections: boolean;
+}
+
+export interface EditorState {
+  selectedPageId: string | null;
+  selectedPageType: PageType | null;
+  sections: {
+    headerGroup: Section[];
+    asideGroup: Section[];
+    template: Section[];
+    footerGroup: Section[];
+  };
+  selectedSectionId: string | null;
+  isConfigPanelOpen: boolean;
+  hoveredSectionId: string | null;
+  isDirty: boolean;
+  isSaving: boolean;
+}
+
+export enum PageType {
+  HOME = 'home',
+  PRODUCT = 'product',
+  CART = 'cart',
+  CHECKOUT = 'checkout',
+  COLLECTION = 'collection',
+  ALL_COLLECTIONS = 'all_collections',
+  ALL_PRODUCTS = 'all_products',
+  CUSTOM = 'custom'
+}
+
+export interface Page {
+  id: string;
+  name: string;
+  type: PageType;
+  slug: string;
+  isActive: boolean;
+  sections: Section[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SectionConfig {
+  type: SectionType;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'header' | 'aside' | 'template' | 'footer';
+  defaultSettings: Record<string, any>;
+}
+
+export const SECTION_CONFIGS: Record<SectionType, SectionConfig> = {
+  [SectionType.ANNOUNCEMENT_BAR]: {
+    type: SectionType.ANNOUNCEMENT_BAR,
+    name: 'Announcement bar',
+    description: 'Display important messages at the top',
+    icon: 'megaphone',
+    category: 'header',
+    defaultSettings: {
+      text: 'Welcome to our store!',
+      backgroundColor: '#000000',
+      textColor: '#ffffff'
+    }
+  },
+  [SectionType.HEADER]: {
+    type: SectionType.HEADER,
+    name: 'Header',
+    description: 'Main navigation header',
+    icon: 'layout-navbar',
+    category: 'header',
+    defaultSettings: {
+      logo: null,
+      menuItems: []
+    }
+  },
+  [SectionType.IMAGE_BANNER]: {
+    type: SectionType.IMAGE_BANNER,
+    name: 'Image banner',
+    description: 'Hero banner with text overlay',
+    icon: 'image',
+    category: 'header',
+    defaultSettings: {
+      image: null,
+      title: '',
+      subtitle: '',
+      buttonText: '',
+      buttonUrl: ''
+    }
+  },
+  [SectionType.CART_DRAWER]: {
+    type: SectionType.CART_DRAWER,
+    name: 'Cart drawer',
+    description: 'Shopping cart side panel',
+    icon: 'shopping-cart',
+    category: 'aside',
+    defaultSettings: {
+      position: 'right'
+    }
+  },
+  [SectionType.SEARCH_DRAWER]: {
+    type: SectionType.SEARCH_DRAWER,
+    name: 'Search drawer',
+    description: 'Search functionality panel',
+    icon: 'search',
+    category: 'aside',
+    defaultSettings: {
+      position: 'right'
+    }
+  },
+  [SectionType.SLIDESHOW]: {
+    type: SectionType.SLIDESHOW,
+    name: 'Slideshow',
+    description: 'Image carousel with text',
+    icon: 'images',
+    category: 'template',
+    defaultSettings: {
+      slides: [],
+      autoplay: true,
+      duration: 5000
+    }
+  },
+  [SectionType.COLLAGE]: {
+    type: SectionType.COLLAGE,
+    name: 'Collage',
+    description: 'Grid of images',
+    icon: 'layout-grid',
+    category: 'template',
+    defaultSettings: {
+      images: [],
+      layout: 'grid'
+    }
+  },
+  [SectionType.IMAGE_WITH_TEXT]: {
+    type: SectionType.IMAGE_WITH_TEXT,
+    name: 'Image with text',
+    description: 'Image alongside text content',
+    icon: 'layout',
+    category: 'template',
+    defaultSettings: {
+      image: null,
+      title: '',
+      content: '',
+      imagePosition: 'left'
+    }
+  },
+  [SectionType.GALLERY]: {
+    type: SectionType.GALLERY,
+    name: 'Gallery',
+    description: 'Photo gallery grid',
+    icon: 'gallery-horizontal',
+    category: 'template',
+    defaultSettings: {
+      images: [],
+      columns: 3
+    }
+  },
+  [SectionType.CONTACT_FORM]: {
+    type: SectionType.CONTACT_FORM,
+    name: 'Contact form',
+    description: 'Contact form with fields',
+    icon: 'mail',
+    category: 'template',
+    defaultSettings: {
+      title: 'Contact Us',
+      fields: []
+    }
+  },
+  [SectionType.NEWSLETTER]: {
+    type: SectionType.NEWSLETTER,
+    name: 'Newsletter',
+    description: 'Email subscription form',
+    icon: 'newspaper',
+    category: 'template',
+    defaultSettings: {
+      title: 'Subscribe to our newsletter',
+      subtitle: ''
+    }
+  },
+  [SectionType.FEATURED_PRODUCT]: {
+    type: SectionType.FEATURED_PRODUCT,
+    name: 'Featured product',
+    description: 'Highlight a single product',
+    icon: 'star',
+    category: 'template',
+    defaultSettings: {
+      productId: null
+    }
+  },
+  [SectionType.FEATURED_COLLECTION]: {
+    type: SectionType.FEATURED_COLLECTION,
+    name: 'Featured collection',
+    description: 'Display a product collection',
+    icon: 'folder-open',
+    category: 'template',
+    defaultSettings: {
+      collectionId: null,
+      limit: 4
+    }
+  },
+  [SectionType.TESTIMONIALS]: {
+    type: SectionType.TESTIMONIALS,
+    name: 'Testimonials',
+    description: 'Customer reviews and testimonials',
+    icon: 'message-circle',
+    category: 'template',
+    defaultSettings: {
+      testimonials: []
+    }
+  },
+  [SectionType.FAQ]: {
+    type: SectionType.FAQ,
+    name: 'FAQ',
+    description: 'Frequently asked questions',
+    icon: 'help-circle',
+    category: 'template',
+    defaultSettings: {
+      questions: []
+    }
+  },
+  [SectionType.VIDEOS]: {
+    type: SectionType.VIDEOS,
+    name: 'Videos',
+    description: 'Embed videos',
+    icon: 'video',
+    category: 'template',
+    defaultSettings: {
+      videoUrl: ''
+    }
+  },
+  [SectionType.RICH_TEXT]: {
+    type: SectionType.RICH_TEXT,
+    name: 'Rich text',
+    description: 'Formatted text content',
+    icon: 'text',
+    category: 'template',
+    defaultSettings: {
+      content: ''
+    }
+  },
+  [SectionType.MULTICOLUMN]: {
+    type: SectionType.MULTICOLUMN,
+    name: 'Multicolumn',
+    description: 'Multiple columns layout',
+    icon: 'columns-3',
+    category: 'template',
+    defaultSettings: {
+      columns: []
+    }
+  },
+  [SectionType.FOOTER]: {
+    type: SectionType.FOOTER,
+    name: 'Footer',
+    description: 'Site footer',
+    icon: 'layout-navbar-collapse',
+    category: 'footer',
+    defaultSettings: {
+      columns: [],
+      copyright: ''
+    }
+  },
+  [SectionType.PRODUCT_INFORMATION]: {
+    type: SectionType.PRODUCT_INFORMATION,
+    name: 'Product information',
+    description: 'Product details and buy button',
+    icon: 'package',
+    category: 'template',
+    defaultSettings: {
+      showPrice: true,
+      showDescription: true,
+      showVariants: true
+    }
+  }
+};

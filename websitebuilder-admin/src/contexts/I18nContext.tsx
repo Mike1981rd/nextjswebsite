@@ -74,7 +74,17 @@ export function I18nProvider({ children }: I18nProviderProps) {
 
   const t = (key: string, params?: Record<string, any>): string => {
     if (!isLoaded) {
+      console.log('Traducciones no cargadas para:', key);
       return key;
+    }
+
+    // Debug para navigation.editor
+    if (key === 'navigation.editor') {
+      console.log('Buscando navigation.editor:', {
+        language,
+        translations: translations[language]?.navigation,
+        editor: translations[language]?.navigation?.editor
+      });
     }
 
     let translation = getNestedValue(translations[language], key);

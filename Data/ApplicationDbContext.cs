@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebsiteBuilderAPI.Models;
+using WebsiteBuilderAPI.Models.Components;
+using WebsiteBuilderAPI.Models.ThemeConfig;
 
 namespace WebsiteBuilderAPI.Data
 {
@@ -19,9 +21,11 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<CollectionProduct> CollectionProducts { get; set; }
         public DbSet<WebsitePage> WebsitePages { get; set; }
         public DbSet<PageSection> PageSections { get; set; }
+        public DbSet<PageSectionChild> PageSectionChildren { get; set; }
         public DbSet<ThemeSettings> ThemeSettings { get; set; }
         public DbSet<NavigationMenu> NavigationMenus { get; set; }
         public DbSet<EditorHistory> EditorHistories { get; set; }
+        public DbSet<StructuralComponentsSettings> StructuralComponentsSettings { get; set; }
         public DbSet<RoomReservationCart> RoomReservationCarts { get; set; }
         public DbSet<ProductShoppingCart> ProductShoppingCarts { get; set; }
         
@@ -77,6 +81,9 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<RoomAvailability> RoomAvailabilities { get; set; }
         public DbSet<RoomBlockPeriod> RoomBlockPeriods { get; set; }
         public DbSet<AvailabilityRule> AvailabilityRules { get; set; }
+        
+        // Website Builder Theme Configuration v2.0
+        public DbSet<GlobalThemeConfig> GlobalThemeConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -942,6 +949,50 @@ namespace WebsiteBuilderAPI.Data
                 entity.HasIndex(e => e.OrderId);
                 entity.HasIndex(e => e.StatusType);
                 entity.HasIndex(e => e.Timestamp);
+            });
+            
+            // Configuración de GlobalThemeConfig (Website Builder v2.0)
+            modelBuilder.Entity<GlobalThemeConfig>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                
+                // Unique constraint: one configuration per company
+                entity.HasIndex(e => e.CompanyId).IsUnique();
+                
+                // JSONB columns for each configuration module
+                entity.Property(e => e.Appearance).HasColumnType("jsonb");
+                entity.Property(e => e.Typography).HasColumnType("jsonb");
+                entity.Property(e => e.ColorSchemes).HasColumnType("jsonb");
+                entity.Property(e => e.ProductCards).HasColumnType("jsonb");
+                entity.Property(e => e.ProductBadges).HasColumnType("jsonb");
+                entity.Property(e => e.Cart).HasColumnType("jsonb");
+                entity.Property(e => e.Favicon).HasColumnType("jsonb");
+                entity.Property(e => e.Navigation).HasColumnType("jsonb");
+                entity.Property(e => e.SocialMedia).HasColumnType("jsonb");
+                entity.Property(e => e.Swatches).HasColumnType("jsonb");
+                
+                // Version control
+                entity.Property(e => e.ConfigVersion)
+                    .IsRequired()
+                    .HasMaxLength(10)
+                    .HasDefaultValue("2.0.0");
+                
+                // Timestamps
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Publishing status
+                entity.Property(e => e.IsPublished).HasDefaultValue(false);
+                
+                // Relationship with Company
+                entity.HasOne(e => e.Company)
+                    .WithOne()
+                    .HasForeignKey<GlobalThemeConfig>(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                
+                // Indexes for performance
+                entity.HasIndex(e => e.IsPublished);
+                entity.HasIndex(e => e.UpdatedAt);
             });
         }
     }

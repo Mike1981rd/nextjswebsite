@@ -186,7 +186,7 @@ export default function DomainsPage() {
   };
 
   const handleDeleteDnsRecord = (record: DnsRecord) => {
-    if (confirm(t('domains.dns.confirmDelete', '¿Estás seguro de eliminar este registro DNS?'))) {
+    if (confirm(t('domains.dns.confirmDelete'))) {
       setFormData({
         ...formData,
         dnsRecords: formData.dnsRecords.filter(r => r !== record)
@@ -258,8 +258,8 @@ export default function DomainsPage() {
 
       if (response.ok && data.success) {
         setSuccessMessage(isEditMode 
-          ? t('domains.updated', 'Dominio actualizado exitosamente')
-          : t('domains.created', 'Dominio creado exitosamente')
+          ? t('domains.updated')
+          : t('domains.created')
         );
         
         if (!isEditMode && data.data?.id) {
@@ -269,11 +269,11 @@ export default function DomainsPage() {
         
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
-        setErrorMessage(data.message || t('domains.error', 'Error al guardar el dominio'));
+        setErrorMessage(data.message || t('domains.error'));
       }
     } catch (error) {
       console.error('Error saving domain:', error);
-      setErrorMessage(t('domains.unexpectedError', 'Error inesperado al guardar el dominio'));
+      setErrorMessage(t('domains.unexpectedError'));
     } finally {
       setSaving(false);
     }
@@ -287,7 +287,7 @@ export default function DomainsPage() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
-          <p className="text-gray-600 dark:text-gray-400">{t('common.loading', 'Cargando...')}</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -299,12 +299,12 @@ export default function DomainsPage() {
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="px-4 sm:px-6 py-4">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            {isEditMode ? t('domains.edit', 'Configuración del Dominio') : t('domains.create', 'Crear Dominio')}
+            {isEditMode ? t('domains.edit') : t('domains.create')}
           </h1>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             {isEditMode 
-              ? t('domains.editDescription', 'Administra la configuración de tu dominio')
-              : t('domains.createDescription', 'Configura tu primer dominio')
+              ? t('domains.editDescription')
+              : t('domains.createDescription')
             }
           </p>
         </div>
@@ -337,7 +337,7 @@ export default function DomainsPage() {
               <div className="flex items-center gap-3">
                 <Globe className="w-5 h-5 text-gray-400" />
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('domains.basicInfo', 'Información del Dominio')}
+                  {t('domains.basicInfo')}
                 </h2>
               </div>
               {expandedSections.basic ? (
@@ -352,7 +352,7 @@ export default function DomainsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('domains.domainName', 'Nombre del Dominio')}
+                      {t('domains.domainName')}
                       <span className="text-red-500 ml-1">*</span>
                     </label>
                     <input
@@ -371,7 +371,7 @@ export default function DomainsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('domains.status', 'Estado')}
+                      {t('domains.status')}
                     </label>
                     <div className="flex items-center gap-4">
                       <select
@@ -383,11 +383,11 @@ export default function DomainsPage() {
                                  bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                                  focus:outline-none transition-all"
                       >
-                        <option value="pending">{t('domains.status.pending', 'Pendiente')}</option>
-                        <option value="active">{t('domains.status.active', 'Activo')}</option>
-                        <option value="inactive">{t('domains.status.inactive', 'Inactivo')}</option>
-                        <option value="suspended">{t('domains.status.suspended', 'Suspendido')}</option>
-                        <option value="expired">{t('domains.status.expired', 'Expirado')}</option>
+                        <option value="pending">{t('domains.status.pending')}</option>
+                        <option value="active">{t('domains.status.active')}</option>
+                        <option value="inactive">{t('domains.status.inactive')}</option>
+                        <option value="suspended">{t('domains.status.suspended')}</option>
+                        <option value="expired">{t('domains.status.expired')}</option>
                       </select>
                       <DomainStatusBadge status={formData.status} />
                     </div>
@@ -395,7 +395,7 @@ export default function DomainsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('domains.provider', 'Proveedor')}
+                      {t('domains.provider')}
                     </label>
                     <input
                       type="text"
@@ -412,7 +412,7 @@ export default function DomainsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('domains.expiryDate', 'Fecha de Expiración')}
+                      {t('domains.expiryDate')}
                     </label>
                     <div className="relative">
                       <input
@@ -440,7 +440,7 @@ export default function DomainsPage() {
                       style={{ accentColor: primaryColor }}
                     />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t('domains.activeDomain', 'Dominio activo')}
+                      {t('domains.activeDomain')}
                     </span>
                   </label>
 
@@ -453,7 +453,7 @@ export default function DomainsPage() {
                       style={{ accentColor: primaryColor }}
                     />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t('domains.primaryDomain', 'Dominio primario')}
+                      {t('domains.primaryDomain')}
                     </span>
                   </label>
                 </div>
@@ -471,7 +471,7 @@ export default function DomainsPage() {
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-gray-400" />
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('domains.sslConfig', 'Configuración SSL')}
+                  {t('domains.sslConfig')}
                 </h2>
               </div>
               {expandedSections.ssl ? (
@@ -493,7 +493,7 @@ export default function DomainsPage() {
                       style={{ accentColor: primaryColor }}
                     />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t('domains.hasSSL', 'Tiene certificado SSL')}
+                      {t('domains.hasSSL')}
                     </span>
                   </label>
                 </div>
@@ -502,7 +502,7 @@ export default function DomainsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-7">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('domains.sslProvider', 'Proveedor SSL')}
+                        {t('domains.sslProvider')}
                       </label>
                       <input
                         type="text"
@@ -518,7 +518,7 @@ export default function DomainsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('domains.sslExpiryDate', 'Fecha de Expiración SSL')}
+                        {t('domains.sslExpiryDate')}
                       </label>
                       <input
                         type="date"
@@ -547,7 +547,7 @@ export default function DomainsPage() {
               <div className="flex items-center gap-3">
                 <Server className="w-5 h-5 text-gray-400" />
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('domains.dnsConfig', 'Registros DNS')}
+                  {t('domains.dnsConfig')}
                 </h2>
                 {formData.dnsRecords.length > 0 && (
                   <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">
@@ -566,7 +566,7 @@ export default function DomainsPage() {
               <div className="px-6 pb-6 space-y-4 border-t border-gray-100 dark:border-gray-700/50">
                 <div className="flex justify-between items-center mt-6">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('domains.dnsDescription', 'Configure los registros DNS')}
+                    {t('domains.dnsDescription')}
                   </p>
                   <button
                     type="button"
@@ -578,7 +578,7 @@ export default function DomainsPage() {
                     style={{ backgroundColor: primaryColor }}
                   >
                     <Plus className="w-4 h-4" />
-                    {t('domains.dns.addRecord', 'Agregar')}
+                    {t('domains.dns.addRecord')}
                   </button>
                 </div>
 
@@ -609,12 +609,12 @@ export default function DomainsPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  {t('common.saving', 'Guardando...')}
+                  {t('common.saving')}
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  {t('common.save', 'Guardar')}
+                  {t('common.save')}
                 </>
               )}
             </button>

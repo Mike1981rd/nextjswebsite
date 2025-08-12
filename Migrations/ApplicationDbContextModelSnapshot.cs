@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebsiteBuilderAPI.Data;
+using WebsiteBuilderAPI.Models.ThemeConfig;
 
 #nullable disable
 
@@ -385,6 +386,67 @@ namespace WebsiteBuilderAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.Components.StructuralComponentsSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AnnouncementBarConfig")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("CartDrawerConfig")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FooterConfig")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("HeaderConfig")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("LastUpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("LastUpdatedBy");
+
+                    b.ToTable("StructuralComponentsSettings");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.Customer", b =>
@@ -1143,6 +1205,14 @@ namespace WebsiteBuilderAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ChangeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1152,8 +1222,26 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<int>("PageId")
+                    b.Property<int>("EntityId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCheckpoint")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("PageId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("StateData")
                         .IsRequired()
@@ -1162,9 +1250,16 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.HasIndex("PageId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("EditorHistories");
                 });
@@ -1879,6 +1974,10 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<string>("CustomCssClass")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -1893,11 +1992,64 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ThemeOverrides")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PageId");
 
                     b.ToTable("PageSections");
+                });
+
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.PageSectionChild", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BlockType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomCssClass")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PageSectionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Settings")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PageSectionId");
+
+                    b.ToTable("PageSectionChildren");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.Pagina", b =>
@@ -2896,6 +3048,94 @@ namespace WebsiteBuilderAPI.Migrations
                     b.ToTable("ShippingZones");
                 });
 
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.ThemeConfig.GlobalThemeConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<AppearanceConfig>("Appearance")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<CartConfig>("Cart")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<ColorSchemesConfig>("ColorSchemes")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ConfigVersion")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasDefaultValue("2.0.0");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<FaviconConfig>("Favicon")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<bool>("IsPublished")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<NavigationConfig>("Navigation")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<ProductBadgesConfig>("ProductBadges")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<ProductCardsConfig>("ProductCards")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<SocialMediaConfig>("SocialMedia")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<SwatchesConfig>("Swatches")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<TypographyConfig>("Typography")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId")
+                        .IsUnique();
+
+                    b.HasIndex("IsPublished");
+
+                    b.HasIndex("UpdatedAt");
+
+                    b.ToTable("GlobalThemeConfigs");
+                });
+
             modelBuilder.Entity("WebsiteBuilderAPI.Models.ThemeSettings", b =>
                 {
                     b.Property<int>("Id")
@@ -3038,6 +3278,17 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("MetaTitle")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -3048,8 +3299,15 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Slug")
-                        .HasColumnType("text");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int?>("TemplateId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -3120,6 +3378,23 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Navigation("Collection");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.Components.StructuralComponentsSettings", b =>
+                {
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebsiteBuilderAPI.Models.User", "LastUpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("LastUpdatedBy");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("LastUpdatedByUser");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.Customer", b =>
@@ -3249,13 +3524,25 @@ namespace WebsiteBuilderAPI.Migrations
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.EditorHistory", b =>
                 {
-                    b.HasOne("WebsiteBuilderAPI.Models.WebsitePage", "Page")
-                        .WithMany("EditorHistories")
-                        .HasForeignKey("PageId")
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("WebsiteBuilderAPI.Models.WebsitePage", "Page")
+                        .WithMany("EditorHistories")
+                        .HasForeignKey("PageId");
+
+                    b.HasOne("WebsiteBuilderAPI.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Company");
+
                     b.Navigation("Page");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.Location", b =>
@@ -3432,6 +3719,17 @@ namespace WebsiteBuilderAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Page");
+                });
+
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.PageSectionChild", b =>
+                {
+                    b.HasOne("WebsiteBuilderAPI.Models.PageSection", "PageSection")
+                        .WithMany("Children")
+                        .HasForeignKey("PageSectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PageSection");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.Pagina", b =>
@@ -3685,6 +3983,17 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.ThemeConfig.GlobalThemeConfig", b =>
+                {
+                    b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
+                        .WithOne()
+                        .HasForeignKey("WebsiteBuilderAPI.Models.ThemeConfig.GlobalThemeConfig", "CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("WebsiteBuilderAPI.Models.ThemeSettings", b =>
                 {
                     b.HasOne("WebsiteBuilderAPI.Models.Company", "Company")
@@ -3793,6 +4102,11 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Navigation("OrderPayments");
 
                     b.Navigation("OrderStatusHistories");
+                });
+
+            modelBuilder.Entity("WebsiteBuilderAPI.Models.PageSection", b =>
+                {
+                    b.Navigation("Children");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.Permission", b =>

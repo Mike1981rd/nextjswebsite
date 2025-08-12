@@ -51,7 +51,7 @@ export default function CollectionsPage() {
       
       setCollections(result.items);
       setTotalPages(result.totalPages);
-      setTotalItems(result.totalItems);
+      setTotalItems(result.totalCount);
     } catch (error) {
       console.error('Error loading collections:', error);
     } finally {
@@ -92,7 +92,7 @@ export default function CollectionsPage() {
 
   // Handle delete single collection
   const handleDeleteCollection = async (id: number) => {
-    if (!confirm(t('collections.confirmDelete', 'Are you sure you want to delete this collection?'))) {
+    if (!confirm(t('collections.confirmDelete'))) {
       return;
     }
 
@@ -101,7 +101,7 @@ export default function CollectionsPage() {
       await loadCollections();
     } catch (error) {
       console.error('Error deleting collection:', error);
-      alert(t('collections.deleteError', 'Error deleting collection'));
+      alert(t('collections.deleteError'));
     }
   };
 
@@ -109,7 +109,7 @@ export default function CollectionsPage() {
   const handleBulkDelete = async () => {
     if (selectedCollections.length === 0) return;
     
-    if (!confirm(t('collections.confirmBulkDelete', `Are you sure you want to delete ${selectedCollections.length} collections?`))) {
+    if (!confirm(t('collections.confirmBulkDelete'))) {
       return;
     }
 
@@ -119,7 +119,7 @@ export default function CollectionsPage() {
       await loadCollections();
     } catch (error) {
       console.error('Error deleting collections:', error);
-      alert(t('collections.bulkDeleteError', 'Error deleting collections'));
+      alert(t('collections.bulkDeleteError'));
     }
   };
 
@@ -131,24 +131,24 @@ export default function CollectionsPage() {
           <ol className="flex items-center space-x-2">
             <li>
               <a href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                {t('navigation.dashboard', 'Dashboard')}
+                {t('navigation.dashboard')}
               </a>
             </li>
             <li className="text-gray-400 dark:text-gray-500">/</li>
             <li className="text-gray-700 font-medium dark:text-gray-300">
-              {t('navigation.colecciones', 'Collections')}
+              {t('navigation.colecciones')}
             </li>
           </ol>
         </nav>
 
         <div className="sm:hidden mb-4">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {t('navigation.colecciones', 'Collections')}
+            {t('navigation.colecciones')}
           </h1>
         </div>
 
         <h1 className="hidden sm:block text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {t('collections.title', 'Colecciones')}
+          {t('collections.title')}
         </h1>
       </div>
 
@@ -160,7 +160,7 @@ export default function CollectionsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder={t('collections.searchPlaceholder', 'Buscar colecciones...')}
+              placeholder={t('collections.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-30 dark:bg-gray-700 dark:text-white transition-all"
@@ -175,7 +175,7 @@ export default function CollectionsPage() {
             style={{ backgroundColor: primaryColor }}
           >
             <Plus className="h-5 w-5" />
-            {t('collections.create', 'CREAR COLECCIÓN')}
+            {t('collections.create')}
           </button>
         </div>
 
@@ -184,13 +184,13 @@ export default function CollectionsPage() {
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                {t('collections.selected', '{count} selected', { count: selectedCollections.length })}
+                {`${selectedCollections.length} ${t('collections.selected')}`}
               </span>
               <button
                 onClick={handleBulkDelete}
                 className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
               >
-                {t('common.delete', 'Delete')}
+                {t('common.delete')}
               </button>
             </div>
           </div>
@@ -204,20 +204,20 @@ export default function CollectionsPage() {
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2" 
               style={{ borderColor: primaryColor }}></div>
             <p className="mt-2 text-gray-500 dark:text-gray-400">
-              {t('common.loading', 'Loading...')}
+              {t('common.loading')}
             </p>
           </div>
         ) : collections.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              {t('collections.empty', 'No collections found')}
+              {t('collections.empty')}
             </p>
             <button
               onClick={() => router.push('/dashboard/colecciones/crear')}
               className="px-4 py-2 text-white rounded-lg transition-colors"
               style={{ backgroundColor: primaryColor }}
             >
-              {t('collections.createFirst', 'Create your first collection')}
+              {t('collections.createFirst')}
             </button>
           </div>
         ) : (
@@ -237,13 +237,13 @@ export default function CollectionsPage() {
                       />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('collections.fields.title', 'TÍTULO')}
+                      {t('collections.fields.title')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('collections.fields.products', 'PRODUCTOS')}
+                      {t('collections.fields.products')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {t('collections.fields.conditions', 'CONDICIONES DE LOS PRODUCTOS')}
+                      {t('collections.fields.conditions')}
                     </th>
                   </tr>
                 </thead>
@@ -282,7 +282,7 @@ export default function CollectionsPage() {
                             </div>
                             {!collection.isActive && (
                               <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {t('common.inactive', 'Inactive')}
+                                {t('common.inactive')}
                               </span>
                             )}
                           </div>
@@ -340,13 +340,13 @@ export default function CollectionsPage() {
                       </h3>
                       {!collection.isActive && (
                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {t('common.inactive', 'Inactive')}
+                          {t('common.inactive')}
                         </span>
                       )}
                       
                       <div className="mt-2 space-y-1">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {collection.productCount} {t('collections.products', 'productos')}
+                          {collection.productCount} {t('collections.products')}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {collection.conditionsSummary}
@@ -363,7 +363,7 @@ export default function CollectionsPage() {
               <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {t('common.showing', 'Showing')} {((currentPage - 1) * 20) + 1} - {Math.min(currentPage * 20, totalItems)} {t('common.of', 'of')} {totalItems}
+                    {t('common.showing')} {((currentPage - 1) * 20) + 1} - {Math.min(currentPage * 20, totalItems)} {t('common.of')} {totalItems}
                   </p>
                   
                   <div className="flex gap-2">
@@ -401,7 +401,7 @@ export default function CollectionsPage() {
           className="text-sm hover:underline transition-colors"
           style={{ color: primaryColor }}
         >
-          {t('collections.moreInfo', 'Más información sobre colecciones')}
+          {t('collections.moreInfo')}
         </a>
       </div>
     </div>

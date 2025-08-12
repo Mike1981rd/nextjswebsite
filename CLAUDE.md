@@ -167,6 +167,7 @@ Después de ejecutar `/init-session`, debes poder confirmar:
 ### 🛠️ COMANDOS RELACIONADOS
 
 Después de `/init-session`, estos comandos estarán disponibles:
+- `/init-websitebuilder` - Inicializar sesión específica del Website Builder
 - `create-section [nombre]` - Crear nueva sección del builder
 - `create-module [nombre]` - Crear módulo completo back office
 - `debug-builder [error]` - Debuggear website builder
@@ -223,8 +224,50 @@ Usuario: /init-session
 Claude: Entendido, he cargado el contexto del proyecto WebsiteBuilder.  ❌ INCORRECTO
 ```
 
+## 🏗️ COMANDO /init-websitebuilder - WEBSITE BUILDER SESSION
+
+### ⚠️ USO ESPECÍFICO
+Este comando es para retomar el desarrollo del Website Builder v2.0 específicamente.
+
+### 📋 QUÉ HACE EL COMANDO
+1. **Lee el progreso actual** desde `websitebuilderprogress.md`
+2. **Carga la arquitectura** desde `blueprintwebsite.md` 
+3. **Verifica implementación** actual (tipos, modelos, APIs, componentes)
+4. **Identifica siguiente tarea** basado en dependencias y progreso
+5. **Prepara el entorno** para continuar exactamente donde quedaste
+
+### 💡 CUÁNDO USARLO
+- Al comenzar una sesión de trabajo en Website Builder
+- Después de una interrupción para retomar el trabajo
+- Para verificar el estado actual de implementación
+- Cuando necesites recordar decisiones arquitectónicas
+
+### 📊 OUTPUT ESPERADO
+```
+🚀 WEBSITE BUILDER SESSION INITIALIZED
+
+📊 Overall Progress: 15% Complete
+Current Phase: Phase 1 - TypeScript Types (75% complete)
+
+✅ Recently Completed:
+- appearance.ts created
+- typography.ts created
+- colorSchemes.ts created
+
+🔄 Currently In Progress:
+- productCards.ts
+- Files modified: websitebuilder-admin/src/types/theme/productCards.ts
+
+📋 Next Recommended Tasks:
+1. Complete productCards.ts implementation
+2. Create productBadges.ts
+3. Create cart.ts
+
+[... más detalles ...]
+```
+
 ---
 
-**Última actualización:** 2025-01-10
-**Versión:** 3.1 (Incluye logs.md en lectura obligatoria)
+**Última actualización:** 2025-01-11
+**Versión:** 3.2 (Incluye comando /init-websitebuilder)
 **Crítico:** Los archivos blueprint y logs DEBEN leerse SIEMPRE

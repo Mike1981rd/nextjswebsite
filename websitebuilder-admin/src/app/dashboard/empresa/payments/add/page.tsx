@@ -56,6 +56,7 @@ export default function AddPaymentProviderPage() {
       const response = await paymentService.getAvailableProviders();
       const providersWithDetails = response.map(p => ({
         ...p,
+        description: p.description || '',
         ...providerDetails[p.provider] || {
           logo: '/payment-providers/default.png',
           accentColor: '#6B7280'
