@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, ChevronDown, ChevronRight, Save, Loader2 } from 'lucide-react';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { Slider } from '@/components/ui/slider';
@@ -9,8 +9,21 @@ import { BorderRadiusLabels, BorderRadiusSize } from '@/types/theme/appearance';
 import { TypographyConfig, FontConfig, defaultTypography } from '@/types/theme/typography';
 import { ColorSchemesConfig, defaultColorSchemes } from '@/types/theme/colorSchemes';
 import { ProductCardsConfig, defaultProductCards } from '@/types/theme/productCards';
+import { ProductBadgesConfig, defaultProductBadges } from '@/types/theme/productBadges';
+import { CartConfig, defaultCart } from '@/types/theme/cart';
+import { FaviconConfig, defaultFavicon } from '@/types/theme/favicon';
 import { FontPicker } from '@/components/ui/font-picker';
 import { ProductCardsSection } from './ProductCardsSection';
+import { ProductBadgesSection } from './ProductBadgesSection';
+import { CartSection } from './CartSection';
+import { FaviconSection } from './FaviconSection';
+import { NavigationSection } from './NavigationSection';
+import { NavigationConfig, defaultNavigation } from '@/types/theme/navigation';
+import { SocialMediaSection } from './SocialMediaSection';
+import { SocialMediaConfig, defaultSocialMedia } from '@/types/theme/socialMedia';
+import { SwatchesSection } from './SwatchesSection';
+import { SwatchesConfig, defaultSwatches } from '@/types/theme/swatches';
+import { useGlobalSettingsTranslations } from '@/hooks/useEditorTranslations';
 import toast from 'react-hot-toast';
 
 interface SettingSection {
@@ -21,37 +34,170 @@ interface SettingSection {
 
 export function GlobalSettingsPanel() {
   const { toggleGlobalSettings } = useEditorStore();
+  const { t } = useGlobalSettingsTranslations();
   const { 
     appearance, 
     typography,
     colorSchemes,
-    productCards, 
+    productCards,
+    productBadges,
+    cart,
+    favicon,
+    navigation,
+    socialMedia,
+    swatches,
     loading, 
     updateAppearance, 
     updateTypography,
     updateColorSchemes,
-    updateProductCards 
+    updateProductCards,
+    updateProductBadges,
+    updateCart,
+    updateFavicon,
+    updateNavigation,
+    updateSocialMedia,
+    updateSwatches
   } = useGlobalThemeConfig();
   const [localAppearance, setLocalAppearance] = useState(appearance);
   const [localTypography, setLocalTypography] = useState<TypographyConfig>(typography || defaultTypography);
   const [localColorSchemes, setLocalColorSchemes] = useState<ColorSchemesConfig>(colorSchemes || defaultColorSchemes);
   const [localProductCards, setLocalProductCards] = useState<ProductCardsConfig>(productCards || defaultProductCards);
+  // Initialize Product Badges with complete structure to avoid null values
+  const [localProductBadges, setLocalProductBadges] = useState<ProductBadgesConfig>(() => {
+    const badges = productBadges || defaultProductBadges;
+    return {
+      position: badges.position || { desktop: 'below-image' },
+      soldOut: {
+        enabled: badges.soldOut?.enabled ?? true,
+        background: badges.soldOut?.background || '#FFFFFF',
+        text: badges.soldOut?.text || '#000000',
+        displayAs: badges.soldOut?.displayAs || '',
+        textContent: badges.soldOut?.textContent || '',
+        tag: badges.soldOut?.tag || ''
+      },
+      sale: {
+        enabled: badges.sale?.enabled ?? true,
+        background: badges.sale?.background || '#FF0000',
+        text: badges.sale?.text || '#FFFFFF',
+        displayAs: badges.sale?.displayAs || 'sale',
+        textContent: badges.sale?.textContent || '',
+        tag: badges.sale?.tag || ''
+      },
+      saleByPrice: {
+        enabled: badges.saleByPrice?.enabled ?? false,
+        background: badges.saleByPrice?.background || '#000000',
+        text: badges.saleByPrice?.text || '#FFFFFF',
+        displayAs: badges.saleByPrice?.displayAs || 'percentage',
+        textContent: badges.saleByPrice?.textContent || '',
+        tag: badges.saleByPrice?.tag || ''
+      },
+      saleHighlight: {
+        enabled: badges.saleHighlight?.enabled ?? false,
+        textColor: badges.saleHighlight?.textColor || '#000000'
+      },
+      custom1: {
+        enabled: badges.custom1?.enabled ?? false,
+        background: badges.custom1?.background || '#FFFFFF',
+        text: badges.custom1?.text || '#000000',
+        displayAs: badges.custom1?.displayAs || '',
+        textContent: badges.custom1?.textContent || 'Best seller',
+        tag: badges.custom1?.tag || ''
+      },
+      custom2: {
+        enabled: badges.custom2?.enabled ?? false,
+        background: badges.custom2?.background || '#FFFFFF',
+        text: badges.custom2?.text || '#000000',
+        displayAs: badges.custom2?.displayAs || '',
+        textContent: badges.custom2?.textContent || '',
+        tag: badges.custom2?.tag || ''
+      },
+      custom3: {
+        enabled: badges.custom3?.enabled ?? false,
+        background: badges.custom3?.background || '#FFFFFF',
+        text: badges.custom3?.text || '#000000',
+        displayAs: badges.custom3?.displayAs || '',
+        textContent: badges.custom3?.textContent || '',
+        tag: badges.custom3?.tag || ''
+      }
+    };
+  });
+  // Initialize Cart with complete structure
+  const [localCart, setLocalCart] = useState<CartConfig>(() => {
+    const cartData = cart || defaultCart;
+    return {
+      drawerType: cartData.drawerType || 'drawer-and-page',
+      showStickyCart: cartData.showStickyCart ?? false,
+      cartStatusColors: {
+        background: cartData.cartStatusColors?.background || '#F0FF2E',
+        text: cartData.cartStatusColors?.text || '#383933'
+      },
+      freeShipping: {
+        showProgress: cartData.freeShipping?.showProgress ?? true,
+        threshold: cartData.freeShipping?.threshold ?? 0,
+        progressBarColor: cartData.freeShipping?.progressBarColor || '#383933',
+        successMessage: cartData.freeShipping?.successMessage || '¡Envío gratis conseguido!',
+        progressMessage: cartData.freeShipping?.progressMessage || 'Te faltan {amount} para envío gratis'
+      }
+    };
+  });
+  // Initialize Favicon
+  const [localFavicon, setLocalFavicon] = useState<FaviconConfig>(() => {
+    const faviconData = favicon || defaultFavicon;
+    return {
+      customFavicon: faviconData.customFavicon ?? true,
+      faviconUrl: faviconData.faviconUrl || '/favicon-custom.ico'
+    };
+  });
+  // Initialize Navigation
+  const [localNavigation, setLocalNavigation] = useState<NavigationConfig>(() => {
+    const navData = navigation || defaultNavigation;
+    return {
+      search: {
+        showAs: navData.search?.showAs || 'drawer-and-page'
+      },
+      backToTop: {
+        showButton: navData.backToTop?.showButton ?? true,
+        position: navData.backToTop?.position || 'bottom-left'
+      }
+    };
+  });
+  // Initialize Social Media
+  const [localSocialMedia, setLocalSocialMedia] = useState<SocialMediaConfig>(() => {
+    return socialMedia || defaultSocialMedia;
+  });
+  // Initialize Swatches
+  const [localSwatches, setLocalSwatches] = useState<SwatchesConfig>(() => {
+    return swatches || defaultSwatches;
+  });
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  const [sections, setSections] = useState<SettingSection[]>([
-    { id: 'appearance', name: 'Apariencia', isExpanded: false },
-    { id: 'typography', name: 'Tipografía', isExpanded: false },
-    { id: 'colorSchemes', name: 'Esquemas de color', isExpanded: false },
-    { id: 'productCards', name: 'Tarjetas de producto', isExpanded: false },
-    { id: 'productBadges', name: 'Insignias de producto', isExpanded: false },
-    { id: 'cart', name: 'Carrito', isExpanded: false },
-    { id: 'favicon', name: 'Favicon', isExpanded: false },
-    { id: 'navigation', name: 'Navegación', isExpanded: false },
-    { id: 'socialMedia', name: 'Redes sociales', isExpanded: false },
-    { id: 'swatches', name: 'Muestras', isExpanded: false },
-  ]);
+  // Create sections with translations
+  const sections = useMemo(() => [
+    { id: 'appearance', name: t('themeConfig.appearance.title', 'Apariencia'), isExpanded: false },
+    { id: 'typography', name: t('themeConfig.typography.title', 'Tipografía'), isExpanded: false },
+    { id: 'colorSchemes', name: t('themeConfig.colorSchemes.title', 'Esquemas de color'), isExpanded: false },
+    { id: 'productCards', name: t('themeConfig.productCards.title', 'Tarjetas de producto'), isExpanded: false },
+    { id: 'productBadges', name: t('themeConfig.productBadges.title', 'Product badges'), isExpanded: false },
+    { id: 'cart', name: t('themeConfig.cart.title', 'Carrito'), isExpanded: false },
+    { id: 'favicon', name: t('themeConfig.favicon.title', 'Favicon'), isExpanded: false },
+    { id: 'navigation', name: t('themeConfig.navigation.title', 'Navegación'), isExpanded: false },
+    { id: 'socialMedia', name: t('themeConfig.socialMedia.title', 'Redes sociales'), isExpanded: false },
+    { id: 'swatches', name: t('themeConfig.swatches.title', 'Muestras'), isExpanded: false },
+  ], [t]);
+  
+  const [sectionsState, setSectionsState] = useState<SettingSection[]>(sections);
+
+  // Update sections state when language changes
+  useEffect(() => {
+    setSectionsState(prevSections => 
+      prevSections.map((prevSection, index) => ({
+        ...prevSection,
+        name: sections[index].name
+      }))
+    );
+  }, [sections]);
 
   useEffect(() => {
     const settings = localStorage.getItem('ui-settings');
@@ -78,6 +224,123 @@ export function GlobalSettingsPanel() {
       setLocalProductCards(productCards);
     }
   }, [productCards]);
+
+  useEffect(() => {
+    if (productBadges) {
+      // Ensure complete structure when updating from store
+      setLocalProductBadges({
+        position: productBadges.position || { desktop: 'below-image' },
+        soldOut: {
+          enabled: productBadges.soldOut?.enabled ?? true,
+          background: productBadges.soldOut?.background || '#FFFFFF',
+          text: productBadges.soldOut?.text || '#000000',
+          displayAs: productBadges.soldOut?.displayAs || '',
+          textContent: productBadges.soldOut?.textContent || '',
+          tag: productBadges.soldOut?.tag || ''
+        },
+        sale: {
+          enabled: productBadges.sale?.enabled ?? true,
+          background: productBadges.sale?.background || '#FF0000',
+          text: productBadges.sale?.text || '#FFFFFF',
+          displayAs: productBadges.sale?.displayAs || 'sale',
+          textContent: productBadges.sale?.textContent || '',
+          tag: productBadges.sale?.tag || ''
+        },
+        saleByPrice: {
+          enabled: productBadges.saleByPrice?.enabled ?? false,
+          background: productBadges.saleByPrice?.background || '#000000',
+          text: productBadges.saleByPrice?.text || '#FFFFFF',
+          displayAs: productBadges.saleByPrice?.displayAs || 'percentage',
+          textContent: productBadges.saleByPrice?.textContent || '',
+          tag: productBadges.saleByPrice?.tag || ''
+        },
+        saleHighlight: {
+          enabled: productBadges.saleHighlight?.enabled ?? false,
+          textColor: productBadges.saleHighlight?.textColor || '#000000'
+        },
+        custom1: {
+          enabled: productBadges.custom1?.enabled ?? false,
+          background: productBadges.custom1?.background || '#FFFFFF',
+          text: productBadges.custom1?.text || '#000000',
+          displayAs: productBadges.custom1?.displayAs || '',
+          textContent: productBadges.custom1?.textContent || 'Best seller',
+          tag: productBadges.custom1?.tag || ''
+        },
+        custom2: {
+          enabled: productBadges.custom2?.enabled ?? false,
+          background: productBadges.custom2?.background || '#FFFFFF',
+          text: productBadges.custom2?.text || '#000000',
+          displayAs: productBadges.custom2?.displayAs || '',
+          textContent: productBadges.custom2?.textContent || '',
+          tag: productBadges.custom2?.tag || ''
+        },
+        custom3: {
+          enabled: productBadges.custom3?.enabled ?? false,
+          background: productBadges.custom3?.background || '#FFFFFF',
+          text: productBadges.custom3?.text || '#000000',
+          displayAs: productBadges.custom3?.displayAs || '',
+          textContent: productBadges.custom3?.textContent || '',
+          tag: productBadges.custom3?.tag || ''
+        }
+      });
+    }
+  }, [productBadges]);
+
+  useEffect(() => {
+    if (cart) {
+      // Ensure complete structure when updating from store
+      setLocalCart({
+        drawerType: cart.drawerType || 'drawer-and-page',
+        showStickyCart: cart.showStickyCart ?? false,
+        cartStatusColors: {
+          background: cart.cartStatusColors?.background || '#F0FF2E',
+          text: cart.cartStatusColors?.text || '#383933'
+        },
+        freeShipping: {
+          showProgress: cart.freeShipping?.showProgress ?? true,
+          threshold: cart.freeShipping?.threshold ?? 0,
+          progressBarColor: cart.freeShipping?.progressBarColor || '#383933',
+          successMessage: cart.freeShipping?.successMessage || '¡Envío gratis conseguido!',
+          progressMessage: cart.freeShipping?.progressMessage || 'Te faltan {amount} para envío gratis'
+        }
+      });
+    }
+  }, [cart]);
+
+  useEffect(() => {
+    if (favicon) {
+      setLocalFavicon({
+        customFavicon: favicon.customFavicon ?? true,
+        faviconUrl: favicon.faviconUrl || '/favicon-custom.ico'
+      });
+    }
+  }, [favicon]);
+
+  useEffect(() => {
+    if (navigation) {
+      setLocalNavigation({
+        search: {
+          showAs: navigation.search?.showAs || 'drawer-and-page'
+        },
+        backToTop: {
+          showButton: navigation.backToTop?.showButton ?? true,
+          position: navigation.backToTop?.position || 'bottom-left'
+        }
+      });
+    }
+  }, [navigation]);
+
+  useEffect(() => {
+    if (socialMedia) {
+      setLocalSocialMedia(socialMedia);
+    }
+  }, [socialMedia]);
+
+  useEffect(() => {
+    if (swatches) {
+      setLocalSwatches(swatches);
+    }
+  }, [swatches]);
 
   // Load Google Fonts when typography changes
   useEffect(() => {
@@ -162,8 +425,7 @@ export function GlobalSettingsPanel() {
       }
     };
     
-    console.log('Typography from server:', typography);
-    console.log('Merged typography:', mergedTypography);
+    // Debug logs removed for production
     setLocalTypography(mergedTypography);
   }, [typography]);
 
@@ -193,8 +455,36 @@ export function GlobalSettingsPanel() {
         JSON.stringify(localProductCards) !== JSON.stringify(productCards);
     }
     
+    if (localProductBadges && productBadges) {
+      const localStr = JSON.stringify(localProductBadges);
+      const storeStr = JSON.stringify(productBadges);
+      hasAnyChange = hasAnyChange || localStr !== storeStr;
+      
+      // Product badges change detection
+    }
+    
+    if (localCart && cart) {
+      hasAnyChange = hasAnyChange || 
+        JSON.stringify(localCart) !== JSON.stringify(cart);
+    }
+    
+    if (localFavicon && favicon) {
+      hasAnyChange = hasAnyChange || 
+        JSON.stringify(localFavicon) !== JSON.stringify(favicon);
+    }
+    
+    if (localNavigation && navigation) {
+      hasAnyChange = hasAnyChange || 
+        JSON.stringify(localNavigation) !== JSON.stringify(navigation);
+    }
+    
+    if (localSocialMedia && socialMedia) {
+      hasAnyChange = hasAnyChange || 
+        JSON.stringify(localSocialMedia) !== JSON.stringify(socialMedia);
+    }
+    
     setHasChanges(hasAnyChange);
-  }, [localAppearance, appearance, localTypography, typography, localColorSchemes, colorSchemes, localProductCards, productCards]);
+  }, [localAppearance, appearance, localTypography, typography, localColorSchemes, colorSchemes, localProductCards, productCards, localProductBadges, productBadges, localCart, cart, localFavicon, favicon, localNavigation, navigation, localSocialMedia, socialMedia]);
 
   const handleSave = async () => {
     if (!hasChanges) return;
@@ -203,26 +493,105 @@ export function GlobalSettingsPanel() {
     try {
       const promises = [];
       
-      if (localAppearance && localAppearance !== appearance) {
-        promises.push(updateAppearance(localAppearance));
+      if (localAppearance) {
+        const localStr = JSON.stringify(localAppearance);
+        const storeStr = JSON.stringify(appearance);
+        if (localStr !== storeStr) {
+          promises.push(updateAppearance(localAppearance));
+        }
       }
       
-      if (localTypography && localTypography !== typography) {
-        console.log('Saving typography:', localTypography);
-        promises.push(updateTypography(localTypography));
+      if (localTypography) {
+        const localStr = JSON.stringify(localTypography);
+        const storeStr = JSON.stringify(typography);
+        if (localStr !== storeStr) {
+          // Saving typography
+          promises.push(updateTypography(localTypography));
+        }
       }
       
-      if (localColorSchemes && localColorSchemes !== colorSchemes) {
-        console.log('Saving color schemes:', localColorSchemes);
-        promises.push(updateColorSchemes(localColorSchemes));
+      if (localColorSchemes) {
+        const localStr = JSON.stringify(localColorSchemes);
+        const storeStr = JSON.stringify(colorSchemes);
+        if (localStr !== storeStr) {
+          // Saving color schemes
+          promises.push(updateColorSchemes(localColorSchemes));
+        }
       }
       
-      if (localProductCards && localProductCards !== productCards) {
-        console.log('Saving product cards:', localProductCards);
-        promises.push(updateProductCards(localProductCards));
+      if (localProductCards) {
+        const localStr = JSON.stringify(localProductCards);
+        const storeStr = JSON.stringify(productCards);
+        if (localStr !== storeStr) {
+          // Saving product cards
+          promises.push(updateProductCards(localProductCards));
+        }
+      }
+      
+      if (localProductBadges) {
+        const localStr = JSON.stringify(localProductBadges);
+        const storeStr = JSON.stringify(productBadges);
+        
+        if (localStr !== storeStr) {
+          // Saving product badges with updated structure
+          promises.push(updateProductBadges(localProductBadges));
+        }
+      }
+      
+      if (localCart) {
+        const localStr = JSON.stringify(localCart);
+        const storeStr = JSON.stringify(cart);
+        
+        if (localStr !== storeStr) {
+          // Saving cart configuration
+          promises.push(updateCart(localCart));
+        }
+      }
+      
+      if (localFavicon) {
+        const localStr = JSON.stringify(localFavicon);
+        const storeStr = JSON.stringify(favicon);
+        
+        if (localStr !== storeStr) {
+          // Saving favicon configuration
+          promises.push(updateFavicon(localFavicon));
+        }
+      }
+      
+      if (localNavigation) {
+        const localStr = JSON.stringify(localNavigation);
+        const storeStr = JSON.stringify(navigation);
+        
+        if (localStr !== storeStr) {
+          // Saving navigation configuration
+          promises.push(updateNavigation(localNavigation));
+        }
+      }
+      
+      if (localSocialMedia) {
+        const localStr = JSON.stringify(localSocialMedia);
+        const storeStr = JSON.stringify(socialMedia);
+        
+        if (localStr !== storeStr) {
+          // Saving social media configuration
+          promises.push(updateSocialMedia(localSocialMedia));
+        }
+      }
+      
+      if (localSwatches) {
+        const localStr = JSON.stringify(localSwatches);
+        const storeStr = JSON.stringify(swatches);
+        
+        if (localStr !== storeStr) {
+          // Saving swatches configuration
+          promises.push(updateSwatches(localSwatches));
+        }
       }
       
       await Promise.all(promises);
+      
+      // After successful save, the store should have the updated values
+      // The local state will be updated via the useEffect hooks
       toast.success('Configuración guardada exitosamente');
       setHasChanges(false);
     } catch (error) {
@@ -234,7 +603,7 @@ export function GlobalSettingsPanel() {
   };
 
   const toggleSection = (sectionId: string) => {
-    setSections(prev =>
+    setSectionsState(prev =>
       prev.map(section =>
         section.id === sectionId
           ? { ...section, isExpanded: !section.isExpanded }
@@ -380,7 +749,7 @@ export function GlobalSettingsPanel() {
             >
               <ArrowLeft className="w-4 h-4 text-gray-600" />
             </button>
-            <span className="text-sm font-medium text-gray-900">Configuración del tema</span>
+            <span className="text-sm font-medium text-gray-900">{t('editor.panels.globalSettings', 'Configuración del tema')}</span>
           </div>
           
           {/* Save Button */}
@@ -394,12 +763,12 @@ export function GlobalSettingsPanel() {
               {saving ? (
                 <>
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>Guardando...</span>
+                  <span>{t('editor.messages.saving', 'Guardando...')}</span>
                 </>
               ) : (
                 <>
                   <Save className="w-3 h-3" />
-                  <span>Guardar</span>
+                  <span>{t('editor.actions.save', 'Guardar')}</span>
                 </>
               )}
             </button>
@@ -409,7 +778,7 @@ export function GlobalSettingsPanel() {
       
       {/* Sections List */}
       <div className="flex-1 overflow-y-auto bg-white">
-        {sections.map((section) => (
+        {sectionsState.map((section) => (
           <div key={section.id} className="border-b border-gray-200 last:border-b-0">
             <button
               onClick={() => toggleSection(section.id)}
@@ -431,7 +800,7 @@ export function GlobalSettingsPanel() {
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <label className="block text-xs font-medium text-gray-700">
-                          Page width
+                          {t('themeConfig.appearance.pageWidth', 'Page width')}
                         </label>
                         <div className="flex items-center gap-1">
                           <input
@@ -464,7 +833,7 @@ export function GlobalSettingsPanel() {
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <label className="block text-xs font-medium text-gray-700">
-                          Side padding size
+                          {t('themeConfig.appearance.contentPadding', 'Side padding size')}
                         </label>
                         <div className="flex items-center gap-1">
                           <input
@@ -496,7 +865,7 @@ export function GlobalSettingsPanel() {
                     {/* Border Radius Select */}
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-2">
-                        Edge rounding
+                        {t('themeConfig.appearance.borderRadius', 'Edge rounding')}
                       </label>
                       <select 
                         value={localAppearance?.borderRadius || 'size-3'}
@@ -518,11 +887,11 @@ export function GlobalSettingsPanel() {
                 
                 {section.id === 'typography' && localTypography && (
                   <div className="space-y-6">
-                    {renderTypographySection('Encabezados', 'headings')}
-                    {renderTypographySection('Cuerpo', 'body')}
-                    {renderTypographySection('Menú', 'menu')}
-                    {renderTypographySection('Nombre de tarjeta de producto', 'productCardName')}
-                    {renderTypographySection('Botones', 'buttons')}
+                    {renderTypographySection(t('themeConfig.typography.headings', 'Encabezados'), 'headings')}
+                    {renderTypographySection(t('themeConfig.typography.body', 'Cuerpo'), 'body')}
+                    {renderTypographySection(t('themeConfig.typography.menu', 'Menú'), 'menu')}
+                    {renderTypographySection(t('themeConfig.typography.productCardName', 'Nombre de tarjeta de producto'), 'productCardName')}
+                    {renderTypographySection(t('themeConfig.typography.buttons', 'Botones'), 'buttons')}
                   </div>
                 )}
                 
@@ -665,8 +1034,53 @@ export function GlobalSettingsPanel() {
                   />
                 )}
                 
+                {section.id === 'productBadges' && (
+                  <ProductBadgesSection 
+                    config={localProductBadges}
+                    onChange={setLocalProductBadges}
+                  />
+                )}
+                
+                {section.id === 'cart' && (
+                  <CartSection 
+                    config={localCart}
+                    onChange={setLocalCart}
+                  />
+                )}
+                
+                {section.id === 'favicon' && (
+                  <FaviconSection 
+                    config={localFavicon}
+                    onChange={setLocalFavicon}
+                  />
+                )}
+                
+                {section.id === 'navigation' && (
+                  <NavigationSection 
+                    config={localNavigation}
+                    onChange={setLocalNavigation}
+                  />
+                )}
+                
+                {section.id === 'socialMedia' && (
+                  <SocialMediaSection 
+                    config={localSocialMedia}
+                    onChange={setLocalSocialMedia}
+                  />
+                )}
+                
+                {section.id === 'swatches' && (
+                  <SwatchesSection 
+                    config={localSwatches}
+                    onChange={(newSwatches) => {
+                      setLocalSwatches(newSwatches);
+                      setHasChanges(true);
+                    }}
+                  />
+                )}
+                
                 {/* Placeholder for other sections */}
-                {!['appearance', 'typography', 'colorSchemes', 'productCards'].includes(section.id) && (
+                {!['appearance', 'typography', 'colorSchemes', 'productCards', 'productBadges', 'cart', 'favicon', 'navigation', 'socialMedia', 'swatches'].includes(section.id) && (
                   <p className="text-xs text-gray-500">Configuración próximamente...</p>
                 )}
               </div>

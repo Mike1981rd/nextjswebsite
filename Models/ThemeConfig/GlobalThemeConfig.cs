@@ -232,32 +232,51 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
     #region Product Badges Configuration
     public class ProductBadgesConfig
     {
-        public BadgeConfig Sale { get; set; }
+        public BadgePositionConfig Position { get; set; }
         public BadgeConfig SoldOut { get; set; }
-        public BadgeConfig NewProduct { get; set; }
-        public BadgeConfig ComingSoon { get; set; }
-        public BadgeConfig LimitedEdition { get; set; }
-        public BadgeConfig Exclusive { get; set; }
-        public BadgeConfig Custom { get; set; }
+        public BadgeConfig Sale { get; set; }
+        public BadgeConfig SaleByPrice { get; set; }
+        public SaleHighlightConfig SaleHighlight { get; set; }
+        public BadgeConfig Custom1 { get; set; }
+        public BadgeConfig Custom2 { get; set; }
+        public BadgeConfig Custom3 { get; set; }
+    }
+
+    public class BadgePositionConfig
+    {
+        public string Desktop { get; set; } = "below-image";
     }
 
     public class BadgeConfig
     {
         public bool Enabled { get; set; }
-        public string Label { get; set; }
-        public string BackgroundColor { get; set; }
+        public string Background { get; set; }
+        public string Text { get; set; }
+        public string DisplayAs { get; set; }
+        public string TextContent { get; set; }
+        public string Tag { get; set; }
+    }
+
+    public class SaleHighlightConfig
+    {
+        public bool Enabled { get; set; }
         public string TextColor { get; set; }
-        public string Position { get; set; }
-        public string Shape { get; set; }
-        public string CustomText { get; set; }
     }
     #endregion
 
     #region Cart Configuration
     public class CartConfig
     {
-        public string DrawerType { get; set; } = "overlay";
+        public string DrawerType { get; set; } = "drawer-and-page";
+        public bool ShowStickyCart { get; set; } = false;
+        public CartStatusColorsConfig CartStatusColors { get; set; }
         public FreeShippingConfig FreeShipping { get; set; }
+    }
+
+    public class CartStatusColorsConfig
+    {
+        public string Background { get; set; } = "#F0FF2E";
+        public string Text { get; set; } = "#383933";
     }
 
     public class FreeShippingConfig
@@ -287,59 +306,90 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
 
     public class SearchConfig
     {
-        public string ShowAs { get; set; } = "drawer-only";
+        public string ShowAs { get; set; } = "drawer-and-page";
     }
 
     public class BackToTopConfig
     {
         public bool ShowButton { get; set; } = true;
-        public string Position { get; set; } = "bottom-center";
+        public string Position { get; set; } = "bottom-left";
     }
     #endregion
 
     #region Social Media Configuration
     public class SocialMediaConfig
     {
-        public string Facebook { get; set; }
-        public string Twitter { get; set; }
-        public string Instagram { get; set; }
-        public string Youtube { get; set; }
-        public string Pinterest { get; set; }
-        public string Tiktok { get; set; }
-        public string Tumblr { get; set; }
-        public string Snapchat { get; set; }
-        public string Vimeo { get; set; }
-        public string Flickr { get; set; }
-        public string Reddit { get; set; }
-        public string Whatsapp { get; set; }
-        public string Wechat { get; set; }
-        public string Discord { get; set; }
-        public string Linkedin { get; set; }
-        public string Medium { get; set; }
-        public string Telegram { get; set; }
+        public string? Instagram { get; set; }
+        public string? Facebook { get; set; }
+        public string? Twitter { get; set; }
+        public string? Youtube { get; set; }
+        public string? Shopify { get; set; }
+        public string? Pinterest { get; set; }
+        public string? Tiktok { get; set; }
+        public string? Tumblr { get; set; }
+        public string? Snapchat { get; set; }
+        public string? Linkedin { get; set; }
+        public string? Vimeo { get; set; }
+        public string? Flickr { get; set; }
+        public string? Reddit { get; set; }
+        public string? Email { get; set; }
+        public string? Behance { get; set; }
+        public string? Discord { get; set; }
+        public string? Dublhub { get; set; }
+        public string? Medium { get; set; }
+        public string? Twitch { get; set; }
+        public string? Whatsapp { get; set; }
+        public string? Viber { get; set; }
+        public string? Telegram { get; set; }
     }
     #endregion
 
     #region Swatches Configuration
     public class SwatchesConfig
     {
-        public SwatchDisplayConfig ColorSwatches { get; set; }
-        public SwatchDisplayConfig SizeSwatches { get; set; }
-        public SwatchDisplayConfig MaterialSwatches { get; set; }
-        public bool GroupByType { get; set; } = true;
-        public bool ShowUnavailable { get; set; } = true;
-        public string NoSwatchesText { get; set; } = "No hay opciones disponibles";
+        // Primary swatch configuration
+        public PrimarySwatchConfig? Primary { get; set; }
+        
+        // Secondary swatch configuration
+        public SecondarySwatchConfig? Secondary { get; set; }
     }
 
-    public class SwatchDisplayConfig
+    public class PrimarySwatchConfig
     {
-        public string Shape { get; set; }
-        public string Size { get; set; }
-        public bool ShowBorder { get; set; }
-        public string BorderColor { get; set; }
-        public bool ShowTooltip { get; set; }
-        public bool ShowCheckmark { get; set; }
-        public int? MaxVisible { get; set; }
+        // Whether to show swatches
+        public bool Enabled { get; set; }
+        
+        // Option name (e.g., "Color", "Size", etc.)
+        public string? OptionName { get; set; }
+        
+        // Shape configuration for different contexts
+        public string? ShapeForProductCards { get; set; } // Portrait, Round, Square, Landscape
+        public int SizeForProductCards { get; set; } = 3; // 1-5
+        
+        public string? ShapeForProductPages { get; set; } // Round, Square, Portrait, Landscape
+        public int SizeForProductPages { get; set; } = 4; // 1-5
+        
+        public string? ShapeForFilters { get; set; } // Square, Round, Portrait, Landscape
+        public int SizeForFilters { get; set; } = 1; // 1-5
+        
+        // Custom colors and patterns (multiline text)
+        public string? CustomColorsAndPatterns { get; set; }
+    }
+
+    public class SecondarySwatchConfig
+    {
+        // Option names for secondary swatches (multiline)
+        public string? OptionNames { get; set; }
+        
+        // Shape configuration for different contexts
+        public string? ShapeForProductPages { get; set; } // Square, Round, Portrait, Landscape
+        public int SizeForProductPages { get; set; } = 4; // 1-5
+        
+        public string? ShapeForFilters { get; set; } // Square, Round, Portrait, Landscape
+        public int SizeForFilters { get; set; } = 1; // 1-5
+        
+        // Custom colors and patterns (multiline text)
+        public string? CustomColorsAndPatterns { get; set; }
     }
     #endregion
 }

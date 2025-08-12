@@ -8,6 +8,7 @@ import { ConfigPanel } from './ConfigPanel';
 import { GlobalSettingsPanel } from './GlobalSettingsPanel';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { SectionType } from '@/types/editor.types';
+import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 
 interface SectionGroup {
   id: 'headerGroup' | 'asideGroup' | 'template' | 'footerGroup';
@@ -17,10 +18,12 @@ interface SectionGroup {
 
 export function EditorSidebar() {
   const { sections, selectedSectionId, isConfigPanelOpen, isGlobalSettingsOpen } = useEditorStore();
+  const { t } = useEditorTranslations();
+  
   const [groups, setGroups] = useState<SectionGroup[]>([
     { id: 'headerGroup', name: 'Header Group', isCollapsed: false },
     { id: 'asideGroup', name: 'Aside Group', isCollapsed: false },
-    { id: 'template', name: 'Plantilla', isCollapsed: false },
+    { id: 'template', name: t('editor.panels.content', 'Contenido'), isCollapsed: false },
     { id: 'footerGroup', name: 'Footer Group', isCollapsed: false }
   ]);
   
@@ -69,7 +72,7 @@ export function EditorSidebar() {
         <div className="px-4 py-3 bg-white border-b border-gray-200">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-900">Página de inicio</span>
+            <span className="text-sm font-medium text-gray-900">{t('editor.panels.pages', 'Páginas')}: Home</span>
           </div>
         </div>
         
@@ -114,7 +117,7 @@ export function EditorSidebar() {
                     <div className="w-5 h-5 rounded border border-gray-400 border-dashed flex items-center justify-center group-hover:border-gray-600">
                       <Plus className="w-3 h-3" />
                     </div>
-                    <span>Agregar sección</span>
+                    <span>{t('editor.sidebar.addSection', 'Agregar sección')}</span>
                   </button>
                 </div>
               )}

@@ -59,7 +59,7 @@ export function useGlobalThemeConfig() {
   const updateThemeAppearance = useCallback(
     (appearance: AppearanceConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateAppearance(appearance);
@@ -70,7 +70,7 @@ export function useGlobalThemeConfig() {
   const updateThemeTypography = useCallback(
     (typography: TypographyConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateTypography(typography);
@@ -81,7 +81,7 @@ export function useGlobalThemeConfig() {
   const updateThemeColorSchemes = useCallback(
     (colorSchemes: ColorSchemesConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateColorSchemes(colorSchemes);
@@ -92,7 +92,7 @@ export function useGlobalThemeConfig() {
   const updateThemeProductCards = useCallback(
     (productCards: ProductCardsConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateProductCards(productCards);
@@ -103,7 +103,7 @@ export function useGlobalThemeConfig() {
   const updateThemeProductBadges = useCallback(
     (productBadges: ProductBadgesConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateProductBadges(productBadges);
@@ -114,7 +114,7 @@ export function useGlobalThemeConfig() {
   const updateThemeCart = useCallback(
     (cart: CartConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateCart(cart);
@@ -125,7 +125,7 @@ export function useGlobalThemeConfig() {
   const updateThemeFavicon = useCallback(
     (favicon: FaviconConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateFavicon(favicon);
@@ -136,7 +136,7 @@ export function useGlobalThemeConfig() {
   const updateThemeNavigation = useCallback(
     (navigation: NavigationConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateNavigation(navigation);
@@ -147,7 +147,7 @@ export function useGlobalThemeConfig() {
   const updateThemeSocialMedia = useCallback(
     (socialMedia: SocialMediaConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateSocialMedia(socialMedia);
@@ -158,7 +158,7 @@ export function useGlobalThemeConfig() {
   const updateThemeSwatches = useCallback(
     (swatches: SwatchesConfig) => {
       if (!company?.id) {
-        console.error('No company context available');
+        // No company context available
         return;
       }
       return updateSwatches(swatches);

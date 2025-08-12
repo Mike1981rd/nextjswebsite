@@ -218,7 +218,9 @@ namespace WebsiteBuilderAPI.Services
             InvalidateCache(companyId);
             
             _logger.LogInformation("Product badges config updated for company {CompanyId}", companyId);
-            return productBadges;
+            
+            // Return the saved configuration from the database
+            return config.ProductBadges;
         }
 
         public async Task<CartConfig> UpdateCartAsync(int companyId, CartConfig cart)
@@ -620,47 +622,75 @@ namespace WebsiteBuilderAPI.Services
 
         private ProductBadgesConfig GetDefaultProductBadges() => new ProductBadgesConfig
         {
-            Sale = new BadgeConfig 
-            { 
-                Enabled = true, 
-                Label = "Oferta", 
-                BackgroundColor = "#FF0000", 
-                TextColor = "#FFFFFF",
-                Position = "top-left",
-                Shape = "rectangle"
+            Position = new BadgePositionConfig
+            {
+                Desktop = "below-image"
             },
             SoldOut = new BadgeConfig 
             { 
-                Enabled = true, 
-                Label = "Agotado", 
-                BackgroundColor = "#666666", 
-                TextColor = "#FFFFFF",
-                Position = "top-left",
-                Shape = "rectangle"
+                Enabled = true,
+                Background = "#FFFFFF",
+                Text = "#000000"
             },
-            NewProduct = new BadgeConfig 
+            Sale = new BadgeConfig 
             { 
-                Enabled = true, 
-                Label = "Nuevo", 
-                BackgroundColor = "#00FF00", 
-                TextColor = "#000000",
-                Position = "top-right",
-                Shape = "circle"
+                Enabled = true,
+                Background = "#FF0000",
+                Text = "#FFFFFF",
+                DisplayAs = "sale"
             },
-            ComingSoon = new BadgeConfig { Enabled = false },
-            LimitedEdition = new BadgeConfig { Enabled = false },
-            Exclusive = new BadgeConfig { Enabled = false },
-            Custom = new BadgeConfig { Enabled = false }
+            SaleByPrice = new BadgeConfig 
+            { 
+                Enabled = false,
+                Background = "#000000",
+                Text = "#FFFFFF",
+                DisplayAs = "percentage"
+            },
+            SaleHighlight = new SaleHighlightConfig
+            {
+                Enabled = false,
+                TextColor = "#000000"
+            },
+            Custom1 = new BadgeConfig
+            {
+                Enabled = false,
+                Background = "#FFFFFF",
+                Text = "#000000",
+                TextContent = "Best seller",
+                Tag = ""
+            },
+            Custom2 = new BadgeConfig
+            {
+                Enabled = false,
+                Background = "#FFFFFF",
+                Text = "#000000",
+                TextContent = "",
+                Tag = ""
+            },
+            Custom3 = new BadgeConfig
+            {
+                Enabled = false,
+                Background = "#FFFFFF",
+                Text = "#000000",
+                TextContent = "",
+                Tag = ""
+            }
         };
 
         private CartConfig GetDefaultCart() => new CartConfig
         {
-            DrawerType = "overlay",
+            DrawerType = "drawer-and-page",
+            ShowStickyCart = false,
+            CartStatusColors = new CartStatusColorsConfig
+            {
+                Background = "#F0FF2E",
+                Text = "#383933"
+            },
             FreeShipping = new FreeShippingConfig
             {
                 ShowProgress = true,
                 Threshold = 50.00m,
-                ProgressBarColor = "#28a745",
+                ProgressBarColor = "#383933",
                 SuccessMessage = "¡Envío gratis conseguido!",
                 ProgressMessage = "Te faltan {amount} para envío gratis"
             }
@@ -674,8 +704,8 @@ namespace WebsiteBuilderAPI.Services
 
         private NavigationConfig GetDefaultNavigation() => new NavigationConfig
         {
-            Search = new SearchConfig { ShowAs = "drawer-only" },
-            BackToTop = new BackToTopConfig { ShowButton = true, Position = "bottom-center" }
+            Search = new SearchConfig { ShowAs = "drawer-and-page" },
+            BackToTop = new BackToTopConfig { ShowButton = true, Position = "bottom-left" }
         };
 
         private SocialMediaConfig GetDefaultSocialMedia() => new SocialMediaConfig
@@ -686,39 +716,33 @@ namespace WebsiteBuilderAPI.Services
 
         private SwatchesConfig GetDefaultSwatches() => new SwatchesConfig
         {
-            ColorSwatches = new SwatchDisplayConfig
+            Primary = new PrimarySwatchConfig
             {
-                Shape = "circle",
-                Size = "medium",
-                ShowBorder = true,
-                BorderColor = "#E5E5E5",
-                ShowTooltip = true,
-                ShowCheckmark = true,
-                MaxVisible = 5
+                Enabled = false,
+                OptionName = "Color",
+                ShapeForProductCards = "Portrait",
+                SizeForProductCards = 3,
+                ShapeForProductPages = "Round",
+                SizeForProductPages = 4,
+                ShapeForFilters = "Square",
+                SizeForFilters = 1,
+                CustomColorsAndPatterns = @"Ultramarine: #0437F2
+Cherry blossom: #FFB7C5
+Sunny day: yellow/green/blue
+Summertime: #F8FBF8/#F8058/#4"
             },
-            SizeSwatches = new SwatchDisplayConfig
+            Secondary = new SecondarySwatchConfig
             {
-                Shape = "square",
-                Size = "medium",
-                ShowBorder = true,
-                BorderColor = "#E5E5E5",
-                ShowTooltip = false,
-                ShowCheckmark = false,
-                MaxVisible = 8
-            },
-            MaterialSwatches = new SwatchDisplayConfig
-            {
-                Shape = "rounded",
-                Size = "medium",
-                ShowBorder = true,
-                BorderColor = "#E5E5E5",
-                ShowTooltip = true,
-                ShowCheckmark = false,
-                MaxVisible = 4
-            },
-            GroupByType = true,
-            ShowUnavailable = true,
-            NoSwatchesText = "No hay opciones disponibles"
+                OptionNames = "Material\nFrame",
+                ShapeForProductPages = "Square",
+                SizeForProductPages = 4,
+                ShapeForFilters = "Square",
+                SizeForFilters = 1,
+                CustomColorsAndPatterns = @"Ultramarine: #0437F2
+Cherry blossom: #FFB7C5
+Sunny day: yellow/green/blue
+Summertime: #F8FBF8/#F8058/#4"
+            }
         };
 
         #endregion

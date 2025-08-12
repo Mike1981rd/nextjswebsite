@@ -7,7 +7,12 @@
 /**
  * Badge display format options
  */
-export type BadgeDisplayAs = 'percentage' | 'amount' | 'sale-text';
+export type BadgeDisplayAs = 
+  | 'sale'           // Simple "Sale" text
+  | 'percentage'     // -10%
+  | 'save-percentage' // Save 10%
+  | 'amount'         // -$10
+  | 'save-amount';   // Save $10
 
 /**
  * Badge position on desktop
@@ -35,6 +40,9 @@ export interface BadgeConfig {
   
   /** Label for the badge in settings */
   label?: string;
+  
+  /** Product tag for custom badges */
+  tag?: string;
 }
 
 /**
@@ -91,19 +99,19 @@ export const defaultProductBadges: ProductBadgesConfig = {
   soldOut: {
     enabled: true,
     background: '#FFFFFF',
-    text: '#FFFFFF'
+    text: '#000000'
   },
   sale: {
     enabled: true,
-    background: '#FFFFFF',
+    background: '#FF0000',
     text: '#FFFFFF',
-    displayAs: 'percentage'
+    displayAs: 'sale'
   },
   saleByPrice: {
     enabled: false,
     background: '#000000',
     text: '#FFFFFF',
-    displayAs: 'sale-text'
+    displayAs: 'percentage'
   },
   saleHighlight: {
     enabled: false,
@@ -182,20 +190,27 @@ export function formatBadgeText(
   salePrice: number,
   currencySymbol: string = '$'
 ): string {
+  const percentage = calculateSalePercentage(originalPrice, salePrice);
+  const saved = originalPrice - salePrice;
+  
   switch (displayAs) {
+    case 'sale':
+      return 'Sale';
+    
     case 'percentage':
-      const percentage = calculateSalePercentage(originalPrice, salePrice);
       return `-${percentage}%`;
     
-    case 'amount':
-      const saved = originalPrice - salePrice;
-      return `-${currencySymbol}${saved.toFixed(2)}`;
+    case 'save-percentage':
+      return `Save ${percentage}%`;
     
-    case 'sale-text':
-      return 'SALE';
+    case 'amount':
+      return `-${currencySymbol}${saved.toFixed(0)}`;
+    
+    case 'save-amount':
+      return `Save ${currencySymbol}${saved.toFixed(0)}`;
     
     default:
-      return '';
+      return 'Sale';
   }
 }
 

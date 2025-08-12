@@ -125,12 +125,16 @@ export const themeConfigApi = {
   },
 
   async updateProductBadges(companyId: number, productBadges: ProductBadgesConfig): Promise<ProductBadgesConfig> {
+    console.log('[API] Sending product badges update:', productBadges);
     const response = await api.patch(`${BASE_URL}/company/${companyId}/product-badges`, productBadges);
+    console.log('[API] Received product badges response:', response.data);
     return response.data as ProductBadgesConfig;
   },
 
   async updateCart(companyId: number, cart: CartConfig): Promise<CartConfig> {
+    console.log('[Cart] Sending to API:', cart);
     const response = await api.patch(`${BASE_URL}/company/${companyId}/cart`, cart);
+    console.log('[Cart] Received from API:', response.data);
     return response.data as CartConfig;
   },
 
@@ -145,8 +149,17 @@ export const themeConfigApi = {
   },
 
   async updateSocialMedia(companyId: number, socialMedia: SocialMediaConfig): Promise<SocialMediaConfig> {
-    const response = await api.patch(`${BASE_URL}/company/${companyId}/social-media`, socialMedia);
-    return response.data as SocialMediaConfig;
+    console.log('[Social Media] Sending to API:', JSON.stringify(socialMedia, null, 2));
+    
+    try {
+      const response = await api.patch(`${BASE_URL}/company/${companyId}/social-media`, socialMedia);
+      console.log('[Social Media] Received from API:', response.data);
+      return response.data as SocialMediaConfig;
+    } catch (error: any) {
+      console.error('[Social Media] Update error:', error.response?.data || error.message);
+      console.error('[Social Media] Full error response:', error.response);
+      throw error;
+    }
   },
 
   async updateSwatches(companyId: number, swatches: SwatchesConfig): Promise<SwatchesConfig> {

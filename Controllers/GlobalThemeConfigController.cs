@@ -440,6 +440,16 @@ namespace WebsiteBuilderAPI.Controllers
         {
             try
             {
+                // Log incoming data for debugging
+                _logger.LogInformation("Received social media update for company {CompanyId}. Data: {@SocialMedia}", companyId, socialMedia);
+                
+                // Check if model state is valid
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Invalid model state for social media update: {@Errors}", ModelState);
+                    return BadRequest(ModelState);
+                }
+                
                 var updated = await _themeService.UpdateSocialMediaAsync(companyId, socialMedia);
                 return Ok(updated);
             }

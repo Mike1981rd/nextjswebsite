@@ -232,9 +232,18 @@ Este comando es para retomar el desarrollo del Website Builder v2.0 específicam
 ### 📋 QUÉ HACE EL COMANDO
 1. **Lee el progreso actual** desde `websitebuilderprogress.md`
 2. **Carga la arquitectura** desde `blueprintwebsite.md` 
-3. **Verifica implementación** actual (tipos, modelos, APIs, componentes)
-4. **Identifica siguiente tarea** basado en dependencias y progreso
-5. **Prepara el entorno** para continuar exactamente donde quedaste
+3. **Lee el sistema de logging** desde `logs.md` 
+4. **Verifica implementación** actual (tipos, modelos, APIs, componentes)
+5. **Identifica siguiente tarea** basado en dependencias y progreso
+6. **Prepara el entorno** para continuar exactamente donde quedaste
+
+### 📝 NOTA SOBRE LOGS
+- **logs.md** se lee SIEMPRE al inicializar para tener contexto del sistema de logging
+- Los logs se REVISAN activamente cuando:
+  - El usuario solicita diagnóstico de un error
+  - Se necesita rastrear un problema específico
+  - El usuario ejecuta comandos de logging como `/check-logs` o `/analyze-logs`
+- Para activar revisión de logs: seguir el protocolo definido en `logs.md`
 
 ### 💡 CUÁNDO USARLO
 - Al comenzar una sesión de trabajo en Website Builder
@@ -316,5 +325,5 @@ Claude: *modifica /components/editor/GlobalSettingsPanel.tsx*
 ---
 
 **Última actualización:** 2025-01-12
-**Versión:** 3.3 (Incluye mapa de archivos críticos)
+**Versión:** 3.4 (Incluye lectura obligatoria de logs.md en /init-websitebuilder)
 **Crítico:** Los archivos blueprint y logs DEBEN leerse SIEMPRE

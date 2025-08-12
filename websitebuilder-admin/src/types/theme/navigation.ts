@@ -50,11 +50,11 @@ export interface NavigationConfig {
  */
 export const defaultNavigation: NavigationConfig = {
   search: {
-    showAs: 'drawer-only'
+    showAs: 'drawer-and-page'
   },
   backToTop: {
     showButton: true,
-    position: 'bottom-center'
+    position: 'bottom-left'
   }
 };
 

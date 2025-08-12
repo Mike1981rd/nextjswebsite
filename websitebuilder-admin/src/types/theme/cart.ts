@@ -5,66 +5,53 @@
  */
 
 /**
- * Cart display options
+ * Cart drawer type options (based on Shopify reference)
  */
-export type CartDisplayType = 'drawer-only' | 'page-only' | 'drawer-and-page';
+export type CartDrawerType = 'drawer-and-page' | 'drawer-only' | 'page-only';
 
 /**
- * Track style for progress bar
- */
-export type TrackStyle = 'solid' | 'dashed' | 'dotted';
-
-/**
- * Cart display configuration
- */
-export interface CartDisplayConfig {
-  /** How to show the cart */
-  showAs: CartDisplayType;
-  
-  /** Whether to show a fixed cart icon */
-  showFixedCart: boolean;
-}
-
-/**
- * Cart colors configuration
- */
-export interface CartColorsConfig {
-  /** Background color for cart */
-  background: string;
-  
-  /** Text color for cart */
-  text: string;
-}
-
-/**
- * Free shipping progress bar configuration
+ * Free shipping configuration
  */
 export interface FreeShippingConfig {
   /** Whether to show the progress bar */
-  showProgressBar: boolean;
+  showProgress: boolean;
   
   /** Threshold amount for free shipping */
   threshold: number;
   
   /** Color of the progress bar */
-  barColor: string;
+  progressBarColor: string;
   
-  /** Style of the progress track */
-  trackStyle: TrackStyle;
+  /** Message shown when free shipping is achieved */
+  successMessage: string;
   
-  /** Color of the message text */
-  messageColor: string;
+  /** Message shown for progress (use {amount} as placeholder) */
+  progressMessage: string;
 }
 
 /**
- * Complete cart configuration
+ * Cart status colors configuration
+ */
+export interface CartStatusColorsConfig {
+  /** Background color for cart status */
+  background: string;
+  
+  /** Text color for cart status */
+  text: string;
+}
+
+/**
+ * Complete cart configuration (matching backend structure)
  */
 export interface CartConfig {
-  /** Display settings */
-  display: CartDisplayConfig;
+  /** How to display the cart */
+  drawerType: CartDrawerType;
   
-  /** Color settings */
-  colors: CartColorsConfig;
+  /** Whether to show sticky cart */
+  showStickyCart?: boolean;
+  
+  /** Cart status colors */
+  cartStatusColors?: CartStatusColorsConfig;
   
   /** Free shipping settings */
   freeShipping: FreeShippingConfig;
@@ -72,42 +59,31 @@ export interface CartConfig {
 
 /**
  * Default cart configuration
- * Based on specifications from prompt.pdf
+ * Matching backend defaults
  */
 export const defaultCart: CartConfig = {
-  display: {
-    showAs: 'drawer-only',
-    showFixedCart: true
-  },
-  colors: {
-    background: '#000000',
-    text: '#FFFFFF'
+  drawerType: 'drawer-and-page',
+  showStickyCart: false,
+  cartStatusColors: {
+    background: '#F0FF2E',
+    text: '#383933'
   },
   freeShipping: {
-    showProgressBar: true,
-    threshold: 4, // This seems to be a low value, might need adjustment
-    barColor: '#000000',
-    trackStyle: 'solid',
-    messageColor: '#FFFFFF'
+    showProgress: true,
+    threshold: 0,
+    progressBarColor: '#383933',
+    successMessage: '¡Envío gratis conseguido!',
+    progressMessage: 'Te faltan {amount} para envío gratis'
   }
 };
 
 /**
- * Cart display type labels for UI
+ * Cart drawer type labels for UI
  */
-export const CartDisplayLabels: Record<CartDisplayType, string> = {
-  'drawer-only': 'Solo cajón lateral',
-  'page-only': 'Solo página completa',
-  'drawer-and-page': 'Cajón y página'
-};
-
-/**
- * Track style labels for UI
- */
-export const TrackStyleLabels: Record<TrackStyle, string> = {
-  'solid': 'Sólido',
-  'dashed': 'Punteado',
-  'dotted': 'Puntos'
+export const CartDrawerTypeLabels: Record<CartDrawerType, string> = {
+  'drawer-and-page': 'Drawer and page',
+  'drawer-only': 'Drawer only',
+  'page-only': 'Page only'
 };
 
 /**
@@ -160,13 +136,13 @@ export function validateCartConfig(config: Partial<CartConfig>): boolean {
     }
   }
   
-  if (config.colors?.background || config.colors?.text) {
+  if (config.cartStatusColors?.background || config.cartStatusColors?.text) {
     // Validate hex colors
     const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-    if (config.colors.background && !hexRegex.test(config.colors.background)) {
+    if (config.cartStatusColors.background && !hexRegex.test(config.cartStatusColors.background)) {
       return false;
     }
-    if (config.colors.text && !hexRegex.test(config.colors.text)) {
+    if (config.cartStatusColors.text && !hexRegex.test(config.cartStatusColors.text)) {
       return false;
     }
   }
@@ -181,13 +157,11 @@ export function validateCartConfig(config: Partial<CartConfig>): boolean {
  */
 export function mergeCartWithDefaults(partial: Partial<CartConfig>): CartConfig {
   return {
-    display: {
-      ...defaultCart.display,
-      ...partial.display
-    },
-    colors: {
-      ...defaultCart.colors,
-      ...partial.colors
+    drawerType: partial.drawerType || defaultCart.drawerType,
+    showStickyCart: partial.showStickyCart ?? defaultCart.showStickyCart,
+    cartStatusColors: {
+      ...defaultCart.cartStatusColors,
+      ...partial.cartStatusColors
     },
     freeShipping: {
       ...defaultCart.freeShipping,

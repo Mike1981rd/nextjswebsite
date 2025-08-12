@@ -5,20 +5,23 @@
  */
 
 /**
- * Social media configuration with support for 17 platforms
+ * Social media configuration with support for 22 platforms
  */
 export interface SocialMediaConfig {
+  /** Instagram profile URL */
+  instagram?: string;
+  
   /** Facebook profile/page URL */
   facebook?: string;
   
   /** Twitter/X profile URL */
   twitter?: string;
   
-  /** Instagram profile URL */
-  instagram?: string;
-  
   /** YouTube channel URL */
   youtube?: string;
+  
+  /** Shopify store URL */
+  shopify?: string;
   
   /** Pinterest profile URL */
   pinterest?: string;
@@ -32,6 +35,9 @@ export interface SocialMediaConfig {
   /** Snapchat profile URL */
   snapchat?: string;
   
+  /** LinkedIn company/profile URL */
+  linkedin?: string;
+  
   /** Vimeo profile URL */
   vimeo?: string;
   
@@ -41,20 +47,29 @@ export interface SocialMediaConfig {
   /** Reddit profile/subreddit URL */
   reddit?: string;
   
-  /** WhatsApp number or link */
-  whatsapp?: string;
+  /** Email contact */
+  email?: string;
   
-  /** WeChat ID or link */
-  wechat?: string;
+  /** Behance portfolio URL */
+  behance?: string;
   
   /** Discord server invite URL */
   discord?: string;
   
-  /** LinkedIn company/profile URL */
-  linkedin?: string;
+  /** Dublhub URL */
+  dublhub?: string;
   
   /** Medium publication/profile URL */
   medium?: string;
+  
+  /** Twitch channel URL */
+  twitch?: string;
+  
+  /** WhatsApp number or link */
+  whatsapp?: string;
+  
+  /** Viber number or link */
+  viber?: string;
   
   /** Telegram channel/group URL */
   telegram?: string;
@@ -83,6 +98,12 @@ export interface SocialPlatform {
  * Social media platforms information
  */
 export const socialPlatforms: Record<keyof SocialMediaConfig, SocialPlatform> = {
+  instagram: {
+    name: 'Instagram',
+    icon: 'fab fa-instagram',
+    color: '#E4405F',
+    urlPattern: /^https?:\/\/(www\.)?instagram\.com\/.+$/
+  },
   facebook: {
     name: 'Facebook',
     icon: 'fab fa-facebook-f',
@@ -95,17 +116,17 @@ export const socialPlatforms: Record<keyof SocialMediaConfig, SocialPlatform> = 
     color: '#000000',
     urlPattern: /^https?:\/\/(www\.)?(twitter|x)\.com\/.+$/
   },
-  instagram: {
-    name: 'Instagram',
-    icon: 'fab fa-instagram',
-    color: '#E4405F',
-    urlPattern: /^https?:\/\/(www\.)?instagram\.com\/.+$/
-  },
   youtube: {
     name: 'YouTube',
     icon: 'fab fa-youtube',
     color: '#FF0000',
     urlPattern: /^https?:\/\/(www\.)?youtube\.com\/.+$/
+  },
+  shopify: {
+    name: 'Shopify',
+    icon: 'fab fa-shopify',
+    color: '#96BF48',
+    urlPattern: /^https?:\/\/.+\.myshopify\.com$/
   },
   pinterest: {
     name: 'Pinterest',
@@ -131,6 +152,12 @@ export const socialPlatforms: Record<keyof SocialMediaConfig, SocialPlatform> = 
     color: '#FFFC00',
     urlPattern: /^https?:\/\/(www\.)?snapchat\.com\/.+$/
   },
+  linkedin: {
+    name: 'LinkedIn',
+    icon: 'fab fa-linkedin-in',
+    color: '#0A66C2',
+    urlPattern: /^https?:\/\/(www\.)?linkedin\.com\/.+$/
+  },
   vimeo: {
     name: 'Vimeo',
     icon: 'fab fa-vimeo-v',
@@ -149,17 +176,17 @@ export const socialPlatforms: Record<keyof SocialMediaConfig, SocialPlatform> = 
     color: '#FF4500',
     urlPattern: /^https?:\/\/(www\.)?reddit\.com\/.+$/
   },
-  whatsapp: {
-    name: 'WhatsApp',
-    icon: 'fab fa-whatsapp',
-    color: '#25D366',
-    urlPattern: /^https?:\/\/(wa\.me|api\.whatsapp\.com)\/.+$/
+  email: {
+    name: 'Email',
+    icon: 'fas fa-envelope',
+    color: '#000000',
+    urlPattern: /^mailto:.+@.+\..+$/
   },
-  wechat: {
-    name: 'WeChat',
-    icon: 'fab fa-weixin',
-    color: '#7BB32E',
-    urlPattern: undefined // WeChat uses QR codes or IDs
+  behance: {
+    name: 'Behance',
+    icon: 'fab fa-behance',
+    color: '#1769FF',
+    urlPattern: /^https?:\/\/(www\.)?behance\.net\/.+$/
   },
   discord: {
     name: 'Discord',
@@ -167,17 +194,35 @@ export const socialPlatforms: Record<keyof SocialMediaConfig, SocialPlatform> = 
     color: '#5865F2',
     urlPattern: /^https?:\/\/(www\.)?(discord\.gg|discord\.com\/invite)\/.+$/
   },
-  linkedin: {
-    name: 'LinkedIn',
-    icon: 'fab fa-linkedin-in',
-    color: '#0A66C2',
-    urlPattern: /^https?:\/\/(www\.)?linkedin\.com\/.+$/
+  dublhub: {
+    name: 'Dublhub',
+    icon: 'fas fa-globe',
+    color: '#000000',
+    urlPattern: undefined
   },
   medium: {
     name: 'Medium',
     icon: 'fab fa-medium-m',
     color: '#000000',
     urlPattern: /^https?:\/\/(www\.)?medium\.com\/.+$/
+  },
+  twitch: {
+    name: 'Twitch',
+    icon: 'fab fa-twitch',
+    color: '#9146FF',
+    urlPattern: /^https?:\/\/(www\.)?twitch\.tv\/.+$/
+  },
+  whatsapp: {
+    name: 'WhatsApp',
+    icon: 'fab fa-whatsapp',
+    color: '#25D366',
+    urlPattern: /^https?:\/\/(wa\.me|api\.whatsapp\.com)\/.+$/
+  },
+  viber: {
+    name: 'Viber',
+    icon: 'fab fa-viber',
+    color: '#665CAC',
+    urlPattern: /^viber:\/\/.+$/
   },
   telegram: {
     name: 'Telegram',

@@ -10,6 +10,11 @@ namespace WebsiteBuilderAPI.Controllers
     {
         private readonly ILogger<LogsController> _logger;
         private readonly string _logDirectory;
+        // Thread-safe file writing using SemaphoreSlim (allows async operations)
+        private static readonly SemaphoreSlim _fileWriteSemaphore = new SemaphoreSlim(1, 1);
+        // Dictionary to track semaphores per file to allow parallel writes to different files
+        private static readonly Dictionary<string, SemaphoreSlim> _fileSemaphores = new();
+        private static readonly object _semaphoreCreationLock = new object();
 
         public LogsController(ILogger<LogsController> logger)
         {
@@ -36,9 +41,18 @@ namespace WebsiteBuilderAPI.Controllers
 
                 var today = DateTime.Now.ToString("yyyyMMdd");
                 
-                // Process each log entry
+                // Group logs by file to minimize lock contention
+                var logsByFile = new Dictionary<string, List<(FrontendLogEntry log, string formatted)>>();
+                
+                // Process and group log entries
                 foreach (var log in request.Logs)
                 {
+                    // Skip logging errors about log endpoint itself to prevent infinite loops
+                    if (log.Type == "network" && log.Message?.Contains("/api/logs/frontend") == true)
+                    {
+                        continue;
+                    }
+                    
                     // Determine file based on type
                     string fileName = log.Type switch
                     {
@@ -53,24 +67,44 @@ namespace WebsiteBuilderAPI.Controllers
                     // Format log entry
                     var logEntry = FormatLogEntry(log);
                     
-                    // Append to file
-                    await System.IO.File.AppendAllTextAsync(filePath, logEntry);
-                    
-                    // Also log to backend logger based on level
-                    switch (log.Level)
+                    // Group by file
+                    if (!logsByFile.ContainsKey(filePath))
                     {
-                        case "error":
-                            _logger.LogError("Frontend Error: {Message} | Type: {Type} | URL: {Url}", 
-                                log.Message, log.Type, log.Url);
-                            break;
-                        case "warn":
-                            _logger.LogWarning("Frontend Warning: {Message} | Type: {Type} | URL: {Url}", 
-                                log.Message, log.Type, log.Url);
-                            break;
-                        default:
-                            _logger.LogInformation("Frontend Log: {Message} | Type: {Type} | URL: {Url}", 
-                                log.Message, log.Type, log.Url);
-                            break;
+                        logsByFile[filePath] = new List<(FrontendLogEntry, string)>();
+                    }
+                    logsByFile[filePath].Add((log, logEntry));
+                }
+                
+                // Write to files with proper synchronization
+                var writeTasks = new List<Task>();
+                foreach (var kvp in logsByFile)
+                {
+                    writeTasks.Add(WriteLogsToFileAsync(kvp.Key, kvp.Value));
+                }
+                
+                // Wait for all writes to complete
+                await Task.WhenAll(writeTasks);
+                
+                // Log to backend logger (this is already thread-safe)
+                foreach (var logGroup in logsByFile.Values)
+                {
+                    foreach (var (log, _) in logGroup)
+                    {
+                        switch (log.Level)
+                        {
+                            case "error":
+                                _logger.LogError("Frontend Error: {Message} | Type: {Type} | URL: {Url}", 
+                                    log.Message, log.Type, log.Url);
+                                break;
+                            case "warn":
+                                _logger.LogWarning("Frontend Warning: {Message} | Type: {Type} | URL: {Url}", 
+                                    log.Message, log.Type, log.Url);
+                                break;
+                            default:
+                                _logger.LogInformation("Frontend Log: {Message} | Type: {Type} | URL: {Url}", 
+                                    log.Message, log.Type, log.Url);
+                                break;
+                        }
                     }
                 }
 
@@ -78,8 +112,54 @@ namespace WebsiteBuilderAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing frontend logs");
-                return StatusCode(500, new { error = "Failed to process logs" });
+                // Don't log the full exception to avoid noise, just log a warning
+                _logger.LogWarning("Error processing frontend logs: {Message}", ex.Message);
+                // Return OK anyway to prevent frontend from retrying
+                return Ok(new { message = "Logs received", warning = "Some logs may not have been saved" });
+            }
+        }
+        
+        private async Task WriteLogsToFileAsync(string filePath, List<(FrontendLogEntry log, string formatted)> logs)
+        {
+            // Get or create a semaphore for this specific file
+            SemaphoreSlim fileSemaphore = GetOrCreateFileSemaphore(filePath);
+            
+            // Wait to acquire the semaphore (only one writer per file at a time)
+            await fileSemaphore.WaitAsync();
+            try
+            {
+                // Combine all logs for this file into a single write operation
+                var combinedLogs = string.Join("", logs.Select(l => l.formatted));
+                
+                // Use FileStream with FileShare.Read to allow reading while writing
+                using (var fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, useAsync: true))
+                using (var writer = new StreamWriter(fileStream))
+                {
+                    await writer.WriteAsync(combinedLogs);
+                    await writer.FlushAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't throw - we don't want to fail the entire request
+                _logger.LogWarning("Failed to write to log file {FilePath}: {Message}", filePath, ex.Message);
+            }
+            finally
+            {
+                // Always release the semaphore
+                fileSemaphore.Release();
+            }
+        }
+        
+        private SemaphoreSlim GetOrCreateFileSemaphore(string filePath)
+        {
+            lock (_semaphoreCreationLock)
+            {
+                if (!_fileSemaphores.ContainsKey(filePath))
+                {
+                    _fileSemaphores[filePath] = new SemaphoreSlim(1, 1);
+                }
+                return _fileSemaphores[filePath];
             }
         }
 

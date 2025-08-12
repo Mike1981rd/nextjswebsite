@@ -5,277 +5,198 @@
  */
 
 /**
- * Type of swatch display
+ * Shape options for swatches
  */
-export type SwatchType = 'color' | 'image' | 'text';
+export type SwatchShape = 'Portrait' | 'Round' | 'Square' | 'Landscape';
 
 /**
- * Shape of swatch element
+ * Primary swatch configuration
  */
-export type SwatchShape = 'circle' | 'square' | 'rounded';
-
-/**
- * Size of swatch element
- */
-export type SwatchSize = 'small' | 'medium' | 'large';
-
-/**
- * Individual swatch item
- */
-export interface SwatchItem {
-  /** Unique identifier */
-  id: string;
+export interface PrimarySwatchConfig {
+  /** Whether to show swatches */
+  enabled: boolean;
   
-  /** Display value (color hex, image URL, or text) */
-  value: string;
+  /** Option name (e.g., "Color", "Size", etc.) */
+  optionName?: string;
   
-  /** Label/tooltip text */
-  label: string;
+  /** Shape configuration for product cards */
+  shapeForProductCards?: SwatchShape;
+  /** Size for product cards (1-5) */
+  sizeForProductCards: number;
   
-  /** Type of swatch */
-  type: SwatchType;
+  /** Shape configuration for product pages */
+  shapeForProductPages?: SwatchShape;
+  /** Size for product pages (1-5) */
+  sizeForProductPages: number;
   
-  /** Whether this swatch is available */
-  available?: boolean;
+  /** Shape configuration for filters */
+  shapeForFilters?: SwatchShape;
+  /** Size for filters (1-5) */
+  sizeForFilters: number;
+  
+  /** Custom colors and patterns (multiline text) */
+  customColorsAndPatterns?: string;
 }
 
 /**
- * Swatch display configuration
+ * Secondary swatch configuration
  */
-export interface SwatchDisplayConfig {
-  /** Shape of swatches */
-  shape: SwatchShape;
+export interface SecondarySwatchConfig {
+  /** Option names for secondary swatches (multiline) */
+  optionNames?: string;
   
-  /** Size of swatches */
-  size: SwatchSize;
+  /** Shape configuration for product pages */
+  shapeForProductPages?: SwatchShape;
+  /** Size for product pages (1-5) */
+  sizeForProductPages: number;
   
-  /** Whether to show border around swatches */
-  showBorder: boolean;
+  /** Shape configuration for filters */
+  shapeForFilters?: SwatchShape;
+  /** Size for filters (1-5) */
+  sizeForFilters: number;
   
-  /** Border color for swatches */
-  borderColor?: string;
-  
-  /** Whether to show tooltip on hover */
-  showTooltip: boolean;
-  
-  /** Whether to show checkmark on selected swatch */
-  showCheckmark: boolean;
-  
-  /** Maximum swatches to show before "more" button */
-  maxVisible?: number;
+  /** Custom colors and patterns (multiline text) */
+  customColorsAndPatterns?: string;
 }
 
 /**
  * Complete swatches configuration
  */
 export interface SwatchesConfig {
-  /** Display settings for color swatches */
-  colorSwatches: SwatchDisplayConfig;
+  /** Primary swatch configuration */
+  primary?: PrimarySwatchConfig;
   
-  /** Display settings for size swatches */
-  sizeSwatches: SwatchDisplayConfig;
-  
-  /** Display settings for material/texture swatches */
-  materialSwatches: SwatchDisplayConfig;
-  
-  /** Whether to group swatches by type */
-  groupByType: boolean;
-  
-  /** Whether to show unavailable swatches as disabled */
-  showUnavailable: boolean;
-  
-  /** Text to show when no swatches available */
-  noSwatchesText?: string;
+  /** Secondary swatch configuration */
+  secondary?: SecondarySwatchConfig;
 }
+
+/**
+ * Default primary swatch configuration
+ */
+export const defaultPrimarySwatchConfig: PrimarySwatchConfig = {
+  enabled: false,
+  optionName: 'Color',
+  shapeForProductCards: 'Portrait',
+  sizeForProductCards: 3,
+  shapeForProductPages: 'Round',
+  sizeForProductPages: 4,
+  shapeForFilters: 'Square',
+  sizeForFilters: 1,
+  customColorsAndPatterns: `Ultramarine: #0437F2
+Cherry blossom: #FFB7C5
+Sunny day: yellow/green/blue
+Summertime: #F8FBF8/#F8058/#4`
+};
+
+/**
+ * Default secondary swatch configuration
+ */
+export const defaultSecondarySwatchConfig: SecondarySwatchConfig = {
+  optionNames: 'Material\nFrame',
+  shapeForProductPages: 'Square',
+  sizeForProductPages: 4,
+  shapeForFilters: 'Square',
+  sizeForFilters: 1,
+  customColorsAndPatterns: `Ultramarine: #0437F2
+Cherry blossom: #FFB7C5
+Sunny day: yellow/green/blue
+Summertime: #F8FBF8/#F8058/#4`
+};
 
 /**
  * Default swatches configuration
  */
 export const defaultSwatches: SwatchesConfig = {
-  colorSwatches: {
-    shape: 'circle',
-    size: 'medium',
-    showBorder: true,
-    borderColor: '#E5E5E5',
-    showTooltip: true,
-    showCheckmark: true,
-    maxVisible: 5
-  },
-  sizeSwatches: {
-    shape: 'square',
-    size: 'medium',
-    showBorder: true,
-    borderColor: '#E5E5E5',
-    showTooltip: false,
-    showCheckmark: false,
-    maxVisible: 8
-  },
-  materialSwatches: {
-    shape: 'rounded',
-    size: 'medium',
-    showBorder: true,
-    borderColor: '#E5E5E5',
-    showTooltip: true,
-    showCheckmark: false,
-    maxVisible: 4
-  },
-  groupByType: true,
-  showUnavailable: true,
-  noSwatchesText: 'No hay opciones disponibles'
+  primary: defaultPrimarySwatchConfig,
+  secondary: defaultSecondarySwatchConfig
 };
 
 /**
- * Size dimensions in pixels
+ * Available shape options for dropdowns
  */
-export const swatchSizes: Record<SwatchSize, number> = {
-  small: 24,
-  medium: 32,
-  large: 40
-};
+export const swatchShapeOptions: SwatchShape[] = ['Portrait', 'Round', 'Square', 'Landscape'];
 
 /**
- * Gets CSS classes for swatch shape
+ * Gets label for swatch shape
  * @param shape - Swatch shape
- * @returns CSS class string
+ * @returns Display label
  */
-export function getSwatchShapeClass(shape: SwatchShape): string {
-  const shapeClasses: Record<SwatchShape, string> = {
-    circle: 'rounded-full',
-    square: 'rounded-none',
-    rounded: 'rounded-md'
+export function getSwatchShapeLabel(shape: SwatchShape): string {
+  const labels: Record<SwatchShape, string> = {
+    'Portrait': 'Portrait',
+    'Round': 'Round',
+    'Square': 'Square',
+    'Landscape': 'Landscape'
   };
   
-  return shapeClasses[shape];
+  return labels[shape];
 }
 
 /**
- * Gets CSS styles for swatch size
- * @param size - Swatch size
- * @returns CSS style object
+ * Validates size value (must be between 1 and 5)
+ * @param size - Size value
+ * @returns true if valid, false otherwise
  */
-export function getSwatchSizeStyles(size: SwatchSize): React.CSSProperties {
-  const dimension = swatchSizes[size];
+export function validateSwatchSize(size: number): boolean {
+  return size >= 1 && size <= 5;
+}
+
+/**
+ * Parses custom colors and patterns text
+ * @param text - Multiline text with color definitions
+ * @returns Array of color definitions
+ */
+export function parseCustomColors(text: string): Array<{ name: string; value: string }> {
+  if (!text) return [];
   
-  return {
-    width: `${dimension}px`,
-    height: `${dimension}px`,
-    minWidth: `${dimension}px`,
-    minHeight: `${dimension}px`
-  };
-}
-
-/**
- * Creates a color swatch item
- * @param color - Hex color value
- * @param label - Display label
- * @param available - Whether the color is available
- * @returns SwatchItem
- */
-export function createColorSwatch(
-  color: string,
-  label: string,
-  available: boolean = true
-): SwatchItem {
-  return {
-    id: `color-${color.replace('#', '')}`,
-    value: color,
-    label,
-    type: 'color',
-    available
-  };
-}
-
-/**
- * Creates a size swatch item
- * @param size - Size value (S, M, L, XL, etc.)
- * @param label - Display label
- * @param available - Whether the size is available
- * @returns SwatchItem
- */
-export function createSizeSwatch(
-  size: string,
-  label?: string,
-  available: boolean = true
-): SwatchItem {
-  return {
-    id: `size-${size.toLowerCase()}`,
-    value: size,
-    label: label || size,
-    type: 'text',
-    available
-  };
-}
-
-/**
- * Creates an image swatch item
- * @param imageUrl - Image URL
- * @param label - Display label
- * @param available - Whether the variant is available
- * @returns SwatchItem
- */
-export function createImageSwatch(
-  imageUrl: string,
-  label: string,
-  available: boolean = true
-): SwatchItem {
-  return {
-    id: `image-${label.toLowerCase().replace(/\s+/g, '-')}`,
-    value: imageUrl,
-    label,
-    type: 'image',
-    available
-  };
-}
-
-/**
- * Groups swatches by type
- * @param swatches - Array of swatch items
- * @returns Grouped swatches
- */
-export function groupSwatchesByType(swatches: SwatchItem[]): Record<SwatchType, SwatchItem[]> {
-  return swatches.reduce((groups, swatch) => {
-    if (!groups[swatch.type]) {
-      groups[swatch.type] = [];
-    }
-    groups[swatch.type].push(swatch);
-    return groups;
-  }, {} as Record<SwatchType, SwatchItem[]>);
+  return text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line && line.includes(':'))
+    .map(line => {
+      const [name, value] = line.split(':').map(s => s.trim());
+      return { name, value };
+    });
 }
 
 /**
  * Validates swatches configuration
  * @param config - Swatches configuration to validate
- * @returns true if valid, false otherwise
+ * @returns Object with validation results
  */
-export function validateSwatchesConfig(config: Partial<SwatchesConfig>): boolean {
-  // Validate border colors if provided
-  const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+export function validateSwatchesConfig(config: Partial<SwatchesConfig>): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
   
-  if (config.colorSwatches?.borderColor && 
-      !hexRegex.test(config.colorSwatches.borderColor)) {
-    return false;
-  }
-  
-  if (config.sizeSwatches?.borderColor && 
-      !hexRegex.test(config.sizeSwatches.borderColor)) {
-    return false;
-  }
-  
-  if (config.materialSwatches?.borderColor && 
-      !hexRegex.test(config.materialSwatches.borderColor)) {
-    return false;
-  }
-  
-  // Validate maxVisible values
-  const configs = [config.colorSwatches, config.sizeSwatches, config.materialSwatches];
-  for (const swatchConfig of configs) {
-    if (swatchConfig?.maxVisible !== undefined && 
-        (swatchConfig.maxVisible < 1 || swatchConfig.maxVisible > 20)) {
-      return false;
+  // Validate primary swatch config
+  if (config.primary) {
+    if (config.primary.sizeForProductCards && !validateSwatchSize(config.primary.sizeForProductCards)) {
+      errors.push('Size for product cards must be between 1 and 5');
+    }
+    if (config.primary.sizeForProductPages && !validateSwatchSize(config.primary.sizeForProductPages)) {
+      errors.push('Size for product pages must be between 1 and 5');
+    }
+    if (config.primary.sizeForFilters && !validateSwatchSize(config.primary.sizeForFilters)) {
+      errors.push('Size for filters must be between 1 and 5');
     }
   }
   
-  return true;
+  // Validate secondary swatch config
+  if (config.secondary) {
+    if (config.secondary.sizeForProductPages && !validateSwatchSize(config.secondary.sizeForProductPages)) {
+      errors.push('Secondary size for product pages must be between 1 and 5');
+    }
+    if (config.secondary.sizeForFilters && !validateSwatchSize(config.secondary.sizeForFilters)) {
+      errors.push('Secondary size for filters must be between 1 and 5');
+    }
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
 }
 
 /**
@@ -285,20 +206,13 @@ export function validateSwatchesConfig(config: Partial<SwatchesConfig>): boolean
  */
 export function mergeSwatchesWithDefaults(partial: Partial<SwatchesConfig>): SwatchesConfig {
   return {
-    colorSwatches: {
-      ...defaultSwatches.colorSwatches,
-      ...partial.colorSwatches
-    },
-    sizeSwatches: {
-      ...defaultSwatches.sizeSwatches,
-      ...partial.sizeSwatches
-    },
-    materialSwatches: {
-      ...defaultSwatches.materialSwatches,
-      ...partial.materialSwatches
-    },
-    groupByType: partial.groupByType ?? defaultSwatches.groupByType,
-    showUnavailable: partial.showUnavailable ?? defaultSwatches.showUnavailable,
-    noSwatchesText: partial.noSwatchesText ?? defaultSwatches.noSwatchesText
+    primary: partial.primary ? {
+      ...defaultPrimarySwatchConfig,
+      ...partial.primary
+    } : defaultPrimarySwatchConfig,
+    secondary: partial.secondary ? {
+      ...defaultSecondarySwatchConfig,
+      ...partial.secondary
+    } : defaultSecondarySwatchConfig
   };
 }

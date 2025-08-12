@@ -232,6 +232,7 @@ const useThemeConfigStore = create<ThemeConfigState>()(
           
           try {
             const productBadges = await themeConfigApi.getProductBadges(companyId);
+            // Product badges fetched successfully
             set((state) => {
               if (state.config) {
                 state.config.productBadges = productBadges;
@@ -239,6 +240,7 @@ const useThemeConfigStore = create<ThemeConfigState>()(
               state.loading.productBadges = false;
             });
           } catch (error: any) {
+            // Error fetching product badges
             set((state) => {
               state.error = error.message;
               state.loading.productBadges = false;
@@ -479,6 +481,11 @@ const useThemeConfigStore = create<ThemeConfigState>()(
           const { companyId, config } = get();
           if (!companyId || !config) return;
 
+          // Updating product badges
+          
+          // Store original for rollback
+          const originalProductBadges = config.productBadges;
+
           set((state) => {
             if (state.config) {
               state.config.productBadges = productBadges;
@@ -488,6 +495,8 @@ const useThemeConfigStore = create<ThemeConfigState>()(
 
           try {
             const updated = await themeConfigApi.updateProductBadges(companyId, productBadges);
+            // Product badges updated successfully
+            
             set((state) => {
               if (state.config) {
                 state.config.productBadges = updated;
@@ -495,12 +504,14 @@ const useThemeConfigStore = create<ThemeConfigState>()(
               }
             });
           } catch (error: any) {
+            // Error updating product badges
             set((state) => {
-              if (state.config && config) {
-                state.config.productBadges = config.productBadges;
+              if (state.config) {
+                state.config.productBadges = originalProductBadges;
               }
               state.error = error.message;
             });
+            throw error;
           }
         },
 
