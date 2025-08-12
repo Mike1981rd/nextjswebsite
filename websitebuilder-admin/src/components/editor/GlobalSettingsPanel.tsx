@@ -8,7 +8,9 @@ import { useGlobalThemeConfig } from '@/hooks/useGlobalThemeConfig';
 import { BorderRadiusLabels, BorderRadiusSize } from '@/types/theme/appearance';
 import { TypographyConfig, FontConfig, defaultTypography } from '@/types/theme/typography';
 import { ColorSchemesConfig, defaultColorSchemes } from '@/types/theme/colorSchemes';
+import { ProductCardsConfig, defaultProductCards } from '@/types/theme/productCards';
 import { FontPicker } from '@/components/ui/font-picker';
+import { ProductCardsSection } from './ProductCardsSection';
 import toast from 'react-hot-toast';
 
 interface SettingSection {
@@ -22,15 +24,18 @@ export function GlobalSettingsPanel() {
   const { 
     appearance, 
     typography,
-    colorSchemes, 
+    colorSchemes,
+    productCards, 
     loading, 
     updateAppearance, 
     updateTypography,
-    updateColorSchemes 
+    updateColorSchemes,
+    updateProductCards 
   } = useGlobalThemeConfig();
   const [localAppearance, setLocalAppearance] = useState(appearance);
   const [localTypography, setLocalTypography] = useState<TypographyConfig>(typography || defaultTypography);
   const [localColorSchemes, setLocalColorSchemes] = useState<ColorSchemesConfig>(colorSchemes || defaultColorSchemes);
+  const [localProductCards, setLocalProductCards] = useState<ProductCardsConfig>(productCards || defaultProductCards);
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -67,6 +72,12 @@ export function GlobalSettingsPanel() {
       setLocalColorSchemes(colorSchemes);
     }
   }, [colorSchemes]);
+
+  useEffect(() => {
+    if (productCards) {
+      setLocalProductCards(productCards);
+    }
+  }, [productCards]);
 
   // Load Google Fonts when typography changes
   useEffect(() => {
@@ -177,8 +188,13 @@ export function GlobalSettingsPanel() {
         JSON.stringify(localColorSchemes) !== JSON.stringify(colorSchemes);
     }
     
+    if (localProductCards && productCards) {
+      hasAnyChange = hasAnyChange || 
+        JSON.stringify(localProductCards) !== JSON.stringify(productCards);
+    }
+    
     setHasChanges(hasAnyChange);
-  }, [localAppearance, appearance, localTypography, typography, localColorSchemes, colorSchemes]);
+  }, [localAppearance, appearance, localTypography, typography, localColorSchemes, colorSchemes, localProductCards, productCards]);
 
   const handleSave = async () => {
     if (!hasChanges) return;
@@ -199,6 +215,11 @@ export function GlobalSettingsPanel() {
       if (localColorSchemes && localColorSchemes !== colorSchemes) {
         console.log('Saving color schemes:', localColorSchemes);
         promises.push(updateColorSchemes(localColorSchemes));
+      }
+      
+      if (localProductCards && localProductCards !== productCards) {
+        console.log('Saving product cards:', localProductCards);
+        promises.push(updateProductCards(localProductCards));
       }
       
       await Promise.all(promises);
@@ -637,7 +658,15 @@ export function GlobalSettingsPanel() {
                   </div>
                 )}
                 
-                {!['appearance', 'typography', 'colorSchemes'].includes(section.id) && (
+                {section.id === 'productCards' && (
+                  <ProductCardsSection 
+                    localProductCards={localProductCards}
+                    setLocalProductCards={setLocalProductCards}
+                  />
+                )}
+                
+                {/* Placeholder for other sections */}
+                {!['appearance', 'typography', 'colorSchemes', 'productCards'].includes(section.id) && (
                   <p className="text-xs text-gray-500">Configuración próximamente...</p>
                 )}
               </div>

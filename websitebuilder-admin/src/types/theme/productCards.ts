@@ -45,14 +45,9 @@ export type HoverEffect = 'none' | 'zoom' | 'show-all-media' | 'show-second-medi
 export type ButtonStyle = 'labels' | 'icons';
 
 /**
- * Options for showing swatches on desktop
+ * Position options for swatches on desktop and mobile
  */
-export type DesktopSwatchDisplay = 'on-hover' | 'always' | 'never';
-
-/**
- * Options for showing swatches on mobile
- */
-export type MobileSwatchDisplay = 'always' | 'never';
+export type SwatchPosition = 'on-image' | 'below-image' | 'above-title';
 
 /**
  * What type of swatches to display
@@ -95,8 +90,8 @@ export interface ProductCardsConfig {
   /** Swatches/variants display settings */
   swatches: {
     whatToShow: SwatchDisplayType;
-    showOnDesktop: DesktopSwatchDisplay;
-    showOnMobile: MobileSwatchDisplay;
+    desktopPosition: SwatchPosition;
+    mobilePosition: SwatchPosition;
     hideForSingleColor: boolean;
   };
   
@@ -135,8 +130,8 @@ export const defaultProductCards: ProductCardsConfig = {
   },
   swatches: {
     whatToShow: 'color-swatches',
-    showOnDesktop: 'on-hover',
-    showOnMobile: 'always',
+    desktopPosition: 'below-image',
+    mobilePosition: 'below-image',
     hideForSingleColor: true
   },
   buttons: {
