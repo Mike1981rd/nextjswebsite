@@ -101,6 +101,91 @@ export function EditorPreview() {
         // Get menu behavior setting (click or hover)
         const menuOpenOn = headerConfig?.menuOpenOn || 'hover';
         
+        // Get icon settings
+        const iconStyle = headerConfig?.iconStyle || 'style2-outline';
+        const cartType = headerConfig?.cart?.style || 'bag';
+        const isStyle1 = iconStyle.startsWith('style1');
+        const isSolid = iconStyle.includes('solid');
+        const showSearchIcon = headerConfig?.showSearchIcon !== false; // Default true
+        const showUserIcon = headerConfig?.showUserIcon !== false; // Default true
+        
+        // Icon rendering functions
+        const renderSearchIcon = () => {
+          if (isStyle1) {
+            // Style 1 - Circle with magnifying glass
+            return (
+              <svg className="w-5 h-5" fill={isSolid ? (schemeToUse?.text || '#000000') : 'none'} 
+                   stroke={schemeToUse?.text || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" fill={isSolid ? undefined : 'none'} />
+                <path d="m21 21-4.35-4.35" strokeLinecap="round" />
+              </svg>
+            );
+          } else {
+            // Style 2 - Standard search icon
+            return (
+              <svg className="w-5 h-5" fill={isSolid ? (schemeToUse?.text || '#000000') : 'none'} 
+                   stroke={schemeToUse?.text || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                      fill={isSolid ? (schemeToUse?.text || '#000000') : 'none'} />
+              </svg>
+            );
+          }
+        };
+        
+        const renderUserIcon = () => {
+          if (isStyle1) {
+            // Style 1 - Simple user
+            return (
+              <svg className="w-5 h-5" fill={isSolid ? (schemeToUse?.text || '#000000') : 'none'} 
+                   stroke={schemeToUse?.text || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+                <circle cx="12" cy="7" r="4" />
+                <path d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            );
+          } else {
+            // Style 2 - Detailed user
+            return (
+              <svg className="w-5 h-5" fill={isSolid ? (schemeToUse?.text || '#000000') : 'none'} 
+                   stroke={schemeToUse?.text || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" 
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            );
+          }
+        };
+        
+        const renderCartIcon = () => {
+          if (cartType === 'bag') {
+            // Bag icon
+            if (isStyle1) {
+              return (
+                <svg className="w-5 h-5" fill={isSolid ? (schemeToUse?.text || '#000000') : 'none'} 
+                     stroke={schemeToUse?.text || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" 
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              );
+            } else {
+              return (
+                <svg className="w-5 h-5" fill={isSolid ? (schemeToUse?.text || '#000000') : 'none'} 
+                     stroke={schemeToUse?.text || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" 
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              );
+            }
+          } else {
+            // Cart icon
+            return (
+              <svg className="w-5 h-5" fill={isSolid ? (schemeToUse?.text || '#000000') : 'none'} 
+                   stroke={schemeToUse?.text || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" 
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            );
+          }
+        };
+        
         // Apply colors from the selected scheme
         const headerStyles = schemeToUse ? {
           backgroundColor: schemeToUse.background,
@@ -124,6 +209,159 @@ export function EditorPreview() {
 
         // Determine the layout structure
         const isLogoLeftMenuCenter = headerConfig?.layout === 'logo-left-menu-center-inline';
+        const isLogoLeftMenuLeft = headerConfig?.layout === 'logo-left-menu-left-inline';
+        const isLogoCenterMenuLeft = headerConfig?.layout === 'logo-center-menu-left-inline';
+        const isLogoCenterMenuCenterBelow = headerConfig?.layout === 'logo-center-menu-center-below';
+        const isLogoLeftMenuLeftBelow = headerConfig?.layout === 'logo-left-menu-left-below';
+        const isMenuBelow = isLogoCenterMenuCenterBelow || isLogoLeftMenuLeftBelow;
+        
+        // For layouts with menu below, we need a different structure
+        if (isMenuBelow) {
+          return (
+            <>
+              <div 
+                className="border-b transition-all duration-300"
+                style={{
+                  ...headerStyles
+                }}
+              >
+                <div className={`${headerConfig?.width === 'screen' ? 'px-4' : 'container mx-auto px-4'} h-full flex flex-col justify-center`}>
+                  {/* Top row with logo and icons */}
+                  <div className="flex items-center justify-between">
+                    {/* Logo section - Absolutely centered for logo center layout */}
+                    {isLogoCenterMenuCenterBelow ? (
+                      <>
+                        {/* Empty spacer for balance */}
+                        <div className="w-20"></div>
+                        {/* Centered logo */}
+                        <div className="flex items-center justify-center flex-1">
+                          {headerConfig?.logo?.desktopUrl ? (
+                            <img
+                              src={headerConfig.logo.desktopUrl}
+                              alt={headerConfig.logo.alt || 'Company Logo'}
+                              className="self-center"
+                              style={{ 
+                                height: headerConfig.logo.height || 40,
+                                objectFit: 'contain'
+                              }}
+                            />
+                          ) : (
+                            <div className="text-xl font-bold self-center" style={{ color: schemeToUse?.text || '#000000' }}>
+                              Aurora
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      // Logo left layout
+                      <div className="flex items-center">
+                        {headerConfig?.logo?.desktopUrl ? (
+                          <img
+                            src={headerConfig.logo.desktopUrl}
+                            alt={headerConfig.logo.alt || 'Company Logo'}
+                            className="self-center"
+                            style={{ 
+                              height: headerConfig.logo.height || 40,
+                              objectFit: 'contain'
+                            }}
+                          />
+                        ) : (
+                          <div className="text-xl font-bold self-center" style={{ color: schemeToUse?.text || '#000000' }}>
+                            Aurora
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Icons */}
+                    <div className="flex items-center gap-4">
+                      {showSearchIcon && (
+                        <button className="hover:opacity-70 transition-opacity">
+                          {renderSearchIcon()}
+                        </button>
+                      )}
+                      {showUserIcon && (
+                        <button className="hover:opacity-70 transition-opacity">
+                          {renderUserIcon()}
+                        </button>
+                      )}
+                      <button className="hover:opacity-70 transition-opacity">
+                        {renderCartIcon()}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Bottom row with menu */}
+                  <div className={`${isLogoCenterMenuCenterBelow ? 'flex justify-center' : ''}`}>
+                    <nav className="flex gap-6">
+                      {menuItems.length > 0 ? (
+                        menuItems.map((item: any) => (
+                          <div key={item.label} className="relative"
+                            onMouseEnter={() => {
+                              if (menuOpenOn === 'hover' && item.subItems && item.subItems.length > 0) {
+                                setOpenDropdown(item.label);
+                              }
+                            }}
+                            onMouseLeave={() => {
+                              if (menuOpenOn === 'hover') {
+                                setOpenDropdown(null);
+                              }
+                            }}
+                          >
+                            <a href="#" 
+                              className="relative flex items-center gap-1 transition-opacity hover:opacity-80"
+                              style={{ color: schemeToUse?.text || '#000000' }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (menuOpenOn === 'click' && item.subItems && item.subItems.length > 0) {
+                                  setOpenDropdown(openDropdown === item.label ? null : item.label);
+                                }
+                              }}
+                            >
+                              {item.label}
+                              {menuOpenOn === 'click' && item.subItems && item.subItems.length > 0 && (
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              )}
+                            </a>
+                            
+                            {/* Dropdown */}
+                            {item.subItems && item.subItems.length > 0 && (
+                              <div className={`dropdown-menu absolute top-full left-0 mt-2 w-56 transition-all duration-200 z-50 ${
+                                openDropdown === item.label ? 'opacity-100 visible' : 'opacity-0 invisible'
+                              }`}
+                              style={{
+                                backgroundColor: schemeToUse?.background || '#ffffff',
+                                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                              }}>
+                                <div className="py-2">
+                                  {item.subItems.map((subItem: any) => (
+                                    <a key={subItem.label} href="#"
+                                      className="block px-6 py-3 text-sm transition-opacity hover:opacity-70"
+                                      style={{ color: schemeToUse?.text || '#000000' }}
+                                      onClick={(e) => e.preventDefault()}
+                                    >
+                                      {subItem.label}
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-sm opacity-50" style={{ color: schemeToUse?.text }}>
+                          {selectedMenuId ? 'Loading menu...' : 'No menu selected'}
+                        </span>
+                      )}
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            </>
+          );
+        }
         
         return (
           <>
@@ -133,9 +371,77 @@ export function EditorPreview() {
                 ...headerStyles
               }}
             >
-              <div className={`${headerConfig?.width === 'screen' ? 'px-4' : 'container mx-auto px-4'} h-full flex items-center justify-between`}>
+              <div className={`${headerConfig?.width === 'screen' ? 'px-4' : 'container mx-auto px-4'} h-full flex items-center ${isLogoCenterMenuLeft ? '' : 'justify-between'}`}>
+              
+              {/* For Logo Center Menu Left - Menu comes first */}
+              {isLogoCenterMenuLeft && (
+                <nav className="flex gap-6">
+                  {menuItems.length > 0 ? (
+                    menuItems.map((item: any) => (
+                      <div key={item.label} className="relative"
+                        onMouseEnter={() => {
+                          if (menuOpenOn === 'hover' && item.subItems && item.subItems.length > 0) {
+                            setOpenDropdown(item.label);
+                          }
+                        }}
+                        onMouseLeave={() => {
+                          if (menuOpenOn === 'hover') {
+                            setOpenDropdown(null);
+                          }
+                        }}
+                      >
+                        <a href="#" 
+                          className="relative flex items-center gap-1 transition-opacity hover:opacity-80"
+                          style={{ color: schemeToUse?.text || '#000000' }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (menuOpenOn === 'click' && item.subItems && item.subItems.length > 0) {
+                              setOpenDropdown(openDropdown === item.label ? null : item.label);
+                            }
+                          }}
+                        >
+                          {item.label}
+                          {menuOpenOn === 'click' && item.subItems && item.subItems.length > 0 && (
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          )}
+                        </a>
+                        
+                        {/* Dropdown */}
+                        {item.subItems && item.subItems.length > 0 && (
+                          <div className={`dropdown-menu absolute top-full left-0 mt-2 w-56 transition-all duration-200 z-50 ${
+                            openDropdown === item.label ? 'opacity-100 visible' : 'opacity-0 invisible'
+                          }`}
+                          style={{
+                            backgroundColor: schemeToUse?.background || '#ffffff',
+                            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                          }}>
+                            <div className="py-2">
+                              {item.subItems.map((subItem: any) => (
+                                <a key={subItem.label} href="#"
+                                  className="block px-6 py-3 text-sm transition-opacity hover:opacity-70"
+                                  style={{ color: schemeToUse?.text || '#000000' }}
+                                  onClick={(e) => e.preventDefault()}
+                                >
+                                  {subItem.label}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-sm opacity-50" style={{ color: schemeToUse?.text }}>
+                      {selectedMenuId ? 'Loading menu...' : 'No menu selected'}
+                    </span>
+                  )}
+                </nav>
+              )}
+              
               {/* Left section - Hamburger or Logo */}
-              <div className="flex items-center">
+              <div className={`flex items-center ${isLogoCenterMenuLeft ? 'flex-1 justify-center' : (isLogoLeftMenuLeft ? 'gap-8' : '')}`}>
                 {isDrawerLayout ? (
                   // Hamburger menu for drawer layout
                   <button
@@ -176,6 +482,73 @@ export function EditorPreview() {
                   </>
                 )}
                 
+                {/* Menu for Logo Left Menu Left Inline */}
+                {isLogoLeftMenuLeft && (
+                  <nav className="flex gap-6 ml-8">
+                    {menuItems.length > 0 ? (
+                      menuItems.map((item: any) => (
+                        <div key={item.label} className="relative"
+                          onMouseEnter={() => {
+                            if (menuOpenOn === 'hover' && item.subItems && item.subItems.length > 0) {
+                              setOpenDropdown(item.label);
+                            }
+                          }}
+                          onMouseLeave={() => {
+                            if (menuOpenOn === 'hover') {
+                              setOpenDropdown(null);
+                            }
+                          }}
+                        >
+                          <a href="#" 
+                            className="relative flex items-center gap-1 transition-opacity hover:opacity-80"
+                            style={{ color: schemeToUse?.text || '#000000' }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (menuOpenOn === 'click' && item.subItems && item.subItems.length > 0) {
+                                setOpenDropdown(openDropdown === item.label ? null : item.label);
+                              }
+                            }}
+                          >
+                            {item.label}
+                            {menuOpenOn === 'click' && item.subItems && item.subItems.length > 0 && (
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            )}
+                          </a>
+                          
+                          {/* Dropdown */}
+                          {item.subItems && item.subItems.length > 0 && (
+                            <div className={`dropdown-menu absolute top-full left-0 mt-2 w-56 transition-all duration-200 z-50 ${
+                              openDropdown === item.label ? 'opacity-100 visible' : 'opacity-0 invisible'
+                            }`}
+                            style={{
+                              backgroundColor: schemeToUse?.background || '#ffffff',
+                              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                            }}>
+                              <div className="py-2">
+                                {item.subItems.map((subItem: any) => (
+                                  <a key={subItem.label} href="#"
+                                    className="block px-6 py-3 text-sm transition-opacity hover:opacity-70"
+                                    style={{ color: schemeToUse?.text || '#000000' }}
+                                    onClick={(e) => e.preventDefault()}
+                                  >
+                                    {subItem.label}
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-sm opacity-50" style={{ color: schemeToUse?.text }}>
+                        {selectedMenuId ? 'Loading menu...' : 'No menu selected'}
+                      </span>
+                    )}
+                  </nav>
+                )}
+                
                 {/* Mobile logo */}
                 {deviceView === 'mobile' && headerConfig?.logo?.mobileUrl && (
                   <img
@@ -212,7 +585,7 @@ export function EditorPreview() {
                 )}
               </div>
               
-              {/* Center section - Logo for drawer layout, Navigation for others */}
+              {/* Center section - Logo for drawer layout, Navigation for logo-left-menu-center */}
               {isDrawerLayout ? (
                 <div className="flex items-center justify-center flex-1">
                   {headerConfig?.logo?.desktopUrl ? (
@@ -230,7 +603,7 @@ export function EditorPreview() {
                     </div>
                   )}
                 </div>
-              ) : (
+              ) : (isLogoLeftMenuCenter && !isLogoLeftMenuLeft && !isLogoCenterMenuLeft) ? (
                 <nav className="flex gap-6">
                   {menuItems.length > 0 ? (
                   menuItems.map((item: any) => (
@@ -322,44 +695,21 @@ export function EditorPreview() {
                   </span>
                   )}
                 </nav>
-              )}
+              ) : null}
               {/* Right section - Icons */}
               <div className="flex items-center gap-4">
-                {/* Search Icon */}
+                {showSearchIcon && (
+                  <button className="hover:opacity-70 transition-opacity">
+                    {renderSearchIcon()}
+                  </button>
+                )}
+                {showUserIcon && (
+                  <button className="hover:opacity-70 transition-opacity">
+                    {renderUserIcon()}
+                  </button>
+                )}
                 <button className="hover:opacity-70 transition-opacity">
-                  <svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    stroke={schemeToUse?.text || '#000000'}
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-                {/* User Icon */}
-                <button className="hover:opacity-70 transition-opacity">
-                  <svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    stroke={schemeToUse?.text || '#000000'}
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </button>
-                {/* Cart Icon */}
-                <button className="hover:opacity-70 transition-opacity">
-                  <svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    stroke={schemeToUse?.text || '#000000'}
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
+                  {renderCartIcon()}
                 </button>
               </div>
             </div>
