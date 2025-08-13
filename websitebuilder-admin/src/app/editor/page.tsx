@@ -22,8 +22,10 @@ import {
 } from 'lucide-react';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { useEditorStore } from '@/stores/useEditorStore';
-import { PageType } from '@/types/editor.types';
+import { PageType, SectionType } from '@/types/editor.types';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
+import { useStructuralComponents } from '@/hooks/useStructuralComponents';
+import { useCompany } from '@/hooks/useCompany';
 
 export default function EditorPage() {
   const { 
@@ -33,11 +35,15 @@ export default function EditorPage() {
     isDirty, 
     isSaving, 
     savePage,
-    loadPageSections 
+    loadPageSections,
+    initializeStructuralComponents 
   } = useEditorStore();
   
   const { t } = useEditorTranslations();
+  const { company } = useCompany();
+  const { config: structuralConfig } = useStructuralComponents();
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   // Create mock pages with translations and icons
   const mockPages = useMemo(() => [
@@ -71,6 +77,14 @@ export default function EditorPage() {
       handlePageSelect(mockPages[0]);
     }
   }, [mockPages, storePageId]);
+
+  // Initialize structural components once when editor loads
+  useEffect(() => {
+    if (!hasInitialized) {
+      initializeStructuralComponents();
+      setHasInitialized(true);
+    }
+  }, [hasInitialized, initializeStructuralComponents]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

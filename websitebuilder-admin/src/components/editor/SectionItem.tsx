@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, Link2Off, FileText, Layout, ShoppingCart, Search, Megaphone } from 'lucide-react';
+import { Eye, EyeOff, Link2Off, FileText, Layout, ShoppingCart, Search, Megaphone, Trash2 } from 'lucide-react';
 import { Section, SectionType } from '@/types/editor.types';
 import { useEditorStore } from '@/stores/useEditorStore';
 
@@ -33,10 +33,18 @@ export function SectionItem({ section, groupId, isDragging = false }: SectionIte
   } = useEditorStore();
   
   const isSelected = selectedSectionId === section.id;
+  
+  // Structural components cannot be deleted
+  const isStructuralComponent = [
+    SectionType.HEADER,
+    SectionType.ANNOUNCEMENT_BAR,
+    SectionType.FOOTER,
+    SectionType.CART_DRAWER
+  ].includes(section.type);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm(`¿Eliminar "${section.name}"?`)) {
+    if (!isStructuralComponent && window.confirm(`¿Eliminar "${section.name}"?`)) {
       removeSection(groupId, section.id);
     }
   };
@@ -87,8 +95,28 @@ export function SectionItem({ section, groupId, isDragging = false }: SectionIte
       {/* Actions */}
       {showActions && (
         <div className="flex items-center gap-1">
-          {!section.visible && (
-            <Link2Off className="w-3.5 h-3.5 text-gray-400" />
+          {/* Visibility Toggle */}
+          <button
+            onClick={handleToggleVisibility}
+            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            title={section.visible ? 'Ocultar sección' : 'Mostrar sección'}
+          >
+            {section.visible ? (
+              <Eye className="w-3.5 h-3.5 text-gray-500" />
+            ) : (
+              <EyeOff className="w-3.5 h-3.5 text-gray-400" />
+            )}
+          </button>
+          
+          {/* Delete Button - Only for non-structural components */}
+          {!isStructuralComponent && (
+            <button
+              onClick={handleDelete}
+              className="p-1 hover:bg-red-100 rounded transition-colors"
+              title="Eliminar sección"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-gray-500 hover:text-red-600" />
+            </button>
           )}
         </div>
       )}

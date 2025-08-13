@@ -12,7 +12,7 @@ namespace WebsiteBuilderAPI.Controllers
     /// Controller for managing structural components (Header, Footer, Announcement Bar, Cart Drawer)
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/structural-components")]
     [Authorize]
     public class StructuralComponentsController : ControllerBase
     {
@@ -40,17 +40,76 @@ namespace WebsiteBuilderAPI.Controllers
         {
             try
             {
+                _logger.LogInformation("Getting structural components for company {CompanyId}", companyId);
                 var components = await _componentsService.GetByCompanyIdAsync(companyId);
+                
                 if (components == null)
                 {
-                    return NotFound($"No components found for company {companyId}");
+                    _logger.LogWarning("No components found for company {CompanyId}, creating defaults", companyId);
+                    
+                    // Create default components with proper DTO
+                    var createDto = new CreateStructuralComponentsDto
+                    {
+                        HeaderConfig = @"{
+                            ""colorScheme"":""1"",
+                            ""width"":""page"",
+                            ""layout"":""drawer"",
+                            ""showSeparator"":false,
+                            ""sticky"":{
+                                ""enabled"":false,
+                                ""alwaysShow"":false,
+                                ""mobileEnabled"":false,
+                                ""mobileAlwaysShow"":false,
+                                ""initialOpacity"":100
+                            },
+                            ""menuOpenOn"":""hover"",
+                            ""menuId"":""main-menu"",
+                            ""logo"":{
+                                ""desktopUrl"":"""",
+                                ""height"":190,
+                                ""mobileUrl"":"""",
+                                ""mobileHeight"":120,
+                                ""altText"":""Company Logo"",
+                                ""link"":""/""
+                            },
+                            ""iconStyle"":""style2-outline"",
+                            ""cart"":{
+                                ""style"":""bag"",
+                                ""showCount"":true,
+                                ""countPosition"":""top-right"",
+                                ""countBackground"":""#000000"",
+                                ""countText"":""#FFFFFF""
+                            },
+                            ""stickyCart"":false,
+                            ""edgeRounding"":""size0"",
+                            ""showAs1"":""drawer-and-page"",
+                            ""showAs2"":""drawer-and-page"",
+                            ""customCss"":""""
+                        }",
+                        AnnouncementBarConfig = @"{""enabled"":true,""announcements"":[{""id"":""1"",""content"":""Free shipping on orders over $50!""}]}",
+                        FooterConfig = @"{""enabled"":true,""sections"":[]}",
+                        CartDrawerConfig = @"{""displayType"":""drawer"",""drawerPosition"":""right""}",
+                        Notes = "Default configuration created automatically"
+                    };
+                    
+                    components = await _componentsService.CreateOrUpdateAsync(companyId, createDto);
+                    
+                    if (components == null)
+                    {
+                        _logger.LogError("Failed to create default components for company {CompanyId}", companyId);
+                        return StatusCode(500, "Failed to create default components");
+                    }
+                    
+                    _logger.LogInformation("Successfully created default components for company {CompanyId}", companyId);
                 }
+                
+                _logger.LogInformation("Returning structural components for company {CompanyId}", companyId);
                 return Ok(components);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting components for company {CompanyId}", companyId);
-                return StatusCode(500, "An error occurred while retrieving components");
+                return StatusCode(500, new { error = $"An error occurred: {ex.Message}" });
             }
         }
 
@@ -151,7 +210,7 @@ namespace WebsiteBuilderAPI.Controllers
         /// <summary>
         /// Update specific component
         /// </summary>
-        [HttpPatch("company/{companyId}/component")]
+        [HttpPut("company/{companyId}/component")]
         public async Task<ActionResult<StructuralComponentsDto>> UpdateComponent(
             int companyId,
             [FromBody] UpdateComponentDto dto)

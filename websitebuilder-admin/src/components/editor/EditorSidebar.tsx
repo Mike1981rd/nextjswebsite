@@ -109,16 +109,18 @@ export function EditorSidebar() {
                     ))}
                   </div>
 
-                  {/* Add Section Button */}
-                  <button
-                    onClick={() => openAddModal(group.id)}
-                    className="w-full flex items-center justify-center gap-1.5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-all group"
-                  >
-                    <div className="w-5 h-5 rounded border border-gray-400 border-dashed flex items-center justify-center group-hover:border-gray-600">
-                      <Plus className="w-3 h-3" />
-                    </div>
-                    <span>{t('editor.sidebar.addSection', 'Agregar sección')}</span>
-                  </button>
+                  {/* Add Section Button - Hidden for headerGroup */}
+                  {group.id !== 'headerGroup' && (
+                    <button
+                      onClick={() => openAddModal(group.id)}
+                      className="w-full flex items-center justify-center gap-1.5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-all group"
+                    >
+                      <div className="w-5 h-5 rounded border border-gray-400 border-dashed flex items-center justify-center group-hover:border-gray-600">
+                        <Plus className="w-3 h-3" />
+                      </div>
+                      <span>{t('editor.sidebar.addSection', 'Agregar sección')}</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>

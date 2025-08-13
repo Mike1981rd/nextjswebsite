@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Section, SectionType } from '@/types/editor.types';
 import { useEditorStore } from '@/stores/useEditorStore';
+import { HeaderEditor } from './HeaderEditor';
+import { useStructuralComponents } from '@/hooks/useStructuralComponents';
+import { HeaderConfig } from '@/types/components/header';
 
 interface ConfigPanelProps {
   section: Section;
@@ -11,8 +14,10 @@ interface ConfigPanelProps {
 
 export function ConfigPanel({ section }: ConfigPanelProps) {
   const { selectSection, updateSectionSettings } = useEditorStore();
+  const { headerConfig, updateHeaderConfig } = useStructuralComponents();
   const [settings, setSettings] = useState(section.settings);
   const [hasChanges, setHasChanges] = useState(false);
+  const [headerLoading, setHeaderLoading] = useState(false);
 
   useEffect(() => {
     setSettings(section.settings);
@@ -23,8 +28,22 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     selectSection(null);
   };
 
-  const handleSave = () => {
-    // Find the group this section belongs to
+  const handleSave = async () => {
+    // Special handling for Header
+    if (section.type === SectionType.HEADER) {
+      setHeaderLoading(true);
+      try {
+        await updateHeaderConfig(settings as HeaderConfig);
+        setHasChanges(false);
+      } catch (error) {
+        console.error('Failed to save header config:', error);
+      } finally {
+        setHeaderLoading(false);
+      }
+      return;
+    }
+
+    // Regular sections
     const { sections } = useEditorStore.getState();
     let groupId: 'headerGroup' | 'asideGroup' | 'template' | 'footerGroup' | null = null;
     
@@ -51,6 +70,17 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
   const renderConfigFields = () => {
     switch (section.type) {
+      case SectionType.HEADER:
+        return (
+          <HeaderEditor
+            value={(headerConfig || settings) as HeaderConfig}
+            onChange={(newConfig) => {
+              setSettings(newConfig);
+              setHasChanges(true);
+            }}
+          />
+        );
+
       case SectionType.IMAGE_BANNER:
         return (
           <>
@@ -193,7 +223,7 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   return (
     <div className="w-80 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
       {/* Header */}
-      <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4">
+      <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 z-10">
         <div className="flex items-center gap-3 mb-3">
           <button
             onClick={handleBack}

@@ -11,13 +11,11 @@ export function EditorPreview() {
   const { sections, selectedSectionId, selectSection, hoveredSectionId, setHoveredSection } = useEditorStore();
   const [deviceView, setDeviceView] = React.useState<DeviceView>('desktop');
 
-  // Combine all sections in order
-  const allSections = [
-    ...sections.headerGroup,
-    ...sections.asideGroup,
-    ...sections.template,
-    ...sections.footerGroup
-  ].filter(s => s.visible);
+  // Separate sections by group for proper layout
+  const headerSections = sections.headerGroup.filter(s => s.visible);
+  const templateSections = sections.template.filter(s => s.visible);
+  const footerSections = sections.footerGroup.filter(s => s.visible);
+  const asideSections = sections.asideGroup.filter(s => s.visible);
 
   const getPreviewWidth = () => {
     switch (deviceView) {
@@ -157,43 +155,77 @@ export function EditorPreview() {
     }
   };
 
+  const renderSection = (section: Section) => (
+    <div
+      key={section.id}
+      className={`
+        relative group cursor-pointer transition-all
+        ${selectedSectionId === section.id ? 'outline outline-2 outline-blue-500 outline-offset-2' : ''}
+        ${hoveredSectionId === section.id && selectedSectionId !== section.id ? 'outline outline-2 outline-blue-300 outline-offset-2' : ''}
+      `}
+      onClick={() => selectSection(section.id)}
+      onMouseEnter={() => setHoveredSection(section.id)}
+      onMouseLeave={() => setHoveredSection(null)}
+    >
+      {renderSectionPreview(section)}
+      
+      {/* Section Label on Hover */}
+      {(hoveredSectionId === section.id || selectedSectionId === section.id) && (
+        <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+          {section.name}
+        </div>
+      )}
+    </div>
+  );
+
+  const hasContent = headerSections.length > 0 || templateSections.length > 0 || footerSections.length > 0;
+
   return (
     <div className="flex-1 bg-white h-full flex flex-col">
-
       {/* Preview Area */}
       <div className="flex-1 overflow-y-auto flex justify-center bg-gray-100">
-        <div className={`bg-white ${getPreviewWidth()} min-h-full shadow-lg`}>
-          {allSections.length === 0 ? (
-            <div className="h-[600px] flex items-center justify-center text-gray-400 bg-gray-50">
+        <div className={`bg-white ${getPreviewWidth()} min-h-full shadow-lg flex flex-col`}>
+          {!hasContent ? (
+            <div className="flex-1 flex items-center justify-center text-gray-400 bg-gray-50">
               <div className="text-center">
-                <div className="text-lg mb-2">No hay secciones agregadas</div>
-                <div className="text-sm">Agrega secciones desde la barra lateral para comenzar a construir tu página</div>
+                <div className="text-lg mb-2">No hay secciones visibles</div>
+                <div className="text-sm">Las secciones estructurales están configuradas pero ocultas</div>
               </div>
             </div>
           ) : (
-            allSections.map((section) => (
-              <div
-                key={section.id}
-                className={`
-                  relative group cursor-pointer transition-all
-                  ${selectedSectionId === section.id ? 'outline outline-2 outline-blue-500 outline-offset-2' : ''}
-                  ${hoveredSectionId === section.id && selectedSectionId !== section.id ? 'outline outline-2 outline-blue-300 outline-offset-2' : ''}
-                `}
-                onClick={() => selectSection(section.id)}
-                onMouseEnter={() => setHoveredSection(section.id)}
-                onMouseLeave={() => setHoveredSection(null)}
-              >
-                {renderSectionPreview(section)}
-                
-                {/* Section Label on Hover */}
-                {(hoveredSectionId === section.id || selectedSectionId === section.id) && (
-                  <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                    {section.name}
+            <>
+              {/* Header sections at the top */}
+              <div className="flex-shrink-0">
+                {headerSections.map(renderSection)}
+              </div>
+
+              {/* Main content area - grows to fill space */}
+              <div className="flex-1">
+                {templateSections.length === 0 ? (
+                  <div className="h-[400px] flex items-center justify-center text-gray-400 bg-gray-50">
+                    <div className="text-center">
+                      <div className="text-lg mb-2">Área de contenido vacía</div>
+                      <div className="text-sm">Agrega secciones de contenido desde la barra lateral</div>
+                    </div>
                   </div>
+                ) : (
+                  templateSections.map(renderSection)
                 )}
               </div>
-            ))
+
+              {/* Footer sections at the bottom */}
+              <div className="flex-shrink-0 mt-auto">
+                {footerSections.map(renderSection)}
+              </div>
+            </>
           )}
+
+          {/* Aside sections like cart drawer would be rendered as overlays */}
+          {asideSections.map(section => (
+            <div key={section.id} className="hidden">
+              {/* Cart drawer and search drawer are hidden by default, shown on interaction */}
+            </div>
+          ))}
         </div>
       </div>
     </div>

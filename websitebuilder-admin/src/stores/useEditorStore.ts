@@ -21,6 +21,7 @@ interface EditorStore extends EditorState {
   toggleConfigPanel: (open?: boolean) => void;
   setHoveredSection: (sectionId: string | null) => void;
   loadPageSections: (sections: Section[]) => void;
+  initializeStructuralComponents: () => void;
   savePage: () => Promise<void>;
   resetChanges: () => void;
   setIsDirty: (dirty: boolean) => void;
@@ -158,42 +159,88 @@ export const useEditorStore = create<EditorStore>()(
         },
 
         loadPageSections: (sections) => {
-          const grouped = {
-            headerGroup: [] as Section[],
-            asideGroup: [] as Section[],
-            template: [] as Section[],
-            footerGroup: [] as Section[]
+          // Only load template sections from the page
+          // Structural components (header, footer, etc) are maintained globally
+          const state = get();
+          const newSections = {
+            headerGroup: state.sections.headerGroup, // Keep existing header group
+            asideGroup: state.sections.asideGroup,   // Keep existing aside group
+            template: [] as Section[],                // Load new template sections
+            footerGroup: state.sections.footerGroup  // Keep existing footer group
           };
 
+          // Only process template sections from the page
           sections.forEach((section) => {
             const config = SECTION_CONFIGS[section.type];
-            if (config) {
-              switch (config.category) {
-                case 'header':
-                  grouped.headerGroup.push(section);
-                  break;
-                case 'aside':
-                  grouped.asideGroup.push(section);
-                  break;
-                case 'footer':
-                  grouped.footerGroup.push(section);
-                  break;
-                default:
-                  grouped.template.push(section);
-                  break;
-              }
+            if (config && config.category === 'template') {
+              newSections.template.push(section);
             }
           });
 
-          // Sort each group by sortOrder
-          Object.keys(grouped).forEach((key) => {
-            grouped[key as keyof typeof grouped].sort((a, b) => a.sortOrder - b.sortOrder);
-          });
+          // Sort template sections by sortOrder
+          newSections.template.sort((a, b) => a.sortOrder - b.sortOrder);
 
           set({
-            sections: grouped,
+            sections: newSections,
             isDirty: false
           });
+        },
+
+        initializeStructuralComponents: () => {
+          // Initialize structural components if they don't exist
+          const state = get();
+          const hasHeader = state.sections.headerGroup.some(s => s.type === SectionType.HEADER);
+          const hasAnnouncementBar = state.sections.headerGroup.some(s => s.type === SectionType.ANNOUNCEMENT_BAR);
+          const hasFooter = state.sections.footerGroup.some(s => s.type === SectionType.FOOTER);
+          const hasCartDrawer = state.sections.asideGroup.some(s => s.type === SectionType.CART_DRAWER);
+
+          const updatedSections = { ...state.sections };
+
+          if (!hasHeader) {
+            updatedSections.headerGroup.push({
+              id: 'header_structural',
+              type: SectionType.HEADER,
+              name: 'Header',
+              visible: true,
+              settings: {},
+              sortOrder: 1
+            });
+          }
+
+          if (!hasAnnouncementBar) {
+            updatedSections.headerGroup.push({
+              id: 'announcement_structural',
+              type: SectionType.ANNOUNCEMENT_BAR,
+              name: 'Announcement Bar',
+              visible: false, // Hidden by default
+              settings: {},
+              sortOrder: 0
+            });
+          }
+
+          if (!hasFooter) {
+            updatedSections.footerGroup.push({
+              id: 'footer_structural',
+              type: SectionType.FOOTER,
+              name: 'Footer',
+              visible: true,
+              settings: {},
+              sortOrder: 0
+            });
+          }
+
+          if (!hasCartDrawer) {
+            updatedSections.asideGroup.push({
+              id: 'cart_drawer_structural',
+              type: SectionType.CART_DRAWER,
+              name: 'Cart Drawer',
+              visible: false, // Hidden by default
+              settings: {},
+              sortOrder: 0
+            });
+          }
+
+          set({ sections: updatedSections });
         },
 
         savePage: async () => {
@@ -250,7 +297,8 @@ export const useEditorStore = create<EditorStore>()(
         name: 'editor-store',
         partialize: (state) => ({
           selectedPageId: state.selectedPageId,
-          selectedPageType: state.selectedPageType
+          selectedPageType: state.selectedPageType,
+          sections: state.sections // Also persist sections
         })
       }
     )
