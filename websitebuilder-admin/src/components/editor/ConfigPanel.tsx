@@ -78,6 +78,9 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
                 return; // No actual change, skip update
               }
               
+              console.log('HeaderEditor onChange - new config:', newConfig);
+              console.log('Logo config:', newConfig.logo);
+              
               // Save history before making changes
               const store = useEditorStore.getState();
               store.saveHistory();
@@ -92,6 +95,7 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
                 const sectionIndex = group.findIndex(s => s.id === section.id);
                 if (sectionIndex !== -1) {
                   updateSectionSettings(key, section.id, newConfig);
+                  console.log(`Updated section ${section.id} in group ${key} with logo:`, newConfig.logo);
                   break;
                 }
               }

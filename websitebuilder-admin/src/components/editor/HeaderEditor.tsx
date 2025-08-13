@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { HeaderConfig, defaultHeaderConfig } from '@/types/components/header';
 import { Slider } from '@/components/ui/slider';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useColorSchemes } from '@/hooks/useColorSchemes';
 import { useNavigationMenus } from '@/hooks/useNavigationMenus';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 interface HeaderEditorProps {
   value: HeaderConfig;
@@ -18,6 +19,9 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
   });
   const { colorSchemes, loading: schemesLoading } = useColorSchemes();
   const { menus, loading: menusLoading } = useNavigationMenus();
+  
+  // Debounce timer ref
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debug: Log when color schemes change
   useEffect(() => {
@@ -34,7 +38,7 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
     setLocalConfig(value || defaultHeaderConfig);
   }, [value, JSON.stringify(value)]);
 
-  const handleChange = (path: string, newValue: any) => {
+  const handleChange = (path: string, newValue: any, debounce: boolean = false) => {
     const keys = path.split('.');
     const updated = { ...localConfig };
     let current: any = updated;
@@ -53,9 +57,37 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
     }
     
     current[keys[keys.length - 1]] = newValue;
+    
+    // Debug logging for logo changes
+    if (path.includes('logo')) {
+      console.log('Logo change detected:', path, '=', newValue);
+      console.log('Updated config:', updated);
+    }
+    
+    // Always update local state immediately for smooth UI
     setLocalConfig(updated);
-    onChange(updated);
+    
+    // Debounce the onChange callback for slider changes
+    if (debounce) {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = setTimeout(() => {
+        onChange(updated);
+      }, 150); // 150ms delay for smooth updates
+    } else {
+      onChange(updated);
+    }
   };
+  
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const getValue = (path: string) => {
     const keys = path.split('.');
@@ -172,22 +204,24 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
         )}
       </div>
 
-      {/* Width */}
-      <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1.5">
-          Width
-        </label>
-        <select 
-          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-          value={getValue('width') || 'page'}
-          onChange={(e) => handleChange('width', e.target.value)}
-        >
-          <option value="screen">Screen</option>
-          <option value="page">Page</option>
-          <option value="large">Large</option>
-          <option value="medium">Medium</option>
-        </select>
-      </div>
+      {/* Width - Hidden when layout is drawer */}
+      {getValue('layout') !== 'drawer' && (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            Width
+          </label>
+          <select 
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={getValue('width') || 'page'}
+            onChange={(e) => handleChange('width', e.target.value)}
+          >
+            <option value="screen">Screen</option>
+            <option value="page">Page</option>
+            <option value="large">Large</option>
+            <option value="medium">Medium</option>
+          </select>
+        </div>
+      )}
 
       {/* Height */}
       <div>
@@ -197,7 +231,7 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
         <div className="flex items-center gap-3">
           <Slider
             value={[getValue('height') || 80]}
-            onValueChange={(values) => handleChange('height', values[0])}
+            onValueChange={(values) => handleChange('height', values[0], true)}
             min={60}
             max={150}
             step={5}
@@ -228,7 +262,13 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
         <select 
           className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
           value={getValue('layout') || 'drawer'}
-          onChange={(e) => handleChange('layout', e.target.value)}
+          onChange={(e) => {
+            handleChange('layout', e.target.value);
+            // Auto-set width to screen when drawer layout is selected
+            if (e.target.value === 'drawer') {
+              handleChange('width', 'screen');
+            }
+          }}
         >
           <option value="drawer">Drawer</option>
           <option value="logo-left-menu-center-inline">Logo left, menu center inline</option>
@@ -358,104 +398,90 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
       </div>
 
       {/* Logo Section */}
-      <div className="border-t border-gray-200 pt-4">
+      <div className="border-t border-gray-200 pt-4 pb-2">
         <h3 className="text-sm font-semibold text-gray-900 mb-3">Logo</h3>
         
-        {/* Desktop logo */}
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Desktop logo
-            </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-              {getValue('logo.desktopUrl') ? (
-                <div className="flex items-center justify-between">
-                  <img 
-                    src={getValue('logo.desktopUrl')} 
-                    alt="Desktop logo"
-                    className="h-12 object-contain"
-                  />
-                  <button className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                    Change
-                  </button>
-                </div>
-              ) : (
-                <button className="w-full py-2 text-sm text-gray-600 hover:text-gray-800">
-                  Select image
-                </button>
-              )}
-            </div>
-          </div>
+        <div className="space-y-6">
+          {/* Desktop logo */}
+          <div className="space-y-3">
+            <ImageUpload
+              value={getValue('logo.desktopUrl')}
+              onChange={(url) => handleChange('logo.desktopUrl', url)}
+              label="Desktop logo"
+              maxWidth={300}
+              maxHeight={100}
+            />
 
-          {/* Desktop logo size */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Desktop logo size
-            </label>
-            <div className="flex items-center gap-3">
-              <Slider
-                value={[getValue('logo.height') || 190]}
-                onValueChange={(values) => handleChange('logo.height', values[0])}
-                min={50}
+            {/* Desktop logo size */}
+            {getValue('logo.desktopUrl') && (
+              <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Desktop logo size
+              </label>
+              <div className="flex items-center gap-3">
+                <Slider
+                  value={[getValue('logo.height') || 40]}
+                  onValueChange={(values) => handleChange('logo.height', values[0], true)}
+                  min={20}
                 max={250}
                 step={5}
                 className="flex-1"
               />
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  className="w-14 px-2 py-1 text-sm border border-gray-300 rounded"
-                  value={getValue('logo.height') || 190}
-                  onChange={(e) => handleChange('logo.height', parseInt(e.target.value) || 190)}
-                  min={50}
-                  max={250}
-                />
-                <span className="text-xs text-gray-500">px</span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    className="w-14 px-2 py-1 text-sm border border-gray-300 rounded"
+                    value={getValue('logo.height') || 40}
+                    onChange={(e) => handleChange('logo.height', parseInt(e.target.value) || 40)}
+                    min={20}
+                    max={150}
+                  />
+                  <span className="text-xs text-gray-500">px</span>
+                </div>
               </div>
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile logo */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Mobile logo
-            </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-              <button className="w-full py-2 text-sm text-gray-600 hover:text-gray-800">
-                Select image
-              </button>
-            </div>
-            <button className="text-xs text-blue-600 hover:text-blue-700 mt-1">
-              Explore free images
-            </button>
-          </div>
+          <div className="space-y-3">
+            <ImageUpload
+            value={getValue('logo.mobileUrl')}
+            onChange={(url) => handleChange('logo.mobileUrl', url)}
+            label="Mobile logo (optional)"
+            maxWidth={200}
+            maxHeight={80}
+          />
 
-          {/* Mobile logo size */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Mobile logo size
-            </label>
-            <div className="flex items-center gap-3">
-              <Slider
-                value={[getValue('logo.mobileHeight') || 120]}
-                onValueChange={(values) => handleChange('logo.mobileHeight', values[0])}
-                min={50}
-                max={200}
-                step={5}
-                className="flex-1"
-              />
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  className="w-14 px-2 py-1 text-sm border border-gray-300 rounded"
-                  value={getValue('logo.mobileHeight') || 120}
-                  onChange={(e) => handleChange('logo.mobileHeight', parseInt(e.target.value) || 120)}
-                  min={50}
-                  max={200}
+            {/* Mobile logo size */}
+            {getValue('logo.mobileUrl') && (
+              <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Mobile logo size
+              </label>
+              <div className="flex items-center gap-3">
+                <Slider
+                  value={[getValue('logo.mobileHeight') || 30]}
+                  onValueChange={(values) => handleChange('logo.mobileHeight', values[0], true)}
+                  min={20}
+                  max={100}
+                  step={5}
+                  className="flex-1"
                 />
-                <span className="text-xs text-gray-500">px</span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    className="w-14 px-2 py-1 text-sm border border-gray-300 rounded"
+                    value={getValue('logo.mobileHeight') || 30}
+                    onChange={(e) => handleChange('logo.mobileHeight', parseInt(e.target.value) || 30)}
+                    min={20}
+                    max={100}
+                  />
+                  <span className="text-xs text-gray-500">px</span>
+                </div>
               </div>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

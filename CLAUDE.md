@@ -232,10 +232,12 @@ Este comando es para retomar el desarrollo del Website Builder v2.0 específicam
 ### 📋 QUÉ HACE EL COMANDO
 1. **Lee el progreso actual** desde `websitebuilderprogress.md`
 2. **Carga la arquitectura** desde `blueprintwebsite.md` 
-3. **Lee el sistema de logging** desde `logs.md` 
-4. **Verifica implementación** actual (tipos, modelos, APIs, componentes)
-5. **Identifica siguiente tarea** basado en dependencias y progreso
-6. **Prepara el entorno** para continuar exactamente donde quedaste
+3. **Lee el sistema de logging** desde `logs.md`
+4. **🆕 Lee documentación crítica** desde `docs/WEBSITE-BUILDER-ARCHITECTURE.md`
+5. **🆕 Lee guía de troubleshooting** desde `docs/WEBSITE-BUILDER-TROUBLESHOOTING.md`
+6. **Verifica implementación** actual (tipos, modelos, APIs, componentes)
+7. **Identifica siguiente tarea** basado en dependencias y progreso
+8. **Prepara el entorno** para continuar exactamente donde quedaste
 
 ### 📝 NOTA SOBRE LOGS
 - **logs.md** se lee SIEMPRE al inicializar para tener contexto del sistema de logging
@@ -255,22 +257,35 @@ Este comando es para retomar el desarrollo del Website Builder v2.0 específicam
 ```
 🚀 WEBSITE BUILDER SESSION INITIALIZED
 
-📊 Overall Progress: 15% Complete
-Current Phase: Phase 1 - TypeScript Types (75% complete)
+📚 Loading Documentation...
+✅ websitebuilderprogress.md loaded - Current progress tracked
+✅ blueprintwebsite.md loaded - Architecture specs loaded
+✅ logs.md loaded - Logging system ready
+✅ WEBSITE-BUILDER-ARCHITECTURE.md loaded - Critical flows documented
+✅ WEBSITE-BUILDER-TROUBLESHOOTING.md loaded - Problem solutions ready
+
+📊 Overall Progress: 55% Complete
+Current Phase: Phase 3 - UI Editors (100% complete)
 
 ✅ Recently Completed:
-- appearance.ts created
-- typography.ts created
-- colorSchemes.ts created
+- HeaderEditor.tsx with sync
+- Save button dirty state fixed
+- Undo/Redo system implemented
 
 🔄 Currently In Progress:
-- productCards.ts
-- Files modified: websitebuilder-admin/src/types/theme/productCards.ts
+- Phase 4: Structural Components
+- Next: AnnouncementBarEditor.tsx
 
 📋 Next Recommended Tasks:
-1. Complete productCards.ts implementation
-2. Create productBadges.ts
-3. Create cart.ts
+1. Create AnnouncementBarEditor.tsx
+2. Create FooterEditor.tsx
+3. Create CartDrawerEditor.tsx
+
+⚠️ CRITICAL REMINDERS FROM DOCS:
+- ALWAYS update isDirty when making changes
+- ALWAYS sync local state with props via useEffect
+- NEVER compare objects directly, use JSON.stringify
+- FOLLOW the documented data flow: Local → Store → API → Preview
 
 [... más detalles ...]
 ```
@@ -324,6 +339,26 @@ Claude: *modifica /components/editor/GlobalSettingsPanel.tsx*
 
 ---
 
-**Última actualización:** 2025-01-12
-**Versión:** 3.4 (Incluye lectura obligatoria de logs.md en /init-websitebuilder)
-**Crítico:** Los archivos blueprint y logs DEBEN leerse SIEMPRE
+### 🔴 DOCUMENTACIÓN CRÍTICA DEL WEBSITE BUILDER
+
+**IMPORTANTE**: Los siguientes documentos son OBLIGATORIOS para trabajar en el Website Builder:
+
+1. **`docs/WEBSITE-BUILDER-ARCHITECTURE.md`** - Explica TODO el flujo de datos y sincronización
+   - Cómo funcionan los stores
+   - Por qué el botón Save aparece/desaparece
+   - Cómo se sincroniza el preview
+   - Sistema Undo/Redo
+
+2. **`docs/WEBSITE-BUILDER-TROUBLESHOOTING.md`** - Soluciones a problemas comunes
+   - Qué hacer cuando el botón Save no aparece
+   - Cómo arreglar cuando Undo no actualiza la vista
+   - Comandos de debugging
+   - Recuperación de emergencia
+
+**⚠️ NO MODIFICAR CÓDIGO DEL WEBSITE BUILDER SIN LEER ESTOS DOCUMENTOS**
+
+---
+
+**Última actualización:** 2025-01-13
+**Versión:** 3.5 (Incluye documentación crítica de arquitectura y troubleshooting)
+**Crítico:** Los archivos blueprint, logs, ARCHITECTURE y TROUBLESHOOTING DEBEN leerse SIEMPRE
