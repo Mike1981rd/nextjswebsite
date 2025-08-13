@@ -7,6 +7,7 @@ import { Monitor, Tablet, Smartphone } from 'lucide-react';
 import { useColorSchemes } from '@/hooks/useColorSchemes';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { useNavigationMenus } from '@/hooks/useNavigationMenus';
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -19,6 +20,7 @@ export function EditorPreview() {
   const { colorSchemes } = useColorSchemes();
   const { config: structuralComponents } = useStructuralComponents();
   const { menus } = useNavigationMenus();
+  const { config: themeConfig } = useThemeConfigStore();
   
   // Close dropdown when clicking outside (only for click mode)
   React.useEffect(() => {
@@ -60,6 +62,18 @@ export function EditorPreview() {
     let isDrawerLayout = false;
     let menuItems: any[] = [];
     let selectedMenuId: number | undefined = undefined;
+    
+    // Typography styles for menu items
+    const menuTypographyStyles = themeConfig?.typography?.menu ? {
+      fontFamily: `'${themeConfig.typography.menu.fontFamily}', sans-serif`,
+      fontWeight: themeConfig.typography.menu.fontWeight || '400',
+      textTransform: themeConfig.typography.menu.useUppercase ? 'uppercase' as const : 'none' as const,
+      fontSize: themeConfig.typography.menu.fontSize ? 
+        (themeConfig.typography.menu.fontSize <= 100 ? 
+          `${themeConfig.typography.menu.fontSize}%` : 
+          `${themeConfig.typography.menu.fontSize}px`) : '94%',
+      letterSpacing: `${themeConfig.typography.menu.letterSpacing || 0}px`
+    } : {};
     
     // Calculate header-specific values if this is a header section
     if (section.type === SectionType.HEADER) {
@@ -310,7 +324,10 @@ export function EditorPreview() {
                           >
                             <a href="#" 
                               className="relative flex items-center gap-1 transition-opacity hover:opacity-80"
-                              style={{ color: schemeToUse?.text || '#000000' }}
+                              style={{ 
+                                color: schemeToUse?.text || '#000000',
+                                ...menuTypographyStyles
+                              }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 if (menuOpenOn === 'click' && item.subItems && item.subItems.length > 0) {
@@ -339,7 +356,10 @@ export function EditorPreview() {
                                   {item.subItems.map((subItem: any) => (
                                     <a key={subItem.label} href="#"
                                       className="block px-6 py-3 text-sm transition-opacity hover:opacity-70"
-                                      style={{ color: schemeToUse?.text || '#000000' }}
+                                      style={{ 
+                                        color: schemeToUse?.text || '#000000',
+                                        ...menuTypographyStyles
+                                      }}
                                       onClick={(e) => e.preventDefault()}
                                     >
                                       {subItem.label}
@@ -392,7 +412,10 @@ export function EditorPreview() {
                       >
                         <a href="#" 
                           className="relative flex items-center gap-1 transition-opacity hover:opacity-80"
-                          style={{ color: schemeToUse?.text || '#000000' }}
+                          style={{ 
+                            color: schemeToUse?.text || '#000000',
+                            ...menuTypographyStyles
+                          }}
                           onClick={(e) => {
                             e.preventDefault();
                             if (menuOpenOn === 'click' && item.subItems && item.subItems.length > 0) {
@@ -421,7 +444,10 @@ export function EditorPreview() {
                               {item.subItems.map((subItem: any) => (
                                 <a key={subItem.label} href="#"
                                   className="block px-6 py-3 text-sm transition-opacity hover:opacity-70"
-                                  style={{ color: schemeToUse?.text || '#000000' }}
+                                  style={{ 
+                                    color: schemeToUse?.text || '#000000',
+                                    ...menuTypographyStyles
+                                  }}
                                   onClick={(e) => e.preventDefault()}
                                 >
                                   {subItem.label}
@@ -501,7 +527,10 @@ export function EditorPreview() {
                         >
                           <a href="#" 
                             className="relative flex items-center gap-1 transition-opacity hover:opacity-80"
-                            style={{ color: schemeToUse?.text || '#000000' }}
+                            style={{ 
+                              color: schemeToUse?.text || '#000000',
+                              ...menuTypographyStyles
+                            }}
                             onClick={(e) => {
                               e.preventDefault();
                               if (menuOpenOn === 'click' && item.subItems && item.subItems.length > 0) {
@@ -530,7 +559,10 @@ export function EditorPreview() {
                                 {item.subItems.map((subItem: any) => (
                                   <a key={subItem.label} href="#"
                                     className="block px-6 py-3 text-sm transition-opacity hover:opacity-70"
-                                    style={{ color: schemeToUse?.text || '#000000' }}
+                                    style={{ 
+                                      color: schemeToUse?.text || '#000000',
+                                      ...menuTypographyStyles
+                                    }}
                                     onClick={(e) => e.preventDefault()}
                                   >
                                     {subItem.label}
@@ -626,6 +658,7 @@ export function EditorPreview() {
                         className="relative flex items-center gap-1 transition-opacity hover:opacity-80"
                         style={{ 
                           color: schemeToUse?.text || '#000000',
+                          ...menuTypographyStyles
                         }}
                         onClick={(e) => {
                           e.preventDefault();
@@ -678,6 +711,7 @@ export function EditorPreview() {
                                 className="block px-6 py-3 text-sm transition-opacity hover:opacity-70"
                                 style={{
                                   color: schemeToUse?.text || '#000000',
+                                  ...menuTypographyStyles
                                 }}
                                 onClick={(e) => e.preventDefault()}
                               >
@@ -830,6 +864,18 @@ export function EditorPreview() {
         const selectedMenu = menus?.find(m => m.id === selectedMenuId);
         const menuItems = selectedMenu?.items || [];
         
+        // Typography styles for menu items
+        const menuTypographyStyles = themeConfig?.typography?.menu ? {
+          fontFamily: `'${themeConfig.typography.menu.fontFamily}', sans-serif`,
+          fontWeight: themeConfig.typography.menu.fontWeight || '400',
+          textTransform: themeConfig.typography.menu.useUppercase ? 'uppercase' as const : 'none' as const,
+          fontSize: themeConfig.typography.menu.fontSize ? 
+            (themeConfig.typography.menu.fontSize <= 100 ? 
+              `${themeConfig.typography.menu.fontSize}%` : 
+              `${themeConfig.typography.menu.fontSize}px`) : '94%',
+          letterSpacing: `${themeConfig.typography.menu.letterSpacing || 0}px`
+        } : {};
+        
         return (
           <React.Fragment key={section.id}>
             <div
@@ -934,7 +980,7 @@ export function EditorPreview() {
                               e.currentTarget.style.backgroundColor = 'transparent';
                             }}
                           >
-                            <span className="font-medium">{item.label}</span>
+                            <span style={menuTypographyStyles}>{item.label}</span>
                             {item.subItems && item.subItems.length > 0 && (
                               <svg 
                                 className="w-4 h-4" 
@@ -984,7 +1030,8 @@ export function EditorPreview() {
                                 className="block px-4 py-3 rounded transition-colors"
                                 style={{ 
                                   color: schemeToUse?.text || '#000000',
-                                  backgroundColor: 'transparent'
+                                  backgroundColor: 'transparent',
+                                  ...menuTypographyStyles
                                 }}
                                 onMouseEnter={(e) => {
                                   e.currentTarget.style.backgroundColor = schemeToUse?.text ? `${schemeToUse.text}10` : 'rgba(0,0,0,0.05)';

@@ -4,6 +4,10 @@ This directory contains troubleshooting documentation for business features and 
 
 ## Available Documentation
 
+### Import & Module Issues
+- **[features-02-store-imports.md](./features-02-store-imports.md)** - Store import errors with default vs named exports
+- **[features-03-scope-errors.md](./features-03-scope-errors.md)** - Variable scope issues in React components
+
 ### Internationalization (i18n)
 - **[features-01-i18n-hydration-issues.md](./features-01-i18n-hydration-issues.md)** - Hydration mismatch errors when using translations in React components
 - **[features-02-i18n-persistence-sync.md](./features-02-i18n-persistence-sync.md)** - Language selector synchronization and persistence issues
