@@ -5,7 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronRight, Save, Loader2 } from 'lucide-reac
 import { useEditorStore } from '@/stores/useEditorStore';
 import { Slider } from '@/components/ui/slider';
 import { useGlobalThemeConfig } from '@/hooks/useGlobalThemeConfig';
-import { BorderRadiusLabels, BorderRadiusSize } from '@/types/theme/appearance';
+import { BorderRadiusLabels, BorderRadiusSize, defaultAppearance, AppearanceConfig } from '@/types/theme/appearance';
 import { TypographyConfig, FontConfig, defaultTypography } from '@/types/theme/typography';
 import { ColorSchemesConfig, defaultColorSchemes } from '@/types/theme/colorSchemes';
 import { ProductCardsConfig, defaultProductCards } from '@/types/theme/productCards';
@@ -58,10 +58,10 @@ export function GlobalSettingsPanel() {
     updateSocialMedia,
     updateSwatches
   } = useGlobalThemeConfig();
-  const [localAppearance, setLocalAppearance] = useState(appearance);
-  const [localTypography, setLocalTypography] = useState<TypographyConfig>(typography || defaultTypography);
-  const [localColorSchemes, setLocalColorSchemes] = useState<ColorSchemesConfig>(colorSchemes || defaultColorSchemes);
-  const [localProductCards, setLocalProductCards] = useState<ProductCardsConfig>(productCards || defaultProductCards);
+  const [localAppearance, setLocalAppearance] = useState<AppearanceConfig>(defaultAppearance);
+  const [localTypography, setLocalTypography] = useState<TypographyConfig>(defaultTypography);
+  const [localColorSchemes, setLocalColorSchemes] = useState<ColorSchemesConfig>(defaultColorSchemes);
+  const [localProductCards, setLocalProductCards] = useState<ProductCardsConfig>(defaultProductCards);
   // Initialize Product Badges with complete structure to avoid null values
   const [localProductBadges, setLocalProductBadges] = useState<ProductBadgesConfig>(() => {
     const badges = productBadges || defaultProductBadges;
@@ -172,6 +172,7 @@ export function GlobalSettingsPanel() {
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Create sections with translations
   const sections = useMemo(() => [
@@ -207,25 +208,35 @@ export function GlobalSettingsPanel() {
     }
   }, []);
 
+
+
+  // Initialize local values from store when they load
   useEffect(() => {
-    if (appearance) {
+    if (!isInitialized && appearance) {
       setLocalAppearance(appearance);
     }
-  }, [appearance]);
+  }, [appearance, isInitialized]);
 
   useEffect(() => {
-    if (colorSchemes) {
+    if (!isInitialized && typography) {
+      setLocalTypography(typography);
+    }
+  }, [typography, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized && colorSchemes) {
       setLocalColorSchemes(colorSchemes);
     }
-  }, [colorSchemes]);
+  }, [colorSchemes, isInitialized]);
 
   useEffect(() => {
-    if (productCards) {
+    if (!isInitialized && productCards) {
       setLocalProductCards(productCards);
     }
-  }, [productCards]);
+  }, [productCards, isInitialized]);
 
-  useEffect(() => {
+  // Removed useEffect that was overwriting local changes
+  /*useEffect(() => {
     if (productBadges) {
       // Ensure complete structure when updating from store
       setLocalProductBadges({
@@ -284,9 +295,9 @@ export function GlobalSettingsPanel() {
         }
       });
     }
-  }, [productBadges]);
+  }, [productBadges]);*/
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (cart) {
       // Ensure complete structure when updating from store
       setLocalCart({
@@ -305,18 +316,18 @@ export function GlobalSettingsPanel() {
         }
       });
     }
-  }, [cart]);
+  }, [cart]);*/
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (favicon) {
       setLocalFavicon({
         customFavicon: favicon.customFavicon ?? true,
         faviconUrl: favicon.faviconUrl || '/favicon-custom.ico'
       });
     }
-  }, [favicon]);
+  }, [favicon]);*/
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (navigation) {
       setLocalNavigation({
         search: {
@@ -328,19 +339,68 @@ export function GlobalSettingsPanel() {
         }
       });
     }
-  }, [navigation]);
+  }, [navigation]);*/
 
   useEffect(() => {
-    if (socialMedia) {
+    if (!isInitialized && productBadges) {
+      setLocalProductBadges(productBadges);
+    }
+  }, [productBadges, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized && cart) {
+      setLocalCart(cart);
+    }
+  }, [cart, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized && favicon) {
+      setLocalFavicon(favicon);
+    }
+  }, [favicon, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized && navigation) {
+      setLocalNavigation(navigation);
+    }
+  }, [navigation, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized && socialMedia) {
       setLocalSocialMedia(socialMedia);
     }
-  }, [socialMedia]);
+  }, [socialMedia, isInitialized]);
 
   useEffect(() => {
-    if (swatches) {
+    if (!isInitialized && swatches) {
       setLocalSwatches(swatches);
     }
-  }, [swatches]);
+  }, [swatches, isInitialized]);
+
+  // Mark as initialized when all data is loaded
+  useEffect(() => {
+    if (appearance && typography && colorSchemes && !isInitialized) {
+      setIsInitialized(true);
+    }
+  }, [appearance, typography, colorSchemes, isInitialized]);
+
+  // Update local state when store values change (after save)
+  useEffect(() => {
+    if (isInitialized && !hasChanges && !saving) {
+      // Only update if we're not actively editing or saving
+      if (appearance) setLocalAppearance(appearance);
+      if (typography) setLocalTypography(typography);
+      if (colorSchemes) setLocalColorSchemes(colorSchemes);
+      if (productCards) setLocalProductCards(productCards);
+      if (productBadges) setLocalProductBadges(productBadges);
+      if (cart) setLocalCart(cart);
+      if (favicon) setLocalFavicon(favicon);
+      if (navigation) setLocalNavigation(navigation);
+      if (socialMedia) setLocalSocialMedia(socialMedia);
+      if (swatches) setLocalSwatches(swatches);
+    }
+  }, [isInitialized, hasChanges, saving, appearance, typography, colorSchemes, 
+      productCards, productBadges, cart, favicon, navigation, socialMedia, swatches]);
 
   // Load Google Fonts when typography changes
   useEffect(() => {
@@ -380,111 +440,83 @@ export function GlobalSettingsPanel() {
     }
   }, [typography]);
 
-  useEffect(() => {
-    if (!typography) {
-      setLocalTypography(defaultTypography);
-      return;
-    }
-    
-    // Always ensure we have a complete typography config with all required fields
-    const mergedTypography: TypographyConfig = {
-      headings: {
-        fontFamily: typography.headings?.fontFamily || defaultTypography.headings.fontFamily,
-        fontWeight: typography.headings?.fontWeight !== undefined ? typography.headings.fontWeight : defaultTypography.headings.fontWeight,
-        useUppercase: typography.headings?.useUppercase !== undefined ? typography.headings.useUppercase : defaultTypography.headings.useUppercase,
-        fontSize: typography.headings?.fontSize !== undefined ? typography.headings.fontSize : defaultTypography.headings.fontSize,
-        letterSpacing: typography.headings?.letterSpacing !== undefined ? typography.headings.letterSpacing : defaultTypography.headings.letterSpacing
-      },
-      body: {
-        fontFamily: typography.body?.fontFamily || defaultTypography.body.fontFamily,
-        fontWeight: typography.body?.fontWeight !== undefined ? typography.body.fontWeight : defaultTypography.body.fontWeight,
-        useUppercase: typography.body?.useUppercase !== undefined ? typography.body.useUppercase : defaultTypography.body.useUppercase,
-        fontSize: typography.body?.fontSize !== undefined ? typography.body.fontSize : defaultTypography.body.fontSize,
-        letterSpacing: typography.body?.letterSpacing !== undefined ? typography.body.letterSpacing : defaultTypography.body.letterSpacing
-      },
-      menu: {
-        fontFamily: typography.menu?.fontFamily || defaultTypography.menu.fontFamily,
-        fontWeight: typography.menu?.fontWeight !== undefined ? typography.menu.fontWeight : defaultTypography.menu.fontWeight,
-        useUppercase: typography.menu?.useUppercase !== undefined ? typography.menu.useUppercase : defaultTypography.menu.useUppercase,
-        fontSize: typography.menu?.fontSize !== undefined ? typography.menu.fontSize : defaultTypography.menu.fontSize,
-        letterSpacing: typography.menu?.letterSpacing !== undefined ? typography.menu.letterSpacing : defaultTypography.menu.letterSpacing
-      },
-      productCardName: {
-        fontFamily: typography.productCardName?.fontFamily || defaultTypography.productCardName.fontFamily,
-        fontWeight: typography.productCardName?.fontWeight !== undefined ? typography.productCardName.fontWeight : defaultTypography.productCardName.fontWeight,
-        useUppercase: typography.productCardName?.useUppercase !== undefined ? typography.productCardName.useUppercase : defaultTypography.productCardName.useUppercase,
-        fontSize: typography.productCardName?.fontSize !== undefined ? typography.productCardName.fontSize : defaultTypography.productCardName.fontSize,
-        letterSpacing: typography.productCardName?.letterSpacing !== undefined ? typography.productCardName.letterSpacing : defaultTypography.productCardName.letterSpacing
-      },
-      buttons: {
-        fontFamily: typography.buttons?.fontFamily || defaultTypography.buttons.fontFamily,
-        fontWeight: typography.buttons?.fontWeight !== undefined ? typography.buttons.fontWeight : defaultTypography.buttons.fontWeight,
-        useUppercase: typography.buttons?.useUppercase !== undefined ? typography.buttons.useUppercase : defaultTypography.buttons.useUppercase,
-        fontSize: typography.buttons?.fontSize !== undefined ? typography.buttons.fontSize : defaultTypography.buttons.fontSize,
-        letterSpacing: typography.buttons?.letterSpacing !== undefined ? typography.buttons.letterSpacing : defaultTypography.buttons.letterSpacing
-      }
-    };
-    
-    // Debug logs removed for production
-    setLocalTypography(mergedTypography);
-  }, [typography]);
+  // Removed - This was overwriting user changes
+  // The merging is now handled by the initialization useEffect
 
-  // Detect changes
+  // Detect changes for all sections
   useEffect(() => {
     let hasAnyChange = false;
     
-    if (localAppearance && appearance) {
+    // Check appearance changes
+    const baseAppearance = appearance || defaultAppearance;
+    if (localAppearance) {
       hasAnyChange = hasAnyChange || 
-        localAppearance.pageWidth !== appearance.pageWidth ||
-        localAppearance.lateralPadding !== appearance.lateralPadding ||
-        localAppearance.borderRadius !== appearance.borderRadius;
+        localAppearance.pageWidth !== baseAppearance.pageWidth ||
+        localAppearance.lateralPadding !== baseAppearance.lateralPadding ||
+        localAppearance.borderRadius !== baseAppearance.borderRadius;
     }
     
-    if (localTypography && typography) {
+    // Check typography changes
+    const baseTypography = typography || defaultTypography;
+    if (localTypography) {
       hasAnyChange = hasAnyChange || 
-        JSON.stringify(localTypography) !== JSON.stringify(typography);
+        JSON.stringify(localTypography) !== JSON.stringify(baseTypography);
     }
     
-    if (localColorSchemes && colorSchemes) {
+    // Check color schemes changes
+    const baseColorSchemes = colorSchemes || defaultColorSchemes;
+    if (localColorSchemes) {
       hasAnyChange = hasAnyChange || 
-        JSON.stringify(localColorSchemes) !== JSON.stringify(colorSchemes);
+        JSON.stringify(localColorSchemes) !== JSON.stringify(baseColorSchemes);
     }
     
+    // Check product cards changes
     if (localProductCards && productCards) {
       hasAnyChange = hasAnyChange || 
         JSON.stringify(localProductCards) !== JSON.stringify(productCards);
     }
     
+    // Check product badges changes
     if (localProductBadges && productBadges) {
-      const localStr = JSON.stringify(localProductBadges);
-      const storeStr = JSON.stringify(productBadges);
-      hasAnyChange = hasAnyChange || localStr !== storeStr;
-      
-      // Product badges change detection
+      hasAnyChange = hasAnyChange || 
+        JSON.stringify(localProductBadges) !== JSON.stringify(productBadges);
     }
     
+    // Check cart changes
     if (localCart && cart) {
       hasAnyChange = hasAnyChange || 
         JSON.stringify(localCart) !== JSON.stringify(cart);
     }
     
+    // Check favicon changes
     if (localFavicon && favicon) {
       hasAnyChange = hasAnyChange || 
         JSON.stringify(localFavicon) !== JSON.stringify(favicon);
     }
     
+    // Check navigation changes
     if (localNavigation && navigation) {
       hasAnyChange = hasAnyChange || 
         JSON.stringify(localNavigation) !== JSON.stringify(navigation);
     }
     
+    // Check social media changes
     if (localSocialMedia && socialMedia) {
       hasAnyChange = hasAnyChange || 
         JSON.stringify(localSocialMedia) !== JSON.stringify(socialMedia);
     }
     
+    // Check swatches changes
+    if (localSwatches && swatches) {
+      hasAnyChange = hasAnyChange || 
+        JSON.stringify(localSwatches) !== JSON.stringify(swatches);
+    }
+    
     setHasChanges(hasAnyChange);
-  }, [localAppearance, appearance, localTypography, typography, localColorSchemes, colorSchemes, localProductCards, productCards, localProductBadges, productBadges, localCart, cart, localFavicon, favicon, localNavigation, navigation, localSocialMedia, socialMedia]);
+  }, [localAppearance, appearance, localTypography, typography, localColorSchemes, colorSchemes, 
+      localProductCards, productCards, localProductBadges, productBadges, localCart, cart, 
+      localFavicon, favicon, localNavigation, navigation, localSocialMedia, socialMedia, 
+      localSwatches, swatches]);
 
   const handleSave = async () => {
     if (!hasChanges) return;
@@ -496,7 +528,9 @@ export function GlobalSettingsPanel() {
       if (localAppearance) {
         const localStr = JSON.stringify(localAppearance);
         const storeStr = JSON.stringify(appearance);
+        console.log('Comparing appearance:', { local: localAppearance, store: appearance, different: localStr !== storeStr });
         if (localStr !== storeStr) {
+          console.log('Updating appearance:', localAppearance);
           promises.push(updateAppearance(localAppearance));
         }
       }
@@ -588,10 +622,10 @@ export function GlobalSettingsPanel() {
         }
       }
       
-      await Promise.all(promises);
+      console.log(`Saving ${promises.length} changes...`);
+      const results = await Promise.all(promises);
+      console.log('Save results:', results);
       
-      // After successful save, the store should have the updated values
-      // The local state will be updated via the useEffect hooks
       toast.success('Configuración guardada exitosamente');
       setHasChanges(false);
     } catch (error) {
@@ -633,10 +667,12 @@ export function GlobalSettingsPanel() {
           <label className="block text-xs text-gray-600 mb-1">Fuente</label>
           <FontPicker
             value={section?.fontFamily || ''}
-            onChange={(font) => setLocalTypography(prev => ({
-              ...prev,
-              [key]: { ...prev[key], fontFamily: font }
-            }))}
+            onChange={(font) => {
+              setLocalTypography(prev => ({
+                ...prev,
+                [key]: { ...prev[key], fontFamily: font }
+              }));
+            }}
             placeholder="Buscar fuentes..."
             primaryColor={primaryColor}
           />
@@ -673,10 +709,12 @@ export function GlobalSettingsPanel() {
               <input
                 type="number"
                 value={section?.fontSize || 100}
-                onChange={(e) => setLocalTypography(prev => ({
-                  ...prev,
-                  [key]: { ...prev[key], fontSize: parseInt(e.target.value) || 100 }
-                }))}
+                onChange={(e) => {
+                  setLocalTypography(prev => ({
+                    ...prev,
+                    [key]: { ...prev[key], fontSize: parseInt(e.target.value) || 100 }
+                  }));
+                }}
                 className="w-12 px-1 py-0.5 text-xs border border-gray-300 rounded text-center"
                 min="8"
                 max="200"
@@ -688,10 +726,12 @@ export function GlobalSettingsPanel() {
           </div>
           <Slider
             value={[section?.fontSize || 100]}
-            onValueChange={(value) => setLocalTypography(prev => ({
-              ...prev,
-              [key]: { ...prev[key], fontSize: value[0] }
-            }))}
+            onValueChange={(value) => {
+              setLocalTypography(prev => ({
+                ...prev,
+                [key]: { ...prev[key], fontSize: value[0] }
+              }));
+            }}
             min={8}
             max={200}
             step={1}
@@ -708,10 +748,12 @@ export function GlobalSettingsPanel() {
               <input
                 type="number"
                 value={section?.letterSpacing || 0}
-                onChange={(e) => setLocalTypography(prev => ({
-                  ...prev,
-                  [key]: { ...prev[key], letterSpacing: parseFloat(e.target.value) || 0 }
-                }))}
+                onChange={(e) => {
+                  setLocalTypography(prev => ({
+                    ...prev,
+                    [key]: { ...prev[key], letterSpacing: parseFloat(e.target.value) || 0 }
+                  }));
+                }}
                 className="w-12 px-1 py-0.5 text-xs border border-gray-300 rounded text-center"
                 min="-5"
                 max="10"
@@ -722,10 +764,12 @@ export function GlobalSettingsPanel() {
           </div>
           <Slider
             value={[section?.letterSpacing || 0]}
-            onValueChange={(value) => setLocalTypography(prev => ({
-              ...prev,
-              [key]: { ...prev[key], letterSpacing: value[0] }
-            }))}
+            onValueChange={(value) => {
+              setLocalTypography(prev => ({
+                ...prev,
+                [key]: { ...prev[key], letterSpacing: value[0] }
+              }));
+            }}
             min={-5}
             max={10}
             step={0.1}
@@ -805,10 +849,13 @@ export function GlobalSettingsPanel() {
                         <div className="flex items-center gap-1">
                           <input
                             type="number"
-                            value={localAppearance?.pageWidth || 1400}
-                            onChange={(e) => setLocalAppearance(prev => 
-                              prev ? { ...prev, pageWidth: parseInt(e.target.value) || 1400 } : prev
-                            )}
+                            value={localAppearance.pageWidth}
+                            onChange={(e) => {
+                              setLocalAppearance(prev => ({
+                                ...prev,
+                                pageWidth: parseInt(e.target.value) || 1400
+                              }));
+                            }}
                             className="w-16 px-1 py-0.5 text-xs border border-gray-300 rounded"
                             min="320"
                             max="3000"
@@ -817,10 +864,13 @@ export function GlobalSettingsPanel() {
                         </div>
                       </div>
                       <Slider
-                        value={[localAppearance?.pageWidth || 1400]}
-                        onValueChange={(value) => setLocalAppearance(prev => 
-                          prev ? { ...prev, pageWidth: value[0] } : prev
-                        )}
+                        value={[localAppearance.pageWidth]}
+                        onValueChange={(value) => {
+                          setLocalAppearance(prev => ({
+                            ...prev,
+                            pageWidth: value[0]
+                          }));
+                        }}
                         min={320}
                         max={3000}
                         step={10}
@@ -838,10 +888,13 @@ export function GlobalSettingsPanel() {
                         <div className="flex items-center gap-1">
                           <input
                             type="number"
-                            value={localAppearance?.lateralPadding || 34}
-                            onChange={(e) => setLocalAppearance(prev => 
-                              prev ? { ...prev, lateralPadding: parseInt(e.target.value) || 34 } : prev
-                            )}
+                            value={localAppearance.lateralPadding}
+                            onChange={(e) => {
+                              setLocalAppearance(prev => ({
+                                ...prev,
+                                lateralPadding: parseInt(e.target.value) || 34
+                              }));
+                            }}
                             className="w-16 px-1 py-0.5 text-xs border border-gray-300 rounded"
                             min="0"
                             max="200"
@@ -850,10 +903,13 @@ export function GlobalSettingsPanel() {
                         </div>
                       </div>
                       <Slider
-                        value={[localAppearance?.lateralPadding || 34]}
-                        onValueChange={(value) => setLocalAppearance(prev => 
-                          prev ? { ...prev, lateralPadding: value[0] } : prev
-                        )}
+                        value={[localAppearance.lateralPadding]}
+                        onValueChange={(value) => {
+                          setLocalAppearance(prev => ({
+                            ...prev,
+                            lateralPadding: value[0]
+                          }));
+                        }}
                         min={0}
                         max={200}
                         step={1}
@@ -868,10 +924,13 @@ export function GlobalSettingsPanel() {
                         {t('themeConfig.appearance.borderRadius', 'Edge rounding')}
                       </label>
                       <select 
-                        value={localAppearance?.borderRadius || 'size-3'}
-                        onChange={(e) => setLocalAppearance(prev => 
-                          prev ? { ...prev, borderRadius: e.target.value as BorderRadiusSize } : prev
-                        )}
+                        value={localAppearance.borderRadius}
+                        onChange={(e) => {
+                          setLocalAppearance(prev => ({
+                            ...prev,
+                            borderRadius: e.target.value as BorderRadiusSize
+                          }));
+                        }}
                         className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2"
                         style={{ 
                           '--tw-ring-color': primaryColor,
@@ -1072,10 +1131,7 @@ export function GlobalSettingsPanel() {
                 {section.id === 'swatches' && (
                   <SwatchesSection 
                     config={localSwatches}
-                    onChange={(newSwatches) => {
-                      setLocalSwatches(newSwatches);
-                      setHasChanges(true);
-                    }}
+                    onChange={setLocalSwatches}
                   />
                 )}
                 

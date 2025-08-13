@@ -19,7 +19,7 @@ import type {
 } from '@/types/theme';
 // No more conversions needed!
 
-const BASE_URL = '/GlobalThemeConfig';
+const BASE_URL = '/global-theme-config';
 
 /**
  * Theme Configuration API Service

@@ -143,6 +143,34 @@ export interface HeaderConfig {
   
   /** Selected color scheme */
   colorScheme?: string;
+  
+  /** Selected navigation menu ID */
+  menuId?: number;
+  
+  /** Menu open behavior */
+  menuOpenOn?: 'hover' | 'click';
+  
+  /** Width of the header container */
+  width?: 'screen' | 'page' | 'large' | 'medium';
+  
+  /** Show separator line */
+  showSeparator?: boolean;
+  
+  /** Icon style */
+  iconStyle?: string;
+  
+  /** Sticky cart enabled */
+  stickyCart?: boolean;
+  
+  /** Edge rounding */
+  edgeRounding?: string;
+  
+  /** Show as options */
+  showAs1?: string;
+  showAs2?: string;
+  
+  /** Custom CSS */
+  customCss?: string;
 }
 
 /**

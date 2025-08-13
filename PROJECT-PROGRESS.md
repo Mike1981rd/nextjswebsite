@@ -249,7 +249,19 @@ Resolver los 9 problemas críticos del proyecto anterior:
 **SIGUIENTE TAREA**: Implementar Website Builder - Editor visual y sistema de secciones
 
 **TAREAS COMPLETADAS RECIENTEMENTE**:
-1. ✅ **Módulo Reservaciones - COMPLETO** (2025-08-10)
+1. ✅ **Fix Save Button Dirty State** (2025-01-13)
+   - Resuelto problema del botón guardar que permanecía activo visualmente
+   - Sincronización correcta entre isDirty y hasStructuralChanges
+   - Implementación simplificada sin timeouts ni comparaciones complejas
+   - Documentación: `/docs/implementations/features/2025-01-save-button-state-fix.md`
+2. ✅ **Sistema Undo/Redo para Editor** (2025-01-13)
+   - Sistema de historial con máximo 50 estados
+   - Botón Undo funcional con atajo Ctrl+Z
+   - Integración con componentes estructurales
+   - Sincronización correcta de vistas al hacer undo
+   - Documentación: `/docs/implementations/features/2025-01-undo-system.md`
+   - Troubleshooting: `/docs/troubleshooting/features/feature-02-undo-view-not-updating.md`
+2. ✅ **Módulo Reservaciones - COMPLETO** (2025-08-10)
    - ReservationsController con CRUD completo
    - ReservationService implementado
    - Sistema de disponibilidad integrado

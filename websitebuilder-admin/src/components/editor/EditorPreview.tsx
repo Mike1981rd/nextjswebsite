@@ -6,6 +6,7 @@ import { Section, SectionType } from '@/types/editor.types';
 import { Monitor, Tablet, Smartphone } from 'lucide-react';
 import { useColorSchemes } from '@/hooks/useColorSchemes';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
+import { useNavigationMenus } from '@/hooks/useNavigationMenus';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -14,6 +15,7 @@ export function EditorPreview() {
   const [deviceView, setDeviceView] = React.useState<DeviceView>('desktop');
   const { colorSchemes } = useColorSchemes();
   const { config: structuralComponents } = useStructuralComponents();
+  const { menus } = useNavigationMenus();
 
   // Separate sections by group for proper layout
   const headerSections = sections.headerGroup.filter(s => s.visible);
@@ -54,24 +56,47 @@ export function EditorPreview() {
         // Get the selected color scheme from section settings (for live preview) or from backend
         const headerConfig = section.settings as any || structuralComponents?.header;
         const selectedSchemeIndex = headerConfig?.colorScheme ? parseInt(headerConfig.colorScheme) - 1 : 0;
+        
+        // Debug logging
+        console.log('Header colorScheme value:', headerConfig?.colorScheme);
+        console.log('Selected scheme index:', selectedSchemeIndex);
+        console.log('Available schemes:', colorSchemes?.schemes?.length);
+        console.log('All schemes:', colorSchemes?.schemes);
+        
         const activeScheme = colorSchemes?.schemes?.[selectedSchemeIndex];
         
+        if (!activeScheme && colorSchemes?.schemes) {
+          console.warn(`Scheme at index ${selectedSchemeIndex} not found. Using first available scheme.`);
+        }
+        
+        // Fallback to first scheme if selected one doesn't exist
+        const fallbackScheme = colorSchemes?.schemes?.[0];
+        const schemeToUse = activeScheme || fallbackScheme;
+        
+        // Get the selected menu items
+        const selectedMenuId = headerConfig?.menuId;
+        const selectedMenu = menus?.find(m => m.id === selectedMenuId);
+        const menuItems = selectedMenu?.items || [];
+        
         // Apply colors from the selected scheme
-        const headerStyles = activeScheme ? {
-          backgroundColor: activeScheme.background,
-          borderColor: activeScheme.border,
-          color: activeScheme.text,
+        const headerStyles = schemeToUse ? {
+          backgroundColor: schemeToUse.background,
+          borderColor: schemeToUse.border,
+          color: schemeToUse.text,
           height: headerConfig?.height ? `${headerConfig.height}px` : '80px'
         } : {
+          backgroundColor: '#FFFFFF',
+          borderColor: '#E5E7EB',
+          color: '#000000',
           height: headerConfig?.height ? `${headerConfig.height}px` : '80px'
         };
 
-        const linkStyles = activeScheme ? {
-          color: activeScheme.text,
+        const linkStyles = schemeToUse ? {
+          color: schemeToUse.text,
         } : {};
 
-        const linkHoverStyles = activeScheme ? {
-          color: activeScheme.link,
+        const linkHoverStyles = schemeToUse ? {
+          color: schemeToUse.link,
         } : {};
 
         return (
@@ -80,36 +105,96 @@ export function EditorPreview() {
             style={headerStyles}
           >
             <div className="px-4 h-full flex items-center justify-between">
-              <div className="text-xl font-bold" style={{ color: activeScheme?.text }}>LOGO</div>
+              <div className="text-xl font-bold" style={{ color: schemeToUse?.text || '#000000' }}>LOGO</div>
               <nav className="flex gap-6">
-                {['Home', 'Products', 'About', 'Contact'].map((item) => (
-                  <a 
-                    key={item}
-                    href="#" 
-                    className="transition-colors hover:opacity-80"
-                    style={linkStyles}
-                    onMouseEnter={(e) => {
-                      if (activeScheme) {
-                        e.currentTarget.style.color = activeScheme.link;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (activeScheme) {
-                        e.currentTarget.style.color = activeScheme.text;
-                      }
-                    }}
-                  >
-                    {item}
-                  </a>
-                ))}
+                {menuItems.length > 0 ? (
+                  menuItems.map((item: any) => (
+                    <div 
+                      key={item.label}
+                      className="relative group"
+                    >
+                      <a 
+                        href="#" 
+                        className="transition-colors hover:opacity-80 flex items-center gap-1"
+                        style={linkStyles}
+                        onMouseEnter={(e) => {
+                          if (schemeToUse) {
+                            e.currentTarget.style.color = schemeToUse.link;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (schemeToUse) {
+                            e.currentTarget.style.color = schemeToUse.text;
+                          }
+                        }}
+                      >
+                        {item.label}
+                        {item.subItems && item.subItems.length > 0 && (
+                          <svg 
+                            className="w-3 h-3" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        )}
+                      </a>
+                      
+                      {/* Dropdown menu for subitems */}
+                      {item.subItems && item.subItems.length > 0 && (
+                        <div 
+                          className="absolute top-full left-0 mt-1 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
+                          style={{
+                            backgroundColor: schemeToUse?.background || '#ffffff',
+                            borderColor: schemeToUse?.border || '#e5e7eb',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                          }}
+                        >
+                          <div className="border rounded-md overflow-hidden">
+                            {item.subItems.map((subItem: any) => (
+                              <a
+                                key={subItem.label}
+                                href="#"
+                                className="block px-4 py-2 text-sm hover:opacity-80 transition-colors"
+                                style={{
+                                  color: schemeToUse?.text,
+                                  backgroundColor: schemeToUse?.background,
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (schemeToUse) {
+                                    e.currentTarget.style.backgroundColor = schemeToUse?.foreground || '#f3f4f6';
+                                    e.currentTarget.style.color = schemeToUse.link;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (schemeToUse) {
+                                    e.currentTarget.style.backgroundColor = schemeToUse?.background;
+                                    e.currentTarget.style.color = schemeToUse.text;
+                                  }
+                                }}
+                              >
+                                {subItem.label}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-sm opacity-50" style={{ color: schemeToUse?.text }}>
+                    {selectedMenuId ? 'Loading menu...' : 'No menu selected'}
+                  </span>
+                )}
               </nav>
               <div className="flex gap-4 items-center">
                 {/* Search Icon */}
-                <svg className="w-5 h-5" style={{ color: activeScheme?.text }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" style={{ color: schemeToUse?.text }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 {/* Cart Icon */}
-                <svg className="w-5 h-5" style={{ color: activeScheme?.text }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" style={{ color: schemeToUse?.text }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>

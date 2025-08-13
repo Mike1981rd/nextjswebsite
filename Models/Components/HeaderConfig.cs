@@ -17,7 +17,7 @@ namespace WebsiteBuilderAPI.Models.Components
 
         // Menu Settings
         public string MenuOpenOn { get; set; } = "hover"; // hover, click
-        public string MenuId { get; set; } = "main-menu";
+        public int? MenuId { get; set; } = null; // ID of the NavigationMenu to use
 
         // Logo Settings
         public LogoConfig Logo { get; set; } = new LogoConfig();

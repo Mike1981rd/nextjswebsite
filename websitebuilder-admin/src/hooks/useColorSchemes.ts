@@ -1,50 +1,36 @@
 import { useState, useEffect } from 'react';
 import { ColorSchemesConfig } from '@/types/theme/colorSchemes';
 import { useCompany } from '@/contexts/CompanyContext';
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
 
 export function useColorSchemes() {
-  const [colorSchemes, setColorSchemes] = useState<ColorSchemesConfig | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Get color schemes from Zustand store instead of fetching separately
+  const { 
+    config, 
+    loading: storeLoading, 
+    error: storeError,
+    fetchConfig 
+  } = useThemeConfigStore();
+  
   const { company } = useCompany();
+  const [localLoading, setLocalLoading] = useState(true);
 
   useEffect(() => {
-    if (company?.id) {
-      fetchColorSchemes();
-    }
-  }, [company?.id]);
-
-  const fetchColorSchemes = async () => {
-    try {
-      if (!company?.id) {
-        setError('Company ID not available');
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch(`http://localhost:5266/api/global-theme-config/company/${company.id}/color-schemes`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+    // Only fetch if we don't have config and we have a company
+    if (company?.id && !config) {
+      fetchConfig(company.id).finally(() => {
+        setLocalLoading(false);
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch color schemes');
-      }
-
-      const data = await response.json();
-      setColorSchemes(data);
-    } catch (err) {
-      console.error('Error fetching color schemes:', err);
-      setError(err instanceof Error ? err.message : 'Error loading color schemes');
-    } finally {
-      setLoading(false);
+    } else {
+      setLocalLoading(false);
     }
-  };
+  }, [company?.id, config, fetchConfig]);
 
-  return { colorSchemes, loading, error, refetch: fetchColorSchemes };
+  // Return the color schemes from the store's config
+  return { 
+    colorSchemes: config?.colorSchemes || null,
+    loading: storeLoading.global || localLoading,
+    error: storeError,
+    refetch: () => company?.id ? fetchConfig(company.id) : Promise.resolve()
+  };
 }

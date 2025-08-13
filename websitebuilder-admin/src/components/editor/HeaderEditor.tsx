@@ -3,6 +3,7 @@ import { HeaderConfig, defaultHeaderConfig } from '@/types/components/header';
 import { Slider } from '@/components/ui/slider';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useColorSchemes } from '@/hooks/useColorSchemes';
+import { useNavigationMenus } from '@/hooks/useNavigationMenus';
 
 interface HeaderEditorProps {
   value: HeaderConfig;
@@ -16,6 +17,17 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
     cssPersonalized: false
   });
   const { colorSchemes, loading: schemesLoading } = useColorSchemes();
+  const { menus, loading: menusLoading } = useNavigationMenus();
+
+  // Debug: Log when color schemes change
+  useEffect(() => {
+    console.log('[HeaderEditor] Color schemes updated:', colorSchemes?.schemes?.length, 'schemes available');
+    if (colorSchemes?.schemes) {
+      console.log('[HeaderEditor] Scheme 3:', colorSchemes.schemes[2]);
+      console.log('[HeaderEditor] Scheme 4:', colorSchemes.schemes[3]);
+      console.log('[HeaderEditor] Scheme 5:', colorSchemes.schemes[4]);
+    }
+  }, [colorSchemes]);
 
   useEffect(() => {
     // Force update local config when value changes (important for undo)
@@ -105,36 +117,57 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
           <div className="mt-2 p-2 bg-gray-50 rounded-md">
             <p className="text-xs text-gray-600 mb-1">Preview colors:</p>
             <div className="flex gap-1">
-              {colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1] && (
-                <>
-                  <div 
-                    className="w-6 h-6 rounded border border-gray-300" 
-                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].background }}
-                    title="Background"
-                  />
-                  <div 
-                    className="w-6 h-6 rounded border border-gray-300" 
-                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].text }}
-                    title="Text"
-                  />
-                  <div 
-                    className="w-6 h-6 rounded border border-gray-300" 
-                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].foreground }}
-                    title="Foreground"
-                  />
-                  <div 
-                    className="w-6 h-6 rounded border border-gray-300" 
-                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].solidButton }}
-                    title="Button"
-                  />
-                  <div 
-                    className="w-6 h-6 rounded border border-gray-300" 
-                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].link }}
-                    title="Link"
-                  />
-                </>
-              )}
+              {(() => {
+                const schemeIndex = parseInt(getValue('colorScheme') || '1') - 1;
+                const selectedScheme = colorSchemes.schemes[schemeIndex];
+                
+                if (!selectedScheme) {
+                  return <p className="text-xs text-gray-500">Scheme not found</p>;
+                }
+                
+                return (
+                  <>
+                    <div 
+                      className="w-6 h-6 rounded border border-gray-300" 
+                      style={{ backgroundColor: selectedScheme.background || '#FFFFFF' }}
+                      title={`Background: ${selectedScheme.background}`}
+                    />
+                    <div 
+                      className="w-6 h-6 rounded border border-gray-300" 
+                      style={{ backgroundColor: selectedScheme.text || '#000000' }}
+                      title={`Text: ${selectedScheme.text}`}
+                    />
+                    <div 
+                      className="w-6 h-6 rounded border border-gray-300" 
+                      style={{ backgroundColor: selectedScheme.foreground || '#F5E076' }}
+                      title={`Foreground: ${selectedScheme.foreground}`}
+                    />
+                    <div 
+                      className="w-6 h-6 rounded border border-gray-300" 
+                      style={{ backgroundColor: selectedScheme.solidButton || '#000000' }}
+                      title={`Button: ${selectedScheme.solidButton}`}
+                    />
+                    <div 
+                      className="w-6 h-6 rounded border border-gray-300" 
+                      style={{ backgroundColor: selectedScheme.link || '#0066CC' }}
+                      title={`Link: ${selectedScheme.link}`}
+                    />
+                  </>
+                );
+              })()}
             </div>
+            {(() => {
+              const schemeIndex = parseInt(getValue('colorScheme') || '1') - 1;
+              const selectedScheme = colorSchemes.schemes[schemeIndex];
+              if (selectedScheme) {
+                return (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {selectedScheme.name} - Index: {schemeIndex + 1}
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
         )}
       </div>
@@ -280,13 +313,46 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
             </label>
             <select 
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              value={getValue('menuId') || 'main-menu'}
-              onChange={(e) => handleChange('menuId', e.target.value)}
+              value={getValue('menuId') || ''}
+              onChange={(e) => handleChange('menuId', e.target.value ? parseInt(e.target.value) : undefined)}
+              disabled={menusLoading}
             >
-              <option value="main-menu">Main menu</option>
-              <option value="secondary-menu">Secondary menu</option>
-              <option value="footer-menu">Footer menu</option>
+              {menusLoading ? (
+                <option value="">Loading menus...</option>
+              ) : menus.length > 0 ? (
+                <>
+                  <option value="">Select a menu</option>
+                  {menus.map((menu) => (
+                    <option key={menu.id} value={menu.id.toString()}>
+                      {menu.name} ({menu.identifier})
+                    </option>
+                  ))}
+                </>
+              ) : (
+                <option value="">No menus available</option>
+              )}
             </select>
+            {menus.length === 0 && !menusLoading && (
+              <p className="text-xs text-amber-600 mt-1">
+                No navigation menus found. Please create a menu in the Navigation module first.
+              </p>
+            )}
+            {getValue('menuId') && menus.length > 0 && (
+              <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                <p className="text-xs text-gray-600 mb-1">Selected menu items:</p>
+                <ul className="text-xs text-gray-700 space-y-0.5">
+                  {menus
+                    .find(m => m.id === getValue('menuId'))
+                    ?.items?.slice(0, 5).map((item, idx) => (
+                      <li key={idx}>• {item.label}</li>
+                    ))}
+                  {menus.find(m => m.id === getValue('menuId'))?.items && 
+                   menus.find(m => m.id === getValue('menuId'))!.items!.length > 5 && (
+                    <li className="text-gray-500">... and {menus.find(m => m.id === getValue('menuId'))!.items!.length - 5} more</li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
