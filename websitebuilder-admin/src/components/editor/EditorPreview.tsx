@@ -4,12 +4,16 @@ import React from 'react';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { Section, SectionType } from '@/types/editor.types';
 import { Monitor, Tablet, Smartphone } from 'lucide-react';
+import { useColorSchemes } from '@/hooks/useColorSchemes';
+import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
 export function EditorPreview() {
   const { sections, selectedSectionId, selectSection, hoveredSectionId, setHoveredSection } = useEditorStore();
   const [deviceView, setDeviceView] = React.useState<DeviceView>('desktop');
+  const { colorSchemes } = useColorSchemes();
+  const { config: structuralComponents } = useStructuralComponents();
 
   // Separate sections by group for proper layout
   const headerSections = sections.headerGroup.filter(s => s.visible);
@@ -47,16 +51,68 @@ export function EditorPreview() {
         );
 
       case SectionType.HEADER:
+        // Get the selected color scheme from section settings (for live preview) or from backend
+        const headerConfig = section.settings as any || structuralComponents?.header;
+        const selectedSchemeIndex = headerConfig?.colorScheme ? parseInt(headerConfig.colorScheme) - 1 : 0;
+        const activeScheme = colorSchemes?.schemes?.[selectedSchemeIndex];
+        
+        // Apply colors from the selected scheme
+        const headerStyles = activeScheme ? {
+          backgroundColor: activeScheme.background,
+          borderColor: activeScheme.border,
+          color: activeScheme.text,
+          height: headerConfig?.height ? `${headerConfig.height}px` : '80px'
+        } : {
+          height: headerConfig?.height ? `${headerConfig.height}px` : '80px'
+        };
+
+        const linkStyles = activeScheme ? {
+          color: activeScheme.text,
+        } : {};
+
+        const linkHoverStyles = activeScheme ? {
+          color: activeScheme.link,
+        } : {};
+
         return (
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <div className="px-4 py-4 flex items-center justify-between">
-              <div className="text-xl font-bold">LOGO</div>
+          <div 
+            className="border-b transition-all duration-300"
+            style={headerStyles}
+          >
+            <div className="px-4 h-full flex items-center justify-between">
+              <div className="text-xl font-bold" style={{ color: activeScheme?.text }}>LOGO</div>
               <nav className="flex gap-6">
-                <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-gray-900">Home</a>
-                <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-gray-900">Products</a>
-                <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-gray-900">About</a>
-                <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-gray-900">Contact</a>
+                {['Home', 'Products', 'About', 'Contact'].map((item) => (
+                  <a 
+                    key={item}
+                    href="#" 
+                    className="transition-colors hover:opacity-80"
+                    style={linkStyles}
+                    onMouseEnter={(e) => {
+                      if (activeScheme) {
+                        e.currentTarget.style.color = activeScheme.link;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (activeScheme) {
+                        e.currentTarget.style.color = activeScheme.text;
+                      }
+                    }}
+                  >
+                    {item}
+                  </a>
+                ))}
               </nav>
+              <div className="flex gap-4 items-center">
+                {/* Search Icon */}
+                <svg className="w-5 h-5" style={{ color: activeScheme?.text }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {/* Cart Icon */}
+                <svg className="w-5 h-5" style={{ color: activeScheme?.text }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
             </div>
           </div>
         );

@@ -347,7 +347,7 @@ namespace WebsiteBuilderAPI.Services
             // Create backup if requested
             if (dto.CreateBackup)
             {
-                await _historyService.SaveHistoryAsync(new CreateHistoryDto
+                await _historyService.SaveHistoryAsync(companyId, new CreateHistoryDto
                 {
                     EntityType = "components",
                     EntityId = settings.Id,

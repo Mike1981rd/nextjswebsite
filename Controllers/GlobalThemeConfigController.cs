@@ -13,7 +13,7 @@ namespace WebsiteBuilderAPI.Controllers
     /// Implements modular endpoints to avoid transferring large JSON payloads
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/global-theme-config")]
     [Authorize]
     public class GlobalThemeConfigController : ControllerBase
     {
@@ -94,13 +94,15 @@ namespace WebsiteBuilderAPI.Controllers
         {
             try
             {
+                _logger.LogInformation("Getting color schemes for company {CompanyId}", companyId);
                 var config = await _themeService.GetColorSchemesAsync(companyId);
+                _logger.LogInformation("Successfully retrieved color schemes for company {CompanyId}", companyId);
                 return Ok(config);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting color schemes for company {CompanyId}", companyId);
-                return StatusCode(500, new { message = "Error retrieving color schemes" });
+                _logger.LogError(ex, "Error getting color schemes for company {CompanyId}: {Message}", companyId, ex.Message);
+                return StatusCode(500, new { message = $"Error retrieving color schemes: {ex.Message}" });
             }
         }
 

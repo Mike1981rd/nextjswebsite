@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { StructuralComponentsProvider } from '@/contexts/StructuralComponentsContext';
 import { 
   ArrowLeft, 
   Settings, 
@@ -9,7 +10,6 @@ import {
   Tablet, 
   Smartphone, 
   Undo, 
-  Redo, 
   Eye,
   Home,
   Package,
@@ -27,7 +27,7 @@ import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { useCompany } from '@/hooks/useCompany';
 
-export default function EditorPage() {
+function EditorPageContent() {
   const { 
     selectedPageId: storePageId, 
     selectedPageType,
@@ -36,12 +36,19 @@ export default function EditorPage() {
     isSaving, 
     savePage,
     loadPageSections,
-    initializeStructuralComponents 
+    initializeStructuralComponents,
+    undo,
+    canUndo
   } = useEditorStore();
   
   const { t } = useEditorTranslations();
   const { company } = useCompany();
-  const { config: structuralConfig } = useStructuralComponents();
+  const { 
+    config: structuralConfig, 
+    hasChanges: hasStructuralChanges,
+    publish: publishStructural,
+    refresh 
+  } = useStructuralComponents();
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
   
@@ -62,14 +69,30 @@ export default function EditorPage() {
   
   // Find the selected page from mockPages (this will update when language changes)
   const selectedPage = mockPages.find(p => p.id === selectedPageId) || mockPages[0];
-
-  // Clear console logs when entering the editor
+  
+  // Monitor hasStructuralChanges and isDirty for debugging
   useEffect(() => {
-    if (typeof window !== 'undefined' && console.clear) {
-      console.clear();
-      // Silent initialization - no logs
-    }
-  }, []);
+    console.log('[DEBUG] EditorPage - hasStructuralChanges:', hasStructuralChanges, 'isDirty:', isDirty);
+  }, [hasStructuralChanges, isDirty]);
+
+  // Keyboard shortcut for Undo only
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Z for undo
+      if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo()) {
+          undo();
+          // Also refresh structural components to reset hasChanges
+          refresh();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [undo, canUndo, refresh]);
+
 
   useEffect(() => {
     // Load initial page after translations are ready
@@ -82,6 +105,9 @@ export default function EditorPage() {
   useEffect(() => {
     if (!hasInitialized) {
       initializeStructuralComponents();
+      // Save initial state to history
+      const store = useEditorStore.getState();
+      store.saveHistory();
       setHasInitialized(true);
     }
   }, [hasInitialized, initializeStructuralComponents]);
@@ -127,10 +153,27 @@ export default function EditorPage() {
     }
   };
 
+  const [isSavingLocal, setIsSavingLocal] = useState(false);
+  
   const handleSave = async () => {
-    await savePage();
-    // Show success message
-    console.log('Page saved successfully');
+    setIsSavingLocal(true);
+    try {
+      if (hasStructuralChanges) {
+        const success = await publishStructural();
+        if (success) {
+          // Force a complete refresh of the structural components
+          await refresh();
+          // Clear isDirty since we saved structural components
+          // The store's isDirty is being set when header config changes
+          const store = useEditorStore.getState();
+          store.setIsDirty(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving changes:', error);
+    } finally {
+      setIsSavingLocal(false);
+    }
   };
 
   return (
@@ -210,12 +253,21 @@ export default function EditorPage() {
 
           {/* Right Section - Actions */}
           <div className="flex items-center gap-2">
-            {/* Undo/Redo */}
-            <button className="p-1.5 hover:bg-gray-100 rounded transition-colors" title={t('editor.actions.undo', 'Deshacer')}>
+            {/* Undo only */}
+            <button 
+              onClick={() => {
+                undo();
+                refresh(); // Reset structural components hasChanges
+              }}
+              disabled={!canUndo()}
+              className={`p-1.5 rounded transition-colors ${
+                canUndo() 
+                  ? 'hover:bg-gray-100 cursor-pointer' 
+                  : 'opacity-50 cursor-not-allowed'
+              }`} 
+              title={t('editor.actions.undo', 'Deshacer')}
+            >
               <Undo className="w-4 h-4 text-gray-600" />
-            </button>
-            <button className="p-1.5 hover:bg-gray-100 rounded transition-colors" title={t('editor.actions.redo', 'Rehacer')}>
-              <Redo className="w-4 h-4 text-gray-600" />
             </button>
             
             {/* Device Preview Icons */}
@@ -235,19 +287,19 @@ export default function EditorPage() {
               </button>
             </div>
 
-            {/* Save Button */}
+            {/* Save Button - NUEVO Y SIMPLE */}
             <button
               onClick={handleSave}
-              disabled={!isDirty || isSaving}
+              disabled={isSavingLocal || (!hasStructuralChanges && !isDirty)}
               className={`
                 ml-3 px-4 py-1.5 rounded text-sm font-medium transition-all
-                ${isDirty 
-                  ? 'bg-gray-900 text-white hover:bg-gray-800' 
+                ${(!isSavingLocal && (hasStructuralChanges || isDirty))
+                  ? 'bg-gray-900 text-white hover:bg-gray-800 cursor-pointer' 
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }
               `}
             >
-              {isSaving ? t('editor.messages.saving', 'Guardando...') : t('editor.actions.save', 'Guardar')}
+              {isSavingLocal ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
         </div>
@@ -258,5 +310,13 @@ export default function EditorPage() {
         <EditorLayout />
       </div>
     </div>
+  );
+}
+
+export default function EditorPage() {
+  return (
+    <StructuralComponentsProvider>
+      <EditorPageContent />
+    </StructuralComponentsProvider>
   );
 }

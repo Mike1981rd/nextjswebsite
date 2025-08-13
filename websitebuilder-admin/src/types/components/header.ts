@@ -99,6 +99,9 @@ export interface HeaderConfig {
   /** Header layout style */
   layout: HeaderLayout;
   
+  /** Header height in pixels */
+  height: number;
+  
   /** Logo configuration */
   logo: LogoConfig;
   
@@ -137,6 +140,9 @@ export interface HeaderConfig {
     desktop: { top: number; bottom: number };
     mobile: { top: number; bottom: number };
   };
+  
+  /** Selected color scheme */
+  colorScheme?: string;
 }
 
 /**
@@ -144,6 +150,7 @@ export interface HeaderConfig {
  */
 export const defaultHeaderConfig: HeaderConfig = {
   layout: 'logo-left',
+  height: 80,
   logo: {
     desktopUrl: '/logo.png',
     mobileUrl: '/logo-mobile.png',

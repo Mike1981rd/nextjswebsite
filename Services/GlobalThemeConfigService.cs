@@ -40,16 +40,20 @@ namespace WebsiteBuilderAPI.Services
                 return cachedConfig;
             }
 
+            _logger.LogInformation("Fetching theme config from database for company {CompanyId}", companyId);
+            
             var config = await _context.GlobalThemeConfigs
                 .FirstOrDefaultAsync(c => c.CompanyId == companyId);
 
             if (config == null)
             {
-                _logger.LogInformation("Creating default theme config for company {CompanyId}", companyId);
+                _logger.LogInformation("No theme config found for company {CompanyId}, creating default", companyId);
                 config = await CreateDefaultConfigAsync(companyId);
+                _logger.LogInformation("Default theme config created for company {CompanyId}", companyId);
             }
             else
             {
+                _logger.LogInformation("Theme config found for company {CompanyId}", companyId);
                 // Ensure we always have 5 color schemes
                 if (config.ColorSchemes == null || config.ColorSchemes.Schemes == null || config.ColorSchemes.Schemes.Count < 5)
                 {
@@ -78,7 +82,23 @@ namespace WebsiteBuilderAPI.Services
 
         public async Task<ColorSchemesConfig> GetColorSchemesAsync(int companyId)
         {
+            _logger.LogInformation("GetColorSchemesAsync called for company {CompanyId}", companyId);
             var config = await GetByCompanyIdAsync(companyId);
+            
+            if (config == null)
+            {
+                _logger.LogError("Config is null after GetByCompanyIdAsync for company {CompanyId}", companyId);
+                throw new InvalidOperationException($"Failed to get or create config for company {companyId}");
+            }
+            
+            if (config.ColorSchemes == null)
+            {
+                _logger.LogWarning("ColorSchemes is null for company {CompanyId}, returning default", companyId);
+                return GetDefaultColorSchemes();
+            }
+            
+            _logger.LogInformation("Returning {Count} color schemes for company {CompanyId}", 
+                config.ColorSchemes?.Schemes?.Count ?? 0, companyId);
             return config.ColorSchemes;
         }
 
@@ -428,29 +448,46 @@ namespace WebsiteBuilderAPI.Services
 
         private async Task<GlobalThemeConfig> CreateDefaultConfigAsync(int companyId)
         {
-            var config = new GlobalThemeConfig
+            try
             {
-                CompanyId = companyId,
-                Appearance = GetDefaultAppearance(),
-                Typography = GetDefaultTypography(),
-                ColorSchemes = GetDefaultColorSchemes(),
-                ProductCards = GetDefaultProductCards(),
-                ProductBadges = GetDefaultProductBadges(),
-                Cart = GetDefaultCart(),
-                Favicon = GetDefaultFavicon(),
-                Navigation = GetDefaultNavigation(),
-                SocialMedia = GetDefaultSocialMedia(),
-                Swatches = GetDefaultSwatches(),
-                ConfigVersion = "2.0.0",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                IsPublished = false
-            };
+                // First check if company exists
+                var companyExists = await _context.Companies.AnyAsync(c => c.Id == companyId);
+                if (!companyExists)
+                {
+                    _logger.LogError("Cannot create GlobalThemeConfig - Company {CompanyId} does not exist", companyId);
+                    throw new InvalidOperationException($"Company {companyId} does not exist");
+                }
+                
+                var config = new GlobalThemeConfig
+                {
+                    CompanyId = companyId,
+                    Appearance = GetDefaultAppearance(),
+                    Typography = GetDefaultTypography(),
+                    ColorSchemes = GetDefaultColorSchemes(),
+                    ProductCards = GetDefaultProductCards(),
+                    ProductBadges = GetDefaultProductBadges(),
+                    Cart = GetDefaultCart(),
+                    Favicon = GetDefaultFavicon(),
+                    Navigation = GetDefaultNavigation(),
+                    SocialMedia = GetDefaultSocialMedia(),
+                    Swatches = GetDefaultSwatches(),
+                    ConfigVersion = "2.0.0",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsPublished = false
+                };
 
-            _context.GlobalThemeConfigs.Add(config);
-            await _context.SaveChangesAsync();
-            
-            return config;
+                _context.GlobalThemeConfigs.Add(config);
+                await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Created default GlobalThemeConfig for company {CompanyId}", companyId);
+                return config;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create default GlobalThemeConfig for company {CompanyId}", companyId);
+                throw;
+            }
         }
 
         #region Default Configurations

@@ -14,7 +14,7 @@ interface ConfigPanelProps {
 
 export function ConfigPanel({ section }: ConfigPanelProps) {
   const { selectSection, updateSectionSettings } = useEditorStore();
-  const { headerConfig, updateHeaderConfig } = useStructuralComponents();
+  const { headerConfig, updateHeaderConfigLocal } = useStructuralComponents();
   const [settings, setSettings] = useState(section.settings);
   const [hasChanges, setHasChanges] = useState(false);
   const [headerLoading, setHeaderLoading] = useState(false);
@@ -22,24 +22,19 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   useEffect(() => {
     setSettings(section.settings);
     setHasChanges(false);
-  }, [section]);
+  }, [section, JSON.stringify(section.settings)]); // Force update when settings change (for undo)
 
   const handleBack = () => {
     selectSection(null);
   };
 
   const handleSave = async () => {
-    // Special handling for Header
+    // Special handling for Header - just update the local state
     if (section.type === SectionType.HEADER) {
-      setHeaderLoading(true);
-      try {
-        await updateHeaderConfig(settings as HeaderConfig);
-        setHasChanges(false);
-      } catch (error) {
-        console.error('Failed to save header config:', error);
-      } finally {
-        setHeaderLoading(false);
-      }
+      // The actual save happens through the global save button
+      // which calls publishStructural()
+      // Don't reset hasChanges here because it needs to stay true
+      // until the global save button is clicked
       return;
     }
 
@@ -73,10 +68,33 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
       case SectionType.HEADER:
         return (
           <HeaderEditor
-            value={(headerConfig || settings) as HeaderConfig}
+            value={settings as HeaderConfig}
             onChange={(newConfig) => {
+              // Check if config actually changed
+              const currentConfigStr = JSON.stringify(headerConfig || settings);
+              const newConfigStr = JSON.stringify(newConfig);
+              
+              if (currentConfigStr === newConfigStr) {
+                return; // No actual change, skip update
+              }
+              
+              // Save history before making changes
+              const store = useEditorStore.getState();
+              store.saveHistory();
+              
               setSettings(newConfig);
               setHasChanges(true);
+              // Update the local config for live preview
+              updateHeaderConfigLocal(newConfig);
+              // Also update the store for consistency
+              const { sections } = store;
+              for (const [key, group] of Object.entries(sections)) {
+                const sectionIndex = group.findIndex(s => s.id === section.id);
+                if (sectionIndex !== -1) {
+                  updateSectionSettings(key, section.id, newConfig);
+                  break;
+                }
+              }
             }}
           />
         );
@@ -236,7 +254,7 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
           </h2>
         </div>
         
-        {hasChanges && (
+        {hasChanges && section.type !== SectionType.HEADER && (
           <button
             onClick={handleSave}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"

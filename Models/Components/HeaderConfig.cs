@@ -8,6 +8,7 @@ namespace WebsiteBuilderAPI.Models.Components
         // Basic Settings
         public string ColorScheme { get; set; } = "1";
         public string Width { get; set; } = "page"; // screen, page, large, medium
+        public int Height { get; set; } = 80; // Header height in pixels
         public string Layout { get; set; } = "drawer"; // drawer, logo-left-menu-center-inline, etc.
         public bool ShowSeparator { get; set; } = false;
 

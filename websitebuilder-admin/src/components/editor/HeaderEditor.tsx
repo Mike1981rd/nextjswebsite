@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { HeaderConfig, defaultHeaderConfig } from '@/types/components/header';
 import { Slider } from '@/components/ui/slider';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useColorSchemes } from '@/hooks/useColorSchemes';
 
 interface HeaderEditorProps {
   value: HeaderConfig;
@@ -14,10 +15,12 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
     themeConfig: false,
     cssPersonalized: false
   });
+  const { colorSchemes, loading: schemesLoading } = useColorSchemes();
 
   useEffect(() => {
+    // Force update local config when value changes (important for undo)
     setLocalConfig(value || defaultHeaderConfig);
-  }, [value]);
+  }, [value, JSON.stringify(value)]);
 
   const handleChange = (path: string, newValue: any) => {
     const keys = path.split('.');
@@ -29,6 +32,12 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
         current[keys[i]] = {};
       }
       current = current[keys[i]];
+    }
+    
+    // Only update if the value actually changed
+    const oldValue = current[keys[keys.length - 1]];
+    if (oldValue === newValue) {
+      return; // No change, don't trigger onChange
     }
     
     current[keys[keys.length - 1]] = newValue;
@@ -69,16 +78,65 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
           className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
           value={getValue('colorScheme') || '1'}
           onChange={(e) => handleChange('colorScheme', e.target.value)}
+          disabled={schemesLoading}
         >
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
+          {schemesLoading ? (
+            <option>Loading schemes...</option>
+          ) : colorSchemes?.schemes ? (
+            colorSchemes.schemes.map((scheme, index) => (
+              <option key={scheme.id} value={(index + 1).toString()}>
+                {scheme.name}
+              </option>
+            ))
+          ) : (
+            <>
+              <option value="1">Scheme 1</option>
+              <option value="2">Scheme 2</option>
+              <option value="3">Scheme 3</option>
+              <option value="4">Scheme 4</option>
+              <option value="5">Scheme 5</option>
+            </>
+          )}
         </select>
         <button className="text-xs text-blue-600 hover:text-blue-700 mt-1">
           Learn about color schemes
         </button>
+        {colorSchemes && getValue('colorScheme') && (
+          <div className="mt-2 p-2 bg-gray-50 rounded-md">
+            <p className="text-xs text-gray-600 mb-1">Preview colors:</p>
+            <div className="flex gap-1">
+              {colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1] && (
+                <>
+                  <div 
+                    className="w-6 h-6 rounded border border-gray-300" 
+                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].background }}
+                    title="Background"
+                  />
+                  <div 
+                    className="w-6 h-6 rounded border border-gray-300" 
+                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].text }}
+                    title="Text"
+                  />
+                  <div 
+                    className="w-6 h-6 rounded border border-gray-300" 
+                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].foreground }}
+                    title="Foreground"
+                  />
+                  <div 
+                    className="w-6 h-6 rounded border border-gray-300" 
+                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].solidButton }}
+                    title="Button"
+                  />
+                  <div 
+                    className="w-6 h-6 rounded border border-gray-300" 
+                    style={{ backgroundColor: colorSchemes.schemes[parseInt(getValue('colorScheme') || '1') - 1].link }}
+                    title="Link"
+                  />
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Width */}
@@ -96,6 +154,37 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
           <option value="large">Large</option>
           <option value="medium">Medium</option>
         </select>
+      </div>
+
+      {/* Height */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+          Header Height
+        </label>
+        <div className="flex items-center gap-3">
+          <Slider
+            value={[getValue('height') || 80]}
+            onValueChange={(values) => handleChange('height', values[0])}
+            min={60}
+            max={150}
+            step={5}
+            className="flex-1"
+          />
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              className="w-14 px-2 py-1 text-sm border border-gray-300 rounded"
+              value={getValue('height') || 80}
+              onChange={(e) => handleChange('height', parseInt(e.target.value) || 80)}
+              min={60}
+              max={150}
+            />
+            <span className="text-xs text-gray-500">px</span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Adjusts the overall height of the header section
+        </p>
       </div>
 
       {/* Layout */}

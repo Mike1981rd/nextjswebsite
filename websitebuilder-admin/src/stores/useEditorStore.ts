@@ -27,9 +27,17 @@ interface EditorStore extends EditorState {
   setIsDirty: (dirty: boolean) => void;
   toggleGlobalSettings: () => void;
   isGlobalSettingsOpen: boolean;
+  // Undo/Redo
+  history: any[];
+  historyIndex: number;
+  saveHistory: () => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
 }
 
-const initialState: EditorState & { isGlobalSettingsOpen: boolean } = {
+const initialState: EditorState & { isGlobalSettingsOpen: boolean; history: any[]; historyIndex: number } = {
   selectedPageId: null,
   selectedPageType: null,
   sections: {
@@ -43,7 +51,9 @@ const initialState: EditorState & { isGlobalSettingsOpen: boolean } = {
   hoveredSectionId: null,
   isDirty: false,
   isSaving: false,
-  isGlobalSettingsOpen: false
+  isGlobalSettingsOpen: false,
+  history: [],
+  historyIndex: -1
 };
 
 export const useEditorStore = create<EditorStore>()(
@@ -291,6 +301,69 @@ export const useEditorStore = create<EditorStore>()(
             isConfigPanelOpen: false,
             selectedSectionId: null
           }));
+        },
+
+        // Undo/Redo functionality
+        saveHistory: () => {
+          const state = get();
+          const snapshot = {
+            sections: JSON.parse(JSON.stringify(state.sections)),
+            timestamp: Date.now()
+          };
+          
+          // Remove any history after current index
+          const newHistory = state.history.slice(0, state.historyIndex + 1);
+          
+          // Add new state
+          newHistory.push(snapshot);
+          
+          // Keep max 50 states
+          if (newHistory.length > 50) {
+            newHistory.shift();
+          }
+          
+          set({
+            history: newHistory,
+            historyIndex: newHistory.length - 1
+          });
+        },
+
+        undo: () => {
+          const state = get();
+          if (state.historyIndex > 0) {
+            const newIndex = state.historyIndex - 1;
+            const previousState = state.history[newIndex];
+            
+            set({
+              sections: JSON.parse(JSON.stringify(previousState.sections)),
+              historyIndex: newIndex,
+              isDirty: false // Set to false since we're going back to a previous state
+            });
+          }
+        },
+
+        redo: () => {
+          const state = get();
+          if (state.historyIndex < state.history.length - 1) {
+            const newIndex = state.historyIndex + 1;
+            const nextState = state.history[newIndex];
+            
+            set({
+              sections: JSON.parse(JSON.stringify(nextState.sections)),
+              historyIndex: newIndex,
+              isDirty: true
+            });
+          }
+        },
+
+        canUndo: () => {
+          const state = get();
+          return state.historyIndex > 0;
+        },
+
+        canRedo: () => {
+          const state = get();
+          return state.historyIndex < state.history.length - 1;
         }
       }),
       {
