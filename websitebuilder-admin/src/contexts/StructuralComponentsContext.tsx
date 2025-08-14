@@ -27,6 +27,9 @@ interface StructuralComponentsContextType {
   hasChanges: boolean;
   headerConfig?: HeaderConfig;
   updateHeaderConfigLocal: (config: HeaderConfig) => void;
+  updateAnnouncementBarConfigLocal: (config: any) => void;
+  updateFooterConfigLocal: (config: any) => void;
+  updateCartDrawerConfigLocal: (config: any) => void;
   publish: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -79,6 +82,36 @@ export function StructuralComponentsProvider({ children }: { children: React.Rea
     }));
   }, []);
 
+  // Update announcement bar configuration locally (without saving to backend)
+  const updateAnnouncementBarConfigLocal = useCallback((announcementBarConfig: any) => {
+    console.log('[CRITICAL] updateAnnouncementBarConfigLocal - Setting hasChanges to TRUE', announcementBarConfig);
+    setHasChanges(true);
+    setConfig(prev => ({
+      ...prev,
+      announcementBar: announcementBarConfig
+    }));
+  }, []);
+
+  // Update footer configuration locally (without saving to backend)
+  const updateFooterConfigLocal = useCallback((footerConfig: any) => {
+    console.log('[CRITICAL] updateFooterConfigLocal - Setting hasChanges to TRUE', footerConfig);
+    setHasChanges(true);
+    setConfig(prev => ({
+      ...prev,
+      footer: footerConfig
+    }));
+  }, []);
+
+  // Update cart drawer configuration locally (without saving to backend)
+  const updateCartDrawerConfigLocal = useCallback((cartDrawerConfig: any) => {
+    console.log('[CRITICAL] updateCartDrawerConfigLocal - Setting hasChanges to TRUE', cartDrawerConfig);
+    setHasChanges(true);
+    setConfig(prev => ({
+      ...prev,
+      cartDrawer: cartDrawerConfig
+    }));
+  }, []);
+
   // Publish all structural components
   const publish = useCallback(async () => {
     if (!company?.id) {
@@ -112,14 +145,16 @@ export function StructuralComponentsProvider({ children }: { children: React.Rea
         setHasChanges(false);
       }, 100);
       
-      toast.success('Changes saved successfully');
+      // Don't show toast here - let the calling component show it in the correct language
+      // toast.success('Changes saved successfully');
       
       // Return success
       return true;
       
     } catch (err) {
       console.error('Error in publish:', err);
-      toast.error('Failed to save changes');
+      // Don't show toast here either - let the calling component handle errors
+      // toast.error('Failed to save changes');
       // Don't reset hasChanges on error so user can retry
       return false;
     } finally {
@@ -141,6 +176,9 @@ export function StructuralComponentsProvider({ children }: { children: React.Rea
     hasChanges,
     headerConfig: config.header,
     updateHeaderConfigLocal,
+    updateAnnouncementBarConfigLocal,
+    updateFooterConfigLocal,
+    updateCartDrawerConfigLocal,
     publish,
     refresh: fetchConfig,
   };

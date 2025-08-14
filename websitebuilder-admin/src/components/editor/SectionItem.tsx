@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Link2Off, FileText, Layout, ShoppingCart, Search, Megaphone, Trash2 } from 'lucide-react';
 import { Section, SectionType } from '@/types/editor.types';
 import { useEditorStore } from '@/stores/useEditorStore';
+import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 
 interface SectionItemProps {
   section: Section;
@@ -31,6 +32,13 @@ export function SectionItem({ section, groupId, isDragging = false }: SectionIte
     toggleSectionVisibility, 
     removeSection 
   } = useEditorStore();
+  const { 
+    config: structuralConfig, 
+    updateAnnouncementBarConfigLocal,
+    updateHeaderConfigLocal,
+    updateFooterConfigLocal,
+    updateCartDrawerConfigLocal
+  } = useStructuralComponents();
   
   const isSelected = selectedSectionId === section.id;
   
@@ -51,7 +59,83 @@ export function SectionItem({ section, groupId, isDragging = false }: SectionIte
 
   const handleToggleVisibility = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Toggle in the store
     toggleSectionVisibility(groupId, section.id);
+    
+    // If it's AnnouncementBar, also update the structural components context
+    if (section.type === SectionType.ANNOUNCEMENT_BAR) {
+      // Get current config or create default
+      const currentConfig = structuralConfig?.announcementBar || {
+        enabled: false,
+        messages: [],
+        animation: 'slide',
+        speed: 5000,
+        colorScheme: '1'
+      };
+      
+      // Update the visibility/enabled state
+      const updatedConfig = {
+        ...currentConfig,
+        enabled: !section.visible // Toggle based on current state
+      };
+      
+      console.log('Updating AnnouncementBar config:', updatedConfig);
+      updateAnnouncementBarConfigLocal(updatedConfig);
+    }
+    
+    // If it's Header, also update the structural components context
+    if (section.type === SectionType.HEADER) {
+      // Get current config or use section settings
+      const currentConfig = structuralConfig?.header || section.settings || {};
+      
+      // Update the visibility state
+      const updatedConfig = {
+        ...currentConfig,
+        visible: !section.visible // Toggle based on current state
+      };
+      
+      console.log('Updating Header config with visibility:', updatedConfig);
+      updateHeaderConfigLocal(updatedConfig);
+    }
+    
+    // If it's Footer, also update the structural components context
+    if (section.type === SectionType.FOOTER) {
+      // Get current config or create default
+      const currentConfig = structuralConfig?.footer || {
+        visible: true,
+        layout: 'default',
+        colorScheme: '1'
+      };
+      
+      // Update the visibility state
+      const updatedConfig = {
+        ...currentConfig,
+        visible: !section.visible // Toggle based on current state
+      };
+      
+      console.log('Updating Footer config with visibility:', updatedConfig);
+      updateFooterConfigLocal(updatedConfig);
+    }
+    
+    // If it's CartDrawer, also update the structural components context
+    if (section.type === SectionType.CART_DRAWER) {
+      // Get current config or create default
+      const currentConfig = structuralConfig?.cartDrawer || {
+        enabled: true,
+        position: 'right',
+        colorScheme: '1'
+      };
+      
+      // Update the enabled state
+      const updatedConfig = {
+        ...currentConfig,
+        enabled: !section.visible // Toggle based on current state
+      };
+      
+      console.log('Updating CartDrawer config with enabled state:', updatedConfig);
+      updateCartDrawerConfigLocal(updatedConfig);
+    }
   };
 
   const handleSelect = () => {

@@ -81,6 +81,21 @@ const config: Config = {
       fontFamily: {
         'sans': ['Inter', 'system-ui', 'sans-serif'],
       },
+      // Animations
+      animation: {
+        'shimmer': 'shimmer 2s linear infinite',
+        'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        'pulse-soft': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
+        },
+      },
     },
   },
   plugins: [],

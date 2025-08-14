@@ -20,6 +20,7 @@ REST endpoints, GraphQL resolvers, WebSocket implementations, and third-party in
 Core business logic implementations including multi-tenancy, e-commerce, and hotel management.
 
 **Recent Implementations:**
+- [2025-01 Drag & Drop Editor](./features/2025-01-dragndrop-editor.md) - Complete drag & drop system for Website Builder with @dnd-kit
 - [2025-01 Header Configurations](./features/2025-01-header-configurations.md) - Comprehensive header system with multiple layouts and dynamic icons
 - [2025-01 Shopify Image System](./features/2025-01-shopify-image-system.md) - High-quality image upload and optimization system
 - [2025-08 UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - Complete Materialize design clone
@@ -41,11 +42,11 @@ Database setup, Docker configuration, CI/CD pipelines, and performance optimizat
 ### By Category
 - **Authentication**: 1 implementation documented
 - **API Features**: 0 implementations documented
-- **Business Features**: 7 implementations documented
+- **Business Features**: 8 implementations documented
 - **Infrastructure**: 0 implementations documented
 
 ### By Month
-- **2025-01**: 2 implementations (Header Configurations, Shopify Image System)
+- **2025-01**: 3 implementations (Drag & Drop Editor, Header Configurations, Shopify Image System)
 - **2025-08**: 6 implementations (Login, UI Dashboard, Empresa UI, i18n System, Export System, Status Filter)
 
 ---
@@ -53,14 +54,15 @@ Database setup, Docker configuration, CI/CD pipelines, and performance optimizat
 ## 🔍 Quick Find
 
 ### Recent Additions
-1. [Header Configurations](./features/2025-01-header-configurations.md) - January 2025
-2. [Shopify Image System](./features/2025-01-shopify-image-system.md) - January 2025
-3. [Status Filter Implementation](./features/2025-08-status-filter.md) - August 2025
-4. [Export System Implementation](./features/2025-08-export-system.md) - August 2025
-5. [Empresa UI Design Implementation](./features/2025-08-empresa-ui-design.md) - August 2025
-6. [UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - August 2025
-7. [i18n System Implementation](./features/2025-08-i18n-system.md) - August 2025
-8. [Login Implementation](./auth/2025-08-login-implementation.md) - August 2025
+1. [Drag & Drop Editor](./features/2025-01-dragndrop-editor.md) - January 2025
+2. [Header Configurations](./features/2025-01-header-configurations.md) - January 2025
+3. [Shopify Image System](./features/2025-01-shopify-image-system.md) - January 2025
+4. [Status Filter Implementation](./features/2025-08-status-filter.md) - August 2025
+5. [Export System Implementation](./features/2025-08-export-system.md) - August 2025
+6. [Empresa UI Design Implementation](./features/2025-08-empresa-ui-design.md) - August 2025
+7. [UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - August 2025
+8. [i18n System Implementation](./features/2025-08-i18n-system.md) - August 2025
+9. [Login Implementation](./auth/2025-08-login-implementation.md) - August 2025
 
 ### Most Referenced
 1. [UI Dashboard Implementation](./features/2025-08-ui-dashboard-implementation.md) - Materialize design system
@@ -126,5 +128,5 @@ See [Documentation Templates](../documentation-templates/) for standard formats.
 ---
 
 **Last Updated**: 2025-01-14
-**Total Implementations Documented**: 8
-**Documentation Coverage**: ~40% (Auth, UI Dashboard, Empresa UI, i18n System, Export System, Status Filter, Shopify Image System, Header Configurations completed)
+**Total Implementations Documented**: 9
+**Documentation Coverage**: ~45% (Auth, Drag & Drop Editor, UI Dashboard, Empresa UI, i18n System, Export System, Status Filter, Shopify Image System, Header Configurations completed)

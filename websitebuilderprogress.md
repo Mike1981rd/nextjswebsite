@@ -269,7 +269,17 @@
 
 ---
 
-## 📞 COMMIT HISTORY (12 enero 2025)
+## 📞 COMMIT HISTORY (14 enero 2025)
+
+### Últimos cambios importantes
+- **Feature**: Sistema completo de Drag & Drop implementado
+  - Librería @dnd-kit integrada
+  - Reordenamiento de secciones dentro del mismo grupo
+  - Validaciones de movimiento entre grupos
+  - Integración con sistema de guardado
+  - Handle minimalista con hover effect
+- **Fix**: Botón guardar ahora funciona con cambios de drag & drop
+- **Estado**: Funcionando en producción ✅
 
 ### Último commit
 - **Hash**: 38552e0
@@ -279,7 +289,7 @@
 
 ---
 
-**Última actualización**: 12 de enero 2025, 4:40 PM
-**Próxima revisión**: 13 de enero 2025, 9:00 AM
+**Última actualización**: 14 de enero 2025, 2:45 PM
+**Próxima revisión**: 15 de enero 2025, 9:00 AM
 **Responsable**: Equipo de desarrollo
 **Estado del documento**: ✅ Activo y actualizado

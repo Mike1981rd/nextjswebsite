@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { EditorSidebar } from './EditorSidebar';
+import { EditorSidebarWithDnD } from './EditorSidebarWithDnD';
 import { EditorPreview } from './EditorPreview';
 
 interface EditorLayoutProps {
@@ -11,9 +11,9 @@ interface EditorLayoutProps {
 export function EditorLayout({ deviceView = 'desktop' }: EditorLayoutProps) {
   return (
     <div className="flex h-full relative">
-      {/* Sidebar - Fixed */}
+      {/* Sidebar with Drag & Drop - Fixed */}
       <div className="h-full overflow-hidden">
-        <EditorSidebar />
+        <EditorSidebarWithDnD />
       </div>
       
       {/* Preview Area - Scrollable */}

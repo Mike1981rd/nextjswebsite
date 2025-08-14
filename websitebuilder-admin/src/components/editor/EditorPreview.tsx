@@ -85,7 +85,8 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
       const activeScheme = colorSchemes?.schemes?.[selectedSchemeIndex];
       const fallbackScheme = colorSchemes?.schemes?.[0];
       schemeToUse = activeScheme || fallbackScheme;
-      isDrawerLayout = headerConfig?.layout === 'drawer';
+      // IMPORTANT: In mobile view, ALWAYS use drawer layout (like Shopify)
+      isDrawerLayout = headerConfig?.layout === 'drawer' || deviceView === 'mobile';
       
       // Get menu items
       selectedMenuId = headerConfig?.menuId;
@@ -225,11 +226,13 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         } : {};
 
         // Determine the layout structure
-        const isLogoLeftMenuCenter = headerConfig?.layout === 'logo-left-menu-center-inline';
-        const isLogoLeftMenuLeft = headerConfig?.layout === 'logo-left-menu-left-inline';
-        const isLogoCenterMenuLeft = headerConfig?.layout === 'logo-center-menu-left-inline';
-        const isLogoCenterMenuCenterBelow = headerConfig?.layout === 'logo-center-menu-center-below';
-        const isLogoLeftMenuLeftBelow = headerConfig?.layout === 'logo-left-menu-left-below';
+        // In mobile, force drawer layout (like Shopify), so disable other layouts
+        const isMobile = deviceView === 'mobile';
+        const isLogoLeftMenuCenter = !isMobile && headerConfig?.layout === 'logo-left-menu-center-inline';
+        const isLogoLeftMenuLeft = !isMobile && headerConfig?.layout === 'logo-left-menu-left-inline';
+        const isLogoCenterMenuLeft = !isMobile && headerConfig?.layout === 'logo-center-menu-left-inline';
+        const isLogoCenterMenuCenterBelow = !isMobile && headerConfig?.layout === 'logo-center-menu-center-below';
+        const isLogoLeftMenuLeftBelow = !isMobile && headerConfig?.layout === 'logo-left-menu-left-below';
         const isMenuBelow = isLogoCenterMenuCenterBelow || isLogoLeftMenuLeftBelow;
         
         // For layouts with menu below, we need a different structure
@@ -470,7 +473,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
               )}
               
               {/* Left section - Hamburger or Logo */}
-              <div className={`flex items-center ${isLogoCenterMenuLeft ? 'flex-1 justify-center' : (isLogoLeftMenuLeft ? 'gap-8' : '')}`}>
+              <div className={`flex items-center ${isLogoCenterMenuLeft ? 'flex-1 justify-center' : (isLogoLeftMenuLeft ? 'gap-8' : '')} ${deviceView === 'mobile' && isDrawerLayout ? 'w-16' : ''}`}>
                 {isDrawerLayout ? (
                   // Hamburger menu for drawer layout
                   <button
@@ -483,35 +486,35 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
                     </svg>
                   </button>
                 ) : (
-                  // Logo for non-drawer layouts
-                  <>
-                    {headerConfig?.logo?.desktopUrl ? (
-                      <img
-                        src={headerConfig.logo.desktopUrl}
-                        alt={headerConfig.logo.alt || 'Company Logo'}
-                        className="self-center"
-                        style={{ 
-                          height: headerConfig.logo.height || 40,
-                          objectFit: 'contain',
-                          display: deviceView === 'mobile' ? 'none' : 'block'
-                        }}
-                        onError={(e) => {
-                          console.error('Failed to load logo:', headerConfig.logo.desktopUrl);
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div 
-                        className="text-xl font-bold self-center"
-                        style={{ 
-                          color: schemeToUse?.text || '#000000',
-                          display: deviceView === 'mobile' ? 'none' : 'block'
-                        }}
-                      >
-                        Aurora
-                      </div>
-                    )}
-                  </>
+                  // Logo for non-drawer layouts - Only show in desktop view
+                  deviceView === 'desktop' && (
+                    <>
+                      {headerConfig?.logo?.desktopUrl ? (
+                        <img
+                          src={headerConfig.logo.desktopUrl}
+                          alt={headerConfig.logo.alt || 'Company Logo'}
+                          className="self-center"
+                          style={{ 
+                            height: headerConfig.logo.height || 40,
+                            objectFit: 'contain'
+                          }}
+                          onError={(e) => {
+                            console.error('Failed to load logo:', headerConfig.logo.desktopUrl);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div 
+                          className="text-xl font-bold self-center"
+                          style={{ 
+                            color: schemeToUse?.text || '#000000'
+                          }}
+                        >
+                          Aurora
+                        </div>
+                      )}
+                    </>
+                  )
                 )}
                 
                 {/* Menu for Logo Left Menu Left Inline */}
@@ -587,8 +590,8 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
                   </nav>
                 )}
                 
-                {/* Mobile logo */}
-                {deviceView === 'mobile' && headerConfig?.logo?.mobileUrl && (
+                {/* Mobile logo - Only show in left section if NOT drawer layout */}
+                {deviceView === 'mobile' && !isDrawerLayout && headerConfig?.logo?.mobileUrl && (
                   <img
                     src={headerConfig.logo.mobileUrl}
                     alt={headerConfig.logo.alt || 'Company Logo'}
@@ -599,8 +602,8 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
                   />
                 )}
                 
-                {/* Fallback for mobile if no mobile logo */}
-                {deviceView === 'mobile' && !headerConfig?.logo?.mobileUrl && headerConfig?.logo?.desktopUrl && (
+                {/* Fallback for mobile if no mobile logo - Only if NOT drawer layout */}
+                {deviceView === 'mobile' && !isDrawerLayout && !headerConfig?.logo?.mobileUrl && headerConfig?.logo?.desktopUrl && (
                   <img
                     src={headerConfig.logo.desktopUrl}
                     alt={headerConfig.logo.alt || 'Company Logo'}
@@ -611,8 +614,8 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
                   />
                 )}
                 
-                {/* Fallback text for mobile */}
-                {deviceView === 'mobile' && !headerConfig?.logo?.mobileUrl && !headerConfig?.logo?.desktopUrl && (
+                {/* Fallback text for mobile - Only if NOT drawer layout */}
+                {deviceView === 'mobile' && !isDrawerLayout && !headerConfig?.logo?.mobileUrl && !headerConfig?.logo?.desktopUrl && (
                   <div className="text-lg font-bold" style={{ color: schemeToUse?.text || '#000000' }}>
                     Aurora
                   </div>
@@ -621,20 +624,54 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
               
               {/* Center section - Logo for drawer layout, Navigation for logo-left-menu-center */}
               {isDrawerLayout ? (
-                <div className="flex items-center justify-center flex-1">
-                  {headerConfig?.logo?.desktopUrl ? (
-                    <img
-                      src={headerConfig.logo.desktopUrl}
-                      alt={headerConfig.logo.alt || 'Company Logo'}
-                      style={{ 
-                        height: headerConfig.logo.height || 40,
-                        objectFit: 'contain'
-                      }}
-                    />
-                  ) : (
-                    <div className="text-xl font-bold" style={{ color: schemeToUse?.text || '#000000' }}>
-                      Aurora
-                    </div>
+                <div className={`flex items-center justify-center flex-1 ${deviceView === 'mobile' ? 'ml-4' : ''}`}>
+                  {/* Desktop logo for drawer layout */}
+                  {deviceView === 'desktop' && (
+                    <>
+                      {headerConfig?.logo?.desktopUrl ? (
+                        <img
+                          src={headerConfig.logo.desktopUrl}
+                          alt={headerConfig.logo.alt || 'Company Logo'}
+                          style={{ 
+                            height: headerConfig.logo.height || 40,
+                            objectFit: 'contain'
+                          }}
+                        />
+                      ) : (
+                        <div className="text-xl font-bold" style={{ color: schemeToUse?.text || '#000000' }}>
+                          Aurora
+                        </div>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Mobile logo for drawer layout - CENTERED */}
+                  {deviceView === 'mobile' && (
+                    <>
+                      {headerConfig?.logo?.mobileUrl ? (
+                        <img
+                          src={headerConfig.logo.mobileUrl}
+                          alt={headerConfig.logo.alt || 'Company Logo'}
+                          style={{ 
+                            height: headerConfig.logo.mobileHeight || 30,
+                            objectFit: 'contain'
+                          }}
+                        />
+                      ) : headerConfig?.logo?.desktopUrl ? (
+                        <img
+                          src={headerConfig.logo.desktopUrl}
+                          alt={headerConfig.logo.alt || 'Company Logo'}
+                          style={{ 
+                            height: headerConfig.logo.mobileHeight || 30,
+                            objectFit: 'contain'
+                          }}
+                        />
+                      ) : (
+                        <div className="text-lg font-bold" style={{ color: schemeToUse?.text || '#000000' }}>
+                          Aurora
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ) : (isLogoLeftMenuCenter && !isLogoLeftMenuLeft && !isLogoCenterMenuLeft) ? (
@@ -733,7 +770,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
                 </nav>
               ) : null}
               {/* Right section - Icons */}
-              <div className="flex items-center gap-4">
+              <div className={`flex items-center gap-4 ${deviceView === 'mobile' && isDrawerLayout ? 'w-24 justify-end' : ''}`}>
                 {showSearchIcon && (
                   <button className="hover:opacity-70 transition-opacity">
                     {renderSearchIcon()}
@@ -852,7 +889,8 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
     // For header sections with drawer, we need to handle the drawer separately
     if (section.type === SectionType.HEADER) {
       const headerConfig = section.settings as any || structuralComponents?.header;
-      const isDrawerLayout = headerConfig?.layout === 'drawer';
+      // IMPORTANT: In mobile view, ALWAYS use drawer layout (like Shopify)
+      const isDrawerLayout = headerConfig?.layout === 'drawer' || deviceView === 'mobile';
       
       if (isDrawerLayout) {
         // Get color scheme for drawer

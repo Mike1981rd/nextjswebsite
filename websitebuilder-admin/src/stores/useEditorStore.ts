@@ -218,7 +218,7 @@ export const useEditorStore = create<EditorStore>()(
           }
 
           if (!hasAnnouncementBar) {
-            updatedSections.headerGroup.push({
+            updatedSections.headerGroup.unshift({  // Use unshift to add at beginning
               id: 'announcement_structural',
               type: SectionType.ANNOUNCEMENT_BAR,
               name: 'Announcement Bar',
@@ -249,6 +249,9 @@ export const useEditorStore = create<EditorStore>()(
               sortOrder: 0
             });
           }
+          
+          // Sort headerGroup by sortOrder to ensure correct initial order
+          updatedSections.headerGroup.sort((a, b) => a.sortOrder - b.sortOrder);
 
           set({ sections: updatedSections });
         },
