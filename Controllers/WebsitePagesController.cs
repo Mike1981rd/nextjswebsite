@@ -241,6 +241,25 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         /// <summary>
+        /// Initialize default pages for a company
+        /// </summary>
+        [HttpPost("company/{companyId}/initialize")]
+        [AllowAnonymous] // Allow public access for initialization
+        public async Task<ActionResult> InitializeDefaultPages(int companyId)
+        {
+            try
+            {
+                await _builderService.InitializeDefaultPagesAsync(companyId);
+                return Ok(new { message = $"Default pages initialized for company {companyId}" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error initializing default pages for company {CompanyId}", companyId);
+                return StatusCode(500, "An error occurred while initializing default pages");
+            }
+        }
+
+        /// <summary>
         /// Get page templates
         /// </summary>
         [HttpGet("templates")]

@@ -38,5 +38,8 @@ namespace WebsiteBuilderAPI.Services
         Task<bool> ValidateSectionTypeAsync(string sectionType);
         Task<bool> ValidateSectionConfigAsync(string sectionType, string config);
         Task<bool> CanCreatePageTypeAsync(int companyId, string pageType);
+        
+        // Initialization
+        Task InitializeDefaultPagesAsync(int companyId);
     }
 }

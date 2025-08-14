@@ -66,6 +66,30 @@ namespace WebsiteBuilderAPI.Controllers
             }
         }
 
+        [HttpGet("{id}/public")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByIdPublic(int id)
+        {
+            try
+            {
+                // For public access, we need to determine the company ID differently
+                // In a real scenario, this might come from the domain or a header
+                // For now, we'll use company 1 as default
+                int companyId = 1;
+
+                var menu = await _navigationMenuService.GetByIdAsync(companyId, id);
+                if (menu == null)
+                    return NotFound(new { error = "Navigation menu not found" });
+
+                return Ok(menu);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting public navigation menu {MenuId}", id);
+                return StatusCode(500, new { error = "An error occurred while getting the navigation menu" });
+            }
+        }
+
         [HttpGet("by-identifier/{identifier}")]
         public async Task<IActionResult> GetByIdentifier(string identifier)
         {

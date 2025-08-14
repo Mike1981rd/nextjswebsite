@@ -11,9 +11,12 @@ import useThemeConfigStore from '@/stores/useThemeConfigStore';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
-export function EditorPreview() {
+interface EditorPreviewProps {
+  deviceView?: 'desktop' | 'mobile';
+}
+
+export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
   const { sections, selectedSectionId, selectSection, hoveredSectionId, setHoveredSection } = useEditorStore();
-  const [deviceView, setDeviceView] = React.useState<DeviceView>('desktop');
   const [openDropdown, setOpenDropdown] = React.useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [activeDrawerSubmenu, setActiveDrawerSubmenu] = React.useState<string | null>(null);
@@ -499,8 +502,11 @@ export function EditorPreview() {
                       />
                     ) : (
                       <div 
-                        className={`text-xl font-bold self-center ${deviceView === 'mobile' ? 'hidden sm:block' : ''}`} 
-                        style={{ color: schemeToUse?.text || '#000000' }}
+                        className="text-xl font-bold self-center"
+                        style={{ 
+                          color: schemeToUse?.text || '#000000',
+                          display: deviceView === 'mobile' ? 'none' : 'block'
+                        }}
                       >
                         Aurora
                       </div>
@@ -588,10 +594,8 @@ export function EditorPreview() {
                     alt={headerConfig.logo.alt || 'Company Logo'}
                     style={{ 
                       height: headerConfig.logo.mobileHeight || 30,
-                      objectFit: 'contain',
-                      display: 'block'
+                      objectFit: 'contain'
                     }}
-                    className="sm:hidden"
                   />
                 )}
                 
@@ -602,16 +606,14 @@ export function EditorPreview() {
                     alt={headerConfig.logo.alt || 'Company Logo'}
                     style={{ 
                       height: headerConfig.logo.mobileHeight || 30,
-                      objectFit: 'contain',
-                      display: 'block'
+                      objectFit: 'contain'
                     }}
-                    className="sm:hidden"
                   />
                 )}
                 
                 {/* Fallback text for mobile */}
                 {deviceView === 'mobile' && !headerConfig?.logo?.mobileUrl && !headerConfig?.logo?.desktopUrl && (
-                  <div className="text-lg font-bold sm:hidden" style={{ color: schemeToUse?.text || '#000000' }}>
+                  <div className="text-lg font-bold" style={{ color: schemeToUse?.text || '#000000' }}>
                     Aurora
                   </div>
                 )}

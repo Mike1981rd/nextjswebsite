@@ -48,6 +48,27 @@ namespace WebsiteBuilderAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the published theme configuration for a company (public endpoint for preview)
+        /// </summary>
+        /// <param name="companyId">Company ID</param>
+        /// <returns>Complete theme configuration</returns>
+        [HttpGet("company/{companyId}/published")]
+        [AllowAnonymous]
+        public async Task<ActionResult<GlobalThemeConfig>> GetPublishedByCompanyId(int companyId)
+        {
+            try
+            {
+                var config = await _themeService.GetByCompanyIdAsync(companyId);
+                return Ok(config);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting published theme config for company {CompanyId}", companyId);
+                return StatusCode(500, new { message = "Error retrieving theme configuration" });
+            }
+        }
+
         #region Individual Module GET Endpoints
 
         /// <summary>

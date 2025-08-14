@@ -4,7 +4,11 @@ import React from 'react';
 import { EditorSidebar } from './EditorSidebar';
 import { EditorPreview } from './EditorPreview';
 
-export function EditorLayout() {
+interface EditorLayoutProps {
+  deviceView?: 'desktop' | 'mobile';
+}
+
+export function EditorLayout({ deviceView = 'desktop' }: EditorLayoutProps) {
   return (
     <div className="flex h-full relative">
       {/* Sidebar - Fixed */}
@@ -14,7 +18,7 @@ export function EditorLayout() {
       
       {/* Preview Area - Scrollable */}
       <div className="flex-1 h-full overflow-hidden">
-        <EditorPreview />
+        <EditorPreview deviceView={deviceView} />
       </div>
     </div>
   );

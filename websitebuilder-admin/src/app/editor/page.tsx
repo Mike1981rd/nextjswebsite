@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { StructuralComponentsProvider } from '@/contexts/StructuralComponentsContext';
+import toast from 'react-hot-toast';
 import { 
   ArrowLeft, 
   Settings, 
@@ -43,6 +44,15 @@ function EditorPageContent() {
   
   const { t } = useEditorTranslations();
   const { company } = useCompany();
+  
+  // Save company ID to localStorage for preview
+  useEffect(() => {
+    if (company?.id) {
+      localStorage.setItem('companyId', company.id.toString());
+      console.log('Saved company ID to localStorage:', company.id);
+    }
+  }, [company?.id]);
+  
   const { 
     config: structuralConfig, 
     hasChanges: hasStructuralChanges,
@@ -51,6 +61,7 @@ function EditorPageContent() {
   } = useStructuralComponents();
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [deviceView, setDeviceView] = useState<'desktop' | 'mobile'>('desktop');
   
   // Create mock pages with translations and icons
   const mockPages = useMemo(() => [
@@ -272,17 +283,46 @@ function EditorPageContent() {
             
             {/* Device Preview Icons */}
             <div className="flex items-center gap-1 ml-2">
-              <button className="p-1.5 hover:bg-gray-100 rounded transition-colors" title={t('editor.toolbar.desktop', 'Escritorio')}>
-                <Monitor className="w-4 h-4 text-gray-600" />
+              <button 
+                onClick={() => setDeviceView('desktop')}
+                className={`p-1.5 rounded transition-colors ${
+                  deviceView === 'desktop' 
+                    ? 'bg-gray-200' 
+                    : 'hover:bg-gray-100'
+                }`} 
+                title={t('editor.toolbar.desktop', 'Escritorio')}
+              >
+                <Monitor className={`w-4 h-4 ${
+                  deviceView === 'desktop' ? 'text-gray-900' : 'text-gray-600'
+                }`} />
               </button>
-              <button className="p-1.5 hover:bg-gray-100 rounded transition-colors" title={t('editor.toolbar.tablet', 'Tablet')}>
+              {/* Tablet button hidden as requested */}
+              {/* <button className="p-1.5 hover:bg-gray-100 rounded transition-colors" title={t('editor.toolbar.tablet', 'Tablet')}>
                 <Tablet className="w-4 h-4 text-gray-600" />
-              </button>
-              <button className="p-1.5 hover:bg-gray-100 rounded transition-colors" title={t('editor.toolbar.mobile', 'Móvil')}>
-                <Smartphone className="w-4 h-4 text-gray-600" />
+              </button> */}
+              <button 
+                onClick={() => setDeviceView('mobile')}
+                className={`p-1.5 rounded transition-colors ${
+                  deviceView === 'mobile' 
+                    ? 'bg-gray-200' 
+                    : 'hover:bg-gray-100'
+                }`} 
+                title={t('editor.toolbar.mobile', 'Móvil')}
+              >
+                <Smartphone className={`w-4 h-4 ${
+                  deviceView === 'mobile' ? 'text-gray-900' : 'text-gray-600'
+                }`} />
               </button>
               <div className="w-px h-4 bg-gray-300 mx-1" />
-              <button className="p-1.5 hover:bg-gray-100 rounded transition-colors" title={t('editor.actions.preview', 'Vista Previa')}>
+              <button 
+                onClick={() => {
+                  // Open preview in new tab with the current page handle
+                  const handle = selectedPage.type;
+                  window.open(`/${handle}`, '_blank');
+                }}
+                className="p-1.5 hover:bg-gray-100 rounded transition-colors" 
+                title={t('editor.actions.preview', 'Vista Previa')}
+              >
                 <Eye className="w-4 h-4 text-gray-600" />
               </button>
             </div>
@@ -301,13 +341,49 @@ function EditorPageContent() {
             >
               {isSavingLocal ? 'Guardando...' : 'Guardar'}
             </button>
+
+            {/* Publish Button */}
+            <button
+              onClick={async () => {
+                try {
+                  // First save if there are changes
+                  if (hasStructuralChanges || isDirty) {
+                    await handleSave();
+                  }
+                  // Then publish
+                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+                  const response = await fetch(
+                    `${apiUrl}/structural-components/company/${company?.id || 1}/publish`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      },
+                      body: JSON.stringify({ createBackup: false })
+                    }
+                  );
+                  if (response.ok) {
+                    toast.success('Cambios publicados exitosamente');
+                  } else {
+                    toast.error('Error al publicar los cambios');
+                  }
+                } catch (error) {
+                  console.error('Error publishing:', error);
+                  toast.error('Error al publicar');
+                }
+              }}
+              className="ml-2 px-4 py-1.5 rounded text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all"
+            >
+              Publicar
+            </button>
           </div>
         </div>
       </div>
 
       {/* Editor */}
       <div className="flex-1 overflow-hidden relative">
-        <EditorLayout />
+        <EditorLayout deviceView={deviceView} />
       </div>
     </div>
   );

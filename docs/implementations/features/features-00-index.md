@@ -9,6 +9,7 @@ This directory contains implementation documentation for major business features
 - **[Empresa UI Design Implementation](./2025-08-empresa-ui-design.md)** - Modern company configuration interface with Materialize design, dark mode support, and enhanced form interactions
 - **[Dual Calendar Implementation](./2025-08-dual-calendar-implementation.md)** - Advanced date range selector with dual-month view, quick options, and cross-month selection support
 - **[Typography Header Implementation](./2025-01-typography-header.md)** - Typography configuration system for header navigation with dynamic font settings application
+- **[Live Preview Implementation](./2025-01-live-preview.md)** - Complete Website Builder live preview with all 6 header layouts, typography, and drawer animations
 
 ### Internationalization
 - **[i18n System Implementation](./2025-08-i18n-system.md)** - Complete translation system with dynamic language switching (ES/EN), Context API, and component integration

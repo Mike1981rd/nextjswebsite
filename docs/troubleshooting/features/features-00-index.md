@@ -26,6 +26,10 @@ This directory contains troubleshooting documentation for business features and 
 - **[features-07-logo-update-data-loss.md](./features-07-logo-update-data-loss.md)** - Critical: Logo upload erases all company data when using general endpoint
 - **[features-08-logo-preview-not-loading.md](./features-08-logo-preview-not-loading.md)** - Logo preview doesn't show after page refresh despite data in database
 
+### Website Builder & Preview
+- **[features-08-preview-typography.md](./features-08-preview-typography.md)** - Typography not applying to menu items in live preview
+- **[features-09-drawer-animation.md](./features-09-drawer-animation.md)** - Drawer opening from wrong side with incorrect submenu animations
+
 ## Coming Soon
 
 ### UI Components

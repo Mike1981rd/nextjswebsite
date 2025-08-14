@@ -622,6 +622,67 @@ namespace WebsiteBuilderAPI.Services
 
         #endregion
 
+        #region Initialization
+
+        public async Task InitializeDefaultPagesAsync(int companyId)
+        {
+            _logger.LogInformation("Initializing default pages for company {CompanyId}", companyId);
+
+            // Check if pages already exist for this company
+            var existingPages = await _context.WebsitePages
+                .Where(p => p.CompanyId == companyId)
+                .AnyAsync();
+
+            if (existingPages)
+            {
+                _logger.LogInformation("Pages already exist for company {CompanyId}, skipping initialization", companyId);
+                return;
+            }
+
+            // Define default pages to create
+            var defaultPages = new[]
+            {
+                new { PageType = PageTypes.HOME, Name = "Home", Slug = "home", MetaTitle = "Welcome" },
+                new { PageType = PageTypes.PRODUCT, Name = "Product", Slug = "product", MetaTitle = "Product Details" },
+                new { PageType = PageTypes.ALL_COLLECTIONS, Name = "All Collections", Slug = "collections", MetaTitle = "Collections" },
+                new { PageType = PageTypes.CART, Name = "Cart", Slug = "cart", MetaTitle = "Shopping Cart" },
+                new { PageType = PageTypes.COLLECTION, Name = "Collection", Slug = "collection", MetaTitle = "Collection" },
+                new { PageType = PageTypes.ALL_PRODUCTS, Name = "All Products", Slug = "products", MetaTitle = "All Products" },
+                new { PageType = PageTypes.CHECKOUT, Name = "Checkout", Slug = "checkout", MetaTitle = "Checkout" }
+            };
+
+            foreach (var pageData in defaultPages)
+            {
+                var page = new WebsitePage
+                {
+                    CompanyId = companyId,
+                    PageType = pageData.PageType,
+                    Name = pageData.Name,
+                    Slug = pageData.Slug,
+                    MetaTitle = pageData.MetaTitle,
+                    MetaDescription = $"{pageData.MetaTitle} page for the website",
+                    IsPublished = true,
+                    PublishedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    Sections = new List<PageSection>()
+                };
+
+                _context.WebsitePages.Add(page);
+                await _context.SaveChangesAsync();
+
+                // Add default sections based on page type
+                await AddDefaultSectionsAsync(page.Id, pageData.PageType);
+
+                _logger.LogInformation("Created default {PageType} page for company {CompanyId}", 
+                    pageData.PageType, companyId);
+            }
+
+            _logger.LogInformation("Default pages initialized for company {CompanyId}", companyId);
+        }
+
+        #endregion
+
         #region Private Helper Methods
 
         private async Task AddDefaultSectionsAsync(int pageId, string pageType)
