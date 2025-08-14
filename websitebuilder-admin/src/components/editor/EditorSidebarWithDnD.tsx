@@ -26,10 +26,12 @@ import { ConfigPanel } from './ConfigPanel';
 import { GlobalSettingsPanel } from './GlobalSettingsPanel';
 import { DraggableSection } from './dragDrop/DraggableSection';
 import { DragOverlay } from './dragDrop/DragOverlay';
+import { AnnouncementChildren } from './AnnouncementChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
 import { GroupId } from '@/lib/dragDrop/types';
+import { SectionType } from '@/types/editor.types';
 
 interface SectionGroup {
   id: GroupId;
@@ -85,9 +87,21 @@ export function EditorSidebarWithDnD() {
   };
 
   // Find selected section to show config panel
-  const selectedSection = selectedSectionId 
+  let selectedSection = selectedSectionId 
     ? Object.values(sections).flat().find(s => s.id === selectedSectionId)
     : null;
+  
+  // Check if it's an announcement item (virtual section)
+  if (!selectedSection && selectedSectionId?.startsWith('announcement-')) {
+    // Create a virtual section for the announcement item
+    selectedSection = {
+      id: selectedSectionId,
+      type: 'ANNOUNCEMENT_ITEM' as any,
+      title: 'Announcement',
+      visible: true,
+      settings: {}
+    } as any;
+  }
 
   // Show Global Settings Panel if active
   if (isGlobalSettingsOpen) {
@@ -166,17 +180,26 @@ export function EditorSidebarWithDnD() {
                         {/* Section Items with Drag & Drop */}
                         <div className="relative pl-8">
                           {groupSections.map((section, index) => (
-                            <DraggableSection
-                              key={section.id}
-                              section={section}
-                              groupId={group.id}
-                              index={index}
-                            >
-                              <SectionItem
+                            <div key={section.id}>
+                              <DraggableSection
                                 section={section}
                                 groupId={group.id}
-                              />
-                            </DraggableSection>
+                                index={index}
+                              >
+                                <SectionItem
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              </DraggableSection>
+                              
+                              {/* Announcement Bar Children - Show announcements as child items */}
+                              {section.type === SectionType.ANNOUNCEMENT_BAR && section.visible && (
+                                <AnnouncementChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+                            </div>
                           ))}
                         </div>
                       </SortableContext>

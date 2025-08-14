@@ -5,6 +5,8 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { Section, SectionType } from '@/types/editor.types';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { HeaderEditor } from './HeaderEditor';
+import AnnouncementBarEditor from './AnnouncementBarEditor';
+import AnnouncementItemEditor from './AnnouncementItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 
@@ -14,10 +16,13 @@ interface ConfigPanelProps {
 
 export function ConfigPanel({ section }: ConfigPanelProps) {
   const { selectSection, updateSectionSettings } = useEditorStore();
-  const { headerConfig, updateHeaderConfigLocal } = useStructuralComponents();
+  const { headerConfig, updateHeaderConfigLocal, config: structuralComponents } = useStructuralComponents();
   const [settings, setSettings] = useState(section.settings);
   const [hasChanges, setHasChanges] = useState(false);
   const [headerLoading, setHeaderLoading] = useState(false);
+  
+  // Check if this is an announcement item (child)
+  const isAnnouncementItem = section.id.startsWith('announcement-');
 
   useEffect(() => {
     setSettings(section.settings);
@@ -62,6 +67,11 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     }));
     setHasChanges(true);
   };
+
+  // Return early for announcement items AFTER all hooks
+  if (isAnnouncementItem) {
+    return <AnnouncementItemEditor announcementId={section.id} />;
+  }
 
   const renderConfigFields = () => {
     switch (section.type) {
@@ -154,43 +164,7 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
         );
 
       case SectionType.ANNOUNCEMENT_BAR:
-        return (
-          <>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Text
-              </label>
-              <input
-                type="text"
-                value={settings.text || ''}
-                onChange={(e) => handleChange('text', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Background Color
-              </label>
-              <input
-                type="color"
-                value={settings.backgroundColor || '#000000'}
-                onChange={(e) => handleChange('backgroundColor', e.target.value)}
-                className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Text Color
-              </label>
-              <input
-                type="color"
-                value={settings.textColor || '#ffffff'}
-                onChange={(e) => handleChange('textColor', e.target.value)}
-                className="w-full h-10 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer"
-              />
-            </div>
-          </>
-        );
+        return <AnnouncementBarEditor />;
 
       case SectionType.IMAGE_WITH_TEXT:
         return (

@@ -5,6 +5,7 @@ import { PageType } from '@/types/editor.types';
 import PreviewHeader from './PreviewHeader';
 import PreviewFooter from './PreviewFooter';
 import PreviewContent from './PreviewContent';
+import PreviewAnnouncementBar from './PreviewAnnouncementBar';
 
 interface PreviewPageProps {
   pageType: PageType;
@@ -114,11 +115,13 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
 
   return (
     <div className="min-h-screen" style={themeStyles}>
-      {/* Announcement Bar - if configured */}
+      {/* Announcement Bar - if configured and should show on this page */}
       {structuralComponents.announcementBar && (
-        <div className="announcement-bar">
-          {/* Will be implemented when AnnouncementBar editor is ready */}
-        </div>
+        <PreviewAnnouncementBar 
+          config={structuralComponents.announcementBar} 
+          theme={globalTheme}
+          pageType={pageType}
+        />
       )}
 
       {/* Header - if configured */}
