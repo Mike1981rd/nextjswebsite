@@ -4,6 +4,21 @@
 
 **IMPORTANTE**: Si tu módulo es un componente estructural (como Header, Footer, AnnouncementBar, CartDrawer), **DEBES** implementar la sincronización de visibilidad entre el store y el context, o el toggle de visibilidad NO se guardará. Ver [Paso 6: Sincronización de Visibilidad](#paso-6-sincronización-de-visibilidad-crítico).
 
+## 🚨 CHECKLIST DE ERRORES COMUNES - VERIFICAR ANTES DE EMPEZAR
+
+Antes de crear tu módulo, asegúrate de:
+
+- [ ] **IMPORTAR EL STORE CORRECTO**: `import { useEditorStore } from '@/stores/useEditorStore';` (NO `@/stores/editorStore`)
+- [ ] **USAR EL HOOK CORRECTO**: Para componentes estructurales, usar `useStructuralComponents()` NO `useEditorStore()`
+- [ ] **DESESTRUCTURAR CORRECTAMENTE**: `const { config: structuralComponents, update[Module]ConfigLocal } = useStructuralComponents();`
+- [ ] **USAR OPTIONAL CHAINING**: Siempre usar `?.` para propiedades anidadas: `localConfig.autoplay?.mode`
+- [ ] **MANEJAR UNDEFINED EN HANDLERS**: En `handleNestedChange`, usar `|| {}` para propiedades undefined
+- [ ] **VERIFICAR NOMBRES DE FUNCIONES**: Cada módulo tiene su propia función update, ej: `updateAnnouncementBarConfigLocal`
+- [ ] **INICIALIZAR CON DEFAULTS**: Siempre tener una función `getDefaultConfig()` con valores completos
+- [ ] **NO AGREGAR BOTÓN SAVE**: Los componentes estructurales usan el botón Save global, NO uno individual
+- [ ] **ENTENDER EL FLUJO DE GUARDADO**: update[Module]ConfigLocal → hasChanges=true → Save global → publishStructural() → toast.success
+- [ ] **MÓDULOS CON HIJOS**: NUNCA poner gestión de hijos en el editor del padre, usar [Module]Children.tsx en el sidebar
+
 ## 📋 Tabla de Contenidos
 1. [Overview del Sistema](#overview-del-sistema)
 2. [Checklist Completo](#checklist-completo)
@@ -74,32 +89,126 @@
 `/websitebuilder-admin/src/components/editor/[Module]Editor.tsx`
 
 ### Plantilla Base Completa con Estilos
+
+⚠️ **IMPORTANTE**: Esta plantilla incluye las correcciones para evitar los errores comunes.
+
+#### Campos de Configuración Comunes (Shopify Style)
+
+**Width Select (Full-width control):**
+```typescript
+// Tipo
+width: 'screen' | 'page' | 'large' | 'medium';
+
+// UI Component
+<select 
+  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md"
+  value={localConfig.width}
+  onChange={(e) => handleChange('width', e.target.value)}
+>
+  <option value="screen">Screen</option>
+  <option value="page">Page</option>
+  <option value="large">Large</option>
+  <option value="medium">Medium</option>
+</select>
+```
+
+**Autoplay Mode (Button Toggle):**
+```typescript
+// Tipo
+autoplay: {
+  mode: 'none' | 'one-at-a-time';
+  speed: number; // 3-10 seconds
+}
+
+// UI Component
+<div className="flex gap-2">
+  <button
+    onClick={() => handleNestedChange('autoplay', 'mode', 'none')}
+    className={`flex-1 px-3 py-1.5 text-xs rounded-md ${
+      localConfig.autoplay?.mode === 'none' 
+        ? 'bg-gray-900 text-white' 
+        : 'bg-gray-100 text-gray-700'
+    }`}
+  >
+    None
+  </button>
+  <button
+    onClick={() => handleNestedChange('autoplay', 'mode', 'one-at-a-time')}
+    className={`flex-1 px-3 py-1.5 text-xs rounded-md ${
+      localConfig.autoplay?.mode === 'one-at-a-time' 
+        ? 'bg-gray-900 text-white' 
+        : 'bg-gray-100 text-gray-700'
+    }`}
+  >
+    One-at-a-time
+  </button>
+</div>
+```
+
+**Social Media Integration:**
+```typescript
+// Tipos
+socialMediaIcons: {
+  enabled: boolean;
+  showOnDesktop: boolean;
+  iconStyle: 'solid' | 'outline';
+}
+
+socialMediaUrls: {
+  instagram?: string;
+  facebook?: string;
+  twitter?: string;
+  youtube?: string;
+  // ... 19 plataformas totales
+}
+
+// Handler para URLs
+const handleSocialMediaUrlChange = (platform: string, value: string) => {
+  const updatedConfig = {
+    ...localConfig,
+    socialMediaUrls: {
+      ...localConfig.socialMediaUrls,
+      [platform]: value
+    }
+  };
+  setLocalConfig(updatedConfig);
+  updateConfigLocal(updatedConfig);
+};
+```
+
 ```typescript
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useEditorStore } from '@/stores/editorStore';
+import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
+interface [Module]Config {
+  enabled: boolean;
+  // ... resto de la configuración
+}
+
 export default function [Module]Editor() {
+  // ✅ CORRECTO: Usar useStructuralComponents, no useEditorStore
   const { 
-    structuralComponents, 
-    updateStructuralComponent,
-    globalConfig 
-  } = useEditorStore();
+    config: structuralComponents, 
+    update[Module]ConfigLocal  // Reemplazar [Module] con el nombre real
+  } = useStructuralComponents();
   
   const [isExpanded, setIsExpanded] = useState(true);
-  const [localConfig, setLocalConfig] = useState(() => 
-    structuralComponents.[module] || getDefaultConfig()
+  // ✅ CORRECTO: Usar optional chaining
+  const [localConfig, setLocalConfig] = useState<[Module]Config>(() => 
+    structuralComponents?.[module] || getDefaultConfig()
   );
 
   // Sincronización con props
   useEffect(() => {
-    const newConfig = structuralComponents.[module] || getDefaultConfig();
+    // ✅ CORRECTO: Optional chaining en useEffect
+    const newConfig = structuralComponents?.[module] || getDefaultConfig();
     if (JSON.stringify(newConfig) !== JSON.stringify(localConfig)) {
       setLocalConfig(newConfig);
     }
-  }, [structuralComponents.[module]]);
+  }, [structuralComponents?.[module]]);
 
   // Manejar cambios
   const handleChange = (field: string, value: any) => {
@@ -109,7 +218,22 @@ export default function [Module]Editor() {
     };
     
     setLocalConfig(updatedConfig);
-    updateStructuralComponent('[module]', updatedConfig);
+    // ✅ CORRECTO: Usar la función específica del módulo
+    update[Module]ConfigLocal(updatedConfig);
+  };
+
+  // ✅ CORRECTO: Manejar propiedades anidadas undefined
+  const handleNestedChange = (parent: string, field: string, value: any) => {
+    const updatedConfig = {
+      ...localConfig,
+      [parent]: {
+        ...(localConfig[parent as keyof [Module]Config] || {}), // Importante!
+        [field]: value
+      }
+    };
+    
+    setLocalConfig(updatedConfig);
+    update[Module]ConfigLocal(updatedConfig);
   };
 
   // Configuración por defecto
@@ -374,7 +498,308 @@ import Preview[Module] from './Preview[Module]';
 
 ---
 
-## Paso 6: Sincronización de Visibilidad (CRÍTICO)
+## Paso 6: Sistema de Guardado y Botón Save (CRÍTICO)
+
+### ⚠️ IMPORTANTE: Cómo funciona el guardado para componentes estructurales
+
+Los componentes estructurales (Header, Footer, AnnouncementBar, CartDrawer) NO tienen botón Save individual. Se guardan a través del **botón Save global** en la barra superior del editor.
+
+#### 📊 Flujo de Guardado Completo:
+
+```
+1. Usuario edita en [Module]Editor
+       ↓
+2. Llama a update[Module]ConfigLocal()
+       ↓
+3. StructuralComponentsContext marca hasChanges = true
+       ↓
+4. Botón Save aparece en barra superior (/editor/page.tsx)
+       ↓
+5. Usuario hace clic en Save global
+       ↓
+6. Llama a publishStructural() que:
+   - Guarda cada componente modificado via API
+   - Llama a publishStructuralComponents()
+       ↓
+7. Muestra toast.success('Cambios guardados exitosamente')
+```
+
+#### 📝 Implementación en StructuralComponentsContext:
+
+```typescript
+// En StructuralComponentsContext.tsx
+const publish = async () => {
+  try {
+    // Guarda cada componente modificado
+    if (config.announcementBar) {
+      await updateAnnouncementBarConfig(company.id, config.announcementBar);
+    }
+    // ... otros componentes ...
+    
+    // Publica los cambios
+    await publishStructuralComponents(company.id);
+    
+    // Resetea hasChanges
+    setHasChanges(false);
+    return true; // Indica éxito
+  } catch (error) {
+    console.error('Error publishing:', error);
+    return false;
+  }
+};
+```
+
+#### 🎯 En el Editor Principal (/editor/page.tsx):
+
+```typescript
+const handleSave = async () => {
+  setIsSavingLocal(true);
+  try {
+    let changesSaved = false;
+    
+    // Guarda componentes estructurales si hay cambios
+    if (hasStructuralChanges) {
+      const success = await publishStructural();
+      if (success) {
+        await refresh();
+        changesSaved = true;
+      }
+    }
+    
+    // Muestra mensaje de éxito
+    if (changesSaved) {
+      toast.success('Cambios guardados exitosamente');
+    }
+  } catch (error) {
+    toast.error('Error al guardar los cambios');
+  } finally {
+    setIsSavingLocal(false);
+  }
+};
+```
+
+#### ✅ Puntos Clave del Sistema de Guardado:
+
+1. **NO hay botón Save individual** en los editores de componentes estructurales
+2. **El botón Save global** aparece automáticamente cuando `hasChanges = true`
+3. **Todos los componentes estructurales** se guardan juntos en una sola operación
+4. **El mensaje de éxito** se muestra desde `/editor/page.tsx`, no desde el contexto
+5. **La función update[Module]ConfigLocal** SOLO actualiza el estado local, NO guarda en backend
+
+#### ❌ Errores Comunes:
+
+- **NO** agregar un botón Save dentro del editor del componente
+- **NO** llamar directamente a la API desde el editor
+- **NO** mostrar toast.success desde el contexto (se hace en page.tsx)
+- **NO** olvidar marcar `hasChanges = true` en la función update
+
+## Paso 7: Módulos con Elementos Hijos (IMPORTANTE)
+
+### ⚠️ ARQUITECTURA DE MÓDULOS CON HIJOS
+
+Algunos módulos pueden tener elementos hijos (ej: AnnouncementBar tiene anuncios individuales, Navigation tiene items de menú). Es **CRÍTICO** entender la arquitectura correcta.
+
+#### ❌ INCORRECTO - NO hacer esto:
+```
+AnnouncementBarEditor.tsx
+├── Configuración global
+└── Gestión de anuncios ❌
+    ├── Agregar anuncio
+    ├── Editar anuncio
+    └── Eliminar anuncio
+```
+
+#### ✅ CORRECTO - Arquitectura adecuada:
+```
+EditorSidebarWithDnD.tsx (Sidebar principal)
+├── Announcement bar (componente padre)
+│   └── AnnouncementChildren.tsx
+│       ├── (+) Agregar Announcement
+│       ├── Announcement - Free Shipping
+│       └── Announcement - Holiday Sale
+│
+└── AnnouncementBarEditor.tsx (Solo configuración global)
+    ├── Color scheme
+    ├── Autoplay
+    └── Selectores
+```
+
+### 📊 Flujo de Implementación para Módulos con Hijos:
+
+#### 1. **Componente [Module]Children.tsx**
+Crea un componente separado para manejar los hijos en el sidebar:
+
+```typescript
+// AnnouncementChildren.tsx
+export function AnnouncementChildren({ section, groupId }) {
+  const { config, update[Module]ConfigLocal } = useStructuralComponents();
+  
+  const handleAddChild = () => {
+    const newChild = {
+      id: `child-${Date.now()}`,
+      text: 'New Item',
+      // ... propiedades del hijo
+    };
+    
+    const updatedConfig = {
+      ...config.module,
+      children: [...config.module.children, newChild]
+    };
+    
+    update[Module]ConfigLocal(updatedConfig);
+  };
+  
+  return (
+    <div className="pl-8">
+      {/* Botón Agregar */}
+      <button onClick={handleAddChild} className="...">
+        <Plus className="w-3 h-3" />
+        <span>Agregar {ChildType}</span>
+      </button>
+      
+      {/* Lista de hijos */}
+      {children.map(child => (
+        <div key={child.id} onClick={() => selectChild(child.id)}>
+          <RefreshCw className="w-3 h-3" />
+          <span>{child.text}</span>
+          {/* Acciones: visibilidad, eliminar */}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+#### 2. **Integración en EditorSidebarWithDnD**
+Renderiza los hijos después del componente padre:
+
+```typescript
+// EditorSidebarWithDnD.tsx
+{groupSections.map((section, index) => (
+  <div key={section.id}>
+    <DraggableSection>
+      <SectionItem section={section} />
+    </DraggableSection>
+    
+    {/* Renderizar hijos si el módulo los tiene */}
+    {section.type === SectionType.MODULE_WITH_CHILDREN && (
+      <ModuleChildren section={section} groupId={group.id} />
+    )}
+  </div>
+))}
+```
+
+#### 3. **ConfigPanel para Hijos**
+Cuando se selecciona un hijo, mostrar su configuración individual:
+
+```typescript
+// ConfigPanel.tsx
+case 'ANNOUNCEMENT_ITEM':
+  return <AnnouncementItemEditor item={section.settings} />;
+```
+
+### ✅ Reglas de UX para Módulos con Hijos:
+
+1. **NUNCA** poner gestión de hijos en el editor del módulo padre
+2. **SIEMPRE** usar un componente [Module]Children separado
+3. **El botón "Agregar"** va en el sidebar, no en la configuración
+4. **Cada hijo** es un elemento clickeable en el sidebar
+5. **La configuración del padre** solo tiene settings globales
+6. **La configuración del hijo** tiene settings específicos del item
+
+### 📝 Ejemplos de Módulos con Hijos:
+
+| Módulo Padre | Elementos Hijos | Botón en Sidebar |
+|--------------|-----------------|------------------|
+| AnnouncementBar | Anuncios individuales | (+) Agregar Announcement |
+| Navigation | Items de menú | (+) Agregar Item |
+| Footer | Columnas/Links | (+) Agregar Columna |
+| ProductGrid | Productos destacados | (+) Agregar Producto |
+
+### ⚠️ Checklist para Módulos con Hijos:
+
+- [ ] Crear componente [Module]Children.tsx
+- [ ] NO incluir gestión de hijos en [Module]Editor.tsx
+- [ ] Integrar en EditorSidebarWithDnD
+- [ ] Implementar selección de hijos individuales
+- [ ] Crear editor específico para configuración de hijos
+- [ ] Manejar acciones (agregar, eliminar, toggle visibilidad)
+- [ ] Usar iconos apropiados (Plus para agregar, RefreshCw para items)
+- [ ] **CRÍTICO**: Implementar botón de retroceso funcional en editor de hijos
+
+### 🔴 ERROR COMÚN: Return Condicional Antes de Hooks
+
+**Problema**: Error "Rendered more hooks than during the previous render"
+
+**Causa**: Return condicional antes de los hooks de React.
+
+**Solución**:
+```typescript
+// ❌ INCORRECTO - Return antes de hooks
+export function ConfigPanel({ section }) {
+  const isChild = section.id.startsWith('child-');
+  if (isChild) {
+    return <ChildEditor />;  // ERROR: Return antes de hooks
+  }
+  
+  const [state, setState] = useState();
+  useEffect(() => {}, []);
+}
+
+// ✅ CORRECTO - Return después de todos los hooks
+export function ConfigPanel({ section }) {
+  const [state, setState] = useState();
+  useEffect(() => {}, []);
+  
+  const isChild = section.id.startsWith('child-');
+  
+  // Return DESPUÉS de todos los hooks
+  if (isChild) {
+    return <ChildEditor />;
+  }
+}
+```
+
+### 🔴 ERROR COMÚN: Navegación Incorrecta del Botón Back
+
+**Problema**: El botón de retroceso en el editor del hijo lleva a la configuración del padre en vez de volver al sidebar.
+
+**Causa**: Implementación incorrecta que navega al padre en lugar de cerrar el panel.
+
+**❌ INCORRECTO - Navega al padre**:
+```typescript
+const handleBack = () => {
+  const state = useEditorStore.getState();
+  const { sections } = state;
+  
+  // PROBLEMA: Busca y abre el padre
+  const parentSection = sections.headerGroup?.find(
+    s => s.type === SectionType.PARENT_TYPE
+  );
+  
+  if (parentSection) {
+    selectSection(parentSection.id);  // MAL: Abre config del padre
+    toggleConfigPanel(true);          // MAL: Mantiene panel abierto
+  }
+};
+```
+
+**✅ CORRECTO - Vuelve al sidebar**:
+```typescript
+const handleBack = () => {
+  // Cierra el panel de configuración y vuelve al sidebar
+  toggleConfigPanel(false);  // Cierra el panel
+  selectSection(null);        // Deselecciona todo
+};
+```
+
+**Regla de UX Crítica**:
+- El botón back en un editor hijo SIEMPRE debe volver al sidebar principal
+- NUNCA debe abrir otro panel de configuración (como el del padre)
+- El usuario espera volver a la lista de elementos, no a otra configuración
+- Esta es la convención estándar en builders tipo Shopify
+
+## Paso 8: Sincronización de Visibilidad (CRÍTICO)
 
 ### ⚠️ IMPORTANTE: Sincronización con StructuralComponentsContext
 
@@ -724,10 +1149,103 @@ const getTypographyStyles = (section: string, theme: any) => {
 
 ## Troubleshooting Común
 
+### ⚠️ PROBLEMA CRÍTICO: Cannot resolve '@/stores/editorStore'
+**Síntoma**: `Module not found: Can't resolve '@/stores/editorStore'`
+**Causa**: El archivo del store se llama `useEditorStore.ts`, no `editorStore.ts`
+**Solución**: 
+```typescript
+// ❌ INCORRECTO
+import { useEditorStore } from '@/stores/editorStore';
+
+// ✅ CORRECTO
+import { useEditorStore } from '@/stores/useEditorStore';
+```
+
+### ⚠️ PROBLEMA CRÍTICO: Cannot read properties of undefined (structuralComponents)
+**Síntoma**: `TypeError: Cannot read properties of undefined (reading 'announcementBar')`
+**Causa**: El componente está intentando acceder a `structuralComponents` desde el store equivocado
+**Solución**: Usar el hook `useStructuralComponents` en lugar de `useEditorStore`:
+```typescript
+// ❌ INCORRECTO
+const { structuralComponents, updateStructuralComponent } = useEditorStore();
+
+// ✅ CORRECTO
+import { useStructuralComponents } from '@/hooks/useStructuralComponents';
+const { config: structuralComponents, updateAnnouncementBarConfigLocal } = useStructuralComponents();
+```
+
+### ⚠️ PROBLEMA CRÍTICO: Cannot read properties of undefined (propiedades anidadas)
+**Síntoma**: `TypeError: Cannot read properties of undefined (reading 'mode')` en `localConfig.autoplay.mode`
+**Causa**: Las propiedades anidadas pueden ser undefined inicialmente
+**Solución**: Usar optional chaining (`?.`) en TODOS los accesos a propiedades anidadas:
+```typescript
+// ❌ INCORRECTO
+value={localConfig.autoplay.mode}
+checked={localConfig.languageSelector.showOnDesktop}
+onClick={() => handleChange('enabled', !localConfig.socialMediaIcons.enabled)}
+
+// ✅ CORRECTO
+value={localConfig.autoplay?.mode || 'none'}
+checked={localConfig.languageSelector?.showOnDesktop || false}
+onClick={() => handleChange('enabled', !localConfig.socialMediaIcons?.enabled)}
+```
+
+También en el handler de cambios anidados:
+```typescript
+// ✅ CORRECTO - Manejar undefined en handleNestedChange
+const handleNestedChange = (parent: string, field: string, value: any) => {
+  const updatedConfig = {
+    ...localConfig,
+    [parent]: {
+      ...(localConfig[parent as keyof ConfigType] || {}), // <-- Importante el || {}
+      [field]: value
+    }
+  };
+  // ...
+};
+```
+
+### ⚠️ PROBLEMA CRÍTICO: "Rendered more hooks than during the previous render"
+**Síntoma**: Error de React sobre cantidad de hooks diferentes entre renders
+**Causa**: Return condicional antes de llamar a todos los hooks
+**Solución**: SIEMPRE llamar a todos los hooks antes de cualquier return condicional
+```typescript
+// ❌ INCORRECTO
+if (isAnnouncementItem) {
+  return <AnnouncementItemEditor />; // Return antes de useEffect
+}
+useEffect(() => {}, []);
+
+// ✅ CORRECTO
+useEffect(() => {}, []); // Todos los hooks primero
+if (isAnnouncementItem) {
+  return <AnnouncementItemEditor />; // Return después
+}
+```
+
+### ⚠️ PROBLEMA CRÍTICO: Botón de retroceso no funciona en editores hijos
+**Síntoma**: Al hacer clic en el botón de retroceso (←) en un editor hijo, no pasa nada
+**Causa**: Búsqueda incorrecta de la sección padre o no se llama `toggleConfigPanel(true)`
+**Solución**:
+```typescript
+// ❌ INCORRECTO
+const announcementBarSection = Object.values(sections).flat()
+  .find(s => s.type === 'ANNOUNCEMENT_BAR');
+
+// ✅ CORRECTO
+const announcementBarSection = sections.headerGroup?.find(
+  s => s.type === SectionType.ANNOUNCEMENT_BAR
+);
+if (announcementBarSection) {
+  selectSection(announcementBarSection.id);
+  toggleConfigPanel(true); // CRÍTICO: No olvidar esto
+}
+```
+
 ### Problema: Los cambios no se reflejan en el iframe
 **Solución**: Verificar que:
-1. `updateStructuralComponent` se llama con el nombre correcto
-2. El `useEffect` está sincronizando correctamente
+1. Se está usando la función correcta del hook (`updateAnnouncementBarConfigLocal`, no `updateStructuralComponent`)
+2. El `useEffect` está sincronizando correctamente con optional chaining
 3. No hay errores de tipo en la configuración
 
 ### Problema: El preview real no muestra el módulo
@@ -953,4 +1471,37 @@ Esta guía debe actualizarse cuando:
 - [Website Builder Troubleshooting](./WEBSITE-BUILDER-TROUBLESHOOTING.md) - Problemas comunes
 
 Última actualización: 2025-01-14
-Versión: 1.1
+Versión: 1.6
+
+Cambios v1.6:
+- Actualizado error del botón back: ahora documenta que debe volver al sidebar, no al padre
+- Corregida la implementación de handleBack() para cerrar el panel
+- Agregada regla de UX crítica sobre navegación esperada por el usuario
+- Incluidos ejemplos de código CORRECTO vs INCORRECTO
+
+Cambios v1.5:
+- Agregado error común: Botón de retroceso no funcional en editores hijos
+- Documentada la solución correcta para implementar handleBack()
+- Incluido en checklist de módulos con hijos
+- Agregado en sección de troubleshooting con código de ejemplo
+
+Cambios v1.4:
+- Agregado Paso 7: Módulos con Elementos Hijos (IMPORTANTE)
+- Documentada la arquitectura correcta para módulos con hijos
+- Explicado por qué la gestión de hijos NO va en el editor del padre
+- Agregados ejemplos de implementación de [Module]Children.tsx
+- Incluida tabla de ejemplos de módulos con hijos
+- Actualizado checklist principal con regla de módulos con hijos
+
+Cambios v1.3:
+- Agregado Paso 6: Sistema de Guardado y Botón Save (CRÍTICO)
+- Documentado el flujo completo de guardado para componentes estructurales
+- Explicado por qué NO hay botón Save individual
+- Aclarado dónde se muestra el mensaje de éxito (editor/page.tsx)
+- Actualizado checklist con puntos sobre el sistema de guardado
+
+Cambios v1.2: 
+- Agregado checklist de errores comunes al inicio
+- Documentados 3 problemas críticos y sus soluciones
+- Actualizada plantilla base con correcciones
+- Agregado manejo de propiedades undefined con optional chaining

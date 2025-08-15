@@ -8,9 +8,11 @@ import Image from 'next/image';
 interface PreviewHeaderProps {
   config: any;
   theme: any;
+  deviceView?: 'desktop' | 'mobile'; // Optional prop for editor preview sync
+  isEditor?: boolean; // True when used inside EditorPreview
 }
 
-export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
+export default function PreviewHeader({ config, theme, deviceView, isEditor = false }: PreviewHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState<string[]>([]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -18,15 +20,37 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDrawerSubmenu, setActiveDrawerSubmenu] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile viewport or use deviceView prop
+  useEffect(() => {
+    // If deviceView is provided (from editor), use it
+    if (deviceView !== undefined) {
+      setIsMobile(deviceView === 'mobile');
+      return;
+    }
+    
+    // Otherwise, detect actual viewport
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [deviceView]);
 
   // Parse config properly matching HeaderEditor structure
   const headerConfig = {
-    layout: config?.layout || 'drawer',
+    // CRÍTICO: En móvil SIEMPRE usar drawer, igual que EditorPreview.tsx
+    layout: (isMobile || deviceView === 'mobile') ? 'drawer' : (config?.layout || 'drawer'),
     sticky: config?.sticky || { enabled: false, alwaysShow: false },
     logo: config?.logo || {
       desktopUrl: '/placeholder-logo.svg',
       mobileUrl: '/placeholder-logo.svg',
       height: 40,
+      mobileHeight: 30,
       altText: 'Logo'
     },
     menuId: config?.menuId,
@@ -141,10 +165,11 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
 
   // Icon rendering functions (matching EditorPreview.tsx)
   const renderSearchIcon = () => {
+    const iconClass = isMobile ? "w-4 h-4" : "w-5 h-5";
     if (isStyle1) {
       // Style 1 - Circle with magnifying glass
       return (
-        <svg className="w-5 h-5" fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
+        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
              stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="8" fill={isSolid ? undefined : 'none'} />
           <path d="m21 21-4.35-4.35" strokeLinecap="round" />
@@ -153,7 +178,7 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
     } else {
       // Style 2 - Standard search icon
       return (
-        <svg className="w-5 h-5" fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
+        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
              stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
                 fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} />
@@ -163,10 +188,11 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
   };
   
   const renderUserIcon = () => {
+    const iconClass = isMobile ? "w-4 h-4" : "w-5 h-5";
     if (isStyle1) {
       // Style 1 - Simple user
       return (
-        <svg className="w-5 h-5" fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
+        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
              stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <circle cx="12" cy="7" r="4" />
           <path d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -175,7 +201,7 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
     } else {
       // Style 2 - Detailed user
       return (
-        <svg className="w-5 h-5" fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
+        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
              stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" 
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -185,10 +211,11 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
   };
   
   const renderCartIcon = () => {
+    const iconClass = isMobile ? "w-4 h-4" : "w-5 h-5";
     if (cartType === 'bag') {
       // Bag icon
       return (
-        <svg className="w-5 h-5" fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
+        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
              stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" 
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -197,7 +224,7 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
     } else {
       // Cart icon
       return (
-        <svg className="w-5 h-5" fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
+        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
              stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" 
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -283,13 +310,15 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
   };
 
   // Determine the layout structure
-  const isLogoLeftMenuCenter = headerConfig?.layout === 'logo-left-menu-center-inline';
-  const isLogoLeftMenuLeft = headerConfig?.layout === 'logo-left-menu-left-inline';
-  const isLogoCenterMenuLeft = headerConfig?.layout === 'logo-center-menu-left-inline';
-  const isLogoCenterMenuCenterBelow = headerConfig?.layout === 'logo-center-menu-center-below';
-  const isLogoLeftMenuLeftBelow = headerConfig?.layout === 'logo-left-menu-left-below';
+  // CRÍTICO: En móvil, deshabilitar todos los layouts especiales (igual que EditorPreview.tsx línea 806-811)
+  const isLogoLeftMenuCenter = !isMobile && headerConfig?.layout === 'logo-left-menu-center-inline';
+  const isLogoLeftMenuLeft = !isMobile && headerConfig?.layout === 'logo-left-menu-left-inline';
+  const isLogoCenterMenuLeft = !isMobile && headerConfig?.layout === 'logo-center-menu-left-inline';
+  const isLogoCenterMenuCenterBelow = !isMobile && headerConfig?.layout === 'logo-center-menu-center-below';
+  const isLogoLeftMenuLeftBelow = !isMobile && headerConfig?.layout === 'logo-left-menu-left-below';
   const isMenuBelow = isLogoCenterMenuCenterBelow || isLogoLeftMenuLeftBelow;
-  const isDrawerLayout = headerConfig?.layout === 'drawer';
+  // IMPORTANTE: En móvil SIEMPRE usar drawer layout (igual que EditorPreview.tsx línea 461)
+  const isDrawerLayout = headerConfig?.layout === 'drawer' || isMobile;
 
   const headerClasses = `
     ${headerConfig.sticky.enabled ? 'sticky top-0' : ''} 
@@ -317,7 +346,7 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
                         alt={headerConfig.logo.altText || 'Company Logo'}
                         className="self-center"
                         style={{ 
-                          height: headerConfig.logo.height || 40,
+                          height: isMobile ? (headerConfig.logo.mobileHeight || 30) : (headerConfig.logo.height || 40),
                           objectFit: 'contain'
                         }}
                       />
@@ -337,7 +366,7 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
                       alt={headerConfig.logo.altText || 'Company Logo'}
                       className="self-center"
                       style={{ 
-                        height: headerConfig.logo.height || 40,
+                        height: isMobile ? (headerConfig.logo.mobileHeight || 30) : (headerConfig.logo.height || 40),
                         objectFit: 'contain'
                       }}
                     />
@@ -385,60 +414,123 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
       <>
         <header className={headerClasses} style={headerStyles}>
           <div className={`${headerConfig.width === 'full' ? 'w-full' : headerConfig.width === 'screen' ? 'w-full' : 'container mx-auto'} px-4`}>
-            <div className="flex items-center justify-between" style={{ height: headerStyles.height }}>
-              
-              {/* Left section - Hamburger */}
-              <div className="flex items-center">
-                <button
-                  onClick={() => setDrawerOpen(!drawerOpen)}
-                  className="p-2 hover:opacity-70 transition-opacity"
-                  style={{ color: colorScheme?.text?.default || '#000000' }}
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Center section - Logo */}
-              <div className="flex items-center justify-center flex-1">
-                {headerConfig?.logo?.desktopUrl ? (
-                  <img
-                    src={headerConfig.logo.desktopUrl}
-                    alt={headerConfig.logo.altText || 'Company Logo'}
-                    style={{ 
-                      height: headerConfig.logo.height || 40,
-                      objectFit: 'contain'
-                    }}
-                  />
-                ) : (
-                  <div className="text-xl font-bold" style={{ color: colorScheme?.text?.default || '#000000' }}>
-                    Aurora
-                  </div>
-                )}
-              </div>
-
-              {/* Right section - Icons */}
-              <div className="flex items-center gap-4">
-                {headerConfig.showSearchIcon && (
-                  <button className="p-2 hover:opacity-70 transition-opacity">
-                    {renderSearchIcon()}
+            {isMobile ? (
+              // Mobile layout: Grid to ensure perfect centering and proper spacing
+              <div className="grid [grid-template-columns:1fr_auto_1fr] items-center" style={{ height: headerStyles.height }}>
+                {/* Left section - Hamburger */}
+                <div className="justify-self-start flex items-center">
+                  <button
+                    onClick={() => setDrawerOpen(!drawerOpen)}
+                    className="p-1.5 hover:opacity-70 transition-opacity"
+                    style={{ color: colorScheme?.text?.default || '#000000' }}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
                   </button>
-                )}
-                {headerConfig.showUserIcon && (
-                  <button className="p-2 hover:opacity-70 transition-opacity">
-                    {renderUserIcon()}
-                  </button>
-                )}
-                {headerConfig.showCartIcon && (
-                  <div className="relative">
-                    <button className="p-2 hover:opacity-70 transition-opacity">
+                </div>
+
+                {/* Center section - Logo */}
+                <div className="justify-self-center flex items-center justify-center">
+                  {headerConfig?.logo?.mobileUrl ? (
+                    <img
+                      src={headerConfig.logo.mobileUrl}
+                      alt={headerConfig.logo.altText || 'Company Logo'}
+                      style={{ 
+                        height: headerConfig.logo.mobileHeight || 30,
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ) : headerConfig?.logo?.desktopUrl ? (
+                    <img
+                      src={headerConfig.logo.desktopUrl}
+                      alt={headerConfig.logo.altText || 'Company Logo'}
+                      style={{ 
+                        height: headerConfig.logo.mobileHeight || 30,
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ) : (
+                    <div className="text-xl font-bold" style={{ color: colorScheme?.text?.default || '#000000' }}>
+                      Aurora
+                    </div>
+                  )}
+                </div>
+
+                {/* Right section - Icons */}
+                <div className="justify-self-end flex items-center gap-2.5">
+                  {headerConfig.showSearchIcon && (
+                    <button className="inline-flex items-center justify-center p-0.5 hover:opacity-70 transition-opacity">
+                      {renderSearchIcon()}
+                    </button>
+                  )}
+                  {headerConfig.showUserIcon && (
+                    <button className="inline-flex items-center justify-center p-0.5 hover:opacity-70 transition-opacity">
+                      {renderUserIcon()}
+                    </button>
+                  )}
+                  {headerConfig.showCartIcon && (
+                    <button className="inline-flex items-center justify-center p-0.5 hover:opacity-70 transition-opacity">
                       {renderCartIcon()}
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center justify-between" style={{ height: headerStyles.height }}>
+                {/* Left section - Hamburger */}
+                <div className="flex items-center">
+                  <button
+                    onClick={() => setDrawerOpen(!drawerOpen)}
+                    className="p-2 hover:opacity-70 transition-opacity"
+                    style={{ color: colorScheme?.text?.default || '#000000' }}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Center section - Logo - keep absolute centering on non-mobile */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+                  {headerConfig?.logo?.desktopUrl ? (
+                    <img
+                      src={headerConfig.logo.desktopUrl}
+                      alt={headerConfig.logo.altText || 'Company Logo'}
+                      style={{ 
+                        height: headerConfig.logo.height || 40,
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ) : (
+                    <div className="text-xl font-bold" style={{ color: colorScheme?.text?.default || '#000000' }}>
+                      Aurora
+                    </div>
+                  )}
+                </div>
+
+                {/* Right section - Icons */}
+                <div className="flex items-center gap-4">
+                  {headerConfig.showSearchIcon && (
+                    <button className="p-2 hover:opacity-70 transition-opacity">
+                      {renderSearchIcon()}
+                    </button>
+                  )}
+                  {headerConfig.showUserIcon && (
+                    <button className="p-2 hover:opacity-70 transition-opacity">
+                      {renderUserIcon()}
+                    </button>
+                  )}
+                  {headerConfig.showCartIcon && (
+                    <div className="relative">
+                      <button className="p-2 hover:opacity-70 transition-opacity">
+                        {renderCartIcon()}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -602,7 +694,7 @@ export default function PreviewHeader({ config, theme }: PreviewHeaderProps) {
                 alt={headerConfig.logo.altText || 'Company Logo'}
                 className="self-center"
                 style={{ 
-                  height: headerConfig.logo.height || 40,
+                  height: isMobile ? (headerConfig.logo.mobileHeight || 30) : (headerConfig.logo.height || 40),
                   objectFit: 'contain'
                 }}
               />

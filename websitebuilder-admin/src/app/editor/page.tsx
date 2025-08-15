@@ -170,12 +170,15 @@ function EditorPageContent() {
   const handleSave = async () => {
     setIsSavingLocal(true);
     try {
+      let changesSaved = false;
+      
       // Save structural components if they have changes
       if (hasStructuralChanges) {
         const success = await publishStructural();
         if (success) {
           // Force a complete refresh of the structural components
           await refresh();
+          changesSaved = true;
         }
       }
       
@@ -186,8 +189,11 @@ function EditorPageContent() {
         console.log('[Save] Section order changes detected - marking as saved');
         const store = useEditorStore.getState();
         store.setIsDirty(false);
-        
-        // Show success message
+        changesSaved = true;
+      }
+      
+      // Show success message if any changes were saved
+      if (changesSaved) {
         toast.success('Cambios guardados exitosamente');
       }
     } catch (error) {
@@ -297,7 +303,11 @@ function EditorPageContent() {
             {/* Device Preview Icons */}
             <div className="flex items-center gap-1 ml-2">
               <button 
-                onClick={() => setDeviceView('desktop')}
+                onClick={() => {
+                  setDeviceView('desktop');
+                  // Do not force desktop in preview; remove override to use real viewport
+                  localStorage.removeItem('editorDeviceView');
+                }}
                 className={`p-1.5 rounded transition-colors ${
                   deviceView === 'desktop' 
                     ? 'bg-gray-200' 
@@ -314,7 +324,11 @@ function EditorPageContent() {
                 <Tablet className="w-4 h-4 text-gray-600" />
               </button> */}
               <button 
-                onClick={() => setDeviceView('mobile')}
+                onClick={() => {
+                  setDeviceView('mobile');
+                  // Force mobile in preview to match editor mobile toggle
+                  localStorage.setItem('editorDeviceView', 'mobile');
+                }}
                 className={`p-1.5 rounded transition-colors ${
                   deviceView === 'mobile' 
                     ? 'bg-gray-200' 
@@ -329,6 +343,12 @@ function EditorPageContent() {
               <div className="w-px h-4 bg-gray-300 mx-1" />
               <button 
                 onClick={() => {
+                  // For preview: only force mobile; let desktop use real viewport
+                  if (deviceView === 'mobile') {
+                    localStorage.setItem('editorDeviceView', 'mobile');
+                  } else {
+                    localStorage.removeItem('editorDeviceView');
+                  }
                   // Open preview in new tab with the current page handle
                   const handle = selectedPage.type;
                   window.open(`/${handle}`, '_blank');

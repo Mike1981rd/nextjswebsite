@@ -21,6 +21,12 @@ Resolver los 9 problemas críticos del proyecto anterior:
 9. ⏳ Sin undo/redo → Sistema de historial
 
 ### 📚 Documentation
+#### Announcement Module (January 14, 2025)
+- ✅ **Implementation**: `/docs/implementations/features/2025-01-announcement-module.md`
+- ✅ **Troubleshooting**: 
+  - Navigation issues: `/docs/troubleshooting/features/feature-01-announcement-navigation.md`
+  - React hooks error: `/docs/troubleshooting/features/feature-02-react-hooks-error.md`
+
 #### Global Theme Configuration v2.0 (January 11, 2025)
 - ✅ **Implementation**: `/docs/implementations/features/2025-01-global-theme-config.md`
 - ✅ **Troubleshooting**: `/docs/troubleshooting/features/features-01-theme-config-issues.md`

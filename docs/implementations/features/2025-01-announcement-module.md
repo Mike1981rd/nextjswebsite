@@ -5,8 +5,8 @@ Implementation of a Shopify-style announcement bar module for the Website Builde
 
 **Date**: 2025-01-14  
 **Category**: features  
-**Status**: ✅ Complete (v1.5)  
-**Time Spent**: ~7 hours  
+**Status**: ✅ Complete (v1.6)  
+**Time Spent**: ~8 hours  
 **Developer**: Claude + User
 
 ## Table of Contents
@@ -407,6 +407,40 @@ if (config?.showOnlyHomePage && pageType !== PageType.HOME) {
 - CSS-in-JS animation styles injection
 **File**: PreviewAnnouncementBar.tsx lines 13-311
 
+### 16. Mobile View Synchronization Issue
+**Problem**: When switching to mobile view in the editor, the preview real (opened in new tab) wasn't synchronized
+**Root Cause**: Preview real was detecting actual browser viewport while editor had simulated mobile view
+**Solution**:
+1. Store device view in localStorage when changed in editor
+2. Pass deviceView as prop to PreviewAnnouncementBar from PreviewPage
+3. PreviewAnnouncementBar uses deviceView prop when available (from editor) or falls back to viewport detection
+**Implementation**:
+```typescript
+// Editor stores device view
+onClick={() => {
+  setDeviceView('mobile');
+  localStorage.setItem('editorDeviceView', 'mobile');
+}}
+
+// PreviewPage reads and passes it
+const [editorDeviceView, setEditorDeviceView] = useState<'desktop' | 'mobile' | undefined>();
+// Listen for storage changes
+window.addEventListener('storage', handleStorageChange);
+
+// PreviewAnnouncementBar uses it
+useEffect(() => {
+  if (deviceView !== undefined) {
+    setIsMobile(deviceView === 'mobile');
+    return;
+  }
+  // Fall back to viewport detection
+}, [deviceView]);
+```
+**Files**:
+- EditorPage (page.tsx) lines 306-343
+- PreviewPage.tsx lines 27-57, 146
+- PreviewAnnouncementBar.tsx lines 86-109
+
 ## Testing Checklist
 
 ### Functionality Tests
@@ -468,9 +502,13 @@ announcement, banner, notification, bar, shopify, icon, picker, parent-child, mo
 
 ---
 *Last Updated: 2025-01-14*
-*Version: 1.5*
+*Version: 1.6*
 
 ### Changelog
+- v1.6 (2025-01-14):
+  - Fixed mobile view synchronization between editor and preview real
+  - Implemented localStorage-based device view communication
+  - Added storage event listener for real-time sync across tabs
 - v1.5 (2025-01-14):
   - Increased social media icons spacing from gap-2 to gap-3
   - Implemented "Show only on home page" functionality

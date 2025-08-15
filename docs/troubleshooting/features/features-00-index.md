@@ -27,6 +27,13 @@ This directory contains troubleshooting documentation for business features and 
 - **[features-08-logo-preview-not-loading.md](./features-08-logo-preview-not-loading.md)** - Logo preview doesn't show after page refresh despite data in database
 
 ### Website Builder & Preview
+- **[feature-01-announcement-navigation.md](./feature-01-announcement-navigation.md)** - Back button navigation issue in announcement child editor
+- **[feature-02-react-hooks-error.md](./feature-02-react-hooks-error.md)** - React hooks conditional render error in ConfigPanel
+- **[features-01-dragndrop-issues.md](./features-01-dragndrop-issues.md)** - Drag and drop implementation issues
+- **[features-01-theme-config-issues.md](./features-01-theme-config-issues.md)** - Theme configuration problems
+- **[features-01-mobile-logo-background.md](./features-01-mobile-logo-background.md)** - Mobile logo background issues
+- **[features-01-save-button-persistent.md](./feature-01-save-button-persistent.md)** - Save button stays visible after saving
+- **[features-02-undo-view-not-updating.md](./feature-02-undo-view-not-updating.md)** - Undo doesn't update the view
 - **[features-08-preview-typography.md](./features-08-preview-typography.md)** - Typography not applying to menu items in live preview
 - **[features-09-drawer-animation.md](./features-09-drawer-animation.md)** - Drawer opening from wrong side with incorrect submenu animations
 

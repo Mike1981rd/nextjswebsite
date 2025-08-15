@@ -1,5 +1,77 @@
 # CLAUDE.md - CONFIGURACIÓN DE SESIÓN Y COMANDO /init-session
 
+## 🛑 REGLAS CRÍTICAS DE DESARROLLO - VIOLACIÓN = DETENCIÓN INMEDIATA
+
+### 🔴 REGLA #1: LÍMITE DE 300 LÍNEAS POR ARCHIVO - SIN EXCEPCIONES
+
+**ANTES de escribir CUALQUIER código:**
+1. Si el archivo actual tiene >250 líneas → CREAR NUEVO ARCHIVO
+2. Si agregarías >50 líneas → CREAR COMPONENTE SEPARADO
+3. Si es un preview → CREAR EN `/components/editor/preview/[Name]Preview.tsx`
+
+**VIOLACIÓN DE ESTA REGLA:**
+- ❌ EditorPreview.tsx con 1,753 líneas es un ANTI-PATTERN
+- ❌ NO agregar más código a archivos que excedan 300 líneas
+- ✅ SIEMPRE crear componentes modulares separados
+
+**ENFORCEMENT:**
+```bash
+# EJECUTAR ANTES DE CADA MODIFICACIÓN
+wc -l [archivo] # Si > 250 → STOP → Crear nuevo archivo
+```
+
+### 🔴 REGLA #2: ARQUITECTURA MODULAR OBLIGATORIA
+
+Para CADA nueva funcionalidad del Website Builder:
+```
+components/
+├── editor/
+│   ├── [Name]Editor.tsx         (<300 líneas) - Configuración
+│   └── preview/
+│       └── [Name]Preview.tsx    (<300 líneas) - Visualización
+```
+
+**NO ESTÁ PERMITIDO:**
+- Agregar lógica de preview en el Editor
+- Agregar todo en EditorPreview.tsx
+- Crear archivos monolíticos
+
+### 🔴 REGLA #3: VERIFICACIÓN PRE-CÓDIGO OBLIGATORIA
+
+**ANTES de escribir la PRIMERA línea de código, DEBES:**
+```typescript
+/**
+ * PRE-CODE CHECKLIST - MUST BE TRUE:
+ * [ ] File will be < 300 lines
+ * [ ] Preview logic in separate file
+ * [ ] Following modular architecture
+ * [ ] Will update isDirty on changes
+ * [ ] Will sync with props via useEffect
+ * 
+ * IF ANY FALSE → STOP → REDESIGN
+ */
+```
+
+### 🔴 REGLA #4: AUTO-VERIFICACIÓN EN CADA ARCHIVO
+
+**CADA archivo nuevo DEBE comenzar con:**
+```typescript
+/**
+ * @file [NombreArchivo].tsx
+ * @max-lines 300
+ * @current-lines 0
+ * @architecture modular
+ * @validates-rules ✅
+ */
+```
+
+### 🔴 REGLA #5: DETENCIÓN AUTOMÁTICA SI SE VIOLA
+
+**Si Claude está por violar cualquier regla:**
+1. DETENERSE inmediatamente
+2. Decir: "⚠️ ALERTA: Esto violaría la regla de [X]. Propongo alternativa:"
+3. Ofrecer solución modular que cumpla las reglas
+
 ## 🎯 COMANDO /init-session - CONFIGURACIÓN FORZADA
 
 ### ⚠️ IMPORTANTE: EJECUCIÓN OBLIGATORIA DEL COMANDO

@@ -24,6 +24,7 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
   const [globalTheme, setGlobalTheme] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [companyId, setCompanyId] = useState<number | null>(null);
+  const [editorDeviceView, setEditorDeviceView] = useState<'desktop' | 'mobile' | undefined>(undefined);
 
   useEffect(() => {
     // Get company ID from localStorage or use default
@@ -32,6 +33,33 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
     const id = storedCompanyId ? parseInt(storedCompanyId) : 1; // Default to company 1 for now
     console.log('Setting company ID from localStorage:', storedCompanyId, '-> using:', id);
     setCompanyId(id);
+    
+    // Get editor device view for synchronization
+    const storedDeviceView = localStorage.getItem('editorDeviceView');
+    // Only honor explicit mobile override; desktop should use real viewport
+    if (storedDeviceView === 'mobile') {
+      setEditorDeviceView('mobile');
+    } else {
+      setEditorDeviceView(undefined);
+    }
+    
+    // Listen for storage changes to sync with editor
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'editorDeviceView') {
+        // Only apply override when mobile; otherwise remove override
+        if (e.newValue === 'mobile') {
+          setEditorDeviceView('mobile');
+        } else {
+          setEditorDeviceView(undefined);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -121,12 +149,17 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
           config={structuralComponents.announcementBar} 
           theme={globalTheme}
           pageType={pageType}
+          deviceView={editorDeviceView}
         />
       )}
 
       {/* Header - if configured */}
       {structuralComponents.header ? (
-        <PreviewHeader config={structuralComponents.header} theme={globalTheme} />
+        <PreviewHeader 
+          config={structuralComponents.header} 
+          theme={globalTheme}
+          deviceView={editorDeviceView}
+        />
       ) : (
         console.log('No header config available') || null
       )}
