@@ -18,6 +18,7 @@ export interface ImageBannerConfig {
   mobileImage?: string;
   desktopOverlayOpacity: number;
   mobileOverlayOpacity: number;
+  videoSound: boolean; // Enable/disable sound for videos
   
   // Content
   subheading: string;

@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { ChevronDown, ChevronUp, Upload, X, Image, Film } from 'lucide-react';
+import { ChevronDown, ChevronUp, Upload, X, Image, Film, Volume2, VolumeX } from 'lucide-react';
 import { ImageBannerConfig } from './types';
 
 interface ImageBannerMediaProps {
@@ -33,7 +33,7 @@ export function ImageBannerMedia({ config, onChange, isExpanded, onToggle }: Ima
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/mediaupload/media', {
+      const response = await fetch('http://localhost:5266/api/mediaupload/media', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -298,6 +298,43 @@ export function ImageBannerMedia({ config, onChange, isExpanded, onToggle }: Ima
               </div>
             )}
           </div>
+
+          {/* Video Sound Toggle - Only show if there's a video */}
+          {(isVideo(config.desktopImage) || isVideo(config.mobileImage || '')) && (
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  {config.videoSound ? (
+                    <Volume2 className="w-4 h-4" />
+                  ) : (
+                    <VolumeX className="w-4 h-4" />
+                  )}
+                  Video sound
+                </label>
+                <button
+                  type="button"
+                  onClick={() => onChange({ videoSound: !config.videoSound })}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                    config.videoSound 
+                      ? 'bg-blue-600' 
+                      : 'bg-gray-200 dark:bg-gray-700'
+                  }`}
+                >
+                  <span className="sr-only">Enable video sound</span>
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                      config.videoSound ? 'translate-x-4' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {config.videoSound 
+                  ? 'Video will play with sound'
+                  : 'Video will be muted (recommended for autoplay)'}
+              </p>
+            </div>
+          )}
 
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Supported: JPG, PNG, WebP, GIF, MP4, WebM, MOV

@@ -11,6 +11,7 @@
 import React, { useMemo } from 'react';
 import { ImageBannerConfig } from './types';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { useImageBannerTypography } from './useImageBannerTypography';
 
 interface PreviewImageBannerProps {
   config: ImageBannerConfig;
@@ -20,6 +21,9 @@ interface PreviewImageBannerProps {
 export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBannerProps) {
   // Get color schemes from global theme config
   const { config: themeConfig } = useThemeConfigStore();
+  
+  // Get typography styles
+  const { headingTypographyStyles, bodyTypographyStyles, buttonTypographyStyles } = useImageBannerTypography(themeConfig);
   
   // Get the selected color scheme
   const colorScheme = useMemo(() => {
@@ -187,7 +191,7 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                   src={config.desktopImage}
                   autoPlay
                   loop
-                  muted
+                  muted={!config.videoSound}
                   playsInline
                 />
               ) : (
@@ -200,7 +204,7 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
               {/* Overlay */}
               <div 
                 className="absolute inset-0 bg-black"
-                style={{ opacity: config.desktopOverlayOpacity / 100 }}
+                style={{ opacity: (config.desktopOverlayOpacity || 0) / 100 }}
               />
             </>
           )}
@@ -219,8 +223,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                 {/* Subheading */}
                 {config.subheading && (
                   <p 
-                    className={`uppercase tracking-wider text-sm font-medium opacity-80`}
-                    style={{ color: colorScheme.text }}
+                    className={`text-sm opacity-80`}
+                    style={{ 
+                      color: colorScheme.text,
+                      ...bodyTypographyStyles
+                    }}
                   >
                     {config.subheading}
                   </p>
@@ -229,8 +236,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                 {/* Heading */}
                 {config.heading && (
                   <h2 
-                    className={`font-bold ${headingSizeClasses[config.headingSize]}`}
-                    style={{ color: colorScheme.text }}
+                    className={`${headingSizeClasses[config.headingSize]}`}
+                    style={{ 
+                      color: colorScheme.text,
+                      ...headingTypographyStyles
+                    }}
                   >
                     {config.heading}
                   </h2>
@@ -240,7 +250,10 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                 {config.body && (
                   <p 
                     className={`${bodySizeClasses[config.bodySize]} opacity-90`}
-                    style={{ color: colorScheme.text }}
+                    style={{ 
+                      color: colorScheme.text,
+                      ...bodyTypographyStyles
+                    }}
                   >
                     {config.body}
                   </p>
@@ -252,8 +265,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                     {config.firstButtonLabel && (
                       <a
                         href={config.firstButtonLink || '#'}
-                        className={`px-6 py-3 rounded-md font-medium ${getButtonClasses(config.firstButtonStyle)}`}
-                        style={getButtonStyles(config.firstButtonStyle)}
+                        className={`px-6 py-3 rounded-md ${getButtonClasses(config.firstButtonStyle)}`}
+                        style={{
+                          ...getButtonStyles(config.firstButtonStyle),
+                          ...buttonTypographyStyles
+                        }}
                       >
                         {config.firstButtonLabel}
                       </a>
@@ -261,8 +277,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                     {config.secondButtonLabel && (
                       <a
                         href={config.secondButtonLink || '#'}
-                        className={`px-6 py-3 rounded-md font-medium ${getButtonClasses(config.secondButtonStyle)}`}
-                        style={getButtonStyles(config.secondButtonStyle)}
+                        className={`px-6 py-3 rounded-md ${getButtonClasses(config.secondButtonStyle)}`}
+                        style={{
+                          ...getButtonStyles(config.secondButtonStyle),
+                          ...buttonTypographyStyles
+                        }}
                       >
                         {config.secondButtonLabel}
                       </a>
@@ -281,35 +300,42 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
           className={`relative ${config.addSidePaddings ? 'mx-4' : ''}`}
           style={{ aspectRatio: config.mobileRatio }}
         >
-          {/* Background Media */}
+          {/* Background Media - Use mobile image if available, otherwise desktop */}
           {(config.mobileImage || config.desktopImage) && (
             <>
-              {isVideo(config.mobileImage || config.desktopImage) ? (
-                <video
-                  className="absolute inset-0 w-full h-full object-cover"
-                  src={config.mobileImage || config.desktopImage}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                />
-              ) : (
-                <img
-                  src={config.mobileImage || config.desktopImage}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              )}
+              {(() => {
+                const mediaUrl = config.mobileImage || config.desktopImage;
+                if (isVideo(mediaUrl)) {
+                  return (
+                    <video
+                      className="absolute inset-0 w-full h-full object-cover"
+                      src={mediaUrl}
+                      autoPlay
+                      loop
+                      muted={!config.videoSound}
+                      playsInline
+                    />
+                  );
+                } else {
+                  return (
+                    <img
+                      src={mediaUrl}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  );
+                }
+              })()}
               {/* Overlay */}
               <div 
                 className="absolute inset-0 bg-black"
-                style={{ opacity: config.mobileOverlayOpacity / 100 }}
+                style={{ opacity: (config.mobileOverlayOpacity || 0) / 100 }}
               />
             </>
           )}
 
           {/* Content Container */}
-          <div className={`relative h-full flex ${mobilePositionClasses[config.mobilePosition]} justify-center p-6`}>
+          <div className={`relative h-full flex ${mobilePositionClasses[config.mobilePosition]} ${config.mobileAlignment === 'center' ? 'justify-center' : 'justify-start'} p-6`}>
             <div 
               className={`${backgroundStyles[config.mobileBackground]} ${config.mobileBackground !== 'none' ? 'p-6 rounded-lg' : ''} w-full max-w-md`}
               style={getContentBackgroundStyle(config.mobileBackground)}
@@ -318,8 +344,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                 {/* Subheading */}
                 {config.subheading && (
                   <p 
-                    className={`uppercase tracking-wider text-xs font-medium opacity-80`}
-                    style={{ color: colorScheme.text }}
+                    className={`text-xs opacity-80`}
+                    style={{ 
+                      color: colorScheme.text,
+                      ...bodyTypographyStyles
+                    }}
                   >
                     {config.subheading}
                   </p>
@@ -328,8 +357,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                 {/* Heading */}
                 {config.heading && (
                   <h2 
-                    className={`font-bold text-2xl`}
-                    style={{ color: colorScheme.text }}
+                    className={`${headingSizeClasses[config.headingSize]}`}
+                    style={{ 
+                      color: colorScheme.text,
+                      ...headingTypographyStyles
+                    }}
                   >
                     {config.heading}
                   </h2>
@@ -338,8 +370,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                 {/* Body */}
                 {config.body && (
                   <p 
-                    className={`text-base opacity-90`}
-                    style={{ color: colorScheme.text }}
+                    className={`${bodySizeClasses[config.bodySize]} opacity-90`}
+                    style={{ 
+                      color: colorScheme.text,
+                      ...bodyTypographyStyles
+                    }}
                   >
                     {config.body}
                   </p>
@@ -351,8 +386,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                     {config.firstButtonLabel && (
                       <a
                         href={config.firstButtonLink || '#'}
-                        className={`px-5 py-2.5 rounded-md font-medium text-sm ${getButtonClasses(config.firstButtonStyle)}`}
-                        style={getButtonStyles(config.firstButtonStyle)}
+                        className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(config.firstButtonStyle)}`}
+                        style={{
+                          ...getButtonStyles(config.firstButtonStyle),
+                          ...buttonTypographyStyles
+                        }}
                       >
                         {config.firstButtonLabel}
                       </a>
@@ -360,8 +398,11 @@ export function PreviewImageBanner({ config, isEditor = false }: PreviewImageBan
                     {config.secondButtonLabel && (
                       <a
                         href={config.secondButtonLink || '#'}
-                        className={`px-5 py-2.5 rounded-md font-medium text-sm ${getButtonClasses(config.secondButtonStyle)}`}
-                        style={getButtonStyles(config.secondButtonStyle)}
+                        className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(config.secondButtonStyle)}`}
+                        style={{
+                          ...getButtonStyles(config.secondButtonStyle),
+                          ...buttonTypographyStyles
+                        }}
                       >
                         {config.secondButtonLabel}
                       </a>

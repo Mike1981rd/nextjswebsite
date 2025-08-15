@@ -9,7 +9,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useEditorStore } from '@/stores/useEditorStore';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import { ImageBannerContent } from './ImageBannerContent';
@@ -24,7 +24,7 @@ interface ImageBannerEditorProps {
 }
 
 export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps) {
-  const { sections, updateSectionSettings, toggleConfigPanel, selectSection } = useEditorStore();
+  const { sections, updateSectionSettings } = useEditorStore();
   const { config: themeConfig } = useThemeConfigStore();
   
   // Find the section from the store
@@ -55,11 +55,6 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
       }
     }
   }, [sectionId, sections]);
-
-  const handleBack = () => {
-    toggleConfigPanel(false);
-    selectSection(null);
-  };
 
   const handleChange = (updates: Partial<ImageBannerConfig>) => {
     const updatedConfig = {
@@ -100,6 +95,7 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
       mobileImage: '',
       desktopOverlayOpacity: 20,
       mobileOverlayOpacity: 20,
+      videoSound: false,
       
       // Content
       subheading: 'IMAGE BANNER',
@@ -137,21 +133,7 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
 
   return (
     <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-gray-200 dark:border-gray-700">
-        <button
-          onClick={handleBack}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
-          aria-label="Back"
-        >
-          <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-        </button>
-        <h2 className="text-sm font-medium text-gray-900 dark:text-white">
-          Image Banner
-        </h2>
-      </div>
-
-      {/* Content */}
+      {/* Content - No header needed, ConfigPanel provides it */}
       <div className="flex-1 overflow-y-auto">
         {/* General Settings */}
         <div className="border-b border-gray-200 dark:border-gray-700">

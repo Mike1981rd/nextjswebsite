@@ -1,12 +1,13 @@
 # Image Banner Implementation
 
 ## Overview
-Complete implementation of the Image Banner module for the Website Builder, including configuration UI, preview rendering, media upload, and color scheme integration.
+Complete implementation of the Image Banner module for the Website Builder, including configuration UI, preview rendering, media upload, color scheme integration, and typography system.
 
 **Date**: January 15, 2025  
 **Category**: Feature  
 **Status**: ✅ Complete  
-**Time Spent**: ~4 hours  
+**Time Spent**: ~5 hours  
+**Last Updated**: January 15, 2025 - Added Typography System  
 
 ## Table of Contents
 - [Architecture Decisions](#architecture-decisions)
@@ -14,6 +15,7 @@ Complete implementation of the Image Banner module for the Website Builder, incl
 - [File Structure](#file-structure)
 - [Key Features](#key-features)
 - [Color Schemes Integration](#color-schemes-integration)
+- [Typography System Integration](#typography-system-integration)
 - [Media Upload System](#media-upload-system)
 - [Configuration Schema](#configuration-schema)
 - [Troubleshooting](#troubleshooting)
@@ -47,15 +49,16 @@ Complete implementation of the Image Banner module for the Website Builder, incl
 ### File Structure
 ```
 src/components/editor/modules/ImageBanner/
-├── ImageBannerEditor.tsx      # Main editor component
-├── ImageBannerMedia.tsx       # Media upload UI
-├── ImageBannerContent.tsx     # Content configuration
-├── ImageBannerPosition.tsx    # Position & alignment
-├── ImageBannerButtons.tsx     # Button configuration
-├── ImageBannerSpacing.tsx     # Spacing controls
-├── PreviewImageBanner.tsx     # Preview component
-├── types.ts                   # TypeScript interfaces
-└── index.ts                   # Exports
+├── ImageBannerEditor.tsx          # Main editor component
+├── ImageBannerMedia.tsx           # Media upload UI
+├── ImageBannerContent.tsx         # Content configuration
+├── ImageBannerPosition.tsx        # Position & alignment
+├── ImageBannerButtons.tsx         # Button configuration
+├── ImageBannerSpacing.tsx         # Spacing controls
+├── PreviewImageBanner.tsx         # Preview component
+├── useImageBannerTypography.ts   # Typography styles hook
+├── types.ts                       # TypeScript interfaces
+└── index.ts                       # Exports
 ```
 
 ### Key Components
@@ -218,6 +221,85 @@ Colors must be applied using inline styles because they are hex values:
 <div className={`text-[${colorScheme.text}]`}>
 ```
 
+## Typography System Integration
+
+### Overview
+Image Banner integrates with the global typography configuration while maintaining its own size controls for flexibility.
+
+### Implementation Architecture
+```
+Global Typography Config
+├── typography.headings → Applied to Image Banner heading
+├── typography.body → Applied to subheading and body text
+└── typography.buttons → Applied to CTA buttons
+```
+
+### Typography Hook
+Created `useImageBannerTypography.ts` to centralize typography style generation:
+
+```typescript
+export function useImageBannerTypography(themeConfig: any) {
+  // Heading styles (without fontSize - managed by Image Banner)
+  const headingTypographyStyles = useMemo(() => {
+    if (!themeConfig?.typography?.headings) return {};
+    const headings = themeConfig.typography.headings;
+    
+    return {
+      fontFamily: `'${headings.fontFamily}', sans-serif`,
+      fontWeight: headings.fontWeight || '700',
+      textTransform: headings.useUppercase ? 'uppercase' : 'none',
+      letterSpacing: `${headings.letterSpacing || 0}px`
+      // Note: fontSize handled by Image Banner's headingSize config
+    };
+  }, [themeConfig?.typography?.headings]);
+
+  // Body styles (without fontSize - managed by Image Banner)
+  const bodyTypographyStyles = useMemo(() => {
+    // Similar structure for body typography
+  });
+
+  // Button styles (including fontSize - buttons don't have size control)
+  const buttonTypographyStyles = useMemo(() => {
+    if (!themeConfig?.typography?.buttons) return {};
+    const buttons = themeConfig.typography.buttons;
+    
+    return {
+      fontFamily: `'${buttons.fontFamily}', sans-serif`,
+      fontWeight: buttons.fontWeight || '500',
+      textTransform: buttons.useUppercase ? 'uppercase' : 'none',
+      fontSize: buttons.fontSize ? 
+        (buttons.fontSize <= 100 ? 
+          `${buttons.fontSize}%` : 
+          `${buttons.fontSize}px`) : '100%',
+      letterSpacing: `${buttons.letterSpacing || 0}px`
+    };
+  }, [themeConfig?.typography?.buttons]);
+}
+```
+
+### Typography Mapping
+| Image Banner Element | Typography Source | Size Control |
+|---------------------|------------------|--------------|
+| Heading | `typography.headings` | Image Banner `headingSize` (1,2,3) |
+| Subheading | `typography.body` | Image Banner `bodySize` (1,2,3) |
+| Body Text | `typography.body` | Image Banner `bodySize` (1,2,3) |
+| CTA Buttons | `typography.buttons` | Typography `fontSize` |
+
+### Key Design Decisions
+
+1. **Size Control Separation**:
+   - Heading and body text sizes controlled by Image Banner configuration
+   - Typography only applies font-family, weight, transform, and letter-spacing
+   - Buttons use full typography config including fontSize
+
+2. **Memoization**:
+   - All typography styles are memoized with `useMemo` for performance
+   - Recalculates only when theme config changes
+
+3. **Pattern Consistency**:
+   - Follows same implementation pattern as Header typography
+   - Uses default export from `useThemeConfigStore`
+
 ## Media Upload System
 
 ### Backend Controller
@@ -291,19 +373,57 @@ Config JSONB -- Stores the entire ImageBannerConfig object
 **Problem**: Preview doesn't reflect selected color scheme  
 **Solution**: Ensure `useMemo` dependencies include both `themeConfig` and `config.colorScheme`
 
-### Issue 2: Upload Fails
-**Problem**: Media upload returns 404  
-**Solution**: Restart backend to load new `MediaUploadController`
+### Issue 2: Upload Fails with HTML Response
+**Problem**: Media upload returns "Unexpected token '<', "<!DOCTYPE "... is not valid JSON"  
+**Root Cause**: Frontend using relative URL instead of full backend URL  
+**Solution**: Changed from `/api/mediaupload/media` to `http://localhost:5266/api/mediaupload/media`
+```typescript
+// Before (incorrect)
+const response = await fetch('/api/mediaupload/media', {
 
-### Issue 3: Content Overflow in Config Panel
+// After (correct)
+const response = await fetch('http://localhost:5266/api/mediaupload/media', {
+```
+
+### Issue 3: Backend Process Lock
+**Problem**: Build fails with "The file is locked by: WebsiteBuilderAPI (PID)"  
+**Solution**: Kill the process before rebuilding
+```powershell
+Stop-Process -Id [PID] -Force
+```
+
+### Issue 4: Content Overflow in Config Panel
 **Problem**: Content cut off in 320px panel  
 **Solution**: Reduce paddings (px-4→px-3), text sizes (text-sm→text-xs), remove fixed widths
+
+### Issue 5: Typography fontSize Conflict
+**Problem**: Typography global fontSize overriding Image Banner's size controls  
+**Solution**: Remove fontSize from heading/body typography styles, keep only for buttons
+```typescript
+// Heading and body: no fontSize (Image Banner controls it)
+return {
+  fontFamily: `'${headings.fontFamily}', sans-serif`,
+  fontWeight: headings.fontWeight || '700',
+  textTransform: headings.useUppercase ? 'uppercase' : 'none',
+  letterSpacing: `${headings.letterSpacing || 0}px`
+  // fontSize removed - handled by headingSize config
+};
+
+// Buttons: include fontSize (no local size control)
+return {
+  fontFamily: `'${buttons.fontFamily}', sans-serif`,
+  fontSize: buttons.fontSize ? ... : '100%', // Included for buttons
+  // ... other styles
+};
+```
 
 ## Related Documentation
 
 - [Website Builder Module Guide](/docs/WEBSITE-BUILDER-MODULE-GUIDE.md) - v1.9 with Color Schemes section
 - [Website Builder Architecture](/docs/WEBSITE-BUILDER-ARCHITECTURE.md)
 - [Theme Configuration Types](/websitebuilder-admin/src/types/theme/colorSchemes.ts)
+- [Typography Header Implementation](/docs/implementations/features/2025-01-typography-header.md) - Reference pattern
+- [Typography Types](/websitebuilder-admin/src/types/theme/typography.ts)
 
 ## Performance Considerations
 
@@ -328,6 +448,10 @@ Config JSONB -- Stores the entire ImageBannerConfig object
 - [x] Save functionality persists configuration
 - [x] Undo/Redo works with all changes
 - [x] All configuration options functional
+- [x] Typography system applies correct fonts
+- [x] Heading/body sizes controlled by Image Banner
+- [x] Button typography includes fontSize from global config
+- [x] Upload URL points to correct backend endpoint
 
 ---
 
