@@ -6,13 +6,16 @@
 
 'use client';
 
-import React, { useState } from 'react';
-import { Plus, Eye, EyeOff, Trash2 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Plus, Eye, EyeOff, Trash2, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { Section } from '@/types/editor.types';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
 import { AddFooterBlockModal } from './AddFooterBlockModal';
+import { DraggableFooterBlock } from './dragDrop/DraggableFooterBlock';
 
 interface FooterChildrenProps {
   section: Section;
@@ -30,12 +33,15 @@ const blockTypeLabels: Record<FooterBlockType, string> = {
 
 export function FooterChildren({ section, groupId }: FooterChildrenProps) {
   const { config: structuralComponents, updateFooterConfigLocal } = useStructuralComponents();
-  const { selectSection, toggleConfigPanel } = useEditorStore();
+  const { selectSection, toggleConfigPanel, saveHistory } = useEditorStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Get footer blocks from structural components config
   const footerConfig = structuralComponents?.footer || {};
   const blocks = footerConfig.blocks || [];
+  
+  // Create sortable IDs for drag & drop
+  const sortableIds = useMemo(() => blocks.map(b => b.id), [blocks]);
 
   const handleAddBlock = (type: FooterBlockType) => {
     const newBlock = {
@@ -108,6 +114,32 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
     updateFooterConfigLocal(updatedConfig);
   };
 
+  // Handle drag end for reordering blocks
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = blocks.findIndex(b => b.id === active.id);
+    const newIndex = blocks.findIndex(b => b.id === over.id);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const reorderedBlocks = arrayMove(blocks, oldIndex, newIndex);
+      
+      const updatedConfig = {
+        ...footerConfig,
+        blocks: reorderedBlocks
+      };
+      
+      updateFooterConfigLocal(updatedConfig);
+      
+      // Save history for undo/redo functionality
+      saveHistory();
+    }
+  };
+
   const getBlockIcon = (type: FooterBlockType) => {
     switch(type) {
       case FooterBlockType.TEXT:
@@ -141,50 +173,80 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
         <span>Agregar bloque</span>
       </button>
 
-      {/* List of Blocks */}
-      {blocks.map((block, index) => (
-        <div
-          key={block.id}
-          className="group flex items-center gap-2 px-4 py-2.5 rounded-md transition-colors select-none hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-          onClick={() => handleSelectBlock(block.id)}
+      {/* List of Blocks with local DnD */}
+      <DndContext 
+        onDragEnd={handleDragEnd}
+        collisionDetection={closestCenter}
+      >
+        <SortableContext 
+          items={sortableIds} 
+          strategy={verticalListSortingStrategy}
         >
-          {/* Block icon */}
-          <span className="text-sm">{getBlockIcon(block.type)}</span>
-          
-          {/* Block name */}
-          <span className="flex-1 text-sm text-gray-800 dark:text-gray-200 truncate">
-            {block.title || blockTypeLabels[block.type]}
-          </span>
+          {blocks.map((block, index) => (
+            <DraggableFooterBlock key={block.id} blockId={block.id}>
+              {({ setNodeRef, attributes, listeners, isDragging, style }) => (
+                <div
+                  ref={setNodeRef}
+                  style={style}
+                  className={`group flex items-center gap-2 px-4 py-2.5 rounded-md transition-colors select-none 
+                    ${isDragging 
+                      ? 'ring-1 ring-blue-200/60 shadow-sm bg-white dark:bg-gray-900' 
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  onClick={() => handleSelectBlock(block.id)}
+                >
+                  {/* Drag Handle */}
+                  <button
+                    {...attributes}
+                    {...listeners}
+                    onClick={(e) => e.stopPropagation()}
+                    className="p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                    aria-label="Reordenar bloque"
+                  >
+                    <GripVertical className="w-3.5 h-3.5 text-gray-400" />
+                  </button>
+                  
+                  {/* Block icon */}
+                  <span className="text-sm">{getBlockIcon(block.type)}</span>
+                  
+                  {/* Block name */}
+                  <span className="flex-1 text-sm text-gray-800 dark:text-gray-200 truncate">
+                    {block.title || blockTypeLabels[block.type]}
+                  </span>
 
-          {/* Actions */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggleBlockVisibility(block.id);
-              }}
-              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Mostrar/Ocultar"
-            >
-              {block.visible !== false ? (
-                <Eye className="w-3.5 h-3.5 text-gray-500" />
-              ) : (
-                <EyeOff className="w-3.5 h-3.5 text-gray-400" />
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleBlockVisibility(block.id);
+                      }}
+                      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                      aria-label="Mostrar/Ocultar"
+                    >
+                      {block.visible !== false ? (
+                        <Eye className="w-3.5 h-3.5 text-gray-500" />
+                      ) : (
+                        <EyeOff className="w-3.5 h-3.5 text-gray-400" />
+                      )}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteBlock(block.id);
+                      }}
+                      className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                    </button>
+                  </div>
+                </div>
               )}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteBlock(block.id);
-              }}
-              className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-              aria-label="Eliminar"
-            >
-              <Trash2 className="w-3.5 h-3.5 text-red-500" />
-            </button>
-          </div>
-        </div>
-      ))}
+            </DraggableFooterBlock>
+          ))}
+        </SortableContext>
+      </DndContext>
 
       {/* Add Footer Block Modal */}
       <AddFooterBlockModal

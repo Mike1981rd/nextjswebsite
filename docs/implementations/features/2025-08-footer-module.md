@@ -1,12 +1,13 @@
 # Footer Module Implementation
 
 ## Overview
-Complete implementation of the Footer module for Website Builder with multi-instance blocks and modular architecture.
+Complete implementation of the Footer module for Website Builder with multi-instance blocks, modular architecture, and drag & drop reordering for child blocks.
 
-**Created**: 2025-08-14  
+**Created**: 2025-01-15  
+**Updated**: 2025-01-15 (Added drag & drop)  
 **Category**: features  
 **Status**: ✅ Complete  
-**Time Spent**: 3 hours  
+**Time Spent**: 4 hours (3h initial + 1h drag & drop)  
 
 ## Table of Contents
 - [Architecture](#architecture)
@@ -14,6 +15,7 @@ Complete implementation of the Footer module for Website Builder with multi-inst
 - [Components](#components)
 - [Configuration](#configuration)
 - [Block System](#block-system)
+- [Drag & Drop Implementation](#drag--drop-implementation)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
 - [Related Documentation](#related-documentation)
@@ -211,6 +213,72 @@ const renderBlock = (block: FooterBlock) => {
 };
 ```
 
+## Drag & Drop Implementation
+
+### Overview
+Footer blocks support drag & drop reordering using a **local DnD context** pattern, similar to Announcement children. This keeps the drag & drop functionality isolated from the global sections DnD.
+
+### Architecture
+```
+FooterChildren.tsx (Parent Component)
+├── DndContext (Local, isolated from global)
+├── SortableContext (Vertical strategy)
+└── DraggableFooterBlock (Wrapper for each block)
+    ├── Drag Handle (GripVertical icon)
+    └── Block Content (Icon, title, actions)
+```
+
+### Key Components
+
+#### 1. DraggableFooterBlock Component
+```typescript
+// src/components/editor/dragDrop/DraggableFooterBlock.tsx
+export function DraggableFooterBlock({ blockId, children }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useSortable({
+    id: blockId,
+    data: { type: 'footer-block', id: blockId }
+  });
+  
+  // Render prop pattern for flexibility
+  return children({ setNodeRef, attributes, listeners, isDragging, style });
+}
+```
+
+#### 2. Drag Handler in FooterChildren
+```typescript
+const handleDragEnd = (event: DragEndEvent) => {
+  const { active, over } = event;
+  if (!over || active.id === over.id) return;
+  
+  const oldIndex = blocks.findIndex(b => b.id === active.id);
+  const newIndex = blocks.findIndex(b => b.id === over.id);
+  
+  if (oldIndex !== -1 && newIndex !== -1) {
+    const reorderedBlocks = arrayMove(blocks, oldIndex, newIndex);
+    updateFooterConfigLocal({ ...footerConfig, blocks: reorderedBlocks });
+    saveHistory(); // For undo/redo support
+  }
+};
+```
+
+### UX Features
+1. **Drag Handle**: Only the grip icon is draggable (not entire row)
+2. **Visual Feedback**: 
+   - Ring and shadow while dragging
+   - 40% opacity on dragged item
+   - Hover states for handle visibility
+3. **Preserved Functionality**: 
+   - Click to select still works
+   - Actions (eye/trash) remain functional
+   - Text selection prevented during drag
+
+### Integration Points
+- ✅ Updates through `updateFooterConfigLocal()`
+- ✅ Triggers `isDirty` flag automatically
+- ✅ Saves history for undo/redo
+- ✅ Isolated from global sections DnD
+- ✅ No interference with other draggable elements
+
 ## Testing
 
 ### Test Cases
@@ -220,6 +288,9 @@ const renderBlock = (block: FooterBlock) => {
 4. ✅ Configuration saves to structural components
 5. ✅ Responsive layout (3/4 columns desktop, 1 mobile)
 6. ✅ All files under 300 lines limit
+7. ✅ **Drag & drop reordering works smoothly**
+8. ✅ **Save button activates after reordering**
+9. ✅ **Undo/redo works with drag operations**
 
 ### Visual Testing
 - Desktop: 3 or 4 column grid layout
