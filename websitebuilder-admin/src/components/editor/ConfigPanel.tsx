@@ -14,6 +14,7 @@ import FooterSubscribeEditor from './FooterSubscribeEditor';
 import FooterTextEditor from './FooterTextEditor';
 import FooterSocialMediaEditor from './FooterSocialMediaEditor';
 import FooterImageEditor from './FooterImageEditor';
+import ImageBannerEditor from './modules/ImageBanner/ImageBannerEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -174,54 +175,7 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
         );
 
       case SectionType.IMAGE_BANNER:
-        return (
-          <>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Title
-              </label>
-              <input
-                type="text"
-                value={settings.title || ''}
-                onChange={(e) => handleChange('title', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Subtitle
-              </label>
-              <input
-                type="text"
-                value={settings.subtitle || ''}
-                onChange={(e) => handleChange('subtitle', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Button Text
-              </label>
-              <input
-                type="text"
-                value={settings.buttonText || ''}
-                onChange={(e) => handleChange('buttonText', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Button URL
-              </label>
-              <input
-                type="text"
-                value={settings.buttonUrl || ''}
-                onChange={(e) => handleChange('buttonUrl', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              />
-            </div>
-          </>
-        );
+        return <ImageBannerEditor sectionId={section.id} />;
 
       case SectionType.ANNOUNCEMENT_BAR:
         return <AnnouncementBarEditor />;

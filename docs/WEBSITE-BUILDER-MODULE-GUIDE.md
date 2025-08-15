@@ -1,5 +1,7 @@
 # 📘 Guía Completa para Construir Nuevos Módulos del Website Builder
 
+**Versión**: 1.9 | **Actualizado**: 2025-01-15 | **Cambios**: Documentación completa de Color Schemes
+
 ## ⚠️ ADVERTENCIAS CRÍTICAS
 
 ### 1. Sincronización de Visibilidad
@@ -359,6 +361,166 @@ export default function [Module]Editor() {
 
 ---
 
+## 🎨 Implementación de Color Schemes
+
+### ⚠️ IMPORTANTE: Los Color Schemes vienen del Store Global
+
+Los color schemes NO son colores hardcodeados. Se obtienen del `useThemeConfigStore` que contiene hasta 5 schemes configurables globalmente.
+
+### Paso 1: En el Editor - Mostrar nombres reales de schemes
+
+```typescript
+// ImageBannerEditor.tsx (o tu módulo)
+import useThemeConfigStore from '@/stores/useThemeConfigStore'; // ⚠️ Sin llaves - es default export
+
+export default function ImageBannerEditor({ sectionId }: Props) {
+  const { config: themeConfig } = useThemeConfigStore();
+  
+  // En el JSX del selector:
+  <select 
+    value={localConfig.colorScheme}
+    onChange={(e) => handleChange({ colorScheme: e.target.value })}
+  >
+    {themeConfig?.colorSchemes?.schemes?.map((scheme, index) => (
+      <option key={scheme.id} value={String(index + 1)}>
+        {scheme.name} {/* Muestra el nombre real del scheme */}
+      </option>
+    )) || [1, 2, 3, 4, 5].map(num => (
+      <option key={num} value={String(num)}>Scheme {num}</option>
+    ))}
+  </select>
+  <p className="mt-1 text-xs text-gray-500">
+    Uses the color scheme from global settings
+  </p>
+```
+
+### Paso 2: En el Preview - Usar colores del scheme seleccionado
+
+```typescript
+// PreviewImageBanner.tsx (o tu preview)
+import React, { useMemo } from 'react';
+import useThemeConfigStore from '@/stores/useThemeConfigStore'; // ⚠️ Sin llaves
+
+export function PreviewImageBanner({ config, isEditor }: Props) {
+  const { config: themeConfig } = useThemeConfigStore();
+  
+  // Obtener el scheme seleccionado
+  const colorScheme = useMemo(() => {
+    if (!themeConfig?.colorSchemes?.schemes) {
+      // Fallback si no hay config
+      return {
+        text: '#000000',
+        background: '#FFFFFF',
+        solidButton: '#000000',
+        solidButtonText: '#FFFFFF',
+        outlineButton: '#000000',
+        outlineButtonText: '#000000',
+        link: '#0066CC',
+        border: '#E5E5E5',
+        imageOverlay: '#000000'
+      };
+    }
+    
+    // config.colorScheme es "1", "2", etc. - convertir a índice
+    const schemeIndex = parseInt(config.colorScheme) - 1;
+    const selectedScheme = themeConfig.colorSchemes.schemes[schemeIndex];
+    
+    return selectedScheme || themeConfig.colorSchemes.schemes[0];
+  }, [themeConfig, config.colorScheme]);
+  
+  // Usar los colores con style inline (porque son valores hex)
+  return (
+    <div style={{ color: colorScheme.text }}>
+      <button 
+        style={{
+          backgroundColor: colorScheme.solidButton,
+          color: colorScheme.solidButtonText
+        }}
+      >
+        Button
+      </button>
+    </div>
+  );
+}
+```
+
+### Paso 3: Estructura de un Color Scheme
+
+Cada scheme tiene estos colores disponibles:
+
+```typescript
+interface ColorScheme {
+  id: string;           // Identificador único
+  name: string;         // Nombre mostrado al usuario
+  text: string;         // Color de texto principal
+  background: string;   // Color de fondo
+  foreground: string;   // Color de primer plano
+  border: string;       // Color de bordes
+  link: string;         // Color de enlaces
+  solidButton: string;  // Fondo de botón sólido
+  solidButtonText: string;      // Texto de botón sólido
+  outlineButton: string;        // Borde de botón outline
+  outlineButtonText: string;    // Texto de botón outline
+  imageOverlay: string;         // Color de overlay sobre imágenes
+}
+```
+
+### Paso 4: Helpers para aplicar estilos
+
+```typescript
+// Helpers para aplicar estilos según el tipo
+const getButtonStyles = (style: 'solid' | 'outline' | 'text') => {
+  switch (style) {
+    case 'solid':
+      return {
+        backgroundColor: colorScheme.solidButton,
+        color: colorScheme.solidButtonText
+      };
+    case 'outline':
+      return {
+        borderColor: colorScheme.outlineButton,
+        color: colorScheme.outlineButtonText,
+        backgroundColor: 'transparent',
+        borderWidth: '2px',
+        borderStyle: 'solid'
+      };
+    case 'text':
+      return {
+        color: colorScheme.link,
+        backgroundColor: 'transparent',
+        textDecoration: 'underline'
+      };
+  }
+};
+
+// Aplicar en JSX
+<button style={getButtonStyles(config.buttonStyle)}>
+  Click me
+</button>
+```
+
+### ⚠️ Errores Comunes y Soluciones
+
+1. **Error: `useThemeConfigStore is not a function`**
+   - ❌ `import { useThemeConfigStore } from '@/stores/useThemeConfigStore';`
+   - ✅ `import useThemeConfigStore from '@/stores/useThemeConfigStore';`
+
+2. **Los colores no se aplican**
+   - Usa `style` inline para colores hex: `style={{ color: colorScheme.text }}`
+   - NO uses clases Tailwind con variables: ❌ `className={`text-[${color}]`}`
+
+3. **El scheme no cambia en el preview**
+   - Asegúrate de usar `useMemo` con las dependencias correctas
+   - Verifica que `config.colorScheme` esté llegando como string ("1", "2", etc.)
+
+### Ejemplo Completo de Implementación
+
+Ver implementación en:
+- Editor: `/src/components/editor/modules/ImageBanner/ImageBannerEditor.tsx`
+- Preview: `/src/components/editor/modules/ImageBanner/PreviewImageBanner.tsx`
+
+---
+
 ## Paso 2: Integrar con EditorLayout
 
 ### Archivo a modificar
@@ -425,10 +587,37 @@ const [deviceView, setDeviceView] = useState<'desktop' | 'mobile'>('desktop');
 
 ---
 
-## Paso 4: Crear el Preview Real
+## Paso 4: Crear el Preview Real (ARQUITECTURA UNIFICADA)
+
+### 🚨 CAMBIO CRÍTICO: Arquitectura Unificada de Preview
+
+**IMPORTANTE**: Desde el 14 de enero 2025, usamos componentes Preview unificados que sirven tanto para EditorPreview.tsx como para PreviewPage.tsx. **NO CREAR COMPONENTES DUPLICADOS**.
+
+### Arquitectura Anterior (EVITAR)
+```
+❌ INCORRECTO - Código duplicado:
+EditorPreview.tsx → Renderizado inline del módulo
+PreviewPage.tsx → Preview[Module].tsx separado
+Resultado: DUPLICACIÓN, INCONSISTENCIAS
+```
+
+### Arquitectura Nueva (USAR SIEMPRE)
+```
+✅ CORRECTO - Componente unificado:
+Preview[Module].tsx (único componente)
+  ├── Usado por EditorPreview.tsx con isEditor={true}
+  └── Usado por PreviewPage.tsx con isEditor={false}
+Resultado: NO DUPLICACIÓN, CONSISTENCIA GARANTIZADA
+```
 
 ### Ubicación
 `/websitebuilder-admin/src/components/preview/Preview[Module].tsx`
+
+### Principios Clave
+1. **Single Source of Truth**: Un componente maneja ambos contextos
+2. **Props isEditor**: Diferencia comportamiento cuando es necesario
+3. **Mobile Detection Unificada**: Funciona en ambos contextos
+4. **Hooks antes de Returns**: CRÍTICO para evitar errores
 
 ### ⚠️ CRÍTICO: Detección Móvil y Sincronización Editor-Preview
 
@@ -523,13 +712,35 @@ export default function Preview[Module]({
 }
 ```
 
-### Diferencias con EditorPreview
-| EditorPreview | Preview Real |
-|---------------|--------------|
-| Lee del store | Lee de props |
-| Cambios instantáneos | Requiere refresh |
-| Puede tener estados temporales | Solo estados guardados |
-| Acceso a funciones del editor | Solo renderizado |
+### Patrón isEditor para Comportamiento Diferenciado
+```typescript
+// Ejemplo de uso del prop isEditor
+export default function Preview[Module]({ config, theme, isEditor = false }) {
+  // Comportamiento específico del editor
+  if (isEditor) {
+    // Por ejemplo, mostrar bordes de arrastre o placeholders
+    return (
+      <div className="relative group">
+        {/* Indicador visual solo en editor */}
+        <div className="absolute inset-0 border-2 border-dashed border-gray-300 opacity-0 group-hover:opacity-100" />
+        {renderContent()}
+      </div>
+    );
+  }
+  
+  // Comportamiento para preview real
+  return renderContent();
+}
+```
+
+### Beneficios de la Arquitectura Unificada
+| Beneficio | Descripción |
+|-----------|-------------|
+| **Consistencia** | Editor y preview siempre idénticos |
+| **Mantenimiento** | Arreglar bugs en un solo lugar |
+| **Testing** | Probar componente una sola vez |
+| **Performance** | Menor bundle, mejor caching |
+| **Desarrollo** | Escribir código una sola vez |
 
 ---
 
@@ -1404,17 +1615,38 @@ const handleNestedChange = (parent: string, field: string, value: any) => {
 **Síntoma**: Error de React sobre cantidad de hooks diferentes entre renders
 **Causa**: Return condicional antes de llamar a todos los hooks
 **Solución**: SIEMPRE llamar a todos los hooks antes de cualquier return condicional
-```typescript
-// ❌ INCORRECTO
-if (isAnnouncementItem) {
-  return <AnnouncementItemEditor />; // Return antes de useEffect
-}
-useEffect(() => {}, []);
 
-// ✅ CORRECTO
-useEffect(() => {}, []); // Todos los hooks primero
-if (isAnnouncementItem) {
-  return <AnnouncementItemEditor />; // Return después
+```typescript
+// ❌ INCORRECTO - Return antes de hooks
+export function Preview[Module]({ config, theme, isEditor }) {
+  if (!config?.enabled) return null; // ERROR! Return antes de hooks
+  
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    // ...
+  }, []);
+}
+
+// ✅ CORRECTO - Todos los hooks antes de returns
+export function Preview[Module]({ config, theme, isEditor }) {
+  // 1. TODOS los hooks PRIMERO
+  const [isMobile, setIsMobile] = useState(() => {
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    if (typeof window !== 'undefined') return window.innerWidth < 768;
+    return false;
+  });
+  
+  useEffect(() => {
+    // Mobile detection
+  }, [deviceView]);
+  
+  // 2. Returns condicionales DESPUÉS de todos los hooks
+  if (!isEditor && !config?.enabled) {
+    return null;
+  }
+  
+  // 3. Render normal
+  return <div>...</div>;
 }
 ```
 
@@ -1460,6 +1692,28 @@ if (announcementBarSection) {
 1. El theme incluye la sección de typography
 2. Los nombres de las propiedades coinciden
 3. Se está aplicando el objeto de estilos completo
+
+### ⚠️ PROBLEMA CRÍTICO: Scroll no funciona en Preview
+**Síntoma**: La página de preview no permite hacer scroll
+**Causa**: Global `overflow-hidden` en body element en `globals.css` previene el scroll
+**Contexto**: Dashboard necesita `overflow-hidden` para su layout fijo, pero preview necesita scroll
+
+**❌ Soluciones INCORRECTAS a EVITAR**:
+- Modificar reglas CSS globales (afecta dashboard)
+- Agregar clases condicionales con `:has()` (puede romper otros componentes)
+- Usar `overflow-y-auto` en container (puede afectar layouts hijos como announcement bar)
+
+**✅ SOLUCIÓN CORRECTA**: Override específicamente en PreviewPage component
+```typescript
+// En PreviewPage.tsx return statement
+<div className="min-h-screen" style={{...themeStyles, overflowY: 'auto', height: '100vh'}}>
+```
+
+**Por qué funciona**: 
+- Inline styles tienen máxima especificidad
+- Solo afecta preview page, no dashboard
+- No interfiere con layouts de componentes hijos
+- `height: '100vh'` asegura que el container tenga altura definida para scroll
 
 ### ⚠️ PROBLEMA CRÍTICO: Panel de configuración de hijos no abre
 **Síntoma**: Al hacer clic en un elemento hijo (ej: footer block, announcement item), no se abre el panel de configuración
@@ -1712,7 +1966,16 @@ Esta guía debe actualizarse cuando:
 - [Website Builder Troubleshooting](./WEBSITE-BUILDER-TROUBLESHOOTING.md) - Problemas comunes
 
 Última actualización: 2025-01-15
-Versión: 1.7
+Versión: 1.8
+
+Cambios v1.8:
+- Agregada sección crítica sobre Arquitectura Unificada de Preview (del documento live-preview.md)
+- Documentado el patrón de componentes compartidos entre EditorPreview y PreviewPage
+- Actualizado Paso 4 con arquitectura correcta (NO duplicar componentes)
+- Agregado prop isEditor para diferenciación de comportamiento
+- Incluido problema del scroll en preview con solución correcta
+- Mejorados ejemplos de hooks antes de returns con casos reales
+- Agregada tabla de beneficios de arquitectura unificada
 
 Cambios v1.7:
 - Agregado problema crítico: Panel de configuración de hijos no abre

@@ -4,10 +4,10 @@
 - **Proyecto**: Website Builder Next Generation v2.0
 - **Inicio**: 11 de enero 2025
 - **Estado Global**: 🟢 EN DESARROLLO
-- **Progreso Total**: 55% (65/108 tareas completadas)
+- **Progreso Total**: 65% (75/115 tareas completadas)
 - **Documento Blueprint**: `blueprintwebsite.md`
 - **Especificaciones**: `Test Images/prompt.pdf`
-- **Última actualización**: 12 de enero 2025 - FASE 1 COMPLETADA, UI EDITORS IMPLEMENTADOS
+- **Última actualización**: 15 de enero 2025 - COMPONENTES ESTRUCTURALES 75% COMPLETADOS
 
 ## 🏆 Logros Principales
 - ✅ **Problema #1 RESUELTO**: JSON de 24,000 líneas → Sistema modular con JSONB (99.4% reducción)
@@ -22,18 +22,23 @@
 | Fase | Descripción | Estado | Tiempo |
 |------|-------------|--------|--------|
 | 1 | Configuraciones Globales | ✅ 100% | 6h |
-| 2 | Componentes Estructurales | ✅ 100% Backend | 2h |
+| 2 | Componentes Estructurales Backend | ✅ 100% | 2h |
 | 3 | UI Editors Globales | ✅ 100% | 4h |
-| 4 | Páginas y Secciones | ⏳ 0% | Pendiente |
-| 5 | Preview & Publicación | ⏳ 0% | Pendiente |
-| 6 | Testing & Polish | ⏳ 0% | Pendiente |
+| 4 | Componentes Estructurales UI | ✅ 75% | 8h |
+| 5 | Páginas y Secciones | ⏳ 0% | Pendiente |
+| 6 | Preview & Publicación | ⏳ 0% | Pendiente |
+| 7 | Testing & Polish | ⏳ 0% | Pendiente |
 
-### 🔄 ACTUALIZACIÓN DE PROGRESO (12 enero 2025)
+### 🔄 ACTUALIZACIÓN DE PROGRESO (15 enero 2025)
 - **FASE 1**: Configuraciones Globales del tema - ✅ 100% COMPLETADA
 - **FASE 2**: Componentes Estructurales Backend - ✅ 100% COMPLETADA
 - **FASE 3**: UI Editors para configuración global - ✅ 100% COMPLETADA
-- **NUEVO**: Sistema i18n mejorado con módulos separados
-- **NUEVO**: Componente Swatches completo con UI avanzada
+- **FASE 4**: Componentes Estructurales UI - ✅ 75% COMPLETADA
+  - ✅ HeaderEditor.tsx implementado con todos los layouts
+  - ✅ FooterEditor.tsx con drag & drop avanzado
+  - ✅ AnnouncementBarEditor.tsx con multi-instancia
+  - ⏳ CartDrawerEditor.tsx pendiente
+- **NUEVO**: Sistema de drag & drop para Footer blocks
 
 ---
 
@@ -159,12 +164,12 @@
 ## 📋 PRÓXIMAS FASES PENDIENTES
 
 ### FASE 4: UI Editors para Componentes Estructurales
-**Estado**: ⏳ PENDIENTE
-**Componentes a crear**:
-- [ ] `components/websiteBuilder/components/HeaderEditor.tsx`
-- [ ] `components/websiteBuilder/components/AnnouncementBarEditor.tsx`
-- [ ] `components/websiteBuilder/components/FooterEditor.tsx`
-- [ ] `components/websiteBuilder/components/CartDrawerEditor.tsx`
+**Estado**: ✅ 75% COMPLETADO
+**Componentes completados**:
+- [x] `components/editor/HeaderEditor.tsx` ✅
+- [x] `components/editor/AnnouncementBarEditor.tsx` ✅
+- [x] `components/editor/FooterEditor.tsx` ✅
+- [ ] `components/editor/CartDrawerEditor.tsx` ⏳
 
 ### FASE 5: Sistema de Páginas y Secciones
 **Estado**: ⏳ PENDIENTE
@@ -228,10 +233,12 @@
 
 ## 🔄 PRÓXIMOS PASOS INMEDIATOS
 
-### Mañana (13 enero 2025)
-1. ⏳ Crear HeaderEditor.tsx con todas las opciones del blueprint
-2. ⏳ Crear AnnouncementBarEditor.tsx
-3. ⏳ Iniciar sistema de drag & drop
+### Hoy (15 enero 2025)
+1. ✅ Implementar Image Banner completo con upload de media
+2. ✅ Integrar color schemes globales en preview
+3. ✅ Documentar implementación y actualizar guías
+4. ⏳ Crear CartDrawerEditor.tsx - último componente estructural
+5. ⏳ Iniciar Fase 5: Sistema de Páginas y Secciones
 
 ### Esta semana
 1. ⏳ Completar los 4 editores de componentes estructurales

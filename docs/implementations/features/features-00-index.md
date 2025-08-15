@@ -13,6 +13,7 @@ This directory contains implementation documentation for major business features
 - **[Header Configurations](./2025-01-header-configurations.md)** - Multiple header layout configurations
 - **[Undo System](./2025-01-undo-system.md)** - Undo/Redo implementation for the editor
 - **[Footer Module Implementation](./2025-08-footer-module.md)** - Complete footer with multi-instance blocks, modal selection, and modular architecture (< 300 lines/file)
+- **[Image Banner Implementation](./2025-01-image-banner.md)** - Full-featured image/video banner with color schemes, media upload, and comprehensive configuration options
 
 ### UI & Design System
 - **[UI Dashboard Implementation](./2025-08-ui-dashboard-implementation.md)** - Complete Materialize clone with responsive sidebar, dashboard metrics, and customization system

@@ -468,22 +468,12 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           />
         );
       case SectionType.IMAGE_BANNER:
+        const ImageBannerPreview = require('./modules/ImageBanner/PreviewImageBanner').PreviewImageBanner;
         return (
-          <div className="relative h-96 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-            <div className="text-center text-white">
-              <h1 className="text-4xl font-bold mb-2">
-                {section.settings.title || 'Banner Title'}
-              </h1>
-              <p className="text-lg mb-4">
-                {section.settings.subtitle || 'Banner subtitle'}
-              </p>
-              {section.settings.buttonText && (
-                <button className="px-6 py-3 bg-white text-gray-900 rounded-lg font-medium">
-                  {section.settings.buttonText}
-                </button>
-              )}
-            </div>
-          </div>
+          <ImageBannerPreview
+            config={section.settings}
+            isEditor={true}
+          />
         );
 
       case SectionType.IMAGE_WITH_TEXT:

@@ -44,7 +44,10 @@ export function AddSectionModal({ isOpen, onClose, groupId, allowedSections }: A
     
     // Otherwise, show sections appropriate for the group
     if (groupId === 'headerGroup') {
-      return config.category === 'header';
+      // For header group, only show Image Banner (hide Header and Announcement Bar as they come by default)
+      return config.category === 'header' && 
+             config.type !== SectionType.HEADER && 
+             config.type !== SectionType.ANNOUNCEMENT_BAR;
     } else if (groupId === 'asideGroup') {
       return config.category === 'aside';
     } else if (groupId === 'footerGroup') {

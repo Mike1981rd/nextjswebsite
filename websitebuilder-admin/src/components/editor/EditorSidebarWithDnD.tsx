@@ -225,8 +225,8 @@ export function EditorSidebarWithDnD() {
                         </div>
                       </SortableContext>
 
-                      {/* Add Section Button - Hidden for headerGroup */}
-                      {group.id !== 'headerGroup' && group.id !== 'footerGroup' && group.id !== 'asideGroup' && (
+                      {/* Add Section Button - Show for headerGroup and template */}
+                      {(group.id === 'headerGroup' || group.id === 'template') && (
                         <div className="pl-8">
                           <button
                             onClick={() => openAddModal(group.id)}
