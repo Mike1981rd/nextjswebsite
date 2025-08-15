@@ -24,18 +24,22 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
 
   // Detect mobile viewport or use deviceView prop
   useEffect(() => {
+    // Always close drawer when device view changes
+    setDrawerOpen(false);
+    setActiveDrawerSubmenu(null);
+    
     // If deviceView is provided (from editor), use it
     if (deviceView !== undefined) {
       setIsMobile(deviceView === 'mobile');
-      // Close drawer when switching device views in editor
-      setDrawerOpen(false);
-      setActiveDrawerSubmenu(null);
       return;
     }
     
     // Otherwise, detect actual viewport
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
+      // Close drawer on resize
+      setDrawerOpen(false);
+      setActiveDrawerSubmenu(null);
     };
     
     checkMobile();
@@ -541,23 +545,42 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
           </div>
         </header>
 
-        {/* Drawer Menu - Opens from LEFT, positioned right after header */}
+        {/* Overlay for drawer - contained within editor preview */}
+        {drawerOpen && (
+          <div 
+            className="bg-black bg-opacity-50"
+            style={{ 
+              position: isEditor ? 'absolute' : 'fixed',
+              top: isEditor ? `${headerConfig?.height || 80}px` : `${headerConfig?.height || 80}px`,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 40
+            }}
+            onClick={() => {
+              setDrawerOpen(false);
+              setActiveDrawerSubmenu(null);
+            }}
+          />
+        )}
+
+        {/* Drawer Menu - Opens from LEFT, contained within editor preview */}
         <div 
-          className={`absolute bg-white transition-transform duration-300 ${
+          className={`bg-white transition-transform duration-300 ${
             drawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
           style={{ 
+            position: isEditor ? 'absolute' : 'fixed',
             left: 0,
-            top: '100%',  // Position right after the header
+            top: isEditor ? `${headerConfig?.height || 80}px` : `${headerConfig?.height || 80}px`,  // Position right after the header
             bottom: 0,
             width: isEditor && isMobile ? '100%' : '280px',
-            maxWidth: '375px',  // Never exceed mobile viewport width
-            height: `calc(100vh - ${headerConfig?.height || 80}px)`,
+            maxWidth: isEditor ? '100%' : '375px',  // In editor, respect container width
+            height: isEditor ? 'calc(100% - 80px)' : `calc(100vh - ${headerConfig?.height || 80}px)`,
             backgroundColor: colorScheme?.background || '#ffffff',
             boxShadow: drawerOpen ? '2px 0 10px rgba(0,0,0,0.1)' : 'none',
             zIndex: 50,
-            overflow: 'auto',
-            position: isEditor ? 'absolute' : 'fixed'
+            overflow: 'auto'
           }}
         >
           {/* Content wrapper for sliding effect - slides LEFT for submenu */}
