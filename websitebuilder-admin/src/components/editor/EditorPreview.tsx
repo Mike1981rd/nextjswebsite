@@ -595,8 +595,9 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         } : {};
         
         return (
-          <React.Fragment key={section.id}>
+          <>
             <div
+              key={section.id}
               className={`
                 relative group cursor-pointer transition-all
                 ${selectedSectionId === section.id ? 'outline outline-2 outline-blue-500 outline-offset-2' : ''}
@@ -616,9 +617,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
               )}
             </div>
             
-            {/* Drawer Menu - Rendered outside the header div */}
-            <>
-              {/* Overlay - covers content area below header */}
+            {/* Drawer is now handled by PreviewHeader component - removed duplicate code */}
               {drawerOpen && (
                 <div 
                   className="absolute bg-black bg-opacity-50"
@@ -768,7 +767,6 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
                 </div>
               </div>
             </>
-          </React.Fragment>
         );
       }
     }

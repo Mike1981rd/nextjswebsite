@@ -1,8 +1,12 @@
 # 📘 Guía Completa para Construir Nuevos Módulos del Website Builder
 
-## ⚠️ ADVERTENCIA CRÍTICA: Sincronización de Visibilidad
+## ⚠️ ADVERTENCIAS CRÍTICAS
 
+### 1. Sincronización de Visibilidad
 **IMPORTANTE**: Si tu módulo es un componente estructural (como Header, Footer, AnnouncementBar, CartDrawer), **DEBES** implementar la sincronización de visibilidad entre el store y el context, o el toggle de visibilidad NO se guardará. Ver [Paso 6: Sincronización de Visibilidad](#paso-6-sincronización-de-visibilidad-crítico).
+
+### 2. Detección Móvil y Sincronización Editor-Preview
+**CRÍTICO**: TODOS los componentes Preview **DEBEN** implementar la detección móvil correcta para sincronizar con el editor. Sin esto, la vista móvil del editor NO coincidirá con el preview real. Ver implementación obligatoria en [Paso 4](#paso-4-crear-el-preview-real).
 
 ## 🚨 CHECKLIST DE ERRORES COMUNES - VERIFICAR ANTES DE EMPEZAR
 
@@ -20,6 +24,9 @@ Antes de crear tu módulo, asegúrate de:
 - [ ] **MÓDULOS CON HIJOS**: NUNCA poner gestión de hijos en el editor del padre, usar [Module]Children.tsx en el sidebar
 - [ ] **SECCIONES VIRTUALES PARA HIJOS**: Si tu módulo tiene hijos, agregar soporte en EditorSidebarWithDnD.tsx para crear sección virtual
 - [ ] **ANCHO FIJO EN EDITORES**: SIEMPRE usar `w-[320px]` en el div principal del editor para evitar romper el layout
+- [ ] **DETECCIÓN MÓVIL EN PREVIEW**: SIEMPRE implementar el patrón completo de detección móvil con useState y useEffect
+- [ ] **PASAR deviceView**: SIEMPRE pasar deviceView desde EditorPreview y PreviewPage a los componentes Preview
+- [ ] **HOOKS ANTES DE RETURNS**: TODOS los hooks (useState, useEffect) DEBEN estar antes de cualquier return condicional
 
 ## 📋 Tabla de Contenidos
 1. [Overview del Sistema](#overview-del-sistema)
@@ -380,22 +387,28 @@ import [Module]Editor from './[Module]Editor';
 ### Archivo a modificar
 `/websitebuilder-admin/src/components/editor/EditorPreview.tsx`
 
-### Agregar el renderizado
+### ⚠️ IMPORTANTE: Pasar deviceView al componente Preview
+
+### Agregar el renderizado con deviceView
 ```typescript
-// 1. En la función del componente, obtener la config
-const moduleConfig = section.structuralComponents?.[module];
+// 1. Importar el componente Preview
+import Preview[Module] from '@/components/preview/Preview[Module]';
 
-// 2. Agregar el renderizado en el lugar apropiado
-{/* Por ejemplo, después del header */}
-{moduleConfig?.enabled && (
-  <div className="module-container">
-    {/* Renderizar el módulo basado en su configuración */}
-    {renderModule(moduleConfig)}
-  </div>
-)}
+// 2. En el switch de renderSectionPreview, agregar el caso:
+case SectionType.[MODULE]:
+  return (
+    <Preview[Module]
+      config={moduleConfig || structuralComponents?.[module]}
+      theme={themeConfig}
+      deviceView={deviceView}  // CRÍTICO: Pasar deviceView
+      isEditor={true}          // CRÍTICO: Indicar contexto editor
+    />
+  );
 
-// 3. Crear función de renderizado
-const renderModule = (config: any) => {
+// 3. El deviceView viene del estado del EditorPreview
+const [deviceView, setDeviceView] = useState<'desktop' | 'mobile'>('desktop');
+
+// 4. NUNCA renderizar código duplicado, siempre usar el componente Preview compartido
   // Aplicar estilos del theme
   const colorScheme = getColorScheme(config.colorScheme);
   
@@ -417,25 +430,73 @@ const renderModule = (config: any) => {
 ### Ubicación
 `/websitebuilder-admin/src/components/preview/Preview[Module].tsx`
 
-### Plantilla Base
+### ⚠️ CRÍTICO: Detección Móvil y Sincronización Editor-Preview
+
+**TODOS los componentes Preview DEBEN implementar la detección móvil correcta** para sincronizar con el editor:
+
+#### Implementación OBLIGATORIA de Detección Móvil:
+
 ```typescript
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface Preview[Module]Props {
   config: any;
   theme: any;
+  deviceView?: 'desktop' | 'mobile';  // CRÍTICO: Recibir deviceView
+  isEditor?: boolean;
 }
 
-export default function Preview[Module]({ config, theme }: Preview[Module]Props) {
-  // Validar configuración
-  if (!config?.enabled) {
+export default function Preview[Module]({ 
+  config, 
+  theme,
+  deviceView,  // CRÍTICO: Desestructurar deviceView
+  isEditor = false 
+}: Preview[Module]Props) {
+  
+  // ⚠️ IMPLEMENTACIÓN OBLIGATORIA DE DETECCIÓN MÓVIL
+  const [isMobile, setIsMobile] = useState(() => {
+    // Prioridad 1: Usar deviceView si está definido (viene del editor)
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    // Prioridad 2: Detectar viewport real si no hay deviceView
+    if (typeof window !== 'undefined') return window.innerWidth < 768;
+    // Prioridad 3: Default false para SSR
+    return false;
+  });
+  
+  // Sincronizar con cambios de deviceView o viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      if (deviceView !== undefined) {
+        // Si hay deviceView del editor, usarlo siempre
+        setIsMobile(deviceView === 'mobile');
+        return;
+      }
+      // Si no hay deviceView, detectar viewport real
+      const isMobileView = window.innerWidth < 768;
+      setIsMobile(isMobileView);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [deviceView]);
+  
+  // AHORA TODOS LOS HOOKS ANTES DE RETURNS CONDICIONALES
+  // Validar configuración DESPUÉS de todos los hooks
+  if (!isEditor && !config?.enabled) {
     return null;
   }
 
   // Extraer configuración del theme
   const colorScheme = theme?.colorSchemes?.schemes?.[parseInt(config.colorScheme || '1') - 1];
+  
+  // Usar isMobile para ajustar layouts
+  const columnsClass = isMobile ? 'grid-cols-1' : 'grid-cols-3';
+  const iconSize = isMobile ? 'w-4 h-4' : 'w-5 h-5';
+  const spacing = isMobile ? 'gap-2' : 'gap-4';
   
   // Aplicar typography si es necesario
   const typographyStyles = theme?.typography?.module ? {
@@ -477,16 +538,39 @@ export default function Preview[Module]({ config, theme }: Preview[Module]Props)
 ### Archivo a modificar
 `/websitebuilder-admin/src/components/preview/PreviewPage.tsx`
 
-### Pasos de integración
+### ⚠️ CRÍTICO: Sincronización con Editor para Vista Móvil
+
+### Pasos de integración con deviceView
 ```typescript
 // 1. Importar el componente
 import Preview[Module] from './Preview[Module]';
 
-// 2. En el JSX, agregar donde corresponda
+// 2. PreviewPage ya tiene lógica para detectar editorDeviceView
+const [editorDeviceView, setEditorDeviceView] = useState<'desktop' | 'mobile' | undefined>();
+
+useEffect(() => {
+  // Escucha cambios del editor via localStorage
+  const handleStorageChange = (e: StorageEvent) => {
+    if (e.key === 'editorDeviceView') {
+      setEditorDeviceView(e.newValue as 'desktop' | 'mobile' | undefined);
+    }
+  };
+  
+  // Carga inicial
+  const stored = localStorage.getItem('editorDeviceView');
+  if (stored) setEditorDeviceView(stored as 'desktop' | 'mobile');
+  
+  window.addEventListener('storage', handleStorageChange);
+  return () => window.removeEventListener('storage', handleStorageChange);
+}, []);
+
+// 3. En el JSX, agregar donde corresponda CON deviceView
 {structuralComponents?.[module] && (
   <Preview[Module] 
     config={structuralComponents.[module]}
     theme={globalTheme}
+    deviceView={editorDeviceView}  // CRÍTICO: Pasar editorDeviceView
+    isEditor={false}                // Indicar que NO es editor
   />
 )}
 ```

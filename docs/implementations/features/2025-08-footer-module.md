@@ -604,6 +604,53 @@ const backgroundColor = config?.colorBackground
 
 **Key Learning**: Only use React keys on elements that are direct children of array maps. Internal elements within a component don't need keys unless they're also mapped from arrays.
 
+#### 15. Mobile View Synchronization Issue (2025-01-15)
+**Problem**: Footer mobile view wasn't synchronized between editor and live preview
+**Symptoms**:
+- Header and AnnouncementBar mobile views worked correctly
+- Footer showed different layouts in editor vs live preview
+- Mobile detection wasn't working in live preview
+
+**Root Cause**: Footer used simplified mobile detection that only relied on deviceView prop
+```typescript
+// Before - Incomplete mobile detection
+const isMobile = deviceView === 'mobile';
+```
+
+**Why this caused the issue**:
+1. When `deviceView` was undefined (live preview), `isMobile` was always false
+2. No fallback to actual viewport width detection
+3. No resize event listener for responsive behavior
+4. Inconsistent with Header and AnnouncementBar implementation
+
+**Solution**: Implement same mobile detection logic as AnnouncementBar
+```typescript
+// After - Complete mobile detection with fallback
+const [isMobile, setIsMobile] = useState(() => {
+  if (deviceView !== undefined) return deviceView === 'mobile';
+  if (typeof window !== 'undefined') return window.innerWidth < 768;
+  return false;
+});
+
+useEffect(() => {
+  const checkMobile = () => {
+    if (deviceView !== undefined) {
+      setIsMobile(deviceView === 'mobile');
+      return;
+    }
+    setIsMobile(window.innerWidth < 768);
+  };
+  
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  return () => window.removeEventListener('resize', checkMobile);
+}, [deviceView]);
+```
+
+**File**: `PreviewFooter.tsx` lines 40-67
+
+**Key Learning**: All preview components must use consistent mobile detection logic with deviceView support and viewport fallback to ensure synchronization between editor and live preview.
+
 ## Performance Considerations
 
 ### Optimizations

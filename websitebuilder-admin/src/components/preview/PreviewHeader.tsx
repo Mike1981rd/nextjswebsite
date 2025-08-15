@@ -27,6 +27,9 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     // If deviceView is provided (from editor), use it
     if (deviceView !== undefined) {
       setIsMobile(deviceView === 'mobile');
+      // Close drawer when switching device views in editor
+      setDrawerOpen(false);
+      setActiveDrawerSubmenu(null);
       return;
     }
     
@@ -415,7 +418,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
   // For drawer layout specifically - Matching EditorPreview exactly
   if (isDrawerLayout) {
     return (
-      <>
+      <div className="relative" style={{ overflow: isEditor && isMobile ? 'hidden' : 'visible' }}>
         <header className={headerClasses} style={headerStyles}>
           <div className={`${headerConfig.width === 'full' ? 'w-full' : headerConfig.width === 'screen' ? 'w-full' : 'container mx-auto'} px-4`}>
             {isMobile ? (
@@ -538,20 +541,23 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
           </div>
         </header>
 
-        {/* Drawer Menu - Opens from LEFT, matching EditorPreview */}
+        {/* Drawer Menu - Opens from LEFT, positioned right after header */}
         <div 
           className={`absolute bg-white transition-transform duration-300 ${
             drawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
           style={{ 
             left: 0,
-            top: headerConfig?.height || 80,
+            top: '100%',  // Position right after the header
             bottom: 0,
-            width: '280px',
+            width: isEditor && isMobile ? '100%' : '280px',
+            maxWidth: '375px',  // Never exceed mobile viewport width
+            height: `calc(100vh - ${headerConfig?.height || 80}px)`,
             backgroundColor: colorScheme?.background || '#ffffff',
             boxShadow: drawerOpen ? '2px 0 10px rgba(0,0,0,0.1)' : 'none',
             zIndex: 50,
-            overflow: 'hidden'
+            overflow: 'auto',
+            position: isEditor ? 'absolute' : 'fixed'
           }}
         >
           {/* Content wrapper for sliding effect - slides LEFT for submenu */}
@@ -673,7 +679,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
             </div>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 

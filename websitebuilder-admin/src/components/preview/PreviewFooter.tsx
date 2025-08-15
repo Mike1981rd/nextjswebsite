@@ -36,8 +36,35 @@ export default function PreviewFooter({
   const [selectedLanguage, setSelectedLanguage] = useState(config?.languageSelector?.defaultLanguage || 'Español');
   const [selectedCurrency, setSelectedCurrency] = useState(config?.currencySelector?.defaultCurrency || 'USD');
   
+  // Mobile detection with deviceView support (same as AnnouncementBar)
+  const [isMobile, setIsMobile] = useState(() => {
+    // Initialize with deviceView if provided, otherwise check window width
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    if (typeof window !== 'undefined') return window.innerWidth < 768;
+    return false;
+  });
+  
   const languageRef = useRef<HTMLDivElement>(null);
   const currencyRef = useRef<HTMLDivElement>(null);
+  
+  // Detect mobile viewport or use deviceView prop
+  useEffect(() => {
+    const checkMobile = () => {
+      if (deviceView !== undefined) {
+        console.log('[PreviewFooter] Setting mobile from deviceView:', deviceView === 'mobile');
+        setIsMobile(deviceView === 'mobile');
+        return;
+      }
+      const isMobileView = window.innerWidth < 768;
+      console.log('[PreviewFooter] Setting mobile from viewport:', isMobileView);
+      setIsMobile(isMobileView);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [deviceView]);
   
   // Click outside handler
   useEffect(() => {
@@ -59,7 +86,6 @@ export default function PreviewFooter({
   if (!isEditor && !config?.enabled) return null;
 
   const colorScheme = theme?.colorSchemes?.schemes?.[parseInt(config?.colorScheme || '1') - 1];
-  const isMobile = deviceView === 'mobile';
   
   // Calcular columnas según el dispositivo
   const columnsPerRow = isMobile ? 1 : (config?.desktopColumnCount || 3);
@@ -302,7 +328,7 @@ export default function PreviewFooter({
         const logoHeight = Math.max(logoSize * 0.4, 40); // Proportional height, min 40px;
         
         return (
-          <div>
+          <div className={isMobile ? "text-center" : ""}>
             {block.settings?.heading && (
               <h3 className="font-semibold mb-2 text-sm" style={{ 
                 color: colorScheme?.text || '#ffffff',
@@ -311,7 +337,7 @@ export default function PreviewFooter({
                 {block.settings.heading}
               </h3>
             )}
-            <div className="mb-2">
+            <div className={`flex ${isMobile ? 'justify-center' : ''} items-center`}>
               {block.settings?.logoUrl ? (
                 <img 
                   src={block.settings.logoUrl} 
@@ -320,11 +346,12 @@ export default function PreviewFooter({
                   style={{ 
                     maxWidth: `${logoSize}px`,
                     height: `${logoHeight}px`,
-                    width: 'auto'
+                    width: 'auto',
+                    margin: isMobile ? '-8px auto 0' : '-8px 0 0 0'
                   }}
                 />
               ) : (
-                <div className="flex items-center gap-2">
+                <div className={`flex items-center gap-2 ${isMobile ? 'justify-center' : ''}`}>
                   <div className="rounded-lg flex items-center justify-center"
                     style={{ 
                       backgroundColor: colorScheme?.solidButton || '#0066cc',
@@ -401,9 +428,10 @@ export default function PreviewFooter({
           <div 
             className={`grid gap-6 ${
               isMobile ? 'grid-cols-1' : `grid-cols-${columnsPerRow}`
-            }`}
+            } ${!isEditor ? 'items-start' : ''}`}
             style={{
-              gridTemplateColumns: isMobile ? '1fr' : `repeat(${columnsPerRow}, 1fr)`
+              gridTemplateColumns: isMobile ? '1fr' : `repeat(${columnsPerRow}, 1fr)`,
+              alignItems: !isEditor ? 'start' : 'stretch'
             }}
           >
             {blocks.filter(b => b.visible !== false).map((block) => (
