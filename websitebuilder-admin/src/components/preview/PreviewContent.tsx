@@ -37,7 +37,11 @@ export default function PreviewContent({ pageType, handle, theme, companyId }: P
             const parsedSections = typeof page.sections === 'string' 
               ? JSON.parse(page.sections) 
               : page.sections;
+            console.log('Parsed sections:', parsedSections);
+            console.log('Section types:', parsedSections.map((s: any) => s.type));
             setSections(parsedSections);
+          } else {
+            console.log('No sections in page data');
           }
         } else {
           console.log('No page found for handle:', handle);

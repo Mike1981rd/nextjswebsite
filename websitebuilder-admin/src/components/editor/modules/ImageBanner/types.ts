@@ -26,6 +26,8 @@ export interface ImageBannerConfig {
   body: string;
   headingSize: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   bodySize: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  headingFontWeight?: string;
+  bodyFontWeight?: string;
   
   // Position
   desktopPosition: 'top-left' | 'top-center' | 'top-right' | 

@@ -468,11 +468,12 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           />
         );
       case SectionType.IMAGE_BANNER:
-        const ImageBannerPreview = require('./modules/ImageBanner/PreviewImageBanner').PreviewImageBanner;
+        const PreviewImageBanner = require('@/components/preview/PreviewImageBanner').default;
         return (
-          <ImageBannerPreview
+          <PreviewImageBanner
             config={section.settings}
             isEditor={true}
+            deviceView={deviceView}
           />
         );
 

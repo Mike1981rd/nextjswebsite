@@ -1,10 +1,10 @@
 # Implementación: Toggle de Vista Responsiva Desktop/Móvil
 
 ## 📅 Información General
-- **Fecha**: 14 de enero 2025
-- **Duración**: 30 minutos
+- **Fecha**: 14 de enero 2025 (v1.0) / 15 de enero 2025 (v2.0)
+- **Duración**: 30 minutos (v1.0) + 45 minutos (v2.0)
 - **Categoría**: features
-- **Estado**: ✅ Completado
+- **Estado**: ✅ Completado - Versión 2.0 Enhanced
 
 ## 📋 Resumen
 Implementación de la funcionalidad de toggle entre vista desktop y móvil en el editor del Website Builder, permitiendo previsualizar en tiempo real cómo se ve el sitio en diferentes dispositivos.
@@ -208,11 +208,58 @@ mobile: 'w-[375px]'  // iPhone standard
 - Imagen de referencia: `/Test Images/Responsiveness Icon/image.png`
 - Arquitectura del sistema: `/docs/WEBSITE-BUILDER-ARCHITECTURE.md`
 
+## 🚀 Versión 2.0 - Vista Móvil Real (15 enero 2025)
+
+### Problema Identificado
+La versión 1.0 solo cambiaba el ancho visual pero NO activaba las configuraciones móviles:
+- Mostraba imagen desktop en vista móvil
+- Usaba posiciones desktop
+- No respetaba configuraciones móviles específicas
+
+### Solución Implementada
+Pasar `deviceView` como prop a todos los componentes de preview para que usen configuración móvil real.
+
+### Cambios Técnicos v2.0
+
+#### EditorPreview.tsx
+```typescript
+// Pasar deviceView a cada componente
+<ImageBannerPreview
+  config={section.settings}
+  isEditor={true}
+  deviceView={deviceView}  // Nueva prop
+/>
+```
+
+#### PreviewImageBanner.tsx
+```typescript
+// Usar deviceView para decidir qué renderizar
+{deviceView === 'desktop' && (
+  // Vista desktop con todas sus configuraciones
+)}
+
+{deviceView === 'mobile' && (
+  // Vista móvil con:
+  // - config.mobileImage
+  // - config.mobilePosition
+  // - config.mobileAlignment
+  // - config.mobileBackground
+  // - config.mobileOverlayOpacity
+)}
+```
+
+### Resultados v2.0
+- ✅ Vista móvil muestra imagen/video móvil configurado
+- ✅ Respeta posición móvil (top/center/bottom)
+- ✅ Usa alineación móvil (left/center)
+- ✅ Aplica background y overlay móvil
+- ✅ Preview 100% confiable antes de publicar
+
 ## 📌 Keywords
-responsive, preview, mobile, desktop, viewport, toggle, editor, website-builder
+responsive, preview, mobile, desktop, viewport, toggle, editor, website-builder, deviceView, real-preview
 
 ---
 
 **Autor**: Claude Code
-**Revisado**: 14 enero 2025
-**Versión**: 1.0.0
+**Revisado**: 15 enero 2025
+**Versión**: 2.0.0 Enhanced

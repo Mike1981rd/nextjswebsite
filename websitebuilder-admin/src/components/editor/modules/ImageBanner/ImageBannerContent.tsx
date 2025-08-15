@@ -78,6 +78,28 @@ export function ImageBannerContent({ config, onChange, isExpanded, onToggle }: I
             />
           </div>
 
+          {/* Heading Font Weight */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Heading font weight
+            </label>
+            <select 
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={config.headingFontWeight || '700'}
+              onChange={(e) => onChange({ headingFontWeight: e.target.value })}
+            >
+              <option value="100">Thin (100)</option>
+              <option value="200">Extra Light (200)</option>
+              <option value="300">Light (300)</option>
+              <option value="400">Regular (400)</option>
+              <option value="500">Medium (500)</option>
+              <option value="600">Semi Bold (600)</option>
+              <option value="700">Bold (700)</option>
+              <option value="800">Extra Bold (800)</option>
+              <option value="900">Black (900)</option>
+            </select>
+          </div>
+
           {/* Heading Size */}
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
@@ -91,6 +113,28 @@ export function ImageBannerContent({ config, onChange, isExpanded, onToggle }: I
               {[1, 2, 3, 4, 5, 6, 7].map(size => (
                 <option key={size} value={size}>Heading {size}</option>
               ))}
+            </select>
+          </div>
+
+          {/* Body Font Weight */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Body font weight
+            </label>
+            <select 
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={config.bodyFontWeight || '400'}
+              onChange={(e) => onChange({ bodyFontWeight: e.target.value })}
+            >
+              <option value="100">Thin (100)</option>
+              <option value="200">Extra Light (200)</option>
+              <option value="300">Light (300)</option>
+              <option value="400">Regular (400)</option>
+              <option value="500">Medium (500)</option>
+              <option value="600">Semi Bold (600)</option>
+              <option value="700">Bold (700)</option>
+              <option value="800">Extra Bold (800)</option>
+              <option value="900">Black (900)</option>
             </select>
           </div>
 

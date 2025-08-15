@@ -6,6 +6,7 @@ import PreviewHeader from './PreviewHeader';
 import PreviewFooter from './PreviewFooter';
 import PreviewContent from './PreviewContent';
 import PreviewAnnouncementBar from './PreviewAnnouncementBar';
+import PreviewImageBanner from './PreviewImageBanner';
 
 interface PreviewPageProps {
   pageType: PageType;
@@ -16,6 +17,7 @@ interface StructuralComponents {
   header?: any;
   footer?: any;
   announcementBar?: any;
+  imageBanner?: any;
   cartDrawer?: any;
 }
 
@@ -89,6 +91,7 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
             header: data.headerConfig ? JSON.parse(data.headerConfig) : null,
             footer: data.footerConfig ? JSON.parse(data.footerConfig) : null,
             announcementBar: data.announcementBarConfig ? JSON.parse(data.announcementBarConfig) : null,
+            imageBanner: data.imageBannerConfig ? JSON.parse(data.imageBannerConfig) : null,
             cartDrawer: data.cartDrawerConfig ? JSON.parse(data.cartDrawerConfig) : null,
           };
           console.log('Parsed structural components:', parsedComponents);
@@ -162,6 +165,15 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
         />
       ) : (
         console.log('No header config available') || null
+      )}
+
+      {/* Image Banner - if configured */}
+      {structuralComponents.imageBanner && (
+        <PreviewImageBanner 
+          config={structuralComponents.imageBanner}
+          isEditor={false}
+          deviceView={editorDeviceView}
+        />
       )}
 
       {/* Page Content */}
