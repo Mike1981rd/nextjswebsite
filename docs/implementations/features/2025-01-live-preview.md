@@ -283,6 +283,25 @@ function Component() {
 **Cause**: CSS class conflicts or specificity issues
 **Solution**: Use inline styles for dynamic values, Tailwind for static
 
+#### Scroll Not Working in Preview
+**Cause**: Global `overflow-hidden` on body element in `globals.css` prevents scrolling
+**Context**: Dashboard needs `overflow-hidden` for its fixed layout, but preview needs scroll
+**Wrong Solutions to AVOID**:
+- ❌ Modifying global CSS rules (affects dashboard)
+- ❌ Adding conditional classes with `:has()` (can break other components)
+- ❌ Using `overflow-y-auto` on container (can affect child layouts like announcement bar)
+
+**Correct Solution**: Override specifically in PreviewPage component
+```typescript
+// In PreviewPage.tsx return statement
+<div className="min-h-screen" style={{...themeStyles, overflowY: 'auto', height: '100vh'}}>
+```
+**Why this works**: 
+- Inline styles have highest specificity
+- Only affects preview page, not dashboard
+- Doesn't interfere with child component layouts
+- `height: '100vh'` ensures container has defined height for scroll
+
 ### Debug Helpers
 ```typescript
 // Add to components for debugging

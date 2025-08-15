@@ -399,7 +399,11 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
             {/* Bottom row with menu */}
             <div className={`${isLogoCenterMenuCenterBelow ? 'flex justify-center' : ''}`}>
               <nav className="flex gap-6">
-                {menuItems.map((item: any) => renderMenuItem(item))}
+                {menuItems.map((item: any, index: number) => (
+                  <React.Fragment key={item.id || `menu-item-402-${index}`}>
+                    {renderMenuItem(item)}
+                  </React.Fragment>
+                ))}
               </nav>
             </div>
           </div>
@@ -682,7 +686,11 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
           {/* For Logo Center Menu Left - Menu comes first */}
           {isLogoCenterMenuLeft && (
             <nav className="flex gap-6">
-              {menuItems.map((item: any) => renderMenuItem(item))}
+              {menuItems.map((item: any, index: number) => (
+                <React.Fragment key={item.id || `menu-item-685-${index}`}>
+                  {renderMenuItem(item)}
+                </React.Fragment>
+              ))}
             </nav>
           )}
           
@@ -707,7 +715,11 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
             {/* Menu for Logo Left Menu Left Inline */}
             {isLogoLeftMenuLeft && (
               <nav className="flex gap-6 ml-8">
-                {menuItems.map((item: any) => renderMenuItem(item))}
+                {menuItems.map((item: any, index: number) => (
+                  <React.Fragment key={item.id || `menu-item-710-${index}`}>
+                    {renderMenuItem(item)}
+                  </React.Fragment>
+                ))}
               </nav>
             )}
           </div>
@@ -715,7 +727,11 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
           {/* Center section - Navigation for logo-left-menu-center */}
           {isLogoLeftMenuCenter && !isLogoLeftMenuLeft && !isLogoCenterMenuLeft && (
             <nav className="flex gap-6">
-              {menuItems.map((item: any) => renderMenuItem(item))}
+              {menuItems.map((item: any, index: number) => (
+                <React.Fragment key={item.id || `menu-item-718-${index}`}>
+                  {renderMenuItem(item)}
+                </React.Fragment>
+              ))}
             </nav>
           )}
           

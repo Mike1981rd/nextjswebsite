@@ -149,6 +149,9 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
     if (oldIndex !== -1 && newIndex !== -1) {
       const reorderedBlocks = arrayMove(blocks, oldIndex, newIndex);
       
+      console.log('[FooterChildren] Drag & Drop - Old order:', blocks.map((b, i) => `${i+1}. ${b.title || b.type}`).join(', '));
+      console.log('[FooterChildren] Drag & Drop - New order:', reorderedBlocks.map((b, i) => `${i+1}. ${b.title || b.type}`).join(', '));
+      
       const updatedConfig = {
         ...footerConfig,
         blocks: reorderedBlocks

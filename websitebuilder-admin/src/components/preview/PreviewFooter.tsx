@@ -54,10 +54,6 @@ export default function PreviewFooter({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
-  console.log('PreviewFooter - config:', config);
-  console.log('PreviewFooter - bottomBar:', config?.bottomBar);
-  console.log('PreviewFooter - isEditor:', isEditor);
-  
   // En modo editor, siempre mostrar
   // En producción, verificar enabled
   if (!isEditor && !config?.enabled) return null;
@@ -68,11 +64,11 @@ export default function PreviewFooter({
   // Calcular columnas según el dispositivo
   const columnsPerRow = isMobile ? 1 : (config?.desktopColumnCount || 3);
   
-  console.log('PreviewFooter - desktopColumnCount from config:', config?.desktopColumnCount);
-  console.log('PreviewFooter - columnsPerRow calculated:', columnsPerRow);
-  
   // Use real blocks from configuration
   const blocks = config?.blocks || [];
+  
+  // Debug: log blocks to verify they're being received in correct order
+  console.log('[PreviewFooter] Received blocks order:', blocks.map((b, i) => `${i+1}. ${b.title || b.type} (${b.id})`).join(', '));
   
   // Create typography styles for headings (block titles)
   const headingTypographyStyles = themeConfig?.typography?.headings ? {
@@ -302,12 +298,8 @@ export default function PreviewFooter({
         );
 
       case FooterBlockType.LOGO_WITH_TEXT:
-        // Force re-render on settings change by using a unique key
         const logoSize = block.settings?.logoSize || 190;
-        const logoHeight = Math.max(logoSize * 0.4, 40); // Proportional height, min 40px
-        console.log('Logo with Text block ID:', block.id);
-        console.log('Logo with Text settings:', block.settings);
-        console.log('Logo size from settings:', block.settings?.logoSize, 'Used size:', logoSize, 'Height:', logoHeight);
+        const logoHeight = Math.max(logoSize * 0.4, 40); // Proportional height, min 40px;
         
         return (
           <div>
@@ -322,7 +314,6 @@ export default function PreviewFooter({
             <div className="mb-2">
               {block.settings?.logoUrl ? (
                 <img 
-                  key={`logo-${block.id}-${logoSize}`}
                   src={block.settings.logoUrl} 
                   alt="Logo" 
                   className="object-contain"
@@ -334,7 +325,7 @@ export default function PreviewFooter({
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <div key={`placeholder-logo-${block.id}-${logoSize}`} className="rounded-lg flex items-center justify-center"
+                  <div className="rounded-lg flex items-center justify-center"
                     style={{ 
                       backgroundColor: colorScheme?.solidButton || '#0066cc',
                       width: `${logoHeight}px`,

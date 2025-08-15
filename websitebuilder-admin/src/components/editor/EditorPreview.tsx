@@ -456,8 +456,13 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
       case SectionType.FOOTER:
         // Use the PreviewFooter component with default config
         const footerConfig = structuralComponents?.footer || section.settings || { enabled: true };
+        // Debug: log the blocks to verify they're updating
+        console.log('[EditorPreview] Footer blocks order:', footerConfig?.blocks?.map((b, i) => `${i+1}. ${b.title || b.type} (${b.id})`).join(', ') || 'No blocks');
+        // Create a key based on block order to force re-render when order changes
+        const footerKey = footerConfig?.blocks?.map(b => b.id).join('-') || 'default';
         return (
           <PreviewFooter
+            key={`footer-${footerKey}`}
             config={footerConfig}
             theme={themeConfig}
             deviceView={deviceView}

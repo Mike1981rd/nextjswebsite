@@ -536,6 +536,74 @@ const backgroundColor = config?.colorBackground
 />
 ```
 
+#### 13. Drag & Drop Visual Order Bug (2025-01-15)
+**Problem**: After drag & drop reordering, the visual order in the preview didn't match the actual data order
+**Symptoms**: 
+- Logs showed correct order: `[EditorPreview] Footer blocks order: 1. Menú, 2. Logo con texto, 3. Menú...`
+- Visual display showed old order
+- Data was correct but DOM wasn't updating
+
+**Root Cause**: React key included array index, causing React to not properly detect element reordering
+```typescript
+// Before - Problematic key with index
+{blocks.filter(b => b.visible !== false).map((block, index) => (
+  <div key={`${block.id}-${index}`}>
+    {renderBlock(block)}
+  </div>
+))}
+```
+
+**Why this caused the issue**:
+1. When blocks reorder, their array indices change
+2. React sees different keys (`footer-block-123-0` → `footer-block-123-1`)
+3. React treats them as different components instead of the same component in a new position
+4. DOM doesn't update correctly, maintaining old visual order
+
+**Solution**: Use only the block's unique ID as the key
+```typescript
+// After - Fixed with stable key
+{blocks.filter(b => b.visible !== false).map((block) => (
+  <div key={block.id}>
+    {renderBlock(block)}
+  </div>
+))}
+```
+
+**File**: `PreviewFooter.tsx` lines 411-418
+
+**Key Learning**: Never use array index in React keys when the list can be reordered. Always use a stable, unique identifier.
+
+#### 14. Logo with Text Block Causing Drag & Drop Issues (2025-01-15)
+**Problem**: Drag & drop sometimes worked and sometimes didn't, specifically when Logo with Text block was involved
+**Symptoms**:
+- Inconsistent drag & drop behavior
+- Visual order not updating when Logo with Text block was reordered
+- Other blocks worked fine
+
+**Root Cause**: Logo with Text block had unnecessary React keys on internal elements
+```typescript
+// Before - Problematic internal keys
+<img key={`logo-${block.id}-${logoSize}`} src={...} />
+<div key={`placeholder-logo-${block.id}-${logoSize}`}>
+```
+
+**Why this caused the issue**:
+1. Internal elements don't need keys (they're not in arrays)
+2. These keys interfered with React's reconciliation during drag & drop
+3. React got confused about which elements changed when the parent block moved
+4. The comment "Force re-render on settings change" was misleading - keys don't force re-renders this way
+
+**Solution**: Remove unnecessary keys from internal elements
+```typescript
+// After - Clean implementation without internal keys
+<img src={block.settings.logoUrl} alt="Logo" className="object-contain" />
+<div className="rounded-lg flex items-center justify-center">
+```
+
+**File**: `PreviewFooter.tsx` lines 300-345
+
+**Key Learning**: Only use React keys on elements that are direct children of array maps. Internal elements within a component don't need keys unless they're also mapped from arrays.
+
 ## Performance Considerations
 
 ### Optimizations

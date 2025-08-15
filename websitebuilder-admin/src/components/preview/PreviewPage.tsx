@@ -142,7 +142,7 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
   });
 
   return (
-    <div className="min-h-screen" style={themeStyles}>
+    <div className="min-h-screen" style={{...themeStyles, overflowY: 'auto', height: '100vh'}}>
       {/* Announcement Bar - if configured and should show on this page */}
       {structuralComponents.announcementBar && (
         <PreviewAnnouncementBar 
@@ -176,7 +176,12 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
 
       {/* Footer - if configured */}
       {structuralComponents.footer && (
-        <PreviewFooter config={structuralComponents.footer} theme={globalTheme} />
+        <PreviewFooter 
+          config={structuralComponents.footer} 
+          theme={globalTheme}
+          deviceView={editorDeviceView}
+          isEditor={false}
+        />
       )}
 
       {/* Cart Drawer - if configured */}
