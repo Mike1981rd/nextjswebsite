@@ -13,6 +13,7 @@ import useThemeConfigStore from '@/stores/useThemeConfigStore';
 // Import preview components to avoid duplication
 import PreviewHeader from '@/components/preview/PreviewHeader';
 import PreviewAnnouncementBar from '@/components/preview/PreviewAnnouncementBar';
+import PreviewFooter from '@/components/preview/PreviewFooter';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -452,6 +453,17 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
             isEditor={true}
           />
         );
+      case SectionType.FOOTER:
+        // Use the PreviewFooter component with default config
+        const footerConfig = structuralComponents?.footer || section.settings || { enabled: true };
+        return (
+          <PreviewFooter
+            config={footerConfig}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
       case SectionType.IMAGE_BANNER:
         return (
           <div className="relative h-96 bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
@@ -790,7 +802,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
       <div className="flex-1 bg-white h-full flex flex-col">
       {/* Preview Area */}
       <div className="flex-1 overflow-y-auto flex justify-center bg-gray-100">
-        <div className={`bg-white ${getPreviewWidth()} min-h-full shadow-lg flex flex-col relative overflow-hidden`}>
+        <div className={`bg-white ${getPreviewWidth()} min-h-full shadow-lg flex flex-col relative`}>
           {!hasContent ? (
             <div className="flex-1 flex items-center justify-center text-gray-400 bg-gray-50">
               <div className="text-center">
@@ -805,8 +817,8 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
                 {headerSections.map(renderSection)}
               </div>
 
-              {/* Main content area - grows to fill space */}
-              <div className="flex-1">
+              {/* Main content area */}
+              <div className="flex-grow">
                 {templateSections.length === 0 ? (
                   <div className="h-[400px] flex items-center justify-center text-gray-400 bg-gray-50">
                     <div className="text-center">
@@ -820,7 +832,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
               </div>
 
               {/* Footer sections at the bottom */}
-              <div className="flex-shrink-0 mt-auto">
+              <div className="flex-shrink-0">
                 {footerSections.map(renderSection)}
               </div>
             </>

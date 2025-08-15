@@ -63,15 +63,36 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
   const getDefaultSettings = (type: FooterBlockType) => {
     switch (type) {
       case FooterBlockType.TEXT:
-        return { content: 'Tu texto aquí' };
+        return { heading: 'Título', body: 'Tu texto aquí' };
       case FooterBlockType.MENU:
         return { links: ['Enlace 1', 'Enlace 2'] };
       case FooterBlockType.SOCIAL_MEDIA:
-        return { platforms: [] };
+        return { 
+          heading: 'Síguenos en',
+          body: '',
+          platforms: {
+            instagram: true,
+            facebook: true,
+            twitter: true,
+            youtube: true,
+            linkedin: true
+          }
+        };
       case FooterBlockType.SUBSCRIBE:
-        return { placeholder: 'Correo electrónico' };
+        return { 
+          heading: 'Suscríbete',
+          body: 'Recibe nuestras últimas noticias y ofertas exclusivas',
+          inputStyle: 'solid',
+          placeholderText: 'Tu correo electrónico',
+          buttonText: 'Suscribir'
+        };
       case FooterBlockType.LOGO_WITH_TEXT:
-        return { text: 'Descripción de tu empresa' };
+        return { 
+          logoUrl: '',
+          logoSize: 190,
+          heading: '',
+          body: 'Descripción de tu empresa'
+        };
       case FooterBlockType.IMAGE:
         return { url: '', alt: '' };
       default:

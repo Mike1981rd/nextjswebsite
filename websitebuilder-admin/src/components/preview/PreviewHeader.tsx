@@ -151,7 +151,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
   // Apply color scheme from theme
   const colorScheme = theme?.colorSchemes?.schemes?.[parseInt(headerConfig.colorScheme) - 1];
   const headerStyles = {
-    backgroundColor: colorScheme?.background?.default || '#ffffff',
+    backgroundColor: colorScheme?.background || '#ffffff',
     borderColor: colorScheme?.accent?.default || '#e5e7eb',
     color: colorScheme?.text?.default || '#000000',
     height: `${headerConfig.height}px`
@@ -289,7 +289,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
         {hasChildren && isOpen && (
           <div 
             className="absolute top-full left-0 mt-2 min-w-[200px] border shadow-lg rounded-md z-50"
-            style={{ backgroundColor: colorScheme?.background?.default || '#ffffff' }}
+            style={{ backgroundColor: colorScheme?.background || '#ffffff' }}
           >
             <div className="py-2">
               {item.subItems.map((child: any) => (
@@ -544,7 +544,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
             top: headerConfig?.height || 80,
             bottom: 0,
             width: '280px',
-            backgroundColor: colorScheme?.background?.default || '#ffffff',
+            backgroundColor: colorScheme?.background || '#ffffff',
             boxShadow: drawerOpen ? '2px 0 10px rgba(0,0,0,0.1)' : 'none',
             zIndex: 50,
             overflow: 'hidden'

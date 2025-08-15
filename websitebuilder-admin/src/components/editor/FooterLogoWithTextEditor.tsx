@@ -70,6 +70,9 @@ export default function FooterLogoWithTextEditor({ blockId }: FooterLogoWithText
       [field]: value
     };
     
+    console.log('FooterLogoWithTextEditor - Updating field:', field, 'with value:', value);
+    console.log('Updated settings:', updatedSettings);
+    
     setLocalSettings(updatedSettings);
     
     // Update the block in footer config

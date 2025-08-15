@@ -34,18 +34,42 @@ export interface FooterConfig {
     enabled: boolean;
     content: 'subscribed' | 'payment' | 'locale' | 'none';
     showPaymentIcons: boolean;
+    paymentProviders?: {
+      visa?: boolean;
+      mastercard?: boolean;
+      amex?: boolean;
+      discover?: boolean;
+      diners?: boolean;
+      applePay?: boolean;
+      googlePay?: boolean;
+      amazonPay?: boolean;
+    };
+    paymentLogos?: {
+      visa?: string;
+      mastercard?: string;
+      amex?: string;
+      discover?: string;
+      diners?: string;
+      applePay?: string;
+      googlePay?: string;
+      amazonPay?: string;
+    };
   };
   copyrightNotice: string;
+  contactEmail?: string;
+  contactPhone?: string;
   followOnShop: {
     enabled: boolean;
   };
   languageSelector: {
     enabled: boolean;
     showSelector: boolean;
+    defaultLanguage?: string;
   };
   currencySelector: {
     enabled: boolean;
     showSelector: boolean;
+    defaultCurrency?: string;
   };
   policyLinks: {
     enabled: boolean;
@@ -92,25 +116,39 @@ export const getDefaultFooterConfig = (): FooterConfig => ({
   showSeparator: false,
   blocks: [],
   bottomBar: {
-    enabled: false,
+    enabled: true,
     content: 'subscribed',
-    showPaymentIcons: false
+    showPaymentIcons: true,
+    paymentProviders: {
+      visa: true,
+      mastercard: true,
+      amex: true,
+      discover: true,
+      diners: false,
+      applePay: true,
+      googlePay: true,
+      amazonPay: true
+    }
   },
   copyrightNotice: '',
+  contactEmail: '',
+  contactPhone: '',
   followOnShop: {
     enabled: false
   },
   languageSelector: {
-    enabled: false,
-    showSelector: false
+    enabled: true,
+    showSelector: true,
+    defaultLanguage: 'Español'
   },
   currencySelector: {
-    enabled: false,
-    showSelector: false
+    enabled: true,
+    showSelector: true,
+    defaultCurrency: 'DOP'
   },
   policyLinks: {
-    enabled: false,
-    showLinks: false
+    enabled: true,
+    showLinks: true
   },
   padding: {
     enabled: false,

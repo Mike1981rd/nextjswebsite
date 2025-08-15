@@ -4,10 +4,10 @@
 Complete implementation of the Footer module for Website Builder with multi-instance blocks, modular architecture, and drag & drop reordering for child blocks.
 
 **Created**: 2025-01-15  
-**Updated**: 2025-01-15 (Added drag & drop)  
+**Updated**: 2025-01-15 (Added payment providers, language/currency selectors, enhanced child blocks)  
 **Category**: features  
 **Status**: ✅ Complete  
-**Time Spent**: 4 hours (3h initial + 1h drag & drop)  
+**Time Spent**: 6 hours (3h initial + 1h drag & drop + 2h enhancements)  
 
 ## Table of Contents
 - [Architecture](#architecture)
@@ -55,7 +55,8 @@ EditorPreview.tsx (Integration)
 ├── FooterChildren.tsx (197 lines)
 ├── AddFooterBlockModal.tsx (115 lines)
 └── /preview/
-    └── PreviewFooter.tsx (291 lines)
+    └── PreviewFooter.tsx (321 lines - includes typography)
+    └── FooterMenuBlock.tsx (188 lines - with typography support)
 ```
 
 ### 2. Block Types
@@ -69,6 +70,56 @@ export enum FooterBlockType {
   IMAGE = 'image'
 }
 ```
+
+### 3. Typography System Integration (2025-01-15)
+
+#### Overview
+Footer now integrates with the global typography configuration system, using `typography.headings` for block titles and `typography.body` for content text, ensuring consistency across the entire website.
+
+#### Implementation
+```typescript
+// Import theme configuration store
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
+
+export default function PreviewFooter({ config, theme, deviceView, isEditor }: PreviewFooterProps) {
+  const { config: themeConfig } = useThemeConfigStore();
+  
+  // Create typography styles for headings (block titles)
+  const headingTypographyStyles = themeConfig?.typography?.headings ? {
+    fontFamily: `'${themeConfig.typography.headings.fontFamily}', sans-serif`,
+    fontWeight: themeConfig.typography.headings.fontWeight || '600',
+    textTransform: themeConfig.typography.headings.useUppercase ? 'uppercase' as const : 'none' as const,
+    fontSize: themeConfig.typography.headings.fontSize ? 
+      (themeConfig.typography.headings.fontSize <= 100 ? 
+        `${themeConfig.typography.headings.fontSize}%` : 
+        `${themeConfig.typography.headings.fontSize}px`) : '100%',
+    letterSpacing: `${themeConfig.typography.headings.letterSpacing || 0}px`
+  } : {};
+  
+  // Create typography styles for body text
+  const bodyTypographyStyles = themeConfig?.typography?.body ? {
+    fontFamily: `'${themeConfig.typography.body.fontFamily}', sans-serif`,
+    fontWeight: themeConfig.typography.body.fontWeight || '400',
+    textTransform: themeConfig.typography.body.useUppercase ? 'uppercase' as const : 'none' as const,
+    fontSize: themeConfig.typography.body.fontSize ? 
+      (themeConfig.typography.body.fontSize <= 100 ? 
+        `${themeConfig.typography.body.fontSize}%` : 
+        `${themeConfig.typography.body.fontSize}px`) : '100%',
+    letterSpacing: `${themeConfig.typography.body.letterSpacing || 0}px`
+  } : {};
+}
+```
+
+#### Typography Application by Component
+
+| Component | Typography Style Used | Description |
+|-----------|---------------------|-------------|
+| Block Titles | `headingTypographyStyles` | All block titles (Menu, Text, Social, etc.) |
+| Menu Items | `bodyTypographyStyles` | Navigation menu links |
+| Text Content | `bodyTypographyStyles` | Block body text |
+| Copyright | `bodyTypographyStyles` | Copyright notice |
+| Policy Links | `bodyTypographyStyles` | Footer policy links |
+| Subscribe Placeholder | Inherits from body | Input placeholder text |
 
 ## Components
 
@@ -324,6 +375,167 @@ const handleDragEnd = (event: DragEndEvent) => {
 **Problem**: File had 1,763 lines (limit: 300)
 **Solution**: Enforced modular architecture, extracted components
 
+#### 5. Menu Block Not Showing Items (2025-01-15)
+**Problem**: Footer menu block showing "Menu" instead of custom heading and not displaying actual menu items
+**Root Cause**: 
+- Backend stores menu items as JSON string in `items` field, not as array
+- MenuItem model uses `Label`, `Link`, `Order` fields (capitalized)
+- Frontend was looking for wrong field names and not parsing JSON
+
+**Error in logs**:
+```
+Frontend Warning: Warning: Encountered two children with the same key, `menu-item-undefined`
+```
+
+**Solution**: Updated FooterMenuBlock to correctly parse and map data
+```typescript
+// Before - Incorrect assumptions
+if (menuData.navigationMenuItems && Array.isArray(menuData.navigationMenuItems)) {
+  const sortedItems = menuData.navigationMenuItems.map((item: any) => ({
+    id: item.id,
+    title: item.title,
+    url: item.url
+  }));
+}
+
+// After - Correct parsing
+if (menuData.items) {
+  // Parse JSON string to array
+  const parsedItems = typeof menuData.items === 'string' 
+    ? JSON.parse(menuData.items) 
+    : menuData.items;
+  
+  // Map with correct field names from backend
+  const sortedItems = parsedItems.map((item: any, index: number) => ({
+    id: item.id || index + 1,
+    title: item.label || item.Label,  // Backend uses 'Label'
+    url: item.link || item.Link,      // Backend uses 'Link'
+    order: item.order || item.Order   // Backend uses 'Order'
+  }));
+}
+```
+
+**Key Learning**: Always verify backend model structure before mapping frontend data
+
+#### 8. Subscribe Block Enhancement (2025-01-15)
+**Implementation**: Complete configuration for Subscribe block
+**Features Added**:
+- Heading and body text configuration
+- Input style selector (solid/outline)
+- Custom placeholder text
+- Custom button text
+- Color scheme integration for input background
+```typescript
+interface FooterSubscribeSettings {
+  heading?: string;
+  body?: string;
+  inputStyle?: 'solid' | 'outline';
+  placeholderText?: string;
+  buttonText?: string;
+}
+```
+
+#### 9. Payment Providers System (2025-01-15)
+**Implementation**: Modern payment provider icons with custom logo upload
+**Components Created**:
+- `PaymentProvidersConfig.tsx` - Configuration UI with expandible section
+- `PaymentIcons.tsx` - SVG icons for all payment providers
+**Features**:
+- 8 payment providers: Visa, Mastercard, Amex, Discover, Diners, Apple Pay, Google Pay, Amazon Pay
+- Individual toggle for each provider
+- Custom logo upload for each provider
+- Transparent background support for custom logos
+```typescript
+paymentProviders?: {
+  visa?: boolean;
+  mastercard?: boolean;
+  // ... other providers
+};
+paymentLogos?: {
+  visa?: string;
+  mastercard?: string;
+  // ... custom logo URLs
+};
+```
+
+#### 10. Language/Currency Selectors (2025-01-15)
+**Implementation**: Functional dropdown selectors with click-outside handling
+**Languages**: Español, English
+**Currencies**: DOP (Peso Dominicano), USD, EUR
+**Features**:
+- Click to open dropdown
+- Click outside to close
+- Visual feedback with ChevronDown icon
+- Configurable default values
+```typescript
+const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+
+// Click outside handler
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (languageRef.current && !languageRef.current.contains(event.target as Node)) {
+      setShowLanguageDropdown(false);
+    }
+  };
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => document.removeEventListener('mousedown', handleClickOutside);
+}, []);
+```
+
+#### 11. Desktop Column Count Fix (2025-01-15)
+**Problem**: Column count selector not affecting grid layout
+**Solution**: Properly use `config?.desktopColumnCount` in grid rendering
+```typescript
+const columnsPerRow = isMobile ? 1 : (config?.desktopColumnCount || 3);
+// Grid uses dynamic columns
+style={{ gridTemplateColumns: `repeat(${columnsPerRow}, 1fr)` }}
+```
+
+#### 12. Policy Links Toggle Fix (2025-01-15)
+**Problem**: Policy links always showing in editor
+**Solution**: Removed `|| isEditor` condition to respect toggle state
+```typescript
+// Before
+{(config?.policyLinks?.showLinks || isEditor) && (
+// After
+{config?.policyLinks?.showLinks && (
+```
+
+#### 6. Color Scheme Not Applying (2025-01-15)
+**Problem**: Color scheme selector not working, background color not changing
+**Root Cause**: Incorrect property access - `colorScheme?.background?.default` instead of `colorScheme?.background`
+**Solution**: Fixed property access and applied color scheme to all elements
+```typescript
+// Before
+const backgroundColor = config?.colorBackground 
+  ? (colorScheme?.background?.default || '#1a1a1a')
+  : 'transparent';
+
+// After
+const backgroundColor = config?.colorBackground 
+  ? (colorScheme?.background || '#1a1a1a')
+  : 'transparent';
+```
+
+#### 7. Typography Integration (2025-01-15)
+**Implementation**: Added global typography system integration
+**Approach**: Following Header implementation pattern from `2025-01-typography-header.md`
+**Key Points**:
+- Block titles use `typography.headings` configuration
+- Body text uses `typography.body` configuration
+- Consistent with Header navigation typography implementation
+```typescript
+// Pass typography styles to child components
+<FooterMenuBlock 
+  settings={block.settings} 
+  isEditor={isEditor} 
+  colorScheme={colorScheme}
+  headingTypographyStyles={headingTypographyStyles}
+  bodyTypographyStyles={bodyTypographyStyles}
+/>
+```
+
 ## Performance Considerations
 
 ### Optimizations
@@ -364,12 +576,24 @@ const handleDragEnd = (event: DragEndEvent) => {
 
 ## Next Steps
 
+### Completed Features ✅
+1. ✅ Individual block editors (All 6 editors completed)
+2. ✅ Drag & drop reordering for blocks (Implemented with local DnD context)
+3. ✅ Footer menu block with real navigation data
+4. ✅ Color scheme integration (Full support for all 5 schemes)
+5. ✅ Typography system integration (Headings and body text)
+6. ✅ Subscribe block with all configurable options
+7. ✅ Payment provider icons with custom logo upload
+8. ✅ Language and currency selectors with dropdowns
+9. ✅ Desktop column count selector (3 or 4 columns)
+10. ✅ Policy links toggle functionality
+11. ✅ Logo with Text block size controls
+12. ✅ Social Media block with platform toggles
+
 ### Pending Implementation
-1. Individual block editors (FooterTextEditor, FooterMenuEditor, etc.)
-2. Backend API for footer blocks persistence
-3. Drag & drop reordering for blocks
-4. Block templates/presets
-5. Import/export functionality
+1. Backend API for footer blocks persistence
+2. Block templates/presets
+3. Import/export functionality
 
 ### Future Enhancements
 - Custom CSS per block
@@ -379,7 +603,7 @@ const handleDragEnd = (event: DragEndEvent) => {
 - Multi-language support for blocks
 
 ## Search Keywords
-footer, blocks, multi-instance, website builder, modular, shopify clone, grid layout, social media, newsletter, subscribe, menu, bottom bar, copyright, payment icons, language selector, currency selector
+footer, blocks, multi-instance, website builder, modular, shopify clone, grid layout, social media, newsletter, subscribe, menu, bottom bar, copyright, payment icons, language selector, currency selector, typography, color scheme, headingTypographyStyles, bodyTypographyStyles, useThemeConfigStore, payment providers, visa, mastercard, amex, discover, apple pay, google pay, amazon pay, diners club, custom logos, dropdown selectors, DOP, USD, EUR
 
 ## Notes
 - Default configuration ensures backward compatibility
@@ -388,6 +612,6 @@ footer, blocks, multi-instance, website builder, modular, shopify clone, grid la
 - Block system extensible for future block types
 
 ---
-**Documentation Version**: 1.0  
-**Last Updated**: 2025-08-14  
+**Documentation Version**: 1.1  
+**Last Updated**: 2025-01-15  
 **Author**: Development Team

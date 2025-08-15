@@ -12,6 +12,7 @@ This directory contains implementation documentation for major business features
 - **[Global Theme Configuration](./2025-01-global-theme-config.md)** - Global theme settings and color schemes
 - **[Header Configurations](./2025-01-header-configurations.md)** - Multiple header layout configurations
 - **[Undo System](./2025-01-undo-system.md)** - Undo/Redo implementation for the editor
+- **[Footer Module Implementation](./2025-08-footer-module.md)** - Complete footer with multi-instance blocks, modal selection, and modular architecture (< 300 lines/file)
 
 ### UI & Design System
 - **[UI Dashboard Implementation](./2025-08-ui-dashboard-implementation.md)** - Complete Materialize clone with responsive sidebar, dashboard metrics, and customization system

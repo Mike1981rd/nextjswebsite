@@ -219,22 +219,75 @@ En PowerShell verás todos los logs mezclados cronológicamente:
 [15:50:14 INF] HTTP GET /api/roles responded 200 in 16.4590 ms
 ```
 
-## 🔍 Comandos Útiles para Claude Code
+## 🔍 Comandos para Claude Code - LECTURA DE LOGS
 
-### Ver logs en tiempo real
+### ⚠️ IMPORTANTE: Claude Code DEBE usar estos comandos para revisar logs
+
+**NUNCA pedirle al usuario que:**
+- Abra PowerShell
+- Revise los logs manualmente  
+- Comparta logs de la consola del navegador
+- Ejecute comandos
+
+**Claude Code DEBE hacer esto automáticamente:**
+
+### 🔴 NOTA CRÍTICA: Los archivos de log tienen extensión .log NO .txt
+
+### Ver logs en tiempo real (últimas 100 líneas)
 ```bash
-# Claude puede usar esto después de que inicies el backend
-tail -f "C:/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).txt"
+# Ver los logs más recientes del backend y frontend
+# CORRECTO: usa .log
+tail -n 100 "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).log"
+
+# O más simple y seguro:
+tail -n 100 "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-20250815.log"
+```
+
+### Ver logs del frontend específicamente
+```bash
+# Filtrar solo logs del frontend (busca "Frontend Log", "Frontend Error", "Frontend Warning")
+grep "Frontend" "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).log" | tail -n 50
+
+# Ver logs del frontend con más contexto
+grep -A 2 -B 2 "Frontend" "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).log" | tail -n 100
 ```
 
 ### Buscar errores específicos
 ```bash
 # Buscar errores del día actual
-grep "ERR" "C:/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).txt"
+grep "ERR" "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).log" | tail -n 30
 
-# Buscar llamadas duplicadas
-grep -E "api/company/current.*api/company/current" logs/websitebuilder-*.txt
+# Buscar logs de un componente específico (ejemplo: FooterMenuBlock)
+grep "FooterMenuBlock" "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).log"
+
+# Ver console.log específicos del frontend
+grep "Frontend Log:.*console" "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).log" | tail -n 20
+
+# Buscar warnings del frontend (útil para React warnings)
+grep "Frontend Warning" "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).log" | tail -n 20
 ```
+
+### Monitorear logs en tiempo real
+```bash
+# Seguir los logs mientras se generan (útil durante debugging)
+tail -f "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/websitebuilder-$(date +%Y%m%d).log"
+```
+
+### Verificar estructura de archivos de logs
+```bash
+# Siempre verificar primero qué archivos existen
+ls -la "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/"
+
+# Ver específicamente logs de frontend en carpeta separada
+ls -la "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/logs/frontend/"
+```
+
+### 📌 REGLA CRÍTICA
+Cuando el usuario reporte un problema, Claude Code DEBE:
+1. PRIMERO ejecutar los comandos de arriba para revisar los logs
+2. ANALIZAR los logs encontrados
+3. PROPONER una solución basada en los logs
+4. NO pedirle al usuario que revise logs manualmente
 
 ## 🛠️ Características Implementadas
 

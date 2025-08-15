@@ -193,6 +193,68 @@ export function EditorSidebarWithDnD() {
 }
 ```
 
+### 4. Child Items Drag & Drop (Announcement Bar)
+
+We added local DnD for Announcement Bar children (announcements) without interfering with the global sections DnD.
+
+#### Rationale
+- Announcements live inside `StructuralComponentsContext` (not in `useEditorStore.sections`).
+- We need reordering only within the Announcement Bar, not across groups.
+- A local `DndContext` keeps concerns isolated and avoids coupling to the global store.
+
+#### Files
+- `src/components/editor/AnnouncementChildren.tsx`
+- `src/components/editor/dragDrop/DraggableAnnouncementItem.tsx`
+
+#### Implementation
+```typescript
+// DraggableAnnouncementItem: lightweight wrapper around useSortable with render-prop
+export function DraggableAnnouncementItem({ itemId, children }: {
+  itemId: string;
+  children: React.ReactNode | ((args: RenderArgs) => React.ReactNode);
+})
+
+// In AnnouncementChildren.tsx
+<DndContext onDragEnd={handleDragEnd}>
+  <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+    {announcements.map(a => (
+      <DraggableAnnouncementItem itemId={`ann:${section.id}:${a.id}`}>
+        {({ setNodeRef, attributes, listeners, isDragging, style }) => (
+          <div ref={setNodeRef} style={style} className={rowClasses}>
+            {/* Handle only */}
+            <button {...attributes} {...listeners} className={handleClasses} aria-label="Reordenar anuncio">
+              <GripIcon />
+            </button>
+            {/* Content + actions */}
+          </div>
+        )}
+      </DraggableAnnouncementItem>
+    ))}
+  </SortableContext>
+</DndContext>
+
+function handleDragEnd(event: DragEndEvent) {
+  const { active, over } = event;
+  if (!over || active.id === over.id) return;
+  // map IDs → indices and reorder local announcements array
+  const next = [...announcements];
+  const [moved] = next.splice(oldIndex, 1);
+  next.splice(newIndex, 0, moved);
+  updateAnnouncementBarConfigLocal({ ...announcementConfig, announcements: next });
+}
+```
+
+#### UX details
+- Dedicated drag handle, hover states, ring + shadow while dragging.
+- `select-none` to avoid selecting text during drag.
+- Actions (show/hide, delete) appear on hover only.
+- IDs namespaced (`ann:${sectionId}:${id}`) to avoid collisions.
+
+#### Why this does not affect future modules
+- Child DnD is local and acts over the Announcement Bar config only.
+- Global sections DnD (groups) remains unchanged.
+- Future components with true section-children (multi-instance sections) will keep using the global store + `DraggableSection` pattern.
+
 ## UX Improvements
 
 ### Visual Feedback System
@@ -253,6 +315,8 @@ const handleSave = async () => {
 - [x] Save button activates after reorder
 - [x] Undo/Redo works with drag operations
 - [x] Visual feedback is clear and intuitive
+- [x] Announcement items reorder locally and Save button appears
+- [x] No interference with sections DnD
 
 ### Edge Cases Handled
 1. Dropping on same position (no-op)
@@ -300,6 +364,7 @@ const handleSave = async () => {
 
 - Main Hook: `src/hooks/useSectionDragDrop.ts`
 - Components: `src/components/editor/dragDrop/`
+- Child DnD: `src/components/editor/AnnouncementChildren.tsx`, `src/components/editor/dragDrop/DraggableAnnouncementItem.tsx`
 - Types: `src/lib/dragDrop/types.ts`
 - Rules: `src/lib/dragDrop/rules.ts`
 - Store: `src/stores/useEditorStore.ts:reorderSections`

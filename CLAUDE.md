@@ -2,39 +2,50 @@
 
 ## 🛑 REGLAS CRÍTICAS DE DESARROLLO - VIOLACIÓN = DETENCIÓN INMEDIATA
 
+### 🚨 SISTEMA DE ENFORCEMENT AUTOMÁTICO ACTIVO
+
+**ARCHIVOS DE CONTROL:**
+- `.claude-rules-enforcement.md` - Sistema de validación y reglas
+- `validate-module.sh` - Script de validación automática
+
 ### 🔴 REGLA #1: LÍMITE DE 300 LÍNEAS POR ARCHIVO - SIN EXCEPCIONES
 
 **ANTES de escribir CUALQUIER código:**
-1. Si el archivo actual tiene >250 líneas → CREAR NUEVO ARCHIVO
-2. Si agregarías >50 líneas → CREAR COMPONENTE SEPARADO
-3. Si es un preview → CREAR EN `/components/editor/preview/[Name]Preview.tsx`
+1. EJECUTAR: `./validate-module.sh [archivo]`
+2. Si el archivo actual tiene >250 líneas → CREAR NUEVO ARCHIVO
+3. Si agregarías >50 líneas → CREAR COMPONENTE SEPARADO
+4. Si es un preview → CREAR EN `/components/editor/modules/[Name]/`
 
-**VIOLACIÓN DE ESTA REGLA:**
-- ❌ EditorPreview.tsx con 1,753 líneas es un ANTI-PATTERN
-- ❌ NO agregar más código a archivos que excedan 300 líneas
-- ✅ SIEMPRE crear componentes modulares separados
+**ARCHIVOS EN VIOLACIÓN (CONGELADOS - NO MODIFICAR):**
+- ❌ EditorPreview.tsx con 1,763 líneas - **NO AGREGAR MÁS CÓDIGO**
+- ❌ Para nuevos módulos usar: `/components/editor/modules/[ModuleName]/`
 
-**ENFORCEMENT:**
+**ENFORCEMENT AUTOMÁTICO:**
 ```bash
-# EJECUTAR ANTES DE CADA MODIFICACIÓN
-wc -l [archivo] # Si > 250 → STOP → Crear nuevo archivo
+# OBLIGATORIO ANTES DE CADA MODIFICACIÓN
+./validate-module.sh [archivo]
+# Si falla → STOP → Crear en /components/editor/modules/
 ```
 
 ### 🔴 REGLA #2: ARQUITECTURA MODULAR OBLIGATORIA
 
-Para CADA nueva funcionalidad del Website Builder:
+**NUEVA ESTRUCTURA OBLIGATORIA** para módulos del Website Builder:
 ```
 components/
 ├── editor/
-│   ├── [Name]Editor.tsx         (<300 líneas) - Configuración
-│   └── preview/
-│       └── [Name]Preview.tsx    (<300 líneas) - Visualización
+│   ├── modules/                    # 🆕 TODOS LOS NUEVOS MÓDULOS AQUÍ
+│   │   ├── [ModuleName]/
+│   │   │   ├── [ModuleName]Editor.tsx      (<300 líneas)
+│   │   │   ├── [ModuleName]Preview.tsx     (<300 líneas)
+│   │   │   ├── [ModuleName]Config.tsx      (<300 líneas)
+│   │   │   ├── [ModuleName]Types.ts        (<100 líneas)
+│   │   │   └── index.ts                    (exports)
 ```
 
 **NO ESTÁ PERMITIDO:**
-- Agregar lógica de preview en el Editor
-- Agregar todo en EditorPreview.tsx
-- Crear archivos monolíticos
+- Agregar NADA a EditorPreview.tsx (está CONGELADO)
+- Crear archivos fuera de /modules/ para nuevas funcionalidades
+- Crear archivos monolíticos de más de 300 líneas
 
 ### 🔴 REGLA #3: VERIFICACIÓN PRE-CÓDIGO OBLIGATORIA
 
@@ -80,17 +91,19 @@ Cuando el usuario ejecute `/init-session`, **DEBES OBLIGATORIAMENTE**:
 
 1. **LEER TODOS LOS ARCHIVOS DE CONFIGURACIÓN** (no puedes responder sin leerlos):
    ```
-   1. blueprint1.md - Arquitectura y 9 problemas críticos
-   2. blueprint2.md - Implementación técnica detallada  
-   3. blueprint3.md - UI/UX y componentes frontend
-   4. CLAUDEBK1.md - Reglas base y contexto del proyecto
-   5. CLAUDEBK2.md - Patterns, troubleshooting y workflow
-   6. logs.md - Sistema de logging y diagnóstico
+   1. .claude-rules-enforcement.md - 🆕 SISTEMA DE ENFORCEMENT AUTOMÁTICO
+   2. blueprint1.md - Arquitectura y 9 problemas críticos
+   3. blueprint2.md - Implementación técnica detallada  
+   4. blueprint3.md - UI/UX y componentes frontend
+   5. CLAUDEBK1.md - Reglas base y contexto del proyecto
+   6. CLAUDEBK2.md - Patterns, troubleshooting y workflow
+   7. logs.md - Sistema de logging y diagnóstico
    ```
 
 2. **USAR LA HERRAMIENTA Read** para cada archivo:
    ```python
    # OBLIGATORIO - No puedes saltarte ningún archivo
+   Read(".claude-rules-enforcement.md")  # 🆕 DEBE ejecutarse PRIMERO
    Read("blueprint1.md")  # DEBE ejecutarse
    Read("blueprint2.md")  # DEBE ejecutarse
    Read("blueprint3.md")  # DEBE ejecutarse

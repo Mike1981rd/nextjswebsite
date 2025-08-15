@@ -22,6 +22,7 @@ import { FooterConfig, getDefaultFooterConfig } from './FooterTypes';
 import FooterSocialMedia from './FooterSocialMedia';
 import FooterExpandibleSections from './FooterExpandibleSections';
 import FooterPaddingSection from './FooterPaddingSection';
+import PaymentProvidersConfig from './PaymentProvidersConfig';
 
 export default function FooterEditor() {
   const { 
@@ -37,7 +38,8 @@ export default function FooterEditor() {
     languageSelector: false,
     currencySelector: false,
     policyLinks: false,
-    copyrightNotice: false
+    copyrightNotice: false,
+    paymentProviders: false
   });
   
   const [localConfig, setLocalConfig] = useState<FooterConfig>(() => 
@@ -261,21 +263,13 @@ export default function FooterEditor() {
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                    Show payment icons
-                  </label>
-                  <button
-                    onClick={() => handleNestedChange('bottomBar', 'showPaymentIcons', !localConfig.bottomBar?.showPaymentIcons)}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                      localConfig.bottomBar?.showPaymentIcons ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
-                  >
-                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                      localConfig.bottomBar?.showPaymentIcons ? 'translate-x-5' : 'translate-x-1'
-                    }`} />
-                  </button>
-                </div>
+                {/* Payment Providers Configuration */}
+                <PaymentProvidersConfig
+                  localConfig={localConfig}
+                  expandedSections={expandedSections}
+                  toggleSection={toggleSection}
+                  handleNestedChange={handleNestedChange}
+                />
               </div>
             )}
           </div>

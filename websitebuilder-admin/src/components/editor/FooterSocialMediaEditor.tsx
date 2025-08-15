@@ -21,10 +21,39 @@ interface FooterSocialMediaSettings {
   body?: string;
   iconStyle?: 'solid' | 'outline';
   iconSize?: 'small' | 'medium' | 'large';
+  platforms?: {
+    instagram?: boolean;
+    facebook?: boolean;
+    twitter?: boolean;
+    youtube?: boolean;
+    linkedin?: boolean;
+    tiktok?: boolean;
+    pinterest?: boolean;
+    snapchat?: boolean;
+  };
 }
 
 interface FooterSocialMediaEditorProps {
   blockId: string;
+}
+
+function getDefaultSettings(): FooterSocialMediaSettings {
+  return {
+    heading: 'Síguenos en',
+    body: '',
+    iconStyle: 'solid',
+    iconSize: 'medium',
+    platforms: {
+      instagram: true,
+      facebook: true,
+      twitter: true,
+      youtube: true,
+      linkedin: true,
+      tiktok: false,
+      pinterest: false,
+      snapchat: false
+    }
+  };
 }
 
 export default function FooterSocialMediaEditor({ blockId }: FooterSocialMediaEditorProps) {
@@ -38,12 +67,7 @@ export default function FooterSocialMediaEditor({ blockId }: FooterSocialMediaEd
   
   // Initialize local state with current settings
   const [localSettings, setLocalSettings] = useState<FooterSocialMediaSettings>(() => {
-    return currentBlock?.settings || {
-      heading: 'Síguenos en',
-      body: '',
-      iconStyle: 'solid',
-      iconSize: 'medium'
-    };
+    return currentBlock?.settings || getDefaultSettings();
   });
 
   // Sync with props when they change
@@ -86,14 +110,14 @@ export default function FooterSocialMediaEditor({ blockId }: FooterSocialMediaEd
     updateFooterConfigLocal(updatedConfig);
   };
 
-  function getDefaultSettings(): FooterSocialMediaSettings {
-    return {
-      heading: 'Síguenos en',
-      body: '',
-      iconStyle: 'solid',
-      iconSize: 'medium'
+  const handlePlatformToggle = (platform: string) => {
+    const updatedPlatforms = {
+      ...(localSettings.platforms || {}),
+      [platform]: !(localSettings.platforms?.[platform as keyof typeof localSettings.platforms])
     };
-  }
+    
+    handleChange('platforms', updatedPlatforms);
+  };
 
   return (
     <div className="w-[320px] h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -250,6 +274,50 @@ export default function FooterSocialMediaEditor({ blockId }: FooterSocialMediaEd
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Platform Selection */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Platforms to display
+            </label>
+            <div className="space-y-2">
+              {[
+                { key: 'instagram', label: 'Instagram' },
+                { key: 'facebook', label: 'Facebook' },
+                { key: 'twitter', label: 'X (Twitter)' },
+                { key: 'youtube', label: 'YouTube' },
+                { key: 'linkedin', label: 'LinkedIn' },
+                { key: 'tiktok', label: 'TikTok' },
+                { key: 'pinterest', label: 'Pinterest' },
+                { key: 'snapchat', label: 'Snapchat' }
+              ].map(platform => (
+                <div key={platform.key} className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {platform.label}
+                  </span>
+                  <button
+                    onClick={() => handlePlatformToggle(platform.key)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      localSettings.platforms?.[platform.key as keyof typeof localSettings.platforms] !== false
+                        ? 'bg-blue-500'
+                        : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span 
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                        localSettings.platforms?.[platform.key as keyof typeof localSettings.platforms] !== false
+                          ? 'translate-x-5'
+                          : 'translate-x-1'
+                      }`} 
+                    />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Only selected platforms will be displayed in the footer
+            </p>
           </div>
 
           {/* Important Note */}
