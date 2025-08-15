@@ -18,6 +18,8 @@ Antes de crear tu módulo, asegúrate de:
 - [ ] **NO AGREGAR BOTÓN SAVE**: Los componentes estructurales usan el botón Save global, NO uno individual
 - [ ] **ENTENDER EL FLUJO DE GUARDADO**: update[Module]ConfigLocal → hasChanges=true → Save global → publishStructural() → toast.success
 - [ ] **MÓDULOS CON HIJOS**: NUNCA poner gestión de hijos en el editor del padre, usar [Module]Children.tsx en el sidebar
+- [ ] **SECCIONES VIRTUALES PARA HIJOS**: Si tu módulo tiene hijos, agregar soporte en EditorSidebarWithDnD.tsx para crear sección virtual
+- [ ] **ANCHO FIJO EN EDITORES**: SIEMPRE usar `w-[320px]` en el div principal del editor para evitar romper el layout
 
 ## 📋 Tabla de Contenidos
 1. [Overview del Sistema](#overview-del-sistema)
@@ -726,6 +728,115 @@ case 'ANNOUNCEMENT_ITEM':
 - [ ] Manejar acciones (agregar, eliminar, toggle visibilidad)
 - [ ] Usar iconos apropiados (Plus para agregar, RefreshCw para items)
 - [ ] **CRÍTICO**: Implementar botón de retroceso funcional en editor de hijos
+- [ ] **CRÍTICO**: Agregar sección virtual en EditorSidebarWithDnD.tsx
+- [ ] **CRÍTICO**: Usar ancho fijo `w-[320px]` en editor de hijos
+
+### 📝 Plantilla para Editor de Hijos
+
+```typescript
+/**
+ * @file [Module][ChildType]Editor.tsx
+ * @max-lines 300
+ * Configuration editor for [Module] [ChildType] items
+ */
+
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { useStructuralComponents } from '@/hooks/useStructuralComponents';
+import { useEditorStore } from '@/stores/useEditorStore';
+
+interface [Module][ChildType]EditorProps {
+  [childId]: string;
+}
+
+export default function [Module][ChildType]Editor({ [childId] }: [Module][ChildType]EditorProps) {
+  const { config: structuralComponents, update[Module]ConfigLocal } = useStructuralComponents();
+  const { toggleConfigPanel, selectSection } = useEditorStore();
+  
+  // Get the specific child from parent config
+  const parentConfig = structuralComponents?.[module] || {};
+  const children = parentConfig.[children] || [];
+  const currentChild = children.find(c => c.id === [childId]);
+  
+  // Initialize local state
+  const [localSettings, setLocalSettings] = useState(() => {
+    return currentChild?.settings || getDefaultSettings();
+  });
+
+  // Sync with props
+  useEffect(() => {
+    const child = children.find(c => c.id === [childId]);
+    if (child?.settings) {
+      const newSettings = child.settings;
+      if (JSON.stringify(newSettings) !== JSON.stringify(localSettings)) {
+        setLocalSettings(newSettings);
+      }
+    }
+  }, [[childId], children]);
+
+  const handleBack = () => {
+    // CRITICAL: Close panel and return to sidebar, NOT to parent config
+    toggleConfigPanel(false);
+    selectSection(null);
+  };
+
+  const handleChange = (field: string, value: any) => {
+    const updatedSettings = {
+      ...localSettings,
+      [field]: value
+    };
+    
+    setLocalSettings(updatedSettings);
+    
+    // Update the child in parent config
+    const updatedChildren = children.map(child => 
+      child.id === [childId] 
+        ? { ...child, settings: updatedSettings }
+        : child
+    );
+    
+    const updatedConfig = {
+      ...parentConfig,
+      [children]: updatedChildren
+    };
+    
+    update[Module]ConfigLocal(updatedConfig);
+  };
+
+  function getDefaultSettings() {
+    return {
+      // Default settings for this child type
+    };
+  }
+
+  return (
+    <div className="w-[320px] h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <button
+          onClick={handleBack}
+          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+          aria-label="Volver"
+        >
+          <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+        </button>
+        <h2 className="text-base font-medium text-gray-900 dark:text-white">
+          [Child Type Name]
+        </h2>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 space-y-4">
+          {/* Configuration fields here */}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
 
 ### 🔴 ERROR COMÚN: Return Condicional Antes de Hooks
 
@@ -1266,6 +1377,52 @@ if (announcementBarSection) {
 2. Los nombres de las propiedades coinciden
 3. Se está aplicando el objeto de estilos completo
 
+### ⚠️ PROBLEMA CRÍTICO: Panel de configuración de hijos no abre
+**Síntoma**: Al hacer clic en un elemento hijo (ej: footer block, announcement item), no se abre el panel de configuración
+**Causa**: Los elementos hijos no son secciones reales, necesitan crear una "sección virtual"
+**Solución**: Agregar soporte en `EditorSidebarWithDnD.tsx`:
+```typescript
+// ✅ CORRECTO - Agregar después del chequeo de announcement items
+// Check if it's a footer block (virtual section)
+if (!selectedSection && selectedSectionId?.startsWith('footer-block-')) {
+  // Create a virtual section for the footer block
+  selectedSection = {
+    id: selectedSectionId,
+    type: 'FOOTER_BLOCK' as any,
+    title: 'Footer Block',
+    visible: true,
+    settings: {}
+  } as any;
+}
+```
+
+**Patrón para nuevos módulos con hijos**:
+1. El prefijo del ID debe ser único (ej: `footer-block-`, `menu-item-`, etc.)
+2. Crear la sección virtual en `EditorSidebarWithDnD.tsx`
+3. Manejar el tipo virtual en `ConfigPanel.tsx`
+4. El editor hijo debe recibir el ID como prop
+
+### ⚠️ PROBLEMA CRÍTICO: Panel de configuración rompe el layout (ancho incorrecto)
+**Síntoma**: Al abrir el panel de configuración de un hijo, toda la vista se rompe o deforma
+**Causa**: El panel no tiene un ancho fijo y se expande rompiendo el layout
+**Solución**: SIEMPRE usar ancho fijo de 320px:
+```typescript
+// ❌ INCORRECTO - Sin ancho fijo
+return (
+  <div className="h-full flex flex-col bg-white dark:bg-gray-900">
+
+// ✅ CORRECTO - Con ancho fijo de 320px
+return (
+  <div className="w-[320px] h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+```
+
+**Dimensiones estándar para paneles de configuración**:
+- **Width**: `w-[320px]` (OBLIGATORIO)
+- **Height**: `h-full`
+- **Border**: `border-r` para separación visual
+- **Layout**: `flex flex-col` para contenido vertical
+- **Background**: Debe incluir colores para light/dark mode
+
 ---
 
 ## Ejemplo Completo Real: AnnouncementBar
@@ -1470,8 +1627,16 @@ Esta guía debe actualizarse cuando:
 - [Website Builder Architecture](./WEBSITE-BUILDER-ARCHITECTURE.md) - Flujo de datos
 - [Website Builder Troubleshooting](./WEBSITE-BUILDER-TROUBLESHOOTING.md) - Problemas comunes
 
-Última actualización: 2025-01-14
-Versión: 1.6
+Última actualización: 2025-01-15
+Versión: 1.7
+
+Cambios v1.7:
+- Agregado problema crítico: Panel de configuración de hijos no abre
+- Documentada solución de secciones virtuales para elementos hijos
+- Agregado problema crítico: Panel rompe layout por ancho incorrecto
+- Documentadas dimensiones estándar obligatorias (w-[320px])
+- Actualizado checklist con verificaciones de secciones virtuales y ancho fijo
+- Incluidos ejemplos de código para ambos problemas
 
 Cambios v1.6:
 - Actualizado error del botón back: ahora documenta que debe volver al sidebar, no al padre

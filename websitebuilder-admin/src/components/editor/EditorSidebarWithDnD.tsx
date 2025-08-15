@@ -27,6 +27,7 @@ import { GlobalSettingsPanel } from './GlobalSettingsPanel';
 import { DraggableSection } from './dragDrop/DraggableSection';
 import { DragOverlay } from './dragDrop/DragOverlay';
 import { AnnouncementChildren } from './AnnouncementChildren';
+import { FooterChildren } from './FooterChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -98,6 +99,18 @@ export function EditorSidebarWithDnD() {
       id: selectedSectionId,
       type: 'ANNOUNCEMENT_ITEM' as any,
       title: 'Announcement',
+      visible: true,
+      settings: {}
+    } as any;
+  }
+  
+  // Check if it's a footer block (virtual section)
+  if (!selectedSection && selectedSectionId?.startsWith('footer-block-')) {
+    // Create a virtual section for the footer block
+    selectedSection = {
+      id: selectedSectionId,
+      type: 'FOOTER_BLOCK' as any,
+      title: 'Footer Block',
       visible: true,
       settings: {}
     } as any;
@@ -195,6 +208,14 @@ export function EditorSidebarWithDnD() {
                               {/* Announcement Bar Children - Show announcements as child items */}
                               {section.type === SectionType.ANNOUNCEMENT_BAR && section.visible && (
                                 <AnnouncementChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+
+                              {/* Footer Children - Show footer blocks as child items */}
+                              {section.type === SectionType.FOOTER && section.visible && (
+                                <FooterChildren 
                                   section={section}
                                   groupId={group.id}
                                 />

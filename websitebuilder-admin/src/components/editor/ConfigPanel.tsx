@@ -7,8 +7,16 @@ import { useEditorStore } from '@/stores/useEditorStore';
 import { HeaderEditor } from './HeaderEditor';
 import AnnouncementBarEditor from './AnnouncementBarEditor';
 import AnnouncementItemEditor from './AnnouncementItemEditor';
+import FooterEditor from './FooterEditor';
+import FooterMenuEditor from './FooterMenuEditor';
+import FooterLogoWithTextEditor from './FooterLogoWithTextEditor';
+import FooterSubscribeEditor from './FooterSubscribeEditor';
+import FooterTextEditor from './FooterTextEditor';
+import FooterSocialMediaEditor from './FooterSocialMediaEditor';
+import FooterImageEditor from './FooterImageEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
+import { FooterBlockType } from './modules/Footer/FooterTypes';
 
 interface ConfigPanelProps {
   section: Section;
@@ -23,6 +31,17 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   
   // Check if this is an announcement item (child)
   const isAnnouncementItem = section.id.startsWith('announcement-');
+  
+  // Check if this is a footer block (child)
+  const isFooterBlock = section.id.startsWith('footer-block-');
+  
+  // Get footer block type if it's a footer block
+  const getFooterBlockType = (): FooterBlockType | null => {
+    if (!isFooterBlock) return null;
+    const footerConfig = structuralComponents?.footer;
+    const block = footerConfig?.blocks?.find((b: any) => b.id === section.id);
+    return block?.type || null;
+  };
 
   useEffect(() => {
     setSettings(section.settings);
@@ -71,6 +90,47 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   // Return early for announcement items AFTER all hooks
   if (isAnnouncementItem) {
     return <AnnouncementItemEditor announcementId={section.id} />;
+  }
+  
+  // Return early for footer blocks AFTER all hooks
+  if (isFooterBlock) {
+    const blockType = getFooterBlockType();
+    
+    // Handle different footer block types
+    if (blockType === FooterBlockType.MENU) {
+      return <FooterMenuEditor blockId={section.id} />;
+    }
+    
+    if (blockType === FooterBlockType.LOGO_WITH_TEXT) {
+      return <FooterLogoWithTextEditor blockId={section.id} />;
+    }
+    
+    if (blockType === FooterBlockType.SUBSCRIBE) {
+      return <FooterSubscribeEditor blockId={section.id} />;
+    }
+    
+    if (blockType === FooterBlockType.TEXT) {
+      return <FooterTextEditor blockId={section.id} />;
+    }
+    
+    if (blockType === FooterBlockType.SOCIAL_MEDIA) {
+      return <FooterSocialMediaEditor blockId={section.id} />;
+    }
+    
+    if (blockType === FooterBlockType.IMAGE) {
+      return <FooterImageEditor blockId={section.id} />;
+    }
+    
+    // For other footer block types, show placeholder
+    return (
+      <div className="w-[320px] h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+        <div className="p-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Configuration for {blockType} block coming soon...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const renderConfigFields = () => {
@@ -165,6 +225,9 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
       case SectionType.ANNOUNCEMENT_BAR:
         return <AnnouncementBarEditor />;
+
+      case SectionType.FOOTER:
+        return <FooterEditor />;
 
       case SectionType.IMAGE_WITH_TEXT:
         return (
