@@ -15,6 +15,8 @@ import FooterTextEditor from './FooterTextEditor';
 import FooterSocialMediaEditor from './FooterSocialMediaEditor';
 import FooterImageEditor from './FooterImageEditor';
 import ImageBannerEditor from './modules/ImageBanner/ImageBannerEditor';
+import SlideshowEditor from './modules/Slideshow/SlideshowEditor';
+import SlideEditor from './modules/Slideshow/SlideEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -24,7 +26,7 @@ interface ConfigPanelProps {
 }
 
 export function ConfigPanel({ section }: ConfigPanelProps) {
-  const { selectSection, updateSectionSettings } = useEditorStore();
+  const { selectedSectionId, selectSection, updateSectionSettings } = useEditorStore();
   const { headerConfig, updateHeaderConfigLocal, config: structuralComponents } = useStructuralComponents();
   const [settings, setSettings] = useState(section.settings);
   const [hasChanges, setHasChanges] = useState(false);
@@ -35,6 +37,17 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   
   // Check if this is a footer block (child)
   const isFooterBlock = section.id.startsWith('footer-block-');
+  
+  // Check if this is a slideshow slide (child)
+  const isSlideItem = selectedSectionId?.includes(':slide:');
+  const getSlideshowSectionId = () => {
+    if (!isSlideItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':slide:')[0];
+  };
+  const getSlideId = () => {
+    if (!isSlideItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':slide:')[1];
+  };
   
   // Get footer block type if it's a footer block
   const getFooterBlockType = (): FooterBlockType | null => {
@@ -91,6 +104,21 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   // Return early for announcement items AFTER all hooks
   if (isAnnouncementItem) {
     return <AnnouncementItemEditor announcementId={section.id} />;
+  }
+  
+  // Return early for slide items AFTER all hooks
+  if (isSlideItem) {
+    const sectionId = getSlideshowSectionId();
+    const slideId = getSlideId();
+    console.log('[DEBUG] ConfigPanel - Slide item detected:', {
+      selectedSectionId,
+      isSlideItem,
+      sectionId,
+      slideId
+    });
+    if (sectionId && slideId) {
+      return <SlideEditor sectionId={sectionId} slideId={slideId} />;
+    }
   }
   
   // Return early for footer blocks AFTER all hooks
@@ -182,6 +210,9 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
       case SectionType.FOOTER:
         return <FooterEditor />;
+
+      case SectionType.SLIDESHOW:
+        return <SlideshowEditor sectionId={section.id} />;
 
       case SectionType.IMAGE_WITH_TEXT:
         return (

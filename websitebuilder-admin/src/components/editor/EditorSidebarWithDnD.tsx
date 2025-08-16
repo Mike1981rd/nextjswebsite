@@ -28,6 +28,7 @@ import { DraggableSection } from './dragDrop/DraggableSection';
 import { DragOverlay } from './dragDrop/DragOverlay';
 import { AnnouncementChildren } from './AnnouncementChildren';
 import { FooterChildren } from './FooterChildren';
+import SlideshowChildren from './modules/Slideshow/SlideshowChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -113,6 +114,23 @@ export function EditorSidebarWithDnD() {
       title: 'Footer Block',
       visible: true,
       settings: {}
+    } as any;
+  }
+  
+  // Check if it's a slideshow slide (virtual section)
+  if (!selectedSection && selectedSectionId?.includes(':slide:')) {
+    console.log('[DEBUG] Creating virtual section for slide:', selectedSectionId);
+    const [sectionId] = selectedSectionId.split(':slide:');
+    const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
+    
+    // Create a virtual section for the slide
+    selectedSection = {
+      id: selectedSectionId,
+      type: 'SLIDESHOW_SLIDE' as any,
+      name: 'Slide',
+      visible: true,
+      settings: parentSection?.settings || {},
+      sortOrder: 0
     } as any;
   }
 
@@ -216,6 +234,14 @@ export function EditorSidebarWithDnD() {
                               {/* Footer Children - Show footer blocks as child items */}
                               {section.type === SectionType.FOOTER && section.visible && (
                                 <FooterChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+
+                              {/* Slideshow Children - Show slides as child items */}
+                              {section.type === SectionType.SLIDESHOW && section.visible && (
+                                <SlideshowChildren 
                                   section={section}
                                   groupId={group.id}
                                 />

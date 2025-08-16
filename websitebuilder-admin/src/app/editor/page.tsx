@@ -141,33 +141,111 @@ function EditorPageContent() {
     };
   }, [isDropdownOpen]);
 
-  const handlePageSelect = (page: typeof mockPages[0]) => {
+  const handlePageSelect = async (page: typeof mockPages[0]) => {
+    console.log('[DEBUG] Selecting page:', {
+      pageId: page.id,
+      pageType: page.type,
+      pageName: page.name
+    });
+    
     setSelectedPageId(page.id);
     setSelectedPage(page.id, page.type);
     setIsDropdownOpen(false);
     
-    // Load page sections from API (mock for now)
-    if (page.type === PageType.PRODUCT) {
-      // Product pages always have product information
-      loadPageSections([
-        {
+    // First, try to load from localStorage
+    const pageKey = `page_sections_${page.id}`;
+    const savedSections = localStorage.getItem(pageKey);
+    
+    if (savedSections) {
+      try {
+        const sections = JSON.parse(savedSections);
+        console.log('[DEBUG] Loaded sections from localStorage:', {
+          pageId: page.id,
+          key: pageKey,
+          sections: sections,
+          count: sections.length
+        });
+        loadPageSections(sections);
+        return; // Exit early if we loaded from localStorage
+      } catch (e) {
+        console.error('[DEBUG] Error parsing saved sections:', e);
+      }
+    }
+    
+    // If no localStorage data, try backend (this will likely fail with mock IDs)
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+      const response = await fetch(`${apiUrl}/websitepages/${page.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const pageData = await response.json();
+        console.log('[DEBUG] Loaded page data from API:', {
+          pageId: pageData.id,
+          sections: pageData.sections,
+          sectionCount: pageData.sections?.length || 0
+        });
+        
+        if (pageData.sections && Array.isArray(pageData.sections)) {
+          const frontendSections = pageData.sections.map((s: any) => ({
+            id: s.id || `${s.sectionType}_${s.sortOrder}`,
+            type: s.sectionType?.toLowerCase() || s.type,
+            name: s.title || s.name || s.sectionType,
+            visible: s.isActive !== false,
+            settings: typeof s.config === 'string' ? JSON.parse(s.config) : (s.config || {}),
+            sortOrder: s.sortOrder || 0
+          }));
+          
+          loadPageSections(frontendSections);
+        } else {
+          loadPageSections([]);
+        }
+      } else {
+        // No backend data, use defaults
+        console.log('[DEBUG] Backend returned:', response.status, '- using defaults');
+        if (page.type === PageType.PRODUCT) {
+          loadPageSections([{
+            id: 'product_info_1',
+            type: 'product_information' as any,
+            name: 'Product information',
+            visible: true,
+            settings: {},
+            sortOrder: 0
+          }]);
+        } else {
+          loadPageSections([]);
+        }
+      }
+    } catch (error) {
+      console.error('[DEBUG] Error loading from backend:', error);
+      // Fall back to defaults
+      if (page.type === PageType.PRODUCT) {
+        loadPageSections([{
           id: 'product_info_1',
           type: 'product_information' as any,
           name: 'Product information',
           visible: true,
           settings: {},
           sortOrder: 0
-        }
-      ]);
-    } else {
-      // Other pages start empty
-      loadPageSections([]);
+        }]);
+      } else {
+        loadPageSections([]);
+      }
     }
   };
 
   const [isSavingLocal, setIsSavingLocal] = useState(false);
   
   const handleSave = async () => {
+    console.log('[DEBUG] handleSave clicked:', {
+      isDirty,
+      hasStructuralChanges,
+      selectedPageId
+    });
+    
     setIsSavingLocal(true);
     try {
       let changesSaved = false;
@@ -182,13 +260,10 @@ function EditorPageContent() {
         }
       }
       
-      // Save sections order if they were reordered (isDirty)
+      // Save sections if they were changed (isDirty)
       if (isDirty) {
-        // For now, just clear the dirty flag since we don't have a backend endpoint for section order yet
-        // TODO: Implement API endpoint to save section order
-        console.log('[Save] Section order changes detected - marking as saved');
-        const store = useEditorStore.getState();
-        store.setIsDirty(false);
+        console.log('[DEBUG] Calling savePage() from handleSave');
+        await savePage(); // This saves to localStorage and attempts backend
         changesSaved = true;
       }
       

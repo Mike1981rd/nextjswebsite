@@ -105,6 +105,13 @@ export interface [Module]ItemConfig {
 - Agregar a AddSectionModal.tsx para que aparezca en "Agregar sección"
 - Agregar caso en PreviewContent.tsx
 - Agregar caso en EditorPreview.tsx
+- Agregar caso en ConfigPanel.tsx (padre y si tiene hijos)
+- Si tiene hijos, actualizar SectionItem.tsx:
+  ```typescript
+  // Agregar al check de canHaveChildren
+  const canHaveChildren = section.type === SectionType.SLIDESHOW || 
+                          section.type === SectionType.[NUEVO_MODULO];
+  ```
 
 #### 6. TRADUCCIONES
 ```json
@@ -157,6 +164,105 @@ SIEMPRE incluir:
 
 5. **NO modificar** sistemas existentes que funcionan
 
+## ESTRUCTURA PARA MÓDULOS CON HIJOS
+
+Si el módulo tiene hijos, el sidebar debe mostrar:
+```
+▼ [NombreMódulo]
+  └─ [Hijo 1]
+  └─ [Hijo 2]
+  └─ [+ Agregar bloque] (botón azul)
+```
+
+Para lograrlo:
+
+1. **SectionItem.tsx** detecta automáticamente con `canHaveChildren`
+2. **ConfigPanel.tsx** maneja la navegación a hijos con IDs especiales: `sectionId:child:childId`
+3. **[Module]Children.tsx** gestiona el agregar/eliminar/reordenar
+4. **[Module]ChildEditor.tsx** edita cada hijo individualmente
+
+## 🚨 ERRORES COMUNES A EVITAR (Lecciones del Slideshow)
+
+### ❌ Error 1: Módulo no persiste
+**SOLUCIÓN IMPLEMENTADA**: 
+- El savePage() ya guarda en localStorage automáticamente
+- VERIFICAR que el módulo está en `sections.template`
+
+### ❌ Error 2: Hijos sin Drag & Drop
+**SOLUCIÓN IMPLEMENTADA**:
+- [Module]Children.tsx DEBE incluir DndContext completo
+- Integrar en EditorSidebarWithDnD.tsx
+
+### ❌ Error 3: Click en hijo no abre configuración
+**PASOS CRÍTICOS**:
+1. En [Module]Children usar ID especial: `${section.id}:child:${childId}`
+2. En EditorSidebarWithDnD agregar sección virtual
+3. En ConfigPanel detectar con `selectedSectionId?.includes(':child:')`
+
+### ❌ Error 4: Navegación incorrecta
+**EN [Child]Editor.tsx**:
+```typescript
+const handleBack = () => {
+  selectSection(null); // AL SIDEBAR, NO AL PADRE
+};
+```
+
+### ❌ Error 5: UI incorrecta de hijos
+**ESTILO CORRECTO**:
+- SIN fondos azules de selección
+- CON chevron de indentación
+- Hover gris simple
+- Drag handle oculto por defecto
+
+## INTEGRACIONES CRÍTICAS PARA HIJOS
+
+### En EditorSidebarWithDnD.tsx:
+```typescript
+// 1. Importar Children
+import [Module]Children from './modules/[Module]/[Module]Children';
+
+// 2. Renderizar después del section (línea ~220)
+{section.type === SectionType.[MODULE] && section.visible && (
+  <[Module]Children section={section} groupId={group.id} />
+)}
+
+// 3. Agregar sección virtual (línea ~120)
+if (!selectedSection && selectedSectionId?.includes(':child:')) {
+  const [sectionId] = selectedSectionId.split(':child:');
+  const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
+  
+  if (parentSection?.type === SectionType.[MODULE]) {
+    selectedSection = {
+      id: selectedSectionId,
+      type: '[MODULE]_CHILD' as any,
+      name: '[Module] Child',
+      visible: true,
+      settings: parentSection?.settings || {},
+      sortOrder: 0
+    } as any;
+  }
+}
+```
+
+### En ConfigPanel.tsx:
+```typescript
+// 1. Importar editor hijo
+import [Module]ChildEditor from './modules/[Module]/[Module]ChildEditor';
+
+// 2. Detectar hijo (después de línea ~40)
+const is[Module]Child = selectedSectionId?.includes(':child:') && 
+  section.type === SectionType.[MODULE];
+
+// 3. Renderizar editor hijo (después de línea ~110)
+if (is[Module]Child) {
+  const sectionId = selectedSectionId.split(':child:')[0];
+  const childId = selectedSectionId.split(':child:')[1];
+  if (sectionId && childId) {
+    return <[Module]ChildEditor sectionId={sectionId} childId={childId} />;
+  }
+}
+```
+
 ## CONFIRMACIÓN FINAL
 Al terminar, mostrar:
 ```
@@ -167,12 +273,29 @@ Al terminar, mostrar:
 - Preview[Module].tsx
 - [Module]Editor.tsx
 - [Module]Children.tsx (si aplica)
+- [Module]ChildEditor.tsx (si aplica)
 
-✅ Integraciones actualizadas
+✅ Integraciones actualizadas:
+- SECTION_CONFIGS ✓
+- AddSectionModal ✓
+- PreviewContent ✓
+- EditorPreview ✓
+- ConfigPanel ✓
+- EditorSidebarWithDnD (si tiene hijos) ✓
+- SectionItem (si tiene hijos) ✓
+
 ✅ Traducciones agregadas
+
+⚠️ VERIFICACIÓN DE ERRORES COMUNES:
+- [ ] Persistencia: Verificar que guarda al cambiar de página
+- [ ] Drag & Drop: Los hijos se pueden reordenar
+- [ ] Click en hijos: Abre el editor correcto
+- [ ] Navegación: Flecha vuelve al sidebar principal
+- [ ] UI: Sin fondos azules, con indentación correcta
 
 📝 Próximos pasos:
 1. Verificar que los controles funcionan
-2. Ajustar estilos si es necesario
-3. Probar responsive
+2. Probar que persiste al cambiar de página
+3. Si tiene hijos, verificar drag & drop
+4. Confirmar navegación correcta
 ```

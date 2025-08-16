@@ -14,6 +14,7 @@ import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import PreviewHeader from '@/components/preview/PreviewHeader';
 import PreviewAnnouncementBar from '@/components/preview/PreviewAnnouncementBar';
 import PreviewFooter from '@/components/preview/PreviewFooter';
+import PreviewSlideshow from '@/components/preview/PreviewSlideshow';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -538,6 +539,16 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
               </div>
             </div>
           </div>
+        );
+
+      case SectionType.SLIDESHOW:
+        return (
+          <PreviewSlideshow
+            settings={section.settings}
+            isEditor={true}
+            theme={themeConfig}
+            deviceView={deviceView}
+          />
         );
 
       default:
