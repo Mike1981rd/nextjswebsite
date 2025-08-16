@@ -139,11 +139,11 @@ export default function ProfessionalCalendar({
         dayOfMonth: date.getDate(),
         isCurrentMonth: date.getMonth() === month,
         isToday: date.getTime() === today.getTime(),
-        isSelected: (selectedStartDate && date.getTime() === selectedStartDate.getTime()) ||
-                   (selectedEndDate && date.getTime() === selectedEndDate.getTime()),
+        isSelected: Boolean((selectedStartDate && date.getTime() === selectedStartDate.getTime()) ||
+                   (selectedEndDate && date.getTime() === selectedEndDate.getTime())),
         isInRange: isInRange || isInHoverRange,
-        isRangeStart,
-        isRangeEnd,
+        isRangeStart: Boolean(isRangeStart),
+        isRangeEnd: Boolean(isRangeEnd),
         isAvailable: dayData?.isAvailable ?? true,
         isBlocked: dayData?.isBlocked ?? false,
         hasReservation: dayData?.hasReservation ?? false,

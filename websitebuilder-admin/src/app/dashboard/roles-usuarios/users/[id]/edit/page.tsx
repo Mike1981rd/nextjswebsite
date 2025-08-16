@@ -210,7 +210,7 @@ export default function EditUserPage() {
         }
       } else if (!avatarPreview && user?.avatarUrl) {
         // Avatar was removed
-        avatarUrl = null;
+        avatarUrl = undefined;
       }
       
       const payload: any = {

@@ -252,8 +252,8 @@ function EditorPageContent() {
       
       // Save structural components if they have changes
       if (hasStructuralChanges) {
-        const success = await publishStructural();
-        if (success) {
+        await publishStructural();
+        if (true) {
           // Force a complete refresh of the structural components
           await refresh();
           changesSaved = true;

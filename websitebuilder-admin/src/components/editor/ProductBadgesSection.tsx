@@ -24,7 +24,7 @@ export function ProductBadgesSection({ config, onChange }: ProductBadgesSectionP
       enabled: config.soldOut?.enabled ?? true,
       background: config.soldOut?.background || '#FFFFFF',
       text: config.soldOut?.text || '#000000',
-      displayAs: config.soldOut?.displayAs || '',
+      displayAs: config.soldOut?.displayAs || undefined,
       textContent: config.soldOut?.textContent || '',
       tag: config.soldOut?.tag || ''
     },
@@ -52,7 +52,7 @@ export function ProductBadgesSection({ config, onChange }: ProductBadgesSectionP
       enabled: config.custom1?.enabled ?? false,
       background: config.custom1?.background || '#FFFFFF',
       text: config.custom1?.text || '#000000',
-      displayAs: config.custom1?.displayAs || '',
+      displayAs: config.custom1?.displayAs || undefined,
       textContent: config.custom1?.textContent || 'Best seller',
       tag: config.custom1?.tag || ''
     },
@@ -60,7 +60,7 @@ export function ProductBadgesSection({ config, onChange }: ProductBadgesSectionP
       enabled: config.custom2?.enabled ?? false,
       background: config.custom2?.background || '#FFFFFF',
       text: config.custom2?.text || '#000000',
-      displayAs: config.custom2?.displayAs || '',
+      displayAs: config.custom2?.displayAs || undefined,
       textContent: config.custom2?.textContent || '',
       tag: config.custom2?.tag || ''
     },
@@ -68,7 +68,7 @@ export function ProductBadgesSection({ config, onChange }: ProductBadgesSectionP
       enabled: config.custom3?.enabled ?? false,
       background: config.custom3?.background || '#FFFFFF',
       text: config.custom3?.text || '#000000',
-      displayAs: config.custom3?.displayAs || '',
+      displayAs: config.custom3?.displayAs || undefined,
       textContent: config.custom3?.textContent || '',
       tag: config.custom3?.tag || ''
     }

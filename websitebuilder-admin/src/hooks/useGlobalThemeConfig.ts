@@ -238,9 +238,9 @@ export function useThemeModule<T extends keyof typeof moduleMap>(
   const module = moduleMap[moduleName];
   
   return {
-    data: module.selector(hook),
+    data: module.selector(hook) as any,
     loading: hook.moduleLoading[moduleName],
-    update: module.updater(hook),
+    update: module.updater(hook) as any,
   };
 }
 

@@ -398,7 +398,7 @@ export default function NewOrderPage() {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={() => router.back()}
               className="hover:bg-gray-100 dark:hover:bg-gray-700"
             >
@@ -698,8 +698,8 @@ export default function NewOrderPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Button
-                              variant="outline"
-                              size="icon"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                               className="h-8 w-8"
                             >
@@ -707,8 +707,8 @@ export default function NewOrderPage() {
                             </Button>
                             <span className="w-12 text-center font-medium">{item.quantity}</span>
                             <Button
-                              variant="outline"
-                              size="icon"
+                              variant="ghost"
+                              size="sm"
                               onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                               className="h-8 w-8"
                             >
@@ -722,7 +722,7 @@ export default function NewOrderPage() {
                           </div>
                           <Button
                             variant="ghost"
-                            size="icon"
+                            size="sm"
                             onClick={() => removeProduct(item.productId)}
                             className="h-8 w-8 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400"
                           >
@@ -739,7 +739,7 @@ export default function NewOrderPage() {
                   )}
 
                   <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => goToStep(1)}>
+                    <Button variant="ghost" onClick={() => goToStep(1)}>
                       {t('common.back')}
                     </Button>
                     <Button
@@ -854,7 +854,7 @@ export default function NewOrderPage() {
                   </div>
 
                   <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => goToStep(2)}>
+                    <Button variant="ghost" onClick={() => goToStep(2)}>
                       {t('common.back')}
                     </Button>
                     <Button 
@@ -987,7 +987,7 @@ export default function NewOrderPage() {
                   </div>
 
                   <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => goToStep(3)}>
+                    <Button variant="ghost" onClick={() => goToStep(3)}>
                       {t('common.back')}
                     </Button>
                     <Button 
@@ -1026,7 +1026,7 @@ export default function NewOrderPage() {
                   </div>
 
                   <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => goToStep(4)}>
+                    <Button variant="ghost" onClick={() => goToStep(4)}>
                       {t('common.back')}
                     </Button>
                     <Button 

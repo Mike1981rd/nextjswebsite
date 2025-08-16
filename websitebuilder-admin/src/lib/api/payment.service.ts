@@ -80,7 +80,7 @@ export const paymentService = {
 
     // Debug: log FormData contents
     console.log('FormData contents:');
-    for (let [key, value] of formData.entries()) {
+    for (let [key, value] of Array.from(formData.entries())) {
       console.log(`${key}:`, value);
     }
 

@@ -157,6 +157,136 @@ Antes de cada modificación:
 4. **NO** poner todo en un solo archivo
 5. **NO** ignorar las alertas del validador
 
+## 🔴 ERRORES COMUNES Y SOLUCIONES (Lecciones del Slideshow)
+
+### ❌ Error 1: Módulo no persiste al cambiar de página
+**Problema:** El módulo desaparece cuando cambias de página y vuelves.
+**Causa:** No se está guardando en localStorage o backend.
+**Solución:**
+```typescript
+// En useEditorStore.ts - savePage()
+const pageKey = `page_sections_${state.selectedPageId}`;
+const sectionsToSave = state.sections.template;
+localStorage.setItem(pageKey, JSON.stringify(sectionsToSave));
+```
+
+### ❌ Error 2: Módulos con hijos - Drag & Drop no habilitado
+**Problema:** Los elementos hijos no tienen drag & drop.
+**Solución:** Crear componente `[Module]Children.tsx`:
+```typescript
+// modules/[Module]/[Module]Children.tsx
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+
+// Implementar DraggableItem con useSortable
+// Ver: modules/Slideshow/SlideshowChildren.tsx como referencia
+```
+**Integración en EditorSidebarWithDnD.tsx:**
+```typescript
+{section.type === SectionType.YOUR_MODULE && section.visible && (
+  <YourModuleChildren section={section} groupId={group.id} />
+)}
+```
+
+### ❌ Error 3: Click en hijo no abre configuración
+**Problema:** Al hacer click en un elemento hijo, no se abre su editor.
+**Solución completa:**
+
+1. **En [Module]Children.tsx - Usar ID especial:**
+```typescript
+const handleSelectChild = (childId: string) => {
+  // Formato especial: parentId:child:childId
+  selectSection(`${section.id}:child:${childId}`);
+  toggleConfigPanel(true);
+};
+```
+
+2. **En EditorSidebarWithDnD.tsx - Crear sección virtual:**
+```typescript
+// Agregar después de las otras verificaciones de secciones virtuales
+if (!selectedSection && selectedSectionId?.includes(':child:')) {
+  const [sectionId] = selectedSectionId.split(':child:');
+  const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
+  
+  selectedSection = {
+    id: selectedSectionId,
+    type: 'MODULE_CHILD' as any,
+    name: 'Child Item',
+    visible: true,
+    settings: parentSection?.settings || {},
+    sortOrder: 0
+  } as any;
+}
+```
+
+3. **En ConfigPanel.tsx - Detectar y renderizar editor hijo:**
+```typescript
+// Agregar al inicio del componente
+const isChildItem = selectedSectionId?.includes(':child:');
+const getParentSectionId = () => {
+  if (!isChildItem || !selectedSectionId) return null;
+  return selectedSectionId.split(':child:')[0];
+};
+const getChildId = () => {
+  if (!isChildItem || !selectedSectionId) return null;
+  return selectedSectionId.split(':child:')[1];
+};
+
+// Después de los hooks, antes de otros returns
+if (isChildItem) {
+  const parentId = getParentSectionId();
+  const childId = getChildId();
+  if (parentId && childId) {
+    return <ChildEditor sectionId={parentId} childId={childId} />;
+  }
+}
+```
+
+### ❌ Error 4: Navegación incorrecta en editores hijos
+**Problema:** Al presionar "volver" en un editor hijo, abre la configuración del padre en lugar del sidebar principal.
+**Solución:** En el editor hijo, usar `selectSection(null)`:
+```typescript
+// En [Child]Editor.tsx
+const handleBack = () => {
+  selectSection(null);  // Volver al sidebar principal, NO al padre
+};
+```
+
+### ❌ Error 5: UI de hijos con estilos incorrectos
+**Problema:** Los elementos hijos se ven como tarjetas en lugar de items anidados.
+**Solución:** Usar el mismo estilo que otros elementos del sidebar:
+```typescript
+// Estilo correcto para items hijos
+<div className={`
+  group relative flex items-center px-4 py-2 cursor-pointer transition-all
+  hover:bg-gray-100
+  ${isDragging ? 'shadow-lg bg-white' : ''}
+  ${!item.visible ? 'opacity-50' : ''}
+`}>
+  {/* Chevron de indentación */}
+  <div className="ml-4 mr-2">
+    <svg className="w-2 h-2 text-gray-400" fill="currentColor" viewBox="0 0 6 10">
+      <path d="M1 1l4 4-4 4" />
+    </svg>
+  </div>
+  {/* Contenido */}
+</div>
+```
+
+## ✅ CHECKLIST COMPLETO PARA MÓDULOS CON HIJOS
+
+- [ ] Crear `[Module]Children.tsx` con DnD local
+- [ ] Agregar integración en `EditorSidebarWithDnD.tsx`
+- [ ] Crear `[Child]Editor.tsx` para configuración individual
+- [ ] Agregar sección virtual en `EditorSidebarWithDnD.tsx`
+- [ ] Agregar detección de hijo en `ConfigPanel.tsx`
+- [ ] Usar `selectSection(null)` en handleBack del editor hijo
+- [ ] Aplicar estilos consistentes (sin fondos azules, indentación correcta)
+- [ ] Probar persistencia al cambiar de página
+- [ ] Verificar que drag & drop funciona
+- [ ] Confirmar que click abre configuración
+- [ ] Validar que "volver" regresa al sidebar principal
+
 ### 💡 Comando rápido para nuevo módulo
 
 ```bash

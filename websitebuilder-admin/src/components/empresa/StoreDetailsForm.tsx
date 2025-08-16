@@ -52,7 +52,7 @@ type StoreDetailsFormData = z.infer<typeof storeDetailsSchema>;
 
 export function StoreDetailsForm() {
   const { t } = useI18n();
-  const { company, updateCompany, isLoading, error, refetch } = useCompany();
+  const { company, updateCompany, isLoading, error, refetch } = useCompany() as any;
   const [isSaving, setIsSaving] = useState(false);
   const [logo, setLogo] = useState<string>('');
   const [logoSize, setLogoSize] = useState<number>(120);
@@ -133,7 +133,7 @@ export function StoreDetailsForm() {
         city: company.city || '',
         state: company.state || '',
         postalCode: company.postalCode || '',
-        timeZone: company.timeZone || 'America/Santo_Domingo',
+        timeZone: company.timezone || 'America/Santo_Domingo',
         metricSystem: company.metricSystem || 'Metric',
         weightUnit: company.weightUnit || 'Kilograms',
         currency: company.currency || 'USD',

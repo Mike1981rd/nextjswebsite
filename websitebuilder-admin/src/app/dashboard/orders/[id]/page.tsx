@@ -304,7 +304,7 @@ export default function OrderDetailsPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `order-${order.formattedOrderNumber}.pdf`;
+      link.download = `order-${order?.formattedOrderNumber || 'download'}.pdf`;
       
       // Trigger the download
       document.body.appendChild(link);
@@ -345,7 +345,7 @@ export default function OrderDetailsPage() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4" />
@@ -361,11 +361,11 @@ export default function OrderDetailsPage() {
         </div>
         
         <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={handlePrint}>
+          <Button variant="ghost" size="sm" onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" />
             {t('common.print')}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleExportPDF}>
+          <Button variant="ghost" size="sm" onClick={handleExportPDF}>
             <Download className="mr-2 h-4 w-4" />
             PDF
           </Button>
@@ -466,7 +466,7 @@ export default function OrderDetailsPage() {
               </div>
               
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="sm" 
                 className="w-full"
                 onClick={() => router.push(`/dashboard/clientes/${order.customerId}`)}
@@ -591,7 +591,7 @@ export default function OrderDetailsPage() {
               {order.paymentStatus === 'Pending' && (
                 <Button 
                   className="w-full justify-start" 
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setPaymentModalOpen(true)}
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
@@ -602,7 +602,7 @@ export default function OrderDetailsPage() {
               {order.deliveryStatus !== 'Delivered' && (
                 <Button 
                   className="w-full justify-start" 
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setShippingModalOpen(true)}
                 >
                   <Truck className="mr-2 h-4 w-4" />
@@ -613,7 +613,7 @@ export default function OrderDetailsPage() {
               {order.canRefund && (
                 <Button 
                   className="w-full justify-start" 
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setRefundModalOpen(true)}
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
@@ -683,7 +683,7 @@ export default function OrderDetailsPage() {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setPaymentModalOpen(false)}>
+              <Button variant="ghost" onClick={() => setPaymentModalOpen(false)}>
                 {t('common.cancel')}
               </Button>
               <Button onClick={handleUpdatePaymentStatus}>
@@ -741,7 +741,7 @@ export default function OrderDetailsPage() {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setShippingModalOpen(false)}>
+              <Button variant="ghost" onClick={() => setShippingModalOpen(false)}>
                 {t('common.cancel')}
               </Button>
               <Button onClick={handleUpdateShippingStatus}>
@@ -803,7 +803,7 @@ export default function OrderDetailsPage() {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setRefundModalOpen(false)}>
+              <Button variant="ghost" onClick={() => setRefundModalOpen(false)}>
                 {t('common.cancel')}
               </Button>
               <Button 

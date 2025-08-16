@@ -88,7 +88,7 @@ export default function CustomerSecurityTab({
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5266/api/customers/${customer.id}/reset-password`, {
+      const response = await fetch(`http://localhost:5266/api/customers/${customer?.id}/reset-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

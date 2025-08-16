@@ -127,7 +127,7 @@ export default function AnnouncementBarEditor() {
     const updatedConfig = {
       ...localConfig,
       [parent]: {
-        ...(localConfig[parent as keyof AnnouncementBarConfig] || {}),
+        ...(localConfig[parent as keyof AnnouncementBarConfig] as any || {}),
         [field]: value
       }
     };

@@ -63,7 +63,7 @@ export function GlobalSettingsPanel() {
   const [localColorSchemes, setLocalColorSchemes] = useState<ColorSchemesConfig>(defaultColorSchemes);
   const [localProductCards, setLocalProductCards] = useState<ProductCardsConfig>(defaultProductCards);
   // Initialize Product Badges with complete structure to avoid null values
-  const [localProductBadges, setLocalProductBadges] = useState<ProductBadgesConfig>(() => {
+  const [localProductBadges, setLocalProductBadges] = useState<ProductBadgesConfig>((() => {
     const badges = productBadges || defaultProductBadges;
     return {
       position: badges.position || { desktop: 'below-image' },
@@ -71,7 +71,7 @@ export function GlobalSettingsPanel() {
         enabled: badges.soldOut?.enabled ?? true,
         background: badges.soldOut?.background || '#FFFFFF',
         text: badges.soldOut?.text || '#000000',
-        displayAs: badges.soldOut?.displayAs || '',
+        displayAs: badges.soldOut?.displayAs || undefined,
         textContent: badges.soldOut?.textContent || '',
         tag: badges.soldOut?.tag || ''
       },
@@ -99,7 +99,7 @@ export function GlobalSettingsPanel() {
         enabled: badges.custom1?.enabled ?? false,
         background: badges.custom1?.background || '#FFFFFF',
         text: badges.custom1?.text || '#000000',
-        displayAs: badges.custom1?.displayAs || '',
+        displayAs: badges.custom1?.displayAs || undefined,
         textContent: badges.custom1?.textContent || 'Best seller',
         tag: badges.custom1?.tag || ''
       },
@@ -107,7 +107,7 @@ export function GlobalSettingsPanel() {
         enabled: badges.custom2?.enabled ?? false,
         background: badges.custom2?.background || '#FFFFFF',
         text: badges.custom2?.text || '#000000',
-        displayAs: badges.custom2?.displayAs || '',
+        displayAs: badges.custom2?.displayAs || undefined,
         textContent: badges.custom2?.textContent || '',
         tag: badges.custom2?.tag || ''
       },
@@ -115,12 +115,12 @@ export function GlobalSettingsPanel() {
         enabled: badges.custom3?.enabled ?? false,
         background: badges.custom3?.background || '#FFFFFF',
         text: badges.custom3?.text || '#000000',
-        displayAs: badges.custom3?.displayAs || '',
+        displayAs: badges.custom3?.displayAs || undefined,
         textContent: badges.custom3?.textContent || '',
         tag: badges.custom3?.tag || ''
       }
-    };
-  });
+    } as ProductBadgesConfig;
+  })());
   // Initialize Cart with complete structure
   const [localCart, setLocalCart] = useState<CartConfig>(() => {
     const cartData = cart || defaultCart;

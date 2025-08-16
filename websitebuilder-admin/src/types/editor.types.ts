@@ -21,6 +21,7 @@ export enum SectionType {
   
   // Template Sections
   SLIDESHOW = 'slideshow',
+  MULTICOLUMNS = 'multicolumns',
   COLLAGE = 'collage',
   IMAGE_WITH_TEXT = 'image_with_text',
   GALLERY = 'gallery',
@@ -32,7 +33,6 @@ export enum SectionType {
   FAQ = 'faq',
   VIDEOS = 'videos',
   RICH_TEXT = 'rich_text',
-  MULTICOLUMN = 'multicolumn',
   
   // Footer Group
   FOOTER = 'footer',
@@ -166,6 +166,16 @@ export const SECTION_CONFIGS: Record<SectionType, SectionConfig> = {
       duration: 5000
     }
   },
+  [SectionType.MULTICOLUMNS]: {
+    type: SectionType.MULTICOLUMNS,
+    name: 'Multicolumns',
+    description: 'Multiple columns with icons',
+    icon: 'columns-3',
+    category: 'template',
+    defaultSettings: {
+      items: []
+    }
+  },
   [SectionType.COLLAGE]: {
     type: SectionType.COLLAGE,
     name: 'Collage',
@@ -282,16 +292,6 @@ export const SECTION_CONFIGS: Record<SectionType, SectionConfig> = {
     category: 'template',
     defaultSettings: {
       content: ''
-    }
-  },
-  [SectionType.MULTICOLUMN]: {
-    type: SectionType.MULTICOLUMN,
-    name: 'Multicolumn',
-    description: 'Multiple columns layout',
-    icon: 'columns-3',
-    category: 'template',
-    defaultSettings: {
-      columns: []
     }
   },
   [SectionType.FOOTER]: {

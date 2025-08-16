@@ -61,7 +61,7 @@ export default function FooterChildren({
   const handleDeleteBlock = (blockId: string) => {
     updateFooterConfigLocal({
       ...footerConfig,
-      blocks: blocks.filter(b => b.id !== blockId)
+      blocks: blocks.filter((b: any) => b.id !== blockId)
     });
 
     // Clear selection if deleted block was selected
@@ -73,7 +73,7 @@ export default function FooterChildren({
   const handleToggleVisibility = (blockId: string) => {
     updateFooterConfigLocal({
       ...footerConfig,
-      blocks: blocks.map(b => 
+      blocks: blocks.map((b: any) => 
         b.id === blockId ? { ...b, visible: !b.visible } : b
       )
     });
@@ -102,7 +102,7 @@ export default function FooterChildren({
     <div className="space-y-4">
       {/* Lista de bloques existentes */}
       <div className="space-y-2">
-        {blocks.map((block, index) => (
+        {blocks.map((block: any, index: number) => (
           <div 
             key={block.id}
             className={`
@@ -126,7 +126,7 @@ export default function FooterChildren({
                 }`}
               />
               <span className="text-sm flex-1 text-left">
-                {block.title || blockTypeLabels[block.type]}
+                {block.title || blockTypeLabels[block.type as FooterBlockType]}
               </span>
               <div className="flex items-center gap-1">
                 <button
@@ -156,7 +156,7 @@ export default function FooterChildren({
             
             {expandedBlock === block.id && (
               <div className="px-3 pb-3 text-xs text-gray-500 border-t border-gray-200 dark:border-gray-700">
-                Tipo: {blockTypeLabels[block.type]}
+                Tipo: {blockTypeLabels[block.type as FooterBlockType]}
                 {!block.visible && (
                   <span className="ml-2 text-orange-500">(Oculto)</span>
                 )}

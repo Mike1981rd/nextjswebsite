@@ -97,7 +97,7 @@ export function FontPicker({
           families: [`${fontName}:400,700`]
         },
         active: () => {
-          setLoadedFonts(prev => new Set([...prev, fontName]));
+          setLoadedFonts(prev => new Set(Array.from(prev).concat(fontName)));
           setLoadingFont(null);
         },
         inactive: () => {
@@ -115,7 +115,7 @@ export function FontPicker({
             families: [`${fontName}:400,700`]
           },
           active: () => {
-            setLoadedFonts(prev => new Set([...prev, fontName]));
+            setLoadedFonts(prev => new Set(Array.from(prev).concat(fontName)));
             setLoadingFont(null);
           },
           inactive: () => {

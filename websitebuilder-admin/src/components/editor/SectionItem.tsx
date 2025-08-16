@@ -96,7 +96,7 @@ export function SectionItem({ section, groupId, isDragging = false }: SectionIte
       };
       
       console.log('Updating Header config with visibility:', updatedConfig);
-      updateHeaderConfigLocal(updatedConfig);
+      updateHeaderConfigLocal(updatedConfig as any);
     }
     
     // If it's Footer, also update the structural components context

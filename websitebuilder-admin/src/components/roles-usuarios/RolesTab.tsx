@@ -36,7 +36,7 @@ export function RolesTab({ primaryColor }: RolesTabProps) {
   const fetchRoles = async () => {
     try {
       const response = await api.get('/roles');
-      setRoles(response.data);
+      setRoles(response.data as Role[]);
     } catch (error) {
       console.error('Error fetching roles:', error);
     } finally {

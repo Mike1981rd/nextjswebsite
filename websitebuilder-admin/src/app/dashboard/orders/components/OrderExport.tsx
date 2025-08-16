@@ -292,7 +292,7 @@ export function OrderExport({ orders, selectedOrders = [] }: OrderExportProps) {
   return (
     <>
       <Button 
-        variant="outline" 
+        variant="ghost" 
         disabled={isExporting || orders.length === 0}
         className="gap-2"
         onClick={() => setShowExportModal(true)}

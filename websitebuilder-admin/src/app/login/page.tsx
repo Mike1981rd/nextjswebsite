@@ -34,7 +34,7 @@ export default function LoginPage() {
     const loadCompanyConfig = async () => {
       try {
         const response = await api.get('/company/config');
-        setCompanyConfig(response.data);
+        setCompanyConfig(response.data as any);
       } catch (error) {
         console.error('Error loading company config:', error);
         // Continue without company config

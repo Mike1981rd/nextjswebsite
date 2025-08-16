@@ -134,7 +134,7 @@ export default function CreateProductPage() {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setUploadedImages(prev => [...prev, event.target.result as string]);
+          setUploadedImages(prev => [...prev, event.target?.result as string]);
         }
       };
       reader.readAsDataURL(file);
@@ -473,7 +473,7 @@ export default function CreateProductPage() {
                         }
                       }}
                       onBlur={(e) => {
-                        if (formData.basePrice > 0) {
+                        if (formData.basePrice && formData.basePrice > 0) {
                           setFormattedPrice(formatCurrencyInput(formData.basePrice.toString()));
                         }
                       }}

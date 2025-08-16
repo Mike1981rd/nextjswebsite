@@ -15,11 +15,12 @@ import PreviewHeader from '@/components/preview/PreviewHeader';
 import PreviewAnnouncementBar from '@/components/preview/PreviewAnnouncementBar';
 import PreviewFooter from '@/components/preview/PreviewFooter';
 import PreviewSlideshow from '@/components/preview/PreviewSlideshow';
+import PreviewMulticolumns from '@/components/preview/PreviewMulticolumns';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
 interface EditorPreviewProps {
-  deviceView?: 'desktop' | 'mobile';
+  deviceView?: 'desktop' | 'tablet' | 'mobile';
 }
 
 // CSS for animations
@@ -139,7 +140,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
     switch (deviceView) {
       case 'mobile':
         return 'w-[375px]';
-      case 'tablet':
+      case 'tablet' as any:
         return 'w-[768px]';
       default:
         return 'w-full';
@@ -436,8 +437,8 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           <PreviewAnnouncementBar
             config={announcementConfig}
             theme={themeConfig}
-            pageType={selectedPageType}
-            deviceView={deviceView}
+            pageType={selectedPageType as string}
+            deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
           />
         );
@@ -448,7 +449,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           <PreviewHeader
             config={headerConfig || structuralComponents?.header}
             theme={themeConfig}
-            deviceView={deviceView}
+            deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
           />
         );
@@ -456,15 +457,15 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         // Use the PreviewFooter component with default config
         const footerConfig = structuralComponents?.footer || section.settings || { enabled: true };
         // Debug: log the blocks to verify they're updating
-        console.log('[EditorPreview] Footer blocks order:', footerConfig?.blocks?.map((b, i) => `${i+1}. ${b.title || b.type} (${b.id})`).join(', ') || 'No blocks');
+        console.log('[EditorPreview] Footer blocks order:', footerConfig?.blocks?.map((b: any, i: number) => `${i+1}. ${b.title || b.type} (${b.id})`).join(', ') || 'No blocks');
         // Create a key based on block order to force re-render when order changes
-        const footerKey = footerConfig?.blocks?.map(b => b.id).join('-') || 'default';
+        const footerKey = footerConfig?.blocks?.map((b: any) => b.id).join('-') || 'default';
         return (
           <PreviewFooter
             key={`footer-${footerKey}`}
             config={footerConfig}
             theme={themeConfig}
-            deviceView={deviceView}
+            deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
           />
         );
@@ -474,7 +475,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           <PreviewImageBanner
             config={section.settings}
             isEditor={true}
-            deviceView={deviceView}
+            deviceView={deviceView as 'desktop' | 'mobile'}
           />
         );
 
@@ -544,10 +545,20 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
       case SectionType.SLIDESHOW:
         return (
           <PreviewSlideshow
-            settings={section.settings}
+            settings={section.settings as any}
             isEditor={true}
             theme={themeConfig}
-            deviceView={deviceView}
+            deviceView={deviceView as 'desktop' | 'mobile'}
+          />
+        );
+
+      case SectionType.MULTICOLUMNS:
+        return (
+          <PreviewMulticolumns
+            config={section.settings as any}
+            isEditor={true}
+            theme={themeConfig}
+            deviceView={deviceView as 'desktop' | 'mobile'}
           />
         );
 

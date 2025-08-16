@@ -54,7 +54,7 @@ export class CreateUICommand {
     const files = await this.generateFiles(options, analysis);
     console.log(`   ✅ Main page: app/dashboard/${options.name}/page.tsx`);
     if (analysis.hasTabs) {
-      console.log(`   ✅ Tab components: ${analysis.components.filter(c => c.startsWith('tab_')).length} tabs`);
+      console.log(`   ✅ Tab components: ${analysis.components.filter((c: any) => c.startsWith('tab_')).length} tabs`);
     }
     console.log(`   ✅ Translations: en.json, es.json`);
     console.log(`   ✅ Type definitions: types/${options.name}.ts\n`);
@@ -104,7 +104,7 @@ export class CreateUICommand {
     const instructions = this.generateInstructions(options, finalFiles);
 
     return {
-      success: validation.passed || (options.autoFix && validation.score >= 80),
+      success: validation.passed || (options.autoFix && validation.score >= 80) || false,
       files: finalFiles,
       validation,
       analysis,

@@ -24,7 +24,7 @@ export default function SlideshowEditor({ sectionId }: SlideshowEditorProps) {
   
   // Local state
   const [localConfig, setLocalConfig] = useState<SlideshowConfig>(() => {
-    return section?.settings || getDefaultSlideshowConfig();
+    return (section?.settings || getDefaultSlideshowConfig()) as SlideshowConfig;
   });
 
   // Expanded sections
@@ -42,7 +42,7 @@ export default function SlideshowEditor({ sectionId }: SlideshowEditorProps) {
     if (currentSection?.settings) {
       const newSettings = currentSection.settings;
       if (JSON.stringify(newSettings) !== JSON.stringify(localConfig)) {
-        setLocalConfig(newSettings);
+        setLocalConfig(newSettings as SlideshowConfig);
       }
     }
   }, [sectionId, sections]);

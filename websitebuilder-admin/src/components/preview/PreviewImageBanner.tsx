@@ -66,29 +66,30 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
   
   // Apply defaults to config
   const configWithDefaults = {
-    colorScheme: '1',
-    colorBackground: false,
-    width: 'page' as const,
-    desktopRatio: 16/9,
-    mobileRatio: 1,
-    desktopPosition: 'center',
-    desktopAlignment: 'center' as const,
-    desktopWidth: 50,
-    desktopSpacing: 4,
-    mobilePosition: 'center' as const,
-    mobileAlignment: 'center' as const,
-    desktopBackground: 'none' as const,
-    mobileBackground: 'none' as const,
-    headingSize: 2 as const,
-    bodySize: 1 as const,
-    firstButtonStyle: 'solid' as const,
-    secondButtonStyle: 'outline' as const,
-    desktopOverlayOpacity: 0,
-    mobileOverlayOpacity: 0,
-    topPadding: 0,
-    bottomPadding: 0,
-    addSidePaddings: false,
-    ...config
+    ...config,
+    // Add defaults for properties that might be missing in config
+    colorScheme: config.colorScheme || '1',
+    colorBackground: config.colorBackground ?? false,
+    width: config.width || 'page' as const,
+    desktopRatio: config.desktopRatio || 16/9,
+    mobileRatio: config.mobileRatio || 1,
+    desktopPosition: config.desktopPosition || 'center',
+    desktopAlignment: config.desktopAlignment || 'center' as const,
+    desktopWidth: config.desktopWidth || 50,
+    desktopSpacing: config.desktopSpacing || 4,
+    mobilePosition: config.mobilePosition || 'center' as const,
+    mobileAlignment: config.mobileAlignment || 'center' as const,
+    desktopBackground: config.desktopBackground || 'none' as const,
+    mobileBackground: config.mobileBackground || 'none' as const,
+    headingSize: config.headingSize || 2 as const,
+    bodySize: config.bodySize || 1 as const,
+    firstButtonStyle: config.firstButtonStyle || 'solid' as const,
+    secondButtonStyle: config.secondButtonStyle || 'outline' as const,
+    desktopOverlayOpacity: config.desktopOverlayOpacity ?? 0,
+    mobileOverlayOpacity: config.mobileOverlayOpacity ?? 0,
+    topPadding: config.topPadding ?? 0,
+    bottomPadding: config.bottomPadding ?? 0,
+    addSidePaddings: config.addSidePaddings ?? false
   };
   
   // Use the config with defaults from here on
@@ -296,7 +297,7 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                     style={{ 
                       color: colorScheme.text,
                       ...bodyTypographyStyles
-                    }}
+                    } as React.CSSProperties}
                   >
                     {config.subheading}
                   </p>
@@ -305,12 +306,12 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                 {/* Heading */}
                 {config.heading && (
                   <h2 
-                    className={`${headingSizeClasses[config.headingSize]}`}
+                    className={`${(headingSizeClasses as any)[config.headingSize] || ''}`}
                     style={{ 
                       color: colorScheme.text,
                       ...headingTypographyStyles,
-                      fontWeight: config.headingFontWeight || headingTypographyStyles.fontWeight || '700'
-                    }}
+                      fontWeight: config.headingFontWeight || (headingTypographyStyles as any)?.fontWeight || '700'
+                    } as React.CSSProperties}
                   >
                     {config.heading}
                   </h2>
@@ -319,12 +320,12 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                 {/* Body */}
                 {config.body && (
                   <p 
-                    className={`${bodySizeClasses[config.bodySize]} opacity-90`}
+                    className={`${(bodySizeClasses as any)[config.bodySize] || ''} opacity-90`}
                     style={{ 
                       color: colorScheme.text,
                       ...bodyTypographyStyles,
-                      fontWeight: config.bodyFontWeight || bodyTypographyStyles.fontWeight || '400'
-                    }}
+                      fontWeight: config.bodyFontWeight || (bodyTypographyStyles as any)?.fontWeight || '400'
+                    } as React.CSSProperties}
                   >
                     {config.body}
                   </p>
@@ -336,11 +337,11 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                     {config.firstButtonLabel && (
                       <a
                         href={config.firstButtonLink || '#'}
-                        className={`px-6 py-3 rounded-md ${getButtonClasses(config.firstButtonStyle)}`}
+                        className={`px-6 py-3 rounded-md ${getButtonClasses(config.firstButtonStyle || 'solid')}`}
                         style={{
-                          ...getButtonStyles(config.firstButtonStyle),
+                          ...getButtonStyles(config.firstButtonStyle || 'solid'),
                           ...buttonTypographyStyles
-                        }}
+                        } as React.CSSProperties}
                       >
                         {config.firstButtonLabel}
                       </a>
@@ -348,11 +349,11 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                     {config.secondButtonLabel && (
                       <a
                         href={config.secondButtonLink || '#'}
-                        className={`px-6 py-3 rounded-md ${getButtonClasses(config.secondButtonStyle)}`}
+                        className={`px-6 py-3 rounded-md ${getButtonClasses(config.secondButtonStyle || 'outline')}`}
                         style={{
-                          ...getButtonStyles(config.secondButtonStyle),
+                          ...getButtonStyles(config.secondButtonStyle || 'outline'),
                           ...buttonTypographyStyles
-                        }}
+                        } as React.CSSProperties}
                       >
                         {config.secondButtonLabel}
                       </a>
@@ -419,7 +420,7 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                     style={{ 
                       color: colorScheme.text,
                       ...bodyTypographyStyles
-                    }}
+                    } as React.CSSProperties}
                   >
                     {config.subheading}
                   </p>
@@ -428,12 +429,12 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                 {/* Heading */}
                 {config.heading && (
                   <h2 
-                    className={`${headingSizeClasses[config.headingSize]}`}
+                    className={`${(headingSizeClasses as any)[config.headingSize] || ''}`}
                     style={{ 
                       color: colorScheme.text,
                       ...headingTypographyStyles,
-                      fontWeight: config.headingFontWeight || headingTypographyStyles.fontWeight || '700'
-                    }}
+                      fontWeight: config.headingFontWeight || (headingTypographyStyles as any)?.fontWeight || '700'
+                    } as React.CSSProperties}
                   >
                     {config.heading}
                   </h2>
@@ -442,12 +443,12 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                 {/* Body */}
                 {config.body && (
                   <p 
-                    className={`${bodySizeClasses[config.bodySize]} opacity-90`}
+                    className={`${(bodySizeClasses as any)[config.bodySize] || ''} opacity-90`}
                     style={{ 
                       color: colorScheme.text,
                       ...bodyTypographyStyles,
-                      fontWeight: config.bodyFontWeight || bodyTypographyStyles.fontWeight || '400'
-                    }}
+                      fontWeight: config.bodyFontWeight || (bodyTypographyStyles as any)?.fontWeight || '400'
+                    } as React.CSSProperties}
                   >
                     {config.body}
                   </p>
@@ -461,9 +462,9 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                         href={config.firstButtonLink || '#'}
                         className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(config.firstButtonStyle)}`}
                         style={{
-                          ...getButtonStyles(config.firstButtonStyle),
+                          ...getButtonStyles(config.firstButtonStyle || 'solid'),
                           ...buttonTypographyStyles
-                        }}
+                        } as React.CSSProperties}
                       >
                         {config.firstButtonLabel}
                       </a>
@@ -471,11 +472,11 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                     {config.secondButtonLabel && (
                       <a
                         href={config.secondButtonLink || '#'}
-                        className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(config.secondButtonStyle)}`}
+                        className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(config.secondButtonStyle || 'outline')}`}
                         style={{
-                          ...getButtonStyles(config.secondButtonStyle),
+                          ...getButtonStyles(config.secondButtonStyle || 'outline'),
                           ...buttonTypographyStyles
-                        }}
+                        } as React.CSSProperties}
                       >
                         {config.secondButtonLabel}
                       </a>

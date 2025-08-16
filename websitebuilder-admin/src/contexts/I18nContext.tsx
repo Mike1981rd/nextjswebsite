@@ -7,6 +7,7 @@ type Language = 'es' | 'en';
 
 interface I18nContextType {
   language: Language;
+  locale?: string;
   setLanguage: (lang: Language) => void;
   t: (key: string, defaultValue?: string, params?: Record<string, any>) => string;
   loadModule: (moduleName: string) => Promise<void>;
@@ -225,9 +226,9 @@ export function I18nProvider({ children }: I18nProviderProps) {
     if (typeof translation === 'object' && translation !== null) {
       // Buscar la propiedad más relevante
       if ('title' in translation) {
-        translation = translation.title;
+        translation = (translation as any).title;
       } else if ('text' in translation) {
-        translation = translation.text;
+        translation = (translation as any).text;
       } else {
         // Si es un objeto sin propiedades conocidas, convertir a string
         translation = JSON.stringify(translation);

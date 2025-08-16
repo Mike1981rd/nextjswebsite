@@ -82,7 +82,7 @@ export function useCompany() {
       setError(null);
       
       const response = await api.get('/company/current');
-      setCompany(response.data);
+      setCompany(response.data as Company);
     } catch (err: any) {
       console.error('Error fetching company:', err);
       setError(err.response?.data?.message || 'Error loading company information');
@@ -99,8 +99,8 @@ export function useCompany() {
       const response = await api.put('/company/current', data);
       const updatedCompany = response.data;
       
-      setCompany(updatedCompany);
-      return updatedCompany;
+      setCompany(updatedCompany as Company);
+      return updatedCompany as Company;
     } catch (err: any) {
       console.error('Error updating company:', err);
       console.error('Error response:', err.response?.data);
@@ -124,7 +124,7 @@ export function useCompany() {
         },
       });
       
-      const logoUrl = response.data.logoUrl;
+      const logoUrl = (response.data as any).logoUrl;
       
       // Update company data with new logo
       if (company) {

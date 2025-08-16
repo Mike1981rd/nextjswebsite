@@ -421,7 +421,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
         )}>
           <div className="flex items-center gap-3">
             {/* Logo */}
-            {company?.logo && buildAssetUrl(company.logo) ? (
+            {(company as any)?.logo && buildAssetUrl((company as any).logo) ? (
               <div 
                 className="relative overflow-hidden rounded-lg"
                 style={{ 
@@ -430,8 +430,8 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                 }}
               >
                 <Image 
-                  src={buildAssetUrl(company.logo)!} 
-                  alt={company.name || 'Company Logo'} 
+                  src={buildAssetUrl((company as any).logo)!} 
+                  alt={company?.name || 'Company Logo'} 
                   fill
                   className="object-contain"
                   sizes={`${sidebarLogoSize}px`}
@@ -494,7 +494,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
         {/* Footer */}
         <div className="border-t border-sidebar-bgHover p-4">
           <div className="flex items-center gap-3">
-            {company?.logo && buildAssetUrl(company.logo) ? (
+            {(company as any)?.logo && buildAssetUrl((company as any).logo) ? (
               <div 
                 className="relative overflow-hidden rounded-full"
                 style={{ 
@@ -503,8 +503,8 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                 }}
               >
                 <Image 
-                  src={buildAssetUrl(company.logo)!} 
-                  alt={company.name || 'Company Logo'} 
+                  src={buildAssetUrl((company as any).logo)!} 
+                  alt={company?.name || 'Company Logo'} 
                   fill
                   className="object-contain"
                   sizes={`${sidebarLogoSize}px`}
@@ -564,7 +564,7 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
           {/* Mobile Header */}
           <div className="flex h-16 items-center justify-between px-4 border-b border-sidebar-bgHover">
             <div className="flex items-center gap-3">
-              {company?.logo && buildAssetUrl(company.logo) ? (
+              {(company as any)?.logo && buildAssetUrl((company as any).logo) ? (
                 <div 
                   className="relative overflow-hidden rounded-lg"
                   style={{ 
@@ -573,8 +573,8 @@ export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps
                   }}
                 >
                   <Image 
-                    src={buildAssetUrl(company.logo)!} 
-                    alt={company.name || 'Company Logo'} 
+                    src={buildAssetUrl((company as any).logo)!} 
+                    alt={company?.name || 'Company Logo'} 
                     fill
                     className="object-contain"
                     sizes={`${sidebarLogoSize}px`}

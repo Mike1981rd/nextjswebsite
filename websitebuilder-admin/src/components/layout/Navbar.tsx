@@ -354,7 +354,7 @@ export function Navbar({
             >
               <Avatar
                 name={user.name}
-                src={user.avatar}
+                src={user.avatar || undefined}
                 size="sm"
               />
               <div className="hidden md:block text-left">

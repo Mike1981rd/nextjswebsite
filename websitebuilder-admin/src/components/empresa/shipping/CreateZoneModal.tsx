@@ -93,7 +93,7 @@ export function CreateZoneModal({ isOpen, onClose, onCreateZone, primaryColor }:
                     onChange={(e) => setZoneName(e.target.value)}
                     placeholder={t('empresa.shipping.zoneNamePlaceholder', 'e.g., Europe, Asia Pacific')}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    style={{ focusRingColor: primaryColor }}
+                    style={{ outline: `2px solid ${primaryColor}` } as React.CSSProperties}
                   />
                 </div>
 

@@ -34,7 +34,7 @@ export default function FooterMenuEditor({ blockId }: FooterMenuEditorProps) {
   // Get the specific block from footer config
   const footerConfig = structuralComponents?.footer || {};
   const blocks = footerConfig.blocks || [];
-  const currentBlock = blocks.find(b => b.id === blockId);
+  const currentBlock = blocks.find((b: any) => b.id === blockId);
   
   // Initialize local state with current settings
   const [localSettings, setLocalSettings] = useState<FooterMenuSettings>(() => {
@@ -46,7 +46,7 @@ export default function FooterMenuEditor({ blockId }: FooterMenuEditorProps) {
 
   // Sync with props when they change
   useEffect(() => {
-    const block = blocks.find(b => b.id === blockId);
+    const block = blocks.find((b: any) => b.id === blockId);
     if (block?.settings) {
       const newSettings = block.settings || { navigationMenuId: '', heading: '' };
       if (JSON.stringify(newSettings) !== JSON.stringify(localSettings)) {
@@ -70,7 +70,7 @@ export default function FooterMenuEditor({ blockId }: FooterMenuEditorProps) {
     setLocalSettings(updatedSettings);
     
     // Update the block in footer config
-    const updatedBlocks = blocks.map(block => 
+    const updatedBlocks = blocks.map((block: any) => 
       block.id === blockId 
         ? { ...block, settings: updatedSettings }
         : block

@@ -55,7 +55,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       
       const response = await api.get('/company/current');
-      setCompany(response.data);
+      setCompany(response.data as Company);
     } catch (err: any) {
       console.error('Error fetching company:', err);
       setError(err.response?.data?.message || 'Failed to fetch company data');
@@ -71,7 +71,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       
       const response = await api.put('/company/current', data);
       const updatedCompany = response.data;
-      setCompany(updatedCompany);
+      setCompany(updatedCompany as Company);
       
       // Update localStorage for logo size
       if (data.logoSize !== undefined) {
@@ -80,7 +80,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('company-settings', JSON.stringify(settings));
       }
       
-      return updatedCompany;
+      return updatedCompany as Company;
     } catch (err: any) {
       console.error('Error updating company:', err);
       setError(err.response?.data?.message || 'Failed to update company');
@@ -104,7 +104,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         },
       });
       
-      const logoUrl = response.data.logoUrl;
+      const logoUrl = (response.data as any).logoUrl;
       setCompany(prev => prev ? { ...prev, logoUrl } : null);
       
       return logoUrl;

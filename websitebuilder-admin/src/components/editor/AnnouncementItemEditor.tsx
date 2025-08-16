@@ -165,7 +165,7 @@ export default function AnnouncementItemEditor({ announcementId }: AnnouncementI
   
   const announcementConfig = structuralComponents?.announcementBar || {};
   const announcements = announcementConfig.announcements || [];
-  const currentAnnouncement = announcements.find(a => a.id === announcementId) || { 
+  const currentAnnouncement = announcements.find((a: any) => a.id === announcementId) || { 
     id: announcementId, 
     text: '', 
     link: '' 
@@ -182,7 +182,7 @@ export default function AnnouncementItemEditor({ announcementId }: AnnouncementI
   const [isItalic, setIsItalic] = useState(false);
 
   useEffect(() => {
-    const announcement = announcements.find(a => a.id === announcementId);
+    const announcement = announcements.find((a: any) => a.id === announcementId);
     if (announcement) {
       setLocalAnnouncement(announcement);
       setCustomIconUrl(announcement.customIcon || '');
@@ -205,7 +205,7 @@ export default function AnnouncementItemEditor({ announcementId }: AnnouncementI
     setLocalAnnouncement(updatedAnnouncement);
     
     // Update in the global config
-    const updatedAnnouncements = announcements.map(a => 
+    const updatedAnnouncements = announcements.map((a: any) => 
       a.id === announcementId ? updatedAnnouncement : a
     );
     
@@ -259,7 +259,7 @@ export default function AnnouncementItemEditor({ announcementId }: AnnouncementI
     setLocalAnnouncement(updatedAnnouncement);
     
     // Update in the global config with a single update
-    const updatedAnnouncements = announcements.map(a => 
+    const updatedAnnouncements = announcements.map((a: any) => 
       a.id === announcementId ? updatedAnnouncement : a
     );
     

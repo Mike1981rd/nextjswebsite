@@ -52,7 +52,7 @@ export function CheckoutConfiguration() {
   const loadCheckoutSettings = async () => {
     try {
       const response = await api.get('/company/checkout-settings');
-      const settings = response.data;
+      const settings = response.data as any;
       
       // Apply loaded settings
       setContactMethod(settings.contactMethod || 'email');

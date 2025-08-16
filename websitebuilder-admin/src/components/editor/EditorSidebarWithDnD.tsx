@@ -29,6 +29,7 @@ import { DragOverlay } from './dragDrop/DragOverlay';
 import { AnnouncementChildren } from './AnnouncementChildren';
 import { FooterChildren } from './FooterChildren';
 import SlideshowChildren from './modules/Slideshow/SlideshowChildren';
+import MulticolumnsChildren from './modules/Multicolumns/MulticolumnsChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -242,6 +243,14 @@ export function EditorSidebarWithDnD() {
                               {/* Slideshow Children - Show slides as child items */}
                               {section.type === SectionType.SLIDESHOW && section.visible && (
                                 <SlideshowChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+
+                              {/* Multicolumns Children - Show column items as child items */}
+                              {section.type === SectionType.MULTICOLUMNS && section.visible && (
+                                <MulticolumnsChildren 
                                   section={section}
                                   groupId={group.id}
                                 />

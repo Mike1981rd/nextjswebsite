@@ -85,7 +85,7 @@ class FrontendLogger {
       
       // Always log React warnings, even in batches
       if (isReactWarning) {
-        this.log('warn', 'react-warning', message, {
+        this.log('warn', 'console' as any, message, {
           args,
           stack: new Error().stack,
           isReactWarning: true
@@ -114,10 +114,15 @@ class FrontendLogger {
    * Intercept all network requests (fetch and XMLHttpRequest)
    */
   private interceptNetworkRequests(): void {
+    // Extend XMLHttpRequest type to include our custom properties
+    interface ExtendedXMLHttpRequest extends XMLHttpRequest {
+      _method?: string;
+      _url?: string;
+    }
     // Intercept fetch
     window.fetch = async (...args: Parameters<typeof fetch>): Promise<Response> => {
       const [input, init] = args;
-      const url = typeof input === 'string' ? input : input.url;
+      const url = typeof input === 'string' ? input : (input instanceof Request ? input.url : (input as URL).toString());
       const method = init?.method || 'GET';
       
       const startTime = Date.now();
@@ -168,13 +173,13 @@ class FrontendLogger {
     const originalXHRSend = XMLHttpRequest.prototype.send;
 
     XMLHttpRequest.prototype.open = function(method: string, url: string, ...rest: any[]) {
-      this._method = method;
-      this._url = url;
+      (this as ExtendedXMLHttpRequest)._method = method;
+      (this as ExtendedXMLHttpRequest)._url = url;
       return originalXHROpen.apply(this, [method, url, ...rest] as any);
     };
 
     XMLHttpRequest.prototype.send = function(body?: any) {
-      const xhr = this;
+      const xhr = this as ExtendedXMLHttpRequest;
       const startTime = Date.now();
 
       xhr.addEventListener('error', () => {

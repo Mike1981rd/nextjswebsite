@@ -575,7 +575,7 @@ export default function PreviewFooter({
                     };
                     
                     const renderPaymentIcon = (key: string, DefaultIcon: React.FC) => {
-                      const customLogo = paymentLogos[key];
+                      const customLogo = (paymentLogos as any)[key];
                       if (customLogo) {
                         return (
                           <img 

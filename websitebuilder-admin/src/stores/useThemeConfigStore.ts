@@ -705,7 +705,7 @@ const useThemeConfigStore = create<ThemeConfigState>()(
             const methodName = `fetch${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}` as keyof ThemeConfigState;
             const method = state[methodName];
             if (typeof method === 'function') {
-              await method(companyId);
+              await (method as any)(companyId);
             }
           } catch (error: any) {
             set((state) => {

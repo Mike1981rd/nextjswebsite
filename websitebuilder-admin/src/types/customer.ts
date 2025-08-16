@@ -30,6 +30,10 @@ export interface CustomerDto {
 export interface CustomerDetailDto extends CustomerDto {
   // Additional properties not in base CustomerDto
   country?: string;
+  avatar?: string;
+  fullName?: string;
+  wishlistCount?: number;
+  couponsCount?: number;
   addresses?: CustomerAddressDto[];
   paymentMethods?: CustomerPaymentMethodDto[];
   notificationPreferences?: any;

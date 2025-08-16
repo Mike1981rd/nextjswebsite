@@ -702,7 +702,7 @@ export function LocationsConfiguration({ primaryColor }: LocationsConfigurationP
                         {location.country && (
                           <div className="flex items-center mt-1 gap-1 sm:gap-1.5">
                             <CountryFlag countryCode={location.country} className="w-3.5 sm:w-4 h-3 sm:h-3" />
-                            <span>{countries[location.country]?.name || location.country}</span>
+                            <span>{countries[location.country as keyof typeof countries]?.name || location.country}</span>
                           </div>
                         )}
                       </div>

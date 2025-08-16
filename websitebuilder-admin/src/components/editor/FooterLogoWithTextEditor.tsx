@@ -35,7 +35,7 @@ export default function FooterLogoWithTextEditor({ blockId }: FooterLogoWithText
   // Get the specific block from footer config
   const footerConfig = structuralComponents?.footer || {};
   const blocks = footerConfig.blocks || [];
-  const currentBlock = blocks.find(b => b.id === blockId);
+  const currentBlock = blocks.find((b: any) => b.id === blockId);
   
   // Initialize local state with current settings
   const [localSettings, setLocalSettings] = useState<FooterLogoWithTextSettings>(() => {
@@ -49,7 +49,7 @@ export default function FooterLogoWithTextEditor({ blockId }: FooterLogoWithText
 
   // Sync with props when they change
   useEffect(() => {
-    const block = blocks.find(b => b.id === blockId);
+    const block = blocks.find((b: any) => b.id === blockId);
     if (block?.settings) {
       const newSettings = block.settings || { logoUrl: '', logoSize: 190, heading: '', body: '' };
       if (JSON.stringify(newSettings) !== JSON.stringify(localSettings)) {
@@ -76,7 +76,7 @@ export default function FooterLogoWithTextEditor({ blockId }: FooterLogoWithText
     setLocalSettings(updatedSettings);
     
     // Update the block in footer config
-    const updatedBlocks = blocks.map(block => 
+    const updatedBlocks = blocks.map((block: any) => 
       block.id === blockId 
         ? { ...block, settings: updatedSettings }
         : block

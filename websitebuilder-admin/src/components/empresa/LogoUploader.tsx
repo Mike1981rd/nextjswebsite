@@ -108,10 +108,10 @@ export function LogoUploader({
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      if (response.data.url) {
-        const fullUrl = formatFileUrl(response.data.url);
+      if ((response.data as any).url) {
+        const fullUrl = formatFileUrl((response.data as any).url);
         setPreview(fullUrl);
-        onLogoChange(response.data.url);
+        onLogoChange((response.data as any).url);
         
         // Mostrar éxito brevemente
         setTimeout(() => {

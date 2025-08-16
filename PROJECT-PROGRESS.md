@@ -21,6 +21,11 @@ Resolver los 9 problemas críticos del proyecto anterior:
 9. ⏳ Sin undo/redo → Sistema de historial
 
 ### 📚 Documentation
+#### SlideShow Module (August 16, 2025)
+- ✅ **Implementation**: `/docs/implementations/features/2025-08-slideshow-module.md`
+- ✅ **Troubleshooting**: `/docs/troubleshooting/features/slideshow-01-display-issues.md`
+- ✅ **Test Images**: `/Test Images/SlideShow/` - Screenshots and testing assets
+
 #### Announcement Module (January 14, 2025)
 - ✅ **Implementation**: `/docs/implementations/features/2025-01-announcement-module.md`
 - ✅ **Troubleshooting**: 

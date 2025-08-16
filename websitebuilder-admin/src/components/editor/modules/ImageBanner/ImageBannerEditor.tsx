@@ -33,7 +33,7 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
   
   // Initialize local state with defaults
   const [localConfig, setLocalConfig] = useState<ImageBannerConfig>(() => {
-    return section?.settings || getDefaultConfig();
+    return (section?.settings || getDefaultConfig()) as ImageBannerConfig;
   });
 
   // Expanded sections state
@@ -52,7 +52,7 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
     if (currentSection?.settings) {
       const newSettings = currentSection.settings;
       if (JSON.stringify(newSettings) !== JSON.stringify(localConfig)) {
-        setLocalConfig(newSettings);
+        setLocalConfig(newSettings as ImageBannerConfig);
       }
     }
   }, [sectionId, sections]);

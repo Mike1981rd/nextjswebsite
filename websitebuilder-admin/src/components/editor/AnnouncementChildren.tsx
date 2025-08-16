@@ -24,7 +24,7 @@ export function AnnouncementChildren({ section, groupId }: AnnouncementChildrenP
 
   // Stable sortable IDs for items
   const sortableIds = useMemo(
-    () => announcements.map((a: any) => `ann:${section.id}:${a.id}`),
+    () => announcements.map((a: { id: string }) => `ann:${section.id}:${a.id}`),
     [announcements, section.id]
   );
 
@@ -73,9 +73,9 @@ export function AnnouncementChildren({ section, groupId }: AnnouncementChildrenP
   };
 
   const handleToggleAnnouncementVisibility = (announcementId: string) => {
-    const announcement = announcements.find(a => a.id === announcementId);
+    const announcement = announcements.find((a: { id: string }) => a.id === announcementId);
     if (announcement) {
-      const updatedAnnouncements = announcements.map(a => 
+      const updatedAnnouncements = announcements.map((a: { id: string; visible?: boolean }) => 
         a.id === announcementId 
           ? { ...a, visible: !a.visible } 
           : a
@@ -91,7 +91,7 @@ export function AnnouncementChildren({ section, groupId }: AnnouncementChildrenP
   };
 
   const handleDeleteAnnouncement = (announcementId: string) => {
-    const updatedAnnouncements = announcements.filter(a => a.id !== announcementId);
+    const updatedAnnouncements = announcements.filter((a: { id: string }) => a.id !== announcementId);
     
     const updatedConfig = {
       ...announcementConfig,
@@ -118,7 +118,7 @@ export function AnnouncementChildren({ section, groupId }: AnnouncementChildrenP
       {/* List of Announcements with local DnD */}
       <DndContext onDragEnd={handleDragEnd}>
         <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-          {announcements.map((announcement, index) => (
+          {announcements.map((announcement: any, index: number) => (
             <DraggableAnnouncementItem key={announcement.id} itemId={`ann:${section.id}:${announcement.id}`}>
               {({ setNodeRef, attributes, listeners, isDragging, style }) => (
                 <div

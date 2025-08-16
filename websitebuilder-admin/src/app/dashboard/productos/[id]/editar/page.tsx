@@ -224,7 +224,7 @@ export default function EditProductPage() {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setUploadedImages(prev => [...prev, event.target.result as string]);
+          setUploadedImages(prev => [...prev, event.target?.result as string]);
         }
       };
       reader.readAsDataURL(file);

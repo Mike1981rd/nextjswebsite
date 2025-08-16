@@ -113,7 +113,7 @@ export function StructuralComponentsProvider({ children }: { children: React.Rea
   }, []);
 
   // Publish all structural components
-  const publish = useCallback(async () => {
+  const publish = useCallback(async (): Promise<void> => {
     if (!company?.id) {
       return;
     }
@@ -148,15 +148,13 @@ export function StructuralComponentsProvider({ children }: { children: React.Rea
       // Don't show toast here - let the calling component show it in the correct language
       // toast.success('Changes saved successfully');
       
-      // Return success
-      return true;
+      // Return success (void)
       
     } catch (err) {
       console.error('Error in publish:', err);
       // Don't show toast here either - let the calling component handle errors
       // toast.error('Failed to save changes');
       // Don't reset hasChanges on error so user can retry
-      return false;
     } finally {
       setLoading(false);
     }

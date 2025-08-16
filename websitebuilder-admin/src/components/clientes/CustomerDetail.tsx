@@ -226,10 +226,10 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
     try {
       setLoading(true);
       const data = await customerAPI.getCustomer(parseInt(customerId));
-      setCustomer(data);
+      setCustomer(data as unknown as CustomerDetailDto);
       
       // Initialize form data with customer data
-      setFormData(prev => ({
+      setFormData((prev: AllFormData) => ({
         ...prev,
         overview: {
           firstName: data.firstName || '',
@@ -299,7 +299,7 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
             timezone: data.notificationPreferences?.timezone || 'America/Santo_Domingo'
           }
         }
-      }));
+      }) as unknown as AllFormData);
     } catch (error) {
       console.error('Error fetching customer:', error);
     } finally {
@@ -557,9 +557,9 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
         // Save security settings for existing customer - only if there are changes
         const hasSecurityChanges = 
           formData.security.newPassword || 
-          formData.security.isTwoFactorEnabled !== customer.twoFactorEnabled ||
-          formData.security.recoveryEmail !== (customer.recoveryEmail || customer.email) ||
-          formData.security.sessionTimeout !== (customer.sessionTimeoutMinutes || 30) ||
+          formData.security.isTwoFactorEnabled !== customer?.isTwoFactorEnabled ||
+          formData.security.recoveryEmail !== (customer?.recoveryEmail || customer?.email) ||
+          formData.security.sessionTimeout !== (customer?.sessionTimeout || 30) ||
           formData.security.securityQuestions.some(q => q.question && q.answer);
         
         if (hasSecurityChanges) {
@@ -592,9 +592,9 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
             
             // Only update security settings if there are non-password changes
             const hasNonPasswordChanges = 
-              formData.security.isTwoFactorEnabled !== customer.twoFactorEnabled ||
-              formData.security.recoveryEmail !== (customer.recoveryEmail || customer.email) ||
-              formData.security.sessionTimeout !== (customer.sessionTimeoutMinutes || 30) ||
+              formData.security.isTwoFactorEnabled !== customer?.isTwoFactorEnabled ||
+              formData.security.recoveryEmail !== (customer?.recoveryEmail || customer?.email) ||
+              formData.security.sessionTimeout !== (customer?.sessionTimeout || 30) ||
               formData.security.securityQuestions.some(q => q.question && q.answer);
             
             if (hasNonPasswordChanges) {

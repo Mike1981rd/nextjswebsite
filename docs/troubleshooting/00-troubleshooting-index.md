@@ -43,6 +43,7 @@
 - Calendar and date components
 - Internationalization (i18n) problems
 - Dark mode implementation
+- SlideShow display and navigation issues
 
 ### General Issues
 [📂 View General Index](./general/general-00-index.md)
@@ -90,6 +91,11 @@
 **Symptoms**: Form elements remain white/light in dark mode
 **Quick Fix**: Add `dark:` CSS classes to all elements
 **Full Solution**: [Features-05: Dark Mode Not Applying](./features/features-05-dark-mode-not-applying.md)
+
+### 8. **SlideShow Body Text Not Displaying**
+**Symptoms**: Body text configured but not showing in preview
+**Quick Fix**: Check property name (should be `body` not `text`)
+**Full Solution**: [SlideShow-01: Display Issues](./features/slideshow-01-display-issues.md)
 
 ---
 

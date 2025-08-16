@@ -41,7 +41,7 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
   const blocks = footerConfig.blocks || [];
   
   // Create sortable IDs for drag & drop
-  const sortableIds = useMemo(() => blocks.map(b => b.id), [blocks]);
+  const sortableIds = useMemo(() => blocks.map((b: any) => b.id), [blocks]);
 
   const handleAddBlock = (type: FooterBlockType) => {
     const newBlock = {
@@ -107,9 +107,9 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
   };
 
   const handleToggleBlockVisibility = (blockId: string) => {
-    const block = blocks.find(b => b.id === blockId);
+    const block = blocks.find((b: any) => b.id === blockId);
     if (block) {
-      const updatedBlocks = blocks.map(b => 
+      const updatedBlocks = blocks.map((b: any) => 
         b.id === blockId 
           ? { ...b, visible: !b.visible } 
           : b
@@ -125,7 +125,7 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
   };
 
   const handleDeleteBlock = (blockId: string) => {
-    const updatedBlocks = blocks.filter(b => b.id !== blockId);
+    const updatedBlocks = blocks.filter((b: any) => b.id !== blockId);
     
     const updatedConfig = {
       ...footerConfig,
@@ -143,14 +143,14 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
       return;
     }
 
-    const oldIndex = blocks.findIndex(b => b.id === active.id);
-    const newIndex = blocks.findIndex(b => b.id === over.id);
+    const oldIndex = blocks.findIndex((b: any) => b.id === active.id);
+    const newIndex = blocks.findIndex((b: any) => b.id === over.id);
 
     if (oldIndex !== -1 && newIndex !== -1) {
       const reorderedBlocks = arrayMove(blocks, oldIndex, newIndex);
       
-      console.log('[FooterChildren] Drag & Drop - Old order:', blocks.map((b, i) => `${i+1}. ${b.title || b.type}`).join(', '));
-      console.log('[FooterChildren] Drag & Drop - New order:', reorderedBlocks.map((b, i) => `${i+1}. ${b.title || b.type}`).join(', '));
+      console.log('[FooterChildren] Drag & Drop - Old order:', blocks.map((b: any, i: number) => `${i+1}. ${b.title || b.type}`).join(', '));
+      console.log('[FooterChildren] Drag & Drop - New order:', reorderedBlocks.map((b: any, i: number) => `${i+1}. ${b.title || b.type}`).join(', '));
       
       const updatedConfig = {
         ...footerConfig,
@@ -206,7 +206,7 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
           items={sortableIds} 
           strategy={verticalListSortingStrategy}
         >
-          {blocks.map((block, index) => (
+          {blocks.map((block: any, index: number) => (
             <DraggableFooterBlock key={block.id} blockId={block.id}>
               {({ setNodeRef, attributes, listeners, isDragging, style }) => (
                 <div
@@ -235,7 +235,7 @@ export function FooterChildren({ section, groupId }: FooterChildrenProps) {
                   
                   {/* Block name */}
                   <span className="flex-1 text-sm text-gray-800 dark:text-gray-200 truncate">
-                    {block.title || blockTypeLabels[block.type]}
+                    {block.title || blockTypeLabels[block.type as FooterBlockType]}
                   </span>
 
                   {/* Actions */}

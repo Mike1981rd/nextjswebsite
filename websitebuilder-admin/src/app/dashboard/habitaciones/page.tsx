@@ -82,8 +82,7 @@ export default function HabitacionesPage() {
   };
 
   const handleDelete = async (room: Room) => {
-    const confirmMessage = t('rooms.confirmDelete', { roomName: room.name }) + 
-      '\n\n' + t('rooms.deleteWarning');
+    const confirmMessage = `${t('rooms.confirmDelete', 'Are you sure you want to delete')} "${room.name}"?\n\n${t('rooms.deleteWarning', 'This action cannot be undone.')}`;
     
     if (!confirm(confirmMessage)) {
       return;
@@ -151,8 +150,8 @@ export default function HabitacionesPage() {
 
       // Mostrar mensaje de éxito
       const statusMessage = newStatus 
-        ? t('rooms.activatedSuccess', { roomName: room.name })
-        : t('rooms.deactivatedSuccess', { roomName: room.name });
+        ? `${t('rooms.activatedSuccess', 'Room activated successfully')} "${room.name}"`
+        : `${t('rooms.deactivatedSuccess', 'Room deactivated successfully')} "${room.name}"`;
       
       // Crear un mensaje temporal
       const successDiv = document.createElement('div');

@@ -66,7 +66,7 @@ export function ShippingConfiguration() {
   const loadShippingZones = async () => {
     try {
       const response = await api.get('/shipping/zones');
-      const zones: ShippingZone[] = response.data.map((zone: any) => ({
+      const zones: ShippingZone[] = (response.data as any[]).map((zone: any) => ({
         ...zone,
         id: zone.id.toString(),
         rates: zone.rates.map((rate: any) => ({
@@ -226,7 +226,7 @@ export function ShippingConfiguration() {
         try {
           const response = await api.post('/shipping/zones', createDto);
           // Update the zone ID with the real one from backend
-          zone.id = response.data.id.toString();
+          zone.id = (response.data as any).id.toString();
         } catch (error) {
           console.error('Error creating zone:', error);
           toast.error(t('empresa.shipping.createFailed', `Failed to create zone ${zone.name}`));

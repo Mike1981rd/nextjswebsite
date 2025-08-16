@@ -96,7 +96,7 @@ export async function updateFooterConfig(companyId: number, config: any): Promis
  */
 export async function updateImageBannerConfig(companyId: number, config: any): Promise<StructuralComponentsDto> {
   const updateDto: UpdateComponentDto = {
-    componentType: 'imagebanner',
+    componentType: 'imagebanner' as any,
     config: JSON.stringify(config)
   };
   

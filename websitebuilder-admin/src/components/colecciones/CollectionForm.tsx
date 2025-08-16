@@ -250,7 +250,7 @@ export default function CollectionForm({ collectionId }: CollectionFormProps) {
           seoDescription: formData.seoDescription || undefined,
           seoKeywords: formData.seoKeywords || undefined,
           publishToSearchEngines: formData.publishToSearchEngines,
-          productIds: formData.productIds
+          // productIds: formData.productIds // Remove if not in UpdateCollectionDto
         };
         await updateCollection(collectionId, updateData);
       } else {

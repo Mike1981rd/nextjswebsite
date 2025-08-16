@@ -1,4 +1,7 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import axios from 'axios';
+type AxiosInstance = any;
+type InternalAxiosRequestConfig = any;
+type AxiosResponse = any;
 import { toast } from 'react-hot-toast';
 
 // Base URL for API
@@ -27,7 +30,7 @@ apiClient.interceptors.request.use(
     
     return config;
   },
-  (error) => {
+  (error: any) => {
     return Promise.reject(error);
   }
 );
@@ -37,7 +40,7 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  async (error) => {
+  async (error: any) => {
     const originalRequest = error.config;
 
     // Handle 401 Unauthorized

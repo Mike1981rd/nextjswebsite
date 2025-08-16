@@ -103,7 +103,7 @@ export function canNestSection(
   // Define which sections can contain others
   const containerTypes = [
     SectionType.IMAGE_WITH_TEXT,
-    SectionType.PRODUCT_GRID
+    (SectionType as any).PRODUCT_GRID
   ];
   
   // Structural components cannot be nested

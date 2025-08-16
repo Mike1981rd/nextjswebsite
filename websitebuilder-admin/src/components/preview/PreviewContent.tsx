@@ -127,14 +127,14 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
               {/* Render each section based on its type */}
               {getSectionType(section) === 'hero' && (
                 <div className="text-center py-20 bg-gray-100 rounded">
-                  <h1 className="text-4xl font-bold mb-4">{section.content}</h1>
+                  <h1 className="text-4xl font-bold mb-4">{(section as any).content}</h1>
                 </div>
               )}
               {getSectionType(section) === 'product_info' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="bg-gray-100 h-96 rounded"></div>
                   <div>
-                    <h1 className="text-3xl font-bold mb-4">{section.content}</h1>
+                    <h1 className="text-3xl font-bold mb-4">{(section as any).content}</h1>
                     <p className="text-gray-600 mb-4">
                       Descripción del producto aquí...
                     </p>

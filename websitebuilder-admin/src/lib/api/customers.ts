@@ -23,19 +23,48 @@ export interface Customer {
   lastLoginAt?: string;
 }
 
-export interface CustomerDetail extends Customer {
+export interface CustomerDetail {
+  // Include all Customer properties except ones we're redefining
+  id: number;
+  name?: string;
+  email: string;
+  phone?: string;
+  status: string;
+  lastOrderDate?: string;
+  orderCount: number;
+  totalSpent: number;
+  city?: string;
+  country?: string;
+  createdAt: string;
+  lastLoginAt?: string;
+  // Additional detail properties
   firstName?: string;
   lastName?: string;
+  username?: string;
   birthDate?: string;
   gender?: string;
+  loyaltyTier?: string;
   preferredLanguage?: string;
   preferredCurrency?: string;
   companyName?: string;
   taxId?: string;
   twoFactorPhone?: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+  avatar?: string;
+  isTwoFactorEnabled?: boolean;
+  twoFactorEnabled?: boolean;
+  recoveryEmail?: string;
+  securityQuestions?: any[];
+  devices?: CustomerDevice[];
+  sessionTimeoutMinutes?: number;
+  sessionTimeout?: number;
+  billingEmail?: string;
+  autoCharge?: boolean;
+  paperlessBilling?: boolean;
   addresses: CustomerAddress[];
   paymentMethods: CustomerPaymentMethod[];
-  notificationPreferences: CustomerNotificationPreference[];
+  notificationPreferences: CustomerNotificationPreference[] | any;
   recentDevices: CustomerDevice[];
   wishlistItems: CustomerWishlistItem[];
   coupons: CustomerCoupon[];

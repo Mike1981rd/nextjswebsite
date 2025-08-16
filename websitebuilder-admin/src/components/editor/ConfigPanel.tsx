@@ -17,6 +17,8 @@ import FooterImageEditor from './FooterImageEditor';
 import ImageBannerEditor from './modules/ImageBanner/ImageBannerEditor';
 import SlideshowEditor from './modules/Slideshow/SlideshowEditor';
 import SlideEditor from './modules/Slideshow/SlideEditor';
+import MulticolumnsEditor from './modules/Multicolumns/MulticolumnsEditor';
+import MulticolumnsItemEditor from './modules/Multicolumns/MulticolumnsItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -213,6 +215,9 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
       case SectionType.SLIDESHOW:
         return <SlideshowEditor sectionId={section.id} />;
+
+      case SectionType.MULTICOLUMNS:
+        return <MulticolumnsEditor sectionId={section.id} />;
 
       case SectionType.IMAGE_WITH_TEXT:
         return (

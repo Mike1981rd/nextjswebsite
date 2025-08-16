@@ -645,37 +645,47 @@ const [deviceView, setDeviceView] = useState<'desktop' | 'mobile'>('desktop');
 
 ---
 
-## Paso 4: Crear el Preview Real (ARQUITECTURA UNIFICADA)
+## Paso 4: Crear el Preview UNIFICADO (Editor + Preview Real)
 
-### 🚨 CAMBIO CRÍTICO: Arquitectura Unificada de Preview
+### 🚨 CAMBIO CRÍTICO: Arquitectura Unificada de Preview (14 enero 2025)
 
-**IMPORTANTE**: Desde el 14 de enero 2025, usamos componentes Preview unificados que sirven tanto para EditorPreview.tsx como para PreviewPage.tsx. **NO CREAR COMPONENTES DUPLICADOS**.
+**IMPORTANTE**: Desde el refactor del Live Preview, usamos **UN SOLO componente Preview** que sirve tanto para EditorPreview.tsx como para PreviewPage.tsx. **NUNCA duplicar código de renderizado**.
 
-### Arquitectura Anterior (EVITAR)
+### ❌ Arquitectura Anterior (NUNCA HACER ESTO)
 ```
-❌ INCORRECTO - Código duplicado:
-EditorPreview.tsx → Renderizado inline del módulo
-PreviewPage.tsx → Preview[Module].tsx separado
-Resultado: DUPLICACIÓN, INCONSISTENCIAS
+ANTES (Código duplicado - PROBLEMA):
+├── EditorPreview.tsx: 200 líneas para renderizar el módulo
+└── PreviewModule.tsx: OTRAS 200 líneas casi idénticas
+Resultado: 
+  - Arreglas bug en uno, olvidas el otro
+  - Divergencia entre editor y preview
+  - Doble mantenimiento
 ```
 
-### Arquitectura Nueva (USAR SIEMPRE)
+### ✅ Arquitectura Nueva (SIEMPRE USAR ESTO)
 ```
-✅ CORRECTO - Componente unificado:
-Preview[Module].tsx (único componente)
-  ├── Usado por EditorPreview.tsx con isEditor={true}
-  └── Usado por PreviewPage.tsx con isEditor={false}
-Resultado: NO DUPLICACIÓN, CONSISTENCIA GARANTIZADA
+AHORA (Componente unificado - SOLUCIÓN):
+├── Preview[Module].tsx (UN SOLO archivo, 400 líneas)
+│   ├── EditorPreview.tsx: import Preview[Module] → 5 líneas
+│   └── PreviewPage.tsx: import Preview[Module] → 5 líneas
+Resultado:
+  - Cambias una vez, funciona en ambos
+  - Consistencia 100% garantizada
+  - Mantenimiento único
 ```
 
 ### Ubicación
 `/websitebuilder-admin/src/components/preview/Preview[Module].tsx`
 
-### Principios Clave
-1. **Single Source of Truth**: Un componente maneja ambos contextos
-2. **Props isEditor**: Diferencia comportamiento cuando es necesario
-3. **Mobile Detection Unificada**: Funciona en ambos contextos
-4. **Hooks antes de Returns**: CRÍTICO para evitar errores
+### Principios de la Arquitectura Unificada
+
+| Principio | Descripción | Implementación |
+|-----------|-------------|----------------|
+| **Single Source of Truth** | UN componente para AMBOS contextos | `Preview[Module].tsx` compartido |
+| **Prop isEditor** | Diferencia editor vs preview real | `isEditor={true/false}` |
+| **Theme Dual Pattern** | Theme desde prop o store | `theme \|\| storeThemeConfig` |
+| **Mobile Detection** | Sincronización con editor | `deviceView` prop obligatorio |
+| **Hooks Order** | TODOS los hooks antes de returns | Evita errores de React |
 
 ### ⚠️ CRÍTICO: Detección Móvil y Sincronización Editor-Preview
 
@@ -699,8 +709,13 @@ export default function Preview[Module]({
   config, 
   theme,
   deviceView,  // CRÍTICO: Desestructurar deviceView
-  isEditor = false 
+  isEditor = false  // CRÍTICO: Diferencia contextos
 }: Preview[Module]Props) {
+  
+  // 🎯 PATRÓN DUAL OBLIGATORIO: Theme desde prop o store
+  const storeThemeConfig = useThemeConfigStore(state => state.config);
+  const themeConfig = theme || storeThemeConfig;
+  // ↑ En EditorPreview: usa store | En PreviewPage: usa prop
   
   // ⚠️ IMPLEMENTACIÓN OBLIGATORIA DE DETECCIÓN MÓVIL
   const [isMobile, setIsMobile] = useState(() => {
@@ -737,8 +752,9 @@ export default function Preview[Module]({
     return null;
   }
 
-  // Extraer configuración del theme
-  const colorScheme = theme?.colorSchemes?.schemes?.[parseInt(config.colorScheme || '1') - 1];
+  // Extraer configuración del theme (usa themeConfig unificado)
+  const colorScheme = themeConfig?.colorSchemes?.schemes?.[parseInt(config.colorScheme || '1') - 1];
+  // ↑ IMPORTANTE: Usar themeConfig, NO theme directamente
   
   // Usar isMobile para ajustar layouts
   const columnsClass = isMobile ? 'grid-cols-1' : 'grid-cols-3';
@@ -772,46 +788,82 @@ export default function Preview[Module]({
 
 ### Patrón isEditor para Comportamiento Diferenciado
 ```typescript
-// Ejemplo de uso del prop isEditor
+// Ejemplo completo con patrón dual de theme
 export default function Preview[Module]({ config, theme, isEditor = false }) {
-  // Comportamiento específico del editor
-  if (isEditor) {
-    // Por ejemplo, mostrar bordes de arrastre o placeholders
+  // 🎯 PATRÓN DUAL: Theme unificado
+  const storeThemeConfig = useThemeConfigStore(state => state.config);
+  const themeConfig = theme || storeThemeConfig;
+  
+  // Comportamiento específico del editor (opcional)
+  if (isEditor && config.showEditBorders) {
     return (
       <div className="relative group">
         {/* Indicador visual solo en editor */}
         <div className="absolute inset-0 border-2 border-dashed border-gray-300 opacity-0 group-hover:opacity-100" />
-        {renderContent()}
+        {renderContent(themeConfig)}
       </div>
     );
   }
   
   // Comportamiento para preview real
-  return renderContent();
+  return renderContent(themeConfig);
 }
 ```
 
+### ⚠️ REGLA DE ORO: Un Componente, Dos Contextos
+
+```typescript
+// ❌ NUNCA HACER ESTO (Duplicar código)
+// EditorPreview.tsx: 200 líneas para renderizar módulo
+// PreviewModule.tsx: OTRAS 200 líneas casi idénticas
+
+// ✅ SIEMPRE HACER ESTO (Componente unificado)
+// PreviewModule.tsx: UN componente que sirve para ambos
+// EditorPreview.tsx: <PreviewModule isEditor={true} />
+// PreviewPage.tsx: <PreviewModule isEditor={false} />
+```
+
 ### Beneficios de la Arquitectura Unificada
-| Beneficio | Descripción |
-|-----------|-------------|
-| **Consistencia** | Editor y preview siempre idénticos |
-| **Mantenimiento** | Arreglar bugs en un solo lugar |
-| **Testing** | Probar componente una sola vez |
-| **Performance** | Menor bundle, mejor caching |
-| **Desarrollo** | Escribir código una sola vez |
+
+| Beneficio | Antes (Duplicado) | Ahora (Unificado) | Mejora |
+|-----------|-------------------|-------------------|--------|
+| **Código** | 400 líneas (200+200) | 200 líneas totales | -50% |
+| **Bugs** | Arreglar en 2 lugares | Arreglar en 1 lugar | -50% tiempo |
+| **Testing** | Probar 2 componentes | Probar 1 componente | -50% tests |
+| **Consistencia** | Posible divergencia | Imposible divergencia | 100% sync |
+| **Bundle Size** | 2 componentes en bundle | 1 componente | Menor tamaño |
+| **Desarrollo** | Escribir 2 veces | Escribir 1 vez | -50% tiempo |
 
 ---
 
-## Paso 5: Integrar con PreviewPage
+## Paso 5: Integrar el Componente Unificado en Ambos Contextos
 
-### Archivo a modificar
+### 5.1 Integración en EditorPreview.tsx (Contexto Editor)
+
+`/websitebuilder-admin/src/components/editor/EditorPreview.tsx`
+
+```typescript
+// 1. Importar el componente unificado
+import Preview[Module] from '@/components/preview/Preview[Module]';
+
+// 2. En el switch de renderizado de secciones
+case SectionType.[MODULE]:
+  return (
+    <Preview[Module]
+      config={config || structuralComponents?.[module]}
+      theme={themeConfig}  // Theme del store
+      deviceView={deviceView}
+      isEditor={true}  // 🎯 CRÍTICO: Marca como editor
+    />
+  );
+```
+
+### 5.2 Integración en PreviewPage.tsx (Contexto Preview Real)
+
 `/websitebuilder-admin/src/components/preview/PreviewPage.tsx`
 
-### ⚠️ CRÍTICO: Sincronización con Editor para Vista Móvil
-
-### Pasos de integración con deviceView
 ```typescript
-// 1. Importar el componente
+// 1. Importar el MISMO componente
 import Preview[Module] from './Preview[Module]';
 
 // 2. PreviewPage ya tiene lógica para detectar editorDeviceView
@@ -837,21 +889,79 @@ useEffect(() => {
 {structuralComponents?.[module] && (
   <Preview[Module] 
     config={structuralComponents.[module]}
-    theme={globalTheme}
+    theme={globalTheme}  // Theme desde API
     deviceView={editorDeviceView}  // CRÍTICO: Pasar editorDeviceView
-    isEditor={false}                // Indicar que NO es editor
+    isEditor={false}  // 🎯 CRÍTICO: Marca como preview real
   />
 )}
 ```
 
+### Diferencias Entre Contextos
+
+| Aspecto | EditorPreview.tsx | PreviewPage.tsx |
+|---------|-------------------|------------------|
+| **Prop isEditor** | `true` | `false` |
+| **Theme source** | Zustand store | API prop |
+| **Interactividad** | Editable | Solo lectura |
+| **Renderizado** | En iframe | Página completa |
+| **DeviceView** | Controlado por editor | Sync con localStorage |
+
 ### Orden de renderizado típico
 1. AnnouncementBar
-2. Header
-3. Content
+2. Header  
+3. Content (Secciones del template)
 4. Footer
 5. CartDrawer
 
 ---
+
+## 🔄 Arquitectura Unificada: Errores Comunes y Soluciones
+
+### ❌ Errores Comunes al Implementar Preview Unificado
+
+| Error | Consecuencia | Solución |
+|-------|--------------|----------|
+| Crear 2 archivos Preview | Duplicación, inconsistencias | UN solo Preview[Module].tsx |
+| Olvidar prop `isEditor` | No diferencia contextos | Siempre pasar `isEditor={true/false}` |
+| No usar patrón dual de theme | Theme undefined en editor | `const themeConfig = theme \|\| storeThemeConfig` |
+| Hooks después de returns | Error "Rendered more hooks" | TODOS los hooks antes de returns |
+| No pasar `deviceView` | Móvil no sincroniza | Siempre pasar prop `deviceView` |
+
+### ✅ Checklist de Implementación Correcta
+
+```typescript
+// Preview[Module].tsx - ESTRUCTURA CORRECTA
+export default function Preview[Module](props) {
+  // ✅ 1. Props completos con isEditor
+  const { config, theme, deviceView, isEditor = false } = props;
+  
+  // ✅ 2. Patrón dual de theme
+  const storeTheme = useThemeConfigStore(state => state.config);
+  const themeConfig = theme || storeTheme;
+  
+  // ✅ 3. Detección móvil con deviceView
+  const [isMobile, setIsMobile] = useState(() => {
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    return window.innerWidth < 768;
+  });
+  
+  // ✅ 4. TODOS los hooks antes de returns
+  useEffect(() => { /* ... */ }, [deviceView]);
+  
+  // ✅ 5. Returns condicionales AL FINAL
+  if (!config?.enabled && !isEditor) return null;
+  
+  // ✅ 6. Renderizado usando themeConfig
+  return <div>{/* contenido */}</div>;
+}
+```
+
+### 📋 Ejemplo Real: PreviewAnnouncementBar.tsx
+
+Ver implementación completa en:
+- `/src/components/preview/PreviewAnnouncementBar.tsx` (400 líneas)
+- Usada en EditorPreview.tsx: solo 5 líneas para importar y usar
+- Usada en PreviewPage.tsx: las mismas 5 líneas
 
 ## Paso 6: Sistema de Guardado y Botón Save (CRÍTICO)
 

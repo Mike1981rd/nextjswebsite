@@ -140,7 +140,7 @@ export default function OrdersPage() {
       return;
     }
 
-    if (!confirm(t('orders.confirmBulkDelete', { count: selectedOrders.length }))) {
+    if (!confirm(`${t('orders.confirmBulkDelete', 'Are you sure you want to delete')} ${selectedOrders.length} ${t('orders.items', 'items')}?`)) {
       return;
     }
 
@@ -250,18 +250,18 @@ export default function OrdersPage() {
         {selectedOrders.length > 0 && (
           <div className="mt-4 p-3 bg-muted rounded-lg flex items-center justify-between">
             <p className="text-sm">
-              {t('orders.selectedCount', { count: selectedOrders.length })}
+              {selectedOrders.length} {t('orders.selectedCount', 'selected')}
             </p>
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => setSelectedOrders([])}
               >
                 {t('common.clearSelection')}
               </Button>
               <Button
-                variant="destructive"
+                variant="danger"
                 size="sm"
                 onClick={handleBulkDelete}
               >
@@ -284,17 +284,17 @@ export default function OrdersPage() {
       {totalPages > 1 && (
         <div className="flex justify-center gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             {t('common.previous')}
           </Button>
           <span className="flex items-center px-4">
-            {t('common.pageOf', { current: currentPage, total: totalPages })}
+            {t('common.page', 'Page')} {currentPage} {t('common.of', 'of')} {totalPages}
           </span>
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >
@@ -313,13 +313,13 @@ export default function OrdersPage() {
             </p>
             <div className="flex justify-end gap-3">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setDeleteModalOpen(false)}
               >
                 {t('common.cancel')}
               </Button>
               <Button
-                variant="destructive"
+                variant="danger"
                 onClick={confirmDelete}
               >
                 {t('common.delete')}

@@ -113,18 +113,18 @@ export function CartSection({ config, onChange }: CartSectionProps) {
             <div className="relative flex-1">
               <input
                 type="color"
-                value={ensuredConfig.cartStatusColors.background}
+                value={ensuredConfig.cartStatusColors?.background || '#F0FF2E'}
                 onChange={(e) => handleChange('cartStatusColors.background', e.target.value)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div 
                 className="w-full h-9 rounded-md border border-gray-200 dark:border-gray-700 cursor-pointer"
-                style={{ backgroundColor: ensuredConfig.cartStatusColors.background }}
+                style={{ backgroundColor: ensuredConfig.cartStatusColors?.background || '#F0FF2E' }}
               />
             </div>
             <input
               type="text"
-              value={ensuredConfig.cartStatusColors.background}
+              value={ensuredConfig.cartStatusColors?.background || '#F0FF2E'}
               onChange={(e) => handleChange('cartStatusColors.background', e.target.value)}
               className="w-24 px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-sm"
               placeholder="#F0FF2E"
@@ -141,18 +141,18 @@ export function CartSection({ config, onChange }: CartSectionProps) {
             <div className="relative flex-1">
               <input
                 type="color"
-                value={ensuredConfig.cartStatusColors.text}
+                value={ensuredConfig.cartStatusColors?.text || '#383933'}
                 onChange={(e) => handleChange('cartStatusColors.text', e.target.value)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div 
                 className="w-full h-9 rounded-md border border-gray-200 dark:border-gray-700 cursor-pointer"
-                style={{ backgroundColor: ensuredConfig.cartStatusColors.text }}
+                style={{ backgroundColor: ensuredConfig.cartStatusColors?.text || '#383933' }}
               />
             </div>
             <input
               type="text"
-              value={ensuredConfig.cartStatusColors.text}
+              value={ensuredConfig.cartStatusColors?.text || '#383933'}
               onChange={(e) => handleChange('cartStatusColors.text', e.target.value)}
               className="w-24 px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-sm"
               placeholder="#383933"

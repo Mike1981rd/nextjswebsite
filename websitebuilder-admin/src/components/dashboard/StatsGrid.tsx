@@ -65,7 +65,7 @@ export function StatsGrid() {
               <Avatar
                 key={index}
                 name={user.name}
-                src={user.image}
+                src={user.image || undefined}
                 size="sm"
                 className="border-2 border-white"
               />
@@ -104,7 +104,7 @@ export function StatsGrid() {
         avatar={
           <Avatar
             name="Cliente Premium"
-            src={null}
+            src={undefined}
             size="md"
           />
         }

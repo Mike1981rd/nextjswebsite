@@ -44,7 +44,7 @@ export default function RoomForm({
   primaryColor
 }: RoomFormProps) {
   const { t } = useI18n();
-  const { showToast } = useToast();
+  const { showToast } = useToast() as any;
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'pricing' | 'features' | 'media'>('general');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -925,7 +925,7 @@ export default function RoomForm({
                               <ArrowUpIcon className="h-4 w-4" />
                             </button>
                           )}
-                          {index < formData.images.length - 1 && (
+                          {index < (formData.images?.length || 0) - 1 && (
                             <button
                               type="button"
                               onClick={() => moveImage(index, 'down')}

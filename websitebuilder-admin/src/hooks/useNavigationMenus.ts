@@ -12,6 +12,7 @@ interface NavigationMenu {
   identifier: string;
   menuType: string;
   isActive: boolean;
+  items?: any[]; // Optional items array for menu items
 }
 
 export function useNavigationMenus() {

@@ -5,7 +5,21 @@
 
 import { uiChecklist } from '../validators/ui-checklist';
 import { generatePageTemplate } from '../generators/page-generator';
-import { analyzeDesign, DesignAnalysis } from '../generators/design-analyzer';
+import { designAnalyzer } from '../generators/design-analyzer';
+
+// Define DesignAnalysis type locally
+interface DesignAnalysis {
+  components: string[];
+  layoutType: 'form' | 'list' | 'dashboard' | 'detail';
+  mobilePatterns: string[];
+  hasTable: boolean;
+  hasTabs: boolean;
+  hasForm: boolean;
+  hasMetrics: boolean;
+  hasActions: boolean;
+  estimatedComplexity: 'low' | 'medium' | 'high';
+  suggestedComponents?: string[];
+}
 
 export interface BuildFromDesignOptions {
   pageName: string;
@@ -97,8 +111,9 @@ export class BuildFromDesignCommand {
       hasForm: options.features?.includes('form') || false,
       hasMetrics: options.features?.includes('metrics') || false,
       hasActions: options.features?.includes('actions') || true,
-      estimatedComplexity: 'medium'
-    };
+      estimatedComplexity: 'medium',
+      suggestedComponents: []
+    } as DesignAnalysis;
   }
 
   private detectComponents(options: BuildFromDesignOptions): string[] {

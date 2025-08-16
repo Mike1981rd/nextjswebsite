@@ -41,7 +41,7 @@ export function StructuralComponentsSync() {
       
       if (headerSection) {
         // Default to true if not specified (header should be visible by default)
-        const shouldBeVisible = structuralConfig.header?.visible !== false;
+        const shouldBeVisible = (structuralConfig.header as any)?.visible !== false;
         
         // If the visibility doesn't match, update the store
         if (headerSection.visible !== shouldBeVisible) {
@@ -51,7 +51,7 @@ export function StructuralComponentsSync() {
         }
       }
     }
-  }, [structuralConfig?.header?.visible]); // Only sync when config changes
+  }, [(structuralConfig?.header as any)?.visible]); // Only sync when config changes
 
   return null; // This component doesn't render anything
 }

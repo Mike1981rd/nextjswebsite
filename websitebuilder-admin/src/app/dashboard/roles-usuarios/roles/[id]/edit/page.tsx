@@ -229,7 +229,7 @@ export default function EditRolePage() {
     } else {
       setFormData(prev => ({
         ...prev,
-        permissions: [...new Set([...prev.permissions, ...resourcePermissionIds])]
+        permissions: Array.from(new Set([...prev.permissions, ...resourcePermissionIds]))
       }));
     }
   };

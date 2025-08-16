@@ -260,8 +260,8 @@ export default function AvailabilityGrid({ data, onDateClick, onRefresh }: Avail
 
   // Dividir las fechas en semanas para mostrar un calendario más compacto
   const getWeeks = () => {
-    const weeks = [];
-    let currentWeek = [];
+    const weeks: (Date | null)[][] = [];
+    let currentWeek: (Date | null)[] = [];
     
     data.dates.forEach((date: Date | string, index: number) => {
       const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -377,7 +377,7 @@ export default function AvailabilityGrid({ data, onDateClick, onRefresh }: Avail
                 
                 {/* Días del calendario */}
                 {weeks.map((week, weekIndex) => (
-                  week.map((date, dayIndex) => {
+                  week.map((date: Date | null, dayIndex: number) => {
                     if (!date) {
                       return <div key={`empty-${weekIndex}-${dayIndex}`} className="aspect-square" />;
                     }

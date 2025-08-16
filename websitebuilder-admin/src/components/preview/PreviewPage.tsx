@@ -187,7 +187,7 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
           deviceView={editorDeviceView}
         />
       ) : (
-        console.log('No header config available') || null
+        null
       )}
 
       {/* Image Banner (structural fallback) - if configured via published endpoint */}

@@ -161,8 +161,8 @@ export function mergeCartWithDefaults(partial: Partial<CartConfig>): CartConfig 
     showStickyCart: partial.showStickyCart ?? defaultCart.showStickyCart,
     cartStatusColors: {
       ...defaultCart.cartStatusColors,
-      ...partial.cartStatusColors
-    },
+      ...(partial.cartStatusColors || {})
+    } as CartStatusColorsConfig,
     freeShipping: {
       ...defaultCart.freeShipping,
       ...partial.freeShipping
