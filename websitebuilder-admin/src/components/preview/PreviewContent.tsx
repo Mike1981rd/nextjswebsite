@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PageType, Section } from '@/types/editor.types';
+import PreviewImageBanner from './PreviewImageBanner';
 
 interface PreviewContentProps {
   pageType: PageType;
   handle: string;
   theme: any;
   companyId?: number;
+  deviceView?: 'desktop' | 'mobile';
 }
 
-export default function PreviewContent({ pageType, handle, theme, companyId }: PreviewContentProps) {
+export default function PreviewContent({ pageType, handle, theme, companyId, deviceView }: PreviewContentProps) {
   const [sections, setSections] = useState<Section[]>([]);
   const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -78,6 +80,30 @@ export default function PreviewContent({ pageType, handle, theme, companyId }: P
     padding: theme?.appearance?.contentPadding || '20px',
   };
 
+  // Helper: normalize section type coming either from backend or editor store
+  const getSectionType = (section: any): string | undefined => {
+    // Backend DTO uses SectionType (e.g., "ImageBanner"),
+    // Frontend editor uses snake_case in section.type (e.g., 'image_banner')
+    const rawType: string | undefined = section?.sectionType || section?.type;
+    if (!rawType) return undefined;
+    // Normalize to a canonical token for comparisons
+    // Accept both 'ImageBanner' and 'image_banner'
+    const t = String(rawType);
+    if (t === 'ImageBanner' || t === 'image_banner') return 'image_banner';
+    return t;
+  };
+
+  // Helper: extract a config object regardless of casing/shape
+  const getSectionConfig = (section: any): any => {
+    const raw = section?.config ?? section?.settings ?? section?.Config;
+    if (!raw) return undefined;
+    try {
+      return typeof raw === 'string' ? JSON.parse(raw) : raw;
+    } catch {
+      return undefined;
+    }
+  };
+
   return (
     <div className="min-h-[60vh]" style={containerStyle}>
       {sections.length === 0 ? (
@@ -97,12 +123,12 @@ export default function PreviewContent({ pageType, handle, theme, companyId }: P
           {sections.map((section, index) => (
             <div key={index} className="section">
               {/* Render each section based on its type */}
-              {section.type === 'hero' && (
+              {getSectionType(section) === 'hero' && (
                 <div className="text-center py-20 bg-gray-100 rounded">
                   <h1 className="text-4xl font-bold mb-4">{section.content}</h1>
                 </div>
               )}
-              {section.type === 'product_info' && (
+              {getSectionType(section) === 'product_info' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="bg-gray-100 h-96 rounded"></div>
                   <div>
@@ -115,6 +141,15 @@ export default function PreviewContent({ pageType, handle, theme, companyId }: P
                     </button>
                   </div>
                 </div>
+              )}
+
+              {/* Image Banner (unified preview component) */}
+              {getSectionType(section) === 'image_banner' && (
+                <PreviewImageBanner 
+                  config={getSectionConfig(section)} 
+                  isEditor={false}
+                  deviceView={deviceView}
+                />
               )}
               {/* Add more section types as they are implemented */}
             </div>

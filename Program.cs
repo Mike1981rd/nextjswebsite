@@ -7,6 +7,7 @@ using Serilog.Events;
 using System.Diagnostics;
 using System.Text;
 using WebsiteBuilderAPI.Data;
+using WebsiteBuilderAPI.Filters;
 using WebsiteBuilderAPI.Repositories;
 using WebsiteBuilderAPI.Services;
 
@@ -118,7 +119,21 @@ try
             options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
         });
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+        {
+            Title = "WebsiteBuilder API",
+            Version = "v1",
+            Description = "API for Website Builder with file upload support"
+        });
+
+        // Enable annotations
+        c.EnableAnnotations();
+        
+        // Configure Swagger to handle file uploads properly
+        c.OperationFilter<FileUploadOperationFilter>();
+    });
     
     // Add memory cache for theme configuration performance
     builder.Services.AddMemoryCache();

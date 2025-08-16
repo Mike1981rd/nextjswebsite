@@ -121,10 +121,19 @@ namespace WebsiteBuilderAPI.Services
                 return cached;
             }
 
+            // First try to get published version, if not found, get active draft
             var settings = await _context.StructuralComponentsSettings
                 .Where(s => s.CompanyId == companyId && s.IsPublished)
-                .OrderByDescending(s => s.PublishedAt)
                 .FirstOrDefaultAsync();
+                
+            // If no published version, get the active draft (for compatibility)
+            if (settings == null)
+            {
+                settings = await _context.StructuralComponentsSettings
+                    .Where(s => s.CompanyId == companyId && s.IsActive)
+                    .OrderByDescending(s => s.UpdatedAt)
+                    .FirstOrDefaultAsync();
+            }
 
             if (settings != null)
             {
@@ -182,6 +191,7 @@ namespace WebsiteBuilderAPI.Services
                 existing.HeaderConfig = dto.HeaderConfig ?? existing.HeaderConfig;
                 existing.AnnouncementBarConfig = dto.AnnouncementBarConfig ?? existing.AnnouncementBarConfig;
                 existing.FooterConfig = dto.FooterConfig ?? existing.FooterConfig;
+                existing.ImageBannerConfig = dto.ImageBannerConfig ?? existing.ImageBannerConfig;
                 existing.CartDrawerConfig = dto.CartDrawerConfig ?? existing.CartDrawerConfig;
                 existing.Notes = dto.Notes ?? existing.Notes;
                 existing.UpdatedAt = DateTime.UtcNow;
@@ -213,6 +223,7 @@ namespace WebsiteBuilderAPI.Services
                     HeaderConfig = dto.HeaderConfig ?? DEFAULT_HEADER,
                     AnnouncementBarConfig = dto.AnnouncementBarConfig ?? DEFAULT_ANNOUNCEMENT,
                     FooterConfig = dto.FooterConfig ?? DEFAULT_FOOTER,
+                    ImageBannerConfig = dto.ImageBannerConfig ?? "{}",
                     CartDrawerConfig = dto.CartDrawerConfig ?? DEFAULT_CART,
                     Notes = dto.Notes,
                     IsActive = true,
@@ -266,6 +277,9 @@ namespace WebsiteBuilderAPI.Services
                 case "footer":
                     settings.FooterConfig = dto.Config;
                     break;
+                case "imagebanner":
+                    settings.ImageBannerConfig = dto.Config;
+                    break;
                 case "cartdrawer":
                     settings.CartDrawerConfig = dto.Config;
                     break;
@@ -308,6 +322,7 @@ namespace WebsiteBuilderAPI.Services
             settings.HeaderConfig = dto.HeaderConfig;
             settings.AnnouncementBarConfig = dto.AnnouncementBarConfig;
             settings.FooterConfig = dto.FooterConfig;
+            settings.ImageBannerConfig = dto.ImageBannerConfig;
             settings.CartDrawerConfig = dto.CartDrawerConfig;
             settings.Notes = dto.Notes;
             settings.UpdatedAt = DateTime.UtcNow;
@@ -430,6 +445,7 @@ namespace WebsiteBuilderAPI.Services
                 HeaderConfig = published.HeaderConfig,
                 AnnouncementBarConfig = published.AnnouncementBarConfig,
                 FooterConfig = published.FooterConfig,
+                ImageBannerConfig = published.ImageBannerConfig,
                 CartDrawerConfig = published.CartDrawerConfig,
                 Notes = "Draft created from published version",
                 IsActive = true,
@@ -471,6 +487,9 @@ namespace WebsiteBuilderAPI.Services
                 case "footer":
                     settings.FooterConfig = DEFAULT_FOOTER;
                     break;
+                case "imagebanner":
+                    settings.ImageBannerConfig = "{}";
+                    break;
                 case "cartdrawer":
                     settings.CartDrawerConfig = DEFAULT_CART;
                     break;
@@ -511,6 +530,7 @@ namespace WebsiteBuilderAPI.Services
             settings.HeaderConfig = DEFAULT_HEADER;
             settings.AnnouncementBarConfig = DEFAULT_ANNOUNCEMENT;
             settings.FooterConfig = DEFAULT_FOOTER;
+            settings.ImageBannerConfig = "{}";
             settings.CartDrawerConfig = DEFAULT_CART;
             settings.UpdatedAt = DateTime.UtcNow;
             settings.Version++;
@@ -664,6 +684,7 @@ namespace WebsiteBuilderAPI.Services
                 HeaderConfig = DEFAULT_HEADER,
                 AnnouncementBarConfig = DEFAULT_ANNOUNCEMENT,
                 FooterConfig = DEFAULT_FOOTER,
+                ImageBannerConfig = "{}",
                 CartDrawerConfig = DEFAULT_CART,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
@@ -687,6 +708,7 @@ namespace WebsiteBuilderAPI.Services
                 HeaderConfig = settings.HeaderConfig,
                 AnnouncementBarConfig = settings.AnnouncementBarConfig,
                 FooterConfig = settings.FooterConfig,
+                ImageBannerConfig = settings.ImageBannerConfig,
                 CartDrawerConfig = settings.CartDrawerConfig,
                 IsActive = settings.IsActive,
                 IsPublished = settings.IsPublished,

@@ -34,6 +34,12 @@ namespace WebsiteBuilderAPI.Models.Components
         public string FooterConfig { get; set; } = "{}";
 
         /// <summary>
+        /// Image banner configuration as JSONB
+        /// </summary>
+        [Column(TypeName = "jsonb")]
+        public string ImageBannerConfig { get; set; } = "{}";
+
+        /// <summary>
         /// Cart drawer configuration as JSONB
         /// </summary>
         [Column(TypeName = "jsonb")]

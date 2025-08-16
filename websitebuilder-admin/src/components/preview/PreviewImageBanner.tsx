@@ -17,9 +17,10 @@ interface PreviewImageBannerProps {
   config: ImageBannerConfig;
   isEditor?: boolean;
   deviceView?: 'desktop' | 'mobile';
+  theme?: any; // Theme from PreviewPage for live preview
 }
 
-export default function PreviewImageBanner({ config, isEditor = false, deviceView }: PreviewImageBannerProps) {
+export default function PreviewImageBanner({ config, isEditor = false, deviceView, theme }: PreviewImageBannerProps) {
   // Mobile detection state
   const [isMobile, setIsMobile] = useState(() => {
     if (deviceView !== undefined) return deviceView === 'mobile';
@@ -27,8 +28,9 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
     return false;
   });
 
-  // Get color schemes from global theme config
-  const { config: themeConfig } = useThemeConfigStore();
+  // Get color schemes from global theme config or prop
+  const storeThemeConfig = useThemeConfigStore(state => state.config);
+  const themeConfig = theme || storeThemeConfig; // Use prop theme in live preview, store in editor
   
   // Get typography styles
   const { headingTypographyStyles, bodyTypographyStyles, buttonTypographyStyles } = useImageBannerTypography(themeConfig);
@@ -50,7 +52,47 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
   }, [deviceView]);
 
   // All hooks MUST come before conditional returns
-  if (!config) return null;
+  // Check if config is completely empty or missing required fields
+  if (!config || (Object.keys(config).length === 0 && config.constructor === Object)) {
+    // Don't render if config is null, undefined, or empty object
+    return null;
+  }
+  
+  // Also check if there's no content to display
+  if (!config.heading && !config.body && !config.subheading && !config.desktopImage && !config.mobileImage) {
+    // Don't render if there's no content at all
+    return null;
+  }
+  
+  // Apply defaults to config
+  const configWithDefaults = {
+    colorScheme: '1',
+    colorBackground: false,
+    width: 'page' as const,
+    desktopRatio: 16/9,
+    mobileRatio: 1,
+    desktopPosition: 'center',
+    desktopAlignment: 'center' as const,
+    desktopWidth: 50,
+    desktopSpacing: 4,
+    mobilePosition: 'center' as const,
+    mobileAlignment: 'center' as const,
+    desktopBackground: 'none' as const,
+    mobileBackground: 'none' as const,
+    headingSize: 2 as const,
+    bodySize: 1 as const,
+    firstButtonStyle: 'solid' as const,
+    secondButtonStyle: 'outline' as const,
+    desktopOverlayOpacity: 0,
+    mobileOverlayOpacity: 0,
+    topPadding: 0,
+    bottomPadding: 0,
+    addSidePaddings: false,
+    ...config
+  };
+  
+  // Use the config with defaults from here on
+  config = configWithDefaults;
   
   // Get the selected color scheme
   const colorScheme = useMemo(() => {

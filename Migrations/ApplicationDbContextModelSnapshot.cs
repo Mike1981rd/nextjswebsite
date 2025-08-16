@@ -418,6 +418,10 @@ namespace WebsiteBuilderAPI.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<string>("ImageBannerConfig")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 

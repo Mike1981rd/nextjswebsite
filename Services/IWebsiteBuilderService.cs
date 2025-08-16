@@ -15,6 +15,7 @@ namespace WebsiteBuilderAPI.Services
         Task<WebsitePageDto?> GetPageBySlugAsync(int companyId, string slug);
         Task<WebsitePageDto> CreatePageAsync(int companyId, CreateWebsitePageDto dto);
         Task<WebsitePageDto?> UpdatePageAsync(int pageId, UpdateWebsitePageDto dto);
+        Task<WebsitePageDto?> ReplacePageSectionsAsync(int pageId, UpdatePageSectionsDto dto);
         Task<bool> DeletePageAsync(int pageId);
         Task<WebsitePageDto?> DuplicatePageAsync(int pageId, string? newName = null);
         Task<WebsitePageDto?> PublishPageAsync(int pageId, PublishWebsitePageDto dto);

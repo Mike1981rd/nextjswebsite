@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System.IO;
 
 namespace WebsiteBuilderAPI.Controllers
@@ -24,7 +25,9 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         [HttpPost("image")]
-        public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
+        [Consumes("multipart/form-data")]
+        [SwaggerOperation(Summary = "Upload an image file", Description = "Uploads an image file to the server")]
+        public async Task<IActionResult> UploadImage(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest(new { error = "No file provided" });
@@ -70,7 +73,9 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         [HttpPost("video")]
-        public async Task<IActionResult> UploadVideo([FromForm] IFormFile file)
+        [Consumes("multipart/form-data")]
+        [SwaggerOperation(Summary = "Upload a video file", Description = "Uploads a video file to the server")]
+        public async Task<IActionResult> UploadVideo(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest(new { error = "No file provided" });
@@ -113,7 +118,9 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         [HttpPost("media")]
-        public async Task<IActionResult> UploadMedia([FromForm] IFormFile file)
+        [Consumes("multipart/form-data")]
+        [SwaggerOperation(Summary = "Upload a media file", Description = "Uploads an image or video file to the server")]
+        public async Task<IActionResult> UploadMedia(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest(new { error = "No file provided" });

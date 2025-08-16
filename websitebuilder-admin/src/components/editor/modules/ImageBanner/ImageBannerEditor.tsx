@@ -12,6 +12,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useEditorStore } from '@/stores/useEditorStore';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { updateImageBannerConfig } from '@/lib/api/structural-components';
 import { ImageBannerContent } from './ImageBannerContent';
 import { ImageBannerMedia } from './ImageBannerMedia';
 import { ImageBannerPosition } from './ImageBannerPosition';
@@ -56,7 +57,7 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
     }
   }, [sectionId, sections]);
 
-  const handleChange = (updates: Partial<ImageBannerConfig>) => {
+  const handleChange = async (updates: Partial<ImageBannerConfig>) => {
     const updatedConfig = {
       ...localConfig,
       ...updates
@@ -64,13 +65,21 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
     
     setLocalConfig(updatedConfig);
     
-    // Update the section in the store
-    if (section) {
-      const groupId = Object.keys(sections).find(key => 
-        sections[key as keyof typeof sections].includes(section)
-      ) as any;
+    // Save to structural components API
+    try {
+      const companyId = parseInt(localStorage.getItem('companyId') || '1');
+      await updateImageBannerConfig(companyId, updatedConfig);
       
-      updateSectionSettings(groupId, section.id, updatedConfig);
+      // Also update in store for preview
+      if (section) {
+        const groupId = Object.keys(sections).find(key => 
+          sections[key as keyof typeof sections].includes(section)
+        ) as any;
+        
+        updateSectionSettings(groupId, section.id, updatedConfig);
+      }
+    } catch (error) {
+      console.error('Error saving Image Banner config:', error);
     }
   };
 

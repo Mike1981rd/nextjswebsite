@@ -57,4 +57,24 @@ namespace WebsiteBuilderAPI.DTOs
         public bool CreateBackup { get; set; } = true;
         public string? PublishNotes { get; set; }
     }
+
+    /// <summary>
+    /// Request payload for replacing all sections of a page (bulk update from editor)
+    /// </summary>
+    public class UpdatePageSectionsDto
+    {
+        public List<EditorSectionInputDto> Sections { get; set; } = new List<EditorSectionInputDto>();
+    }
+
+    /// <summary>
+    /// Editor-side section shape used for bulk updates
+    /// </summary>
+    public class EditorSectionInputDto
+    {
+        public string Type { get; set; } = string.Empty; // e.g., image_banner, image_with_text, rich_text, etc.
+        public int SortOrder { get; set; }
+        public bool Visible { get; set; } = true;
+        public string? Name { get; set; }
+        public object? Settings { get; set; } // Arbitrary JSON from editor
+    }
 }

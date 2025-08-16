@@ -145,6 +145,37 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         /// <summary>
+        /// Replace all sections of a page (bulk update from editor)
+        /// </summary>
+        [HttpPut("{pageId}/sections")]
+        public async Task<ActionResult<WebsitePageDto>> ReplaceSections(
+            int pageId,
+            [FromBody] UpdatePageSectionsDto dto)
+        {
+            try
+            {
+                var page = await _builderService.GetPageByIdAsync(pageId);
+                if (page == null)
+                {
+                    return NotFound($"Page {pageId} not found");
+                }
+
+                // Delegate to service layer for atomic replace
+                var updated = await _builderService.ReplacePageSectionsAsync(pageId, dto);
+                if (updated == null)
+                {
+                    return StatusCode(500, "Failed to replace sections");
+                }
+                return Ok(updated);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error replacing sections for page {PageId}", pageId);
+                return StatusCode(500, "An error occurred while replacing sections");
+            }
+        }
+
+        /// <summary>
         /// Delete a page
         /// </summary>
         [HttpDelete("{pageId}")]

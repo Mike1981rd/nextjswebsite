@@ -263,21 +263,26 @@ export const useEditorStore = create<EditorStore>()(
           set({ isSaving: true });
 
           try {
-            // Combine all sections with proper sort order
-            const allSections = [
-              ...state.sections.headerGroup,
-              ...state.sections.asideGroup,
-              ...state.sections.template,
-              ...state.sections.footerGroup
-            ];
+            // Only send template sections to backend
+            // Structural components are saved separately via their own API
+            const templateSections = state.sections.template
+              .sort((a, b) => a.sortOrder - b.sortOrder)
+              .map(s => ({
+                type: s.type,
+                sortOrder: s.sortOrder,
+                visible: s.visible,
+                name: s.name,
+                settings: s.settings
+              }));
 
-            const response = await fetch(`/api/website-pages/${state.selectedPageId}/sections`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+            const response = await fetch(`${apiUrl}/websitepages/${state.selectedPageId}/sections`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
               },
-              body: JSON.stringify({ sections: allSections })
+              body: JSON.stringify({ sections: templateSections })
             });
 
             if (response.ok) {

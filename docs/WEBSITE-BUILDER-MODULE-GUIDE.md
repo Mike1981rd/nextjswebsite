@@ -1,6 +1,6 @@
 # 📘 Guía Completa para Construir Nuevos Módulos del Website Builder
 
-**Versión**: 1.9 | **Actualizado**: 2025-01-15 | **Cambios**: Documentación completa de Color Schemes
+**Versión**: 2.0 | **Actualizado**: 2025-01-16 | **Cambios**: Diferenciación crítica entre Componentes Estructurales y Secciones del Template
 
 ## ⚠️ ADVERTENCIAS CRÍTICAS
 
@@ -9,6 +9,64 @@
 
 ### 2. Detección Móvil y Sincronización Editor-Preview
 **CRÍTICO**: TODOS los componentes Preview **DEBEN** implementar la detección móvil correcta para sincronizar con el editor. Sin esto, la vista móvil del editor NO coincidirá con el preview real. Ver implementación obligatoria en [Paso 4](#paso-4-crear-el-preview-real).
+
+### 3. ⚠️ DIFERENCIA CRÍTICA: Componentes Estructurales vs Secciones del Template
+
+**MUY IMPORTANTE**: Entender la diferencia arquitectónica para evitar horas de debugging:
+
+#### **Componentes Estructurales** (Header, Footer, AnnouncementBar, ImageBanner)
+- Se guardan en tabla `StructuralComponentsSettings`
+- Usan API `/structural-components/`
+- Editor debe llamar a `updateImageBannerConfig()`, `updateHeaderConfig()`, etc.
+- Aparecen en TODAS las páginas
+- NO se guardan con el botón Save de página
+
+#### **Secciones del Template** (Hero, ProductInfo, Gallery, Testimonials, etc.)
+- Se guardan en tabla `PageSections`
+- Usan API `/websitepages/[id]/sections`
+- Editor debe llamar a `updateSectionSettings()` del store
+- Son específicas de cada página
+- SE GUARDAN con el botón Save de página
+
+**Ejemplo del Error (Image Banner - INCORRECTO):**
+```typescript
+// ❌ MAL - Image Banner usaba updateSectionSettings (para páginas)
+const handleChange = (updates) => {
+  updateSectionSettings(groupId, sectionId, updates);
+};
+```
+
+**Ejemplo Correcto (Image Banner - CORREGIDO):**
+```typescript
+// ✅ BIEN - Image Banner debe usar API de structural components
+import { updateImageBannerConfig } from '@/lib/api/structural-components';
+
+const handleChange = async (updates) => {
+  const companyId = parseInt(localStorage.getItem('companyId') || '1');
+  await updateImageBannerConfig(companyId, updatedConfig);
+};
+```
+
+### 4. Theme en Preview - Patrón Dual Obligatorio
+
+**CRÍTICO**: El preview DEBE funcionar tanto en el editor como en el Live Preview:
+
+```typescript
+// ✅ SIEMPRE hacer esto en componentes Preview
+interface PreviewProps {
+  config: any;
+  isEditor?: boolean;
+  theme?: any; // CRÍTICO: Para Live Preview
+}
+
+export default function PreviewComponent({ config, theme, isEditor }: PreviewProps) {
+  // Usar theme prop (Live Preview) o store (Editor)
+  const storeThemeConfig = useThemeConfigStore(state => state.config);
+  const themeConfig = theme || storeThemeConfig;
+  
+  // Ahora usar themeConfig para colores, tipografía, etc.
+}
+```
 
 ## 🚨 CHECKLIST DE ERRORES COMUNES - VERIFICAR ANTES DE EMPEZAR
 
@@ -1686,6 +1744,414 @@ if (announcementBarSection) {
 1. El colorScheme se está extrayendo correctamente
 2. Los estilos inline tienen la sintaxis correcta
 3. No hay conflictos con Tailwind classes
+
+### Problema: Typography no funciona
+**Solución**: Usar la función helper y verificar que:
+
+---
+
+## 🚀 COMANDO `/nuevo-modulo` - EXCLUSIVO PARA SECCIONES DEL TEMPLATE
+
+### ⚠️ IMPORTANTE
+Este comando genera **SOLO secciones del template** (Hero, Gallery, Testimonials, etc.)
+- ✅ **Multi-instancia**: Se pueden agregar varias veces en la misma página
+- ✅ **Multi-página**: Funcionan en TODAS las páginas (Home, Product, Collection, etc.)
+- ✅ **Auto-guardado**: Se guardan con el botón Save de la página
+- ✅ **Store integration**: Usan `updateSectionSettings()` automáticamente
+
+### ACTIVACIÓN
+Cuando el usuario escriba `/nuevo-modulo`, Claude iniciará el flujo interactivo.
+
+### FLUJO DETALLADO DEL COMANDO
+
+#### 🎯 FASE 1: CLASIFICACIÓN
+```
+Claude: "🔷 ¿La sección tiene hijos/items? (sí/no)
+Ejemplo: Gallery tiene items, Hero no tiene"
+Usuario: [sí/no]
+
+Claude: "✅ Entendido. Creando sección del template [con/sin] hijos"
+```
+
+#### 📋 FASE 2: ANÁLISIS DE CONFIGURACIÓN PADRE
+```
+Claude: "🔷 Dame el screenshot o descripción de la vista de configuración del módulo padre"
+Usuario: [proporciona screenshot o lista de campos]
+
+Claude: "✅ He identificado estos campos:
+┌─────────────────────────────────────────┐
+│ CAMPO           │ TIPO      │ TYPOGRAPHY │
+├─────────────────────────────────────────┤
+│ Heading         │ text      │ → headings │
+│ Subheading      │ text      │ → body     │
+│ Button label    │ text      │ → buttons  │
+│ Color scheme    │ select    │ (1-5)      │
+│ Width           │ select    │ -          │
+│ Spacing         │ slider    │ -          │
+└─────────────────────────────────────────┘
+
+¿Es correcto? (sí/corrige: [detalles])"
+Usuario: [aprobación o corrección]
+```
+
+#### 👶 FASE 3: ANÁLISIS DE HIJOS (si aplica)
+```
+Claude: "🔷 Dame el screenshot o descripción de la configuración de cada hijo/item"
+Usuario: [proporciona screenshot]
+
+Claude: "✅ He identificado estos campos para cada hijo:
+┌─────────────────────────────────────────┐
+│ CAMPO           │ TIPO      │ TYPOGRAPHY │
+├─────────────────────────────────────────┤
+│ Title           │ text      │ → headings │
+│ Description     │ textarea  │ → body     │
+│ Link            │ url       │ -          │
+│ Image           │ media     │ -          │
+└─────────────────────────────────────────┘
+
+¿Es correcto? (sí/corrige: [detalles])"
+Usuario: [aprobación]
+```
+
+#### 🎨 FASE 4: ESTRUCTURA VISUAL
+```
+Claude: "🔷 ¿Cómo debe verse estructuralmente en el preview?
+- Desktop: [descripción o screenshot]
+- Mobile: [descripción o screenshot]"
+Usuario: [proporciona descripción o screenshots]
+
+Claude: "✅ Entendido:
+- Desktop: [resumen de lo entendido]
+- Mobile: [resumen de lo entendido]
+¿Procedo con la generación?"
+Usuario: "sí"
+```
+
+#### ⚙️ FASE 5: GENERACIÓN AUTOMÁTICA
+```
+Claude: "🚀 Generando módulo..."
+
+✅ Creando archivos:
+1. /components/editor/modules/[Module]/types.ts
+2. /components/editor/modules/[Module]/Preview[Module].tsx
+3. /components/editor/modules/[Module]/[Module]Editor.tsx
+4. /components/editor/modules/[Module]/[Module]Children.tsx (si tiene hijos)
+5. Actualizando integraciones...
+6. Agregando traducciones...
+
+🎉 Módulo generado exitosamente!
+```
+
+### MAPEO AUTOMÁTICO DE TYPOGRAPHY
+
+Claude aplicará automáticamente este mapeo:
+
+| Campo Detectado | → | Typography System |
+|-----------------|---|-------------------|
+| heading, title, headline | → | `typography.headings` |
+| subheading, subtitle, tagline | → | `typography.body` |
+| body, description, text, content | → | `typography.body` |
+| button, cta, action | → | `typography.buttons` |
+| menu, nav, navigation | → | `typography.menus` |
+| label, caption | → | `typography.body` (size small) |
+
+### CONFIGURACIÓN AUTOMÁTICA
+
+Claude incluirá automáticamente:
+- ✅ Color Scheme selector (1-5)
+- ✅ Responsive configuration (desktop/mobile)
+- ✅ Theme dual pattern para preview
+- ✅ Visibility toggle si es estructural
+- ✅ Botón azul "Agregar [hijo]" si tiene hijos
+- ✅ Drag & drop para reordenar hijos
+- ✅ Width selector (screen/page/large/medium)
+- ✅ Spacing/padding controls
+
+### EJEMPLO DE USO REAL
+
+```
+Usuario: /nuevo-modulo
+
+Claude: 🔷 ¿El módulo tiene hijos? (sí/no)
+Usuario: sí
+
+Claude: 🔷 ¿Es un componente estructural o sección del template?
+Usuario: template
+
+Claude: 🔷 Dame el screenshot o descripción de la vista de configuración del módulo padre
+Usuario: "Tiene: título, subtítulo, selector de layout (grid/carousel), columnas (1-4)"
+
+Claude: ✅ He identificado estos campos:
+- Título → text → typography.headings
+- Subtítulo → text → typography.body  
+- Layout → select (grid/carousel)
+- Columnas → number (1-4)
+- Color scheme → select (1-5) [agregado automáticamente]
+
+Usuario: sí
+
+Claude: 🔷 Dame el screenshot o descripción de la configuración de cada hijo/item
+Usuario: "Cada item tiene: imagen, título, descripción, botón con link"
+
+[... continúa el flujo ...]
+```
+
+## 🚀 FLUJO AUTOMATIZADO: Generación Completa de Módulos
+
+### INSTRUCCIONES PARA EL USUARIO
+
+Cuando necesites crear un nuevo módulo, simplemente proporciona:
+
+1. **Screenshot o descripción de la configuración del módulo**
+   - Ejemplo: "Tiene campos para título, subtítulo, 3 botones, selector de color"
+   
+2. **Si tiene hijos, screenshot de la configuración del hijo**
+   - Ejemplo: "Cada item tiene imagen, título, descripción, link"
+
+3. **Cómo debe verse en el preview**
+   - Ejemplo: "Grid de 3 columnas en desktop, 1 en móvil"
+
+4. **Tipo de módulo**
+   - Estructural (Header, Footer, etc.) o Sección del Template (Hero, Gallery, etc.)
+
+### FLUJO QUE CLAUDE SEGUIRÁ AUTOMÁTICAMENTE
+
+```mermaid
+graph TD
+    A[Usuario proporciona specs] --> B[Claude analiza y genera]
+    B --> C[1. types.ts - Interfaces]
+    C --> D[2. Preview component]
+    D --> E[3. Editor component]
+    E --> F[4. Editor hijos si aplica]
+    F --> G[5. Integración en sistema]
+    G --> H[6. Traducciones i18n]
+    H --> I[Usuario solo verifica]
+```
+
+### TEMPLATE DE SOLICITUD PARA EL USUARIO
+
+```markdown
+## Nuevo Módulo: [NOMBRE]
+
+**Tipo**: [Estructural / Sección Template]
+
+**Configuración Principal**:
+- Campo 1: [tipo - text/select/toggle/etc]
+- Campo 2: [tipo]
+- Campo 3: [tipo]
+
+**Configuración de Hijos** (si aplica):
+- Campo hijo 1: [tipo]
+- Campo hijo 2: [tipo]
+
+**Vista Preview**:
+- Desktop: [descripción]
+- Mobile: [descripción]
+
+**Comportamiento especial**: [si hay alguno]
+```
+
+### LO QUE CLAUDE GENERARÁ AUTOMÁTICAMENTE
+
+#### PASO 1: Análisis y Types
+```typescript
+// types.ts
+interface [Module]Config {
+  // Campos basados en la descripción
+}
+
+interface [Module]ItemConfig {
+  // Si tiene hijos
+}
+```
+
+#### PASO 2: Preview Component
+```typescript
+// Preview[Module].tsx
+- Estructura visual según descripción
+- Soporte theme dual (editor/live)
+- Responsive según specs
+- Manejo de hijos si aplica
+```
+
+#### PASO 3: Editor Principal
+```typescript
+// [Module]Editor.tsx
+- Todos los controles de configuración
+- handleChange correcto (structural vs template)
+- Secciones colapsables
+- Integración con store
+```
+
+#### PASO 4: Editor de Hijos (si aplica)
+```typescript
+// [Module]Children.tsx
+- Lista de items
+- Agregar/eliminar/reordenar
+- Editor individual por item
+```
+
+#### PASO 5: Integraciones
+```typescript
+// Automáticamente agregar a:
+- SECTION_CONFIGS
+- EditorSidebar
+- EditorPreview
+- PreviewContent (template sections)
+- PreviewPage (structural)
+```
+
+#### PASO 6: Traducciones
+```json
+// es.json y en.json
+{
+  "moduleName": {
+    "title": "...",
+    "fields": { ... }
+  }
+}
+```
+
+### EJEMPLO REAL DE USO
+
+**Usuario dice:**
+"Necesito un módulo Gallery para el template. Tiene selector de layout (grid/carousel), número de columnas (1-4), y spacing. Cada item tiene imagen, título, descripción y link. En desktop debe ser grid, en móvil carousel."
+
+**Claude genera TODO:**
+1. ✅ GalleryConfig y GalleryItemConfig types
+2. ✅ PreviewGallery.tsx con grid/carousel
+3. ✅ GalleryEditor.tsx con todos los controles
+4. ✅ GalleryChildren.tsx para gestionar items
+5. ✅ Integración en 5 archivos del sistema
+6. ✅ Traducciones ES/EN
+
+**Usuario solo:**
+- Verifica que los controles funcionen
+- Ajusta estilos si necesario
+- Confirma traducciones
+
+### CHECKLIST PARA CLAUDE AL GENERAR
+
+- [ ] ¿Es estructural o template? → Determina API a usar
+- [ ] ¿Tiene hijos? → Crear editor de hijos
+- [ ] ¿Necesita media upload? → Integrar MediaUploadButton
+- [ ] ¿Usa color schemes? → Integrar selector 1-5
+- [ ] ¿Responsive diferente? → Configuración desktop/mobile
+- [ ] ¿Theme dual en preview? → Patrón theme || store
+- [ ] ¿Traducciones? → Agregar a es.json y en.json
+
+---
+
+## 🆕 GUÍA ESPECÍFICA: Desarrollo de Secciones del Template
+
+### Diferencias Clave con Componentes Estructurales
+
+Las **Secciones del Template** (Hero, ProductInfo, Gallery, etc.) son más simples que los componentes estructurales:
+
+1. **NO necesitan API propia** - Usan `updateSectionSettings()` del store
+2. **Se guardan automáticamente** con el botón Save de la página
+3. **Son específicas de cada página** - No aparecen en todas
+
+### Patrón de Implementación para Secciones del Template
+
+#### 1. Editor de la Sección
+```typescript
+// /components/editor/modules/Hero/HeroEditor.tsx
+import { useEditorStore } from '@/stores/useEditorStore';
+
+export default function HeroEditor({ sectionId }: { sectionId: string }) {
+  const { sections, updateSectionSettings } = useEditorStore();
+  
+  const handleChange = (updates: Partial<HeroConfig>) => {
+    const updatedConfig = { ...localConfig, ...updates };
+    setLocalConfig(updatedConfig);
+    
+    // ✅ CORRECTO para secciones del template
+    if (section) {
+      const groupId = Object.keys(sections).find(key => 
+        sections[key as keyof typeof sections].includes(section)
+      );
+      updateSectionSettings(groupId, section.id, updatedConfig);
+    }
+  };
+  
+  // Resto del editor...
+}
+```
+
+#### 2. Preview de la Sección
+```typescript
+// /components/preview/PreviewHero.tsx
+interface PreviewHeroProps {
+  config: HeroConfig;
+  isEditor?: boolean;
+  theme?: any; // CRÍTICO: Para Live Preview
+  deviceView?: 'desktop' | 'mobile';
+}
+
+export default function PreviewHero({ config, theme, isEditor, deviceView }: PreviewHeroProps) {
+  // Patrón dual obligatorio
+  const storeThemeConfig = useThemeConfigStore(state => state.config);
+  const themeConfig = theme || storeThemeConfig;
+  
+  // Usar themeConfig para colores
+  const colorScheme = useMemo(() => {
+    const schemeIndex = parseInt(config.colorScheme) - 1;
+    return themeConfig?.colorSchemes?.schemes[schemeIndex];
+  }, [themeConfig, config.colorScheme]);
+  
+  // Renderizar con los colores correctos
+  return (
+    <section style={{ backgroundColor: colorScheme?.background }}>
+      <h1 style={{ color: colorScheme?.text }}>{config.heading}</h1>
+    </section>
+  );
+}
+```
+
+#### 3. Integración en PreviewContent.tsx
+```typescript
+// Agregar el import
+import PreviewHero from './PreviewHero';
+
+// Agregar el case en el render
+{getSectionType(section) === 'hero' && (
+  <PreviewHero 
+    config={getSectionConfig(section)} 
+    theme={theme}
+    isEditor={false}
+    deviceView={deviceView}
+  />
+)}
+```
+
+### Checklist para Nueva Sección del Template
+
+- [ ] Crear `/components/editor/modules/[Section]/[Section]Editor.tsx`
+- [ ] Usar `updateSectionSettings()` NO APIs de structural components
+- [ ] Crear `/components/preview/Preview[Section].tsx` con theme prop
+- [ ] Agregar case en `PreviewContent.tsx`
+- [ ] Agregar tipo en `editor.types.ts`
+- [ ] Agregar configuración en `SECTION_CONFIGS`
+- [ ] NO crear endpoint API propio
+- [ ] NO modificar el sistema de guardado
+
+### Errores Comunes a Evitar
+
+❌ **NO hacer esto:**
+```typescript
+// Incorrecto para secciones del template
+import { updateHeroConfig } from '@/lib/api/structural-components';
+await updateHeroConfig(companyId, config);
+```
+
+✅ **Hacer esto:**
+```typescript
+// Correcto para secciones del template
+updateSectionSettings(groupId, sectionId, config);
+```
+
+---
 
 ### Problema: Typography no funciona
 **Solución**: Usar la función helper y verificar que:

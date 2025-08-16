@@ -134,6 +134,67 @@ namespace WebsiteBuilderAPI.Services
             return await GetPageByIdAsync(pageId);
         }
 
+        public async Task<WebsitePageDto?> ReplacePageSectionsAsync(int pageId, UpdatePageSectionsDto dto)
+        {
+            var page = await _context.WebsitePages
+                .Include(p => p.Sections)
+                .FirstOrDefaultAsync(p => p.Id == pageId);
+            if (page == null) return null;
+
+            // Remove existing sections
+            var existingSections = await _context.PageSections.Where(s => s.PageId == pageId).ToListAsync();
+            _context.PageSections.RemoveRange(existingSections);
+            await _context.SaveChangesAsync();
+
+            // Add new sections from editor payload
+            int sortOrderBase = 10;
+            foreach (var incoming in dto.Sections.OrderBy(s => s.SortOrder))
+            {
+                // Map editor type (snake_case) to backend constant if necessary
+                var normalized = (incoming.Type ?? string.Empty).Trim();
+                string sectionType = normalized switch
+                {
+                    "image_banner" => SectionTypes.IMAGE_BANNER,
+                    "image_with_text" => SectionTypes.IMAGE_WITH_TEXT,
+                    "rich_text" => SectionTypes.RICH_TEXT,
+                    "gallery" => SectionTypes.GALLERY,
+                    "contact_form" => SectionTypes.CONTACT_FORM,
+                    "newsletter" => SectionTypes.NEWSLETTER,
+                    "featured_product" => SectionTypes.FEATURED_PRODUCT,
+                    "featured_collection" => SectionTypes.FEATURED_COLLECTION,
+                    "testimonials" => SectionTypes.TESTIMONIALS,
+                    "faq" => SectionTypes.FAQ,
+                    "videos" => SectionTypes.VIDEOS,
+                    _ => normalized // Allow already-normalized values like ImageBanner
+                };
+
+                var configJson = incoming.Settings != null 
+                    ? JsonSerializer.Serialize(incoming.Settings)
+                    : "{}";
+
+                var newSection = new PageSection
+                {
+                    PageId = pageId,
+                    SectionType = sectionType,
+                    Config = configJson,
+                    SortOrder = sortOrderBase + incoming.SortOrder,
+                    IsActive = incoming.Visible,
+                    Title = incoming.Name,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.PageSections.Add(newSection);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Invalidate page cache so preview pulls fresh data
+            await _cacheService.InvalidatePageCacheAsync(pageId);
+
+            return await GetPageByIdAsync(pageId);
+        }
+
         public async Task<bool> DeletePageAsync(int pageId)
         {
             var page = await _context.WebsitePages

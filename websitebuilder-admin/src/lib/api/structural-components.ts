@@ -92,6 +92,22 @@ export async function updateFooterConfig(companyId: number, config: any): Promis
 }
 
 /**
+ * Update image banner configuration
+ */
+export async function updateImageBannerConfig(companyId: number, config: any): Promise<StructuralComponentsDto> {
+  const updateDto: UpdateComponentDto = {
+    componentType: 'imagebanner',
+    config: JSON.stringify(config)
+  };
+  
+  const response = await apiClient.put(
+    `/structural-components/company/${companyId}/component`,
+    updateDto
+  );
+  return response.data;
+}
+
+/**
  * Update cart drawer configuration
  */
 export async function updateCartDrawerConfig(companyId: number, config: any): Promise<StructuralComponentsDto> {

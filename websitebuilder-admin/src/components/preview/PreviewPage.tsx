@@ -85,6 +85,8 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
         if (structuralResponse.ok) {
           const data = await structuralResponse.json();
           console.log('Raw structural data:', data);
+          console.log('ImageBanner field exists?:', 'imageBannerConfig' in data);
+          console.log('ImageBanner value:', data.imageBannerConfig);
           
           // Parse the JSON strings from the API response
           const parsedComponents = {
@@ -94,6 +96,27 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
             imageBanner: data.imageBannerConfig ? JSON.parse(data.imageBannerConfig) : null,
             cartDrawer: data.cartDrawerConfig ? JSON.parse(data.cartDrawerConfig) : null,
           };
+
+          // Fallback: try to fetch published ImageBanner config directly if not present in DTO
+          if (!parsedComponents.imageBanner) {
+            try {
+              const imageBannerUrl = `${apiUrl}/structural-components/company/${companyId}/imagebanner/published`;
+              console.log('Fetching image banner (published) from:', imageBannerUrl);
+              const ibRes = await fetch(imageBannerUrl);
+              if (ibRes.ok) {
+                // Controller returns a JSON string, not an object
+                const ibConfigString = await ibRes.text();
+                const ibConfig = ibConfigString ? JSON.parse(ibConfigString) : null;
+                if (ibConfig) {
+                  parsedComponents.imageBanner = ibConfig;
+                }
+              } else {
+                console.log('No published image banner available (status):', ibRes.status);
+              }
+            } catch (e) {
+              console.warn('Failed to fetch published image banner config:', e);
+            }
+          }
           console.log('Parsed structural components:', parsedComponents);
           setStructuralComponents(parsedComponents);
         } else {
@@ -167,10 +190,11 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
         console.log('No header config available') || null
       )}
 
-      {/* Image Banner - if configured */}
+      {/* Image Banner (structural fallback) - if configured via published endpoint */}
       {structuralComponents.imageBanner && (
         <PreviewImageBanner 
           config={structuralComponents.imageBanner}
+          theme={globalTheme}
           isEditor={false}
           deviceView={editorDeviceView}
         />
@@ -183,6 +207,7 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
           handle={handle}
           theme={globalTheme}
           companyId={companyId || undefined}
+          deviceView={editorDeviceView}
         />
       </main>
 

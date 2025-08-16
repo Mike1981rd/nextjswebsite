@@ -12,6 +12,7 @@ namespace WebsiteBuilderAPI.DTOs
         public string HeaderConfig { get; set; } = "{}";
         public string AnnouncementBarConfig { get; set; } = "{}";
         public string FooterConfig { get; set; } = "{}";
+        public string ImageBannerConfig { get; set; } = "{}";
         public string CartDrawerConfig { get; set; } = "{}";
         public bool IsActive { get; set; }
         public bool IsPublished { get; set; }
@@ -30,6 +31,7 @@ namespace WebsiteBuilderAPI.DTOs
         public string? HeaderConfig { get; set; }
         public string? AnnouncementBarConfig { get; set; }
         public string? FooterConfig { get; set; }
+        public string? ImageBannerConfig { get; set; }
         public string? CartDrawerConfig { get; set; }
         public string? Notes { get; set; }
     }
@@ -39,7 +41,7 @@ namespace WebsiteBuilderAPI.DTOs
     /// </summary>
     public class UpdateComponentDto
     {
-        public string ComponentType { get; set; } = string.Empty; // header, announcementBar, footer, cartDrawer
+        public string ComponentType { get; set; } = string.Empty; // header, announcementBar, footer, imageBanner, cartDrawer
         public string Config { get; set; } = "{}";
         public string? Notes { get; set; }
     }
