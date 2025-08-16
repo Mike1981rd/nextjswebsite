@@ -10,6 +10,10 @@ export interface SlideConfig {
   desktopImage: string;
   mobileImage: string;
   
+  // Video
+  desktopVideo: string;
+  mobileVideo: string;
+  
   // Video overlay
   desktopOverlayOpacity: number;
   mobileOverlayOpacity: number;
@@ -18,14 +22,14 @@ export interface SlideConfig {
   subheading: string;
   heading: string;
   body: string;
-  headingSize: 1 | 2 | 3;
-  bodySize: 1 | 2 | 3;
+  headingSize: number; // 20-80px for desktop, controls individual slide heading size
+  bodySize: number; // 12-24px, controls individual slide body text size
   
   // Content position
   desktopPosition: 'top-left' | 'top-center' | 'top-right' | 
                    'center-left' | 'center' | 'center-right' | 
                    'bottom-left' | 'bottom-center' | 'bottom-right';
-  desktopAlignment: 'left' | 'center';
+  desktopAlignment: 'left' | 'center' | 'right';
   desktopWidth: number; // 200-800px
   desktopSpacing: number; // 0-200px
   mobilePosition: 'top' | 'center' | 'bottom';
@@ -42,6 +46,13 @@ export interface SlideConfig {
   secondButtonLabel: string;
   secondButtonLink: string;
   secondButtonStyle: 'solid' | 'outline' | 'text';
+  
+  // Legacy compatibility (deprecated - usar desktopAlignment)
+  contentAlignment?: 'left' | 'center' | 'right';
+  buttonText?: string;
+  secondButtonText?: string;
+  buttonLink?: string;
+  buttonStyle?: string;
   
   // Visibility
   visible: boolean;
@@ -105,13 +116,15 @@ export function getDefaultSlideConfig(): SlideConfig {
     id: `slide-${Date.now()}`,
     desktopImage: '',
     mobileImage: '',
+    desktopVideo: '',
+    mobileVideo: '',
     desktopOverlayOpacity: 20,
     mobileOverlayOpacity: 20,
     subheading: 'IMAGE SLIDE',
     heading: 'Image with text',
     body: 'Fill in the text to tell customers by what your products are inspired.',
-    headingSize: 2,
-    bodySize: 3,
+    headingSize: 48, // Default 48px for heading
+    bodySize: 16, // Default 16px for body
     desktopPosition: 'bottom-center',
     desktopAlignment: 'center',
     desktopWidth: 560,

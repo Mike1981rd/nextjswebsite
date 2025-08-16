@@ -92,6 +92,7 @@ namespace WebsiteBuilderAPI.Models
         public const string TESTIMONIALS = "Testimonials";
         public const string FAQ = "FAQ";
         public const string VIDEOS = "Videos";
+        public const string SLIDESHOW = "Slideshow";
         
         /// <summary>
         /// Page-specific sections that are usually automatically added
@@ -108,7 +109,7 @@ namespace WebsiteBuilderAPI.Models
         {
             IMAGE_WITH_TEXT, IMAGE_BANNER, RICH_TEXT, GALLERY,
             CONTACT_FORM, NEWSLETTER, FEATURED_PRODUCT,
-            FEATURED_COLLECTION, TESTIMONIALS, FAQ, VIDEOS
+            FEATURED_COLLECTION, TESTIMONIALS, FAQ, VIDEOS, SLIDESHOW
         };
         
         /// <summary>
@@ -121,7 +122,7 @@ namespace WebsiteBuilderAPI.Models
             // Modular
             IMAGE_WITH_TEXT, IMAGE_BANNER, RICH_TEXT, GALLERY,
             CONTACT_FORM, NEWSLETTER, FEATURED_PRODUCT,
-            FEATURED_COLLECTION, TESTIMONIALS, FAQ, VIDEOS
+            FEATURED_COLLECTION, TESTIMONIALS, FAQ, VIDEOS, SLIDESHOW
         };
         
         /// <summary>
@@ -129,7 +130,8 @@ namespace WebsiteBuilderAPI.Models
         /// </summary>
         public static readonly HashSet<string> SectionsWithChildren = new HashSet<string>
         {
-            PRODUCT_INFORMATION
+            PRODUCT_INFORMATION,
+            SLIDESHOW
         };
         
         public static bool IsValidSectionType(string sectionType)

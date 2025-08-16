@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { PageType, Section } from '@/types/editor.types';
 import PreviewImageBanner from './PreviewImageBanner';
+import PreviewSlideshow from './PreviewSlideshow';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -90,6 +91,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     // Accept both 'ImageBanner' and 'image_banner'
     const t = String(rawType);
     if (t === 'ImageBanner' || t === 'image_banner') return 'image_banner';
+    if (t === 'Slideshow' || t === 'slideshow') return 'slideshow';
     return t;
   };
 
@@ -151,6 +153,17 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                   deviceView={deviceView}
                 />
               )}
+              
+              {/* Slideshow (unified preview component) */}
+              {getSectionType(section) === 'slideshow' && (
+                <PreviewSlideshow 
+                  settings={getSectionConfig(section)} 
+                  theme={theme}
+                  isEditor={false}
+                  deviceView={deviceView}
+                />
+              )}
+              
               {/* Add more section types as they are implemented */}
             </div>
           ))}

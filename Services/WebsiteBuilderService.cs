@@ -165,6 +165,7 @@ namespace WebsiteBuilderAPI.Services
                     "testimonials" => SectionTypes.TESTIMONIALS,
                     "faq" => SectionTypes.FAQ,
                     "videos" => SectionTypes.VIDEOS,
+                    "slideshow" => SectionTypes.SLIDESHOW,
                     _ => normalized // Allow already-normalized values like ImageBanner
                 };
 

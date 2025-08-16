@@ -25,6 +25,10 @@ export function SlideContentEditor({
   onChange
 }: SlideContentEditorProps) {
   
+  // Ensure default values for font sizes
+  const headingSize = slide.headingSize || 48;
+  const bodySize = slide.bodySize || 16;
+  
   return (
     <>
       {/* Content Section */}
@@ -82,30 +86,42 @@ export function SlideContentEditor({
 
             {/* Heading Size */}
             <div>
-              <label className="text-xs text-gray-600 dark:text-gray-400">Heading size</label>
-              <select 
-                className="w-full mt-1 px-2 py-1.5 text-sm border rounded"
-                value={slide.headingSize}
-                onChange={(e) => onChange('headingSize', parseInt(e.target.value))}
-              >
-                <option value={1}>Heading 1</option>
-                <option value={2}>Heading 2</option>
-                <option value={3}>Heading 3</option>
-              </select>
+              <label className="text-xs text-gray-600 dark:text-gray-400">
+                Heading size: {headingSize}px
+              </label>
+              <input
+                type="range"
+                min="20"
+                max="80"
+                step="2"
+                value={headingSize}
+                onChange={(e) => {
+                  const newValue = parseInt(e.target.value);
+                  console.log('[DEBUG] Changing headingSize to:', newValue);
+                  onChange('headingSize', newValue);
+                }}
+                className="w-full mt-1"
+              />
             </div>
 
             {/* Body Size */}
             <div>
-              <label className="text-xs text-gray-600 dark:text-gray-400">Body size</label>
-              <select 
-                className="w-full mt-1 px-2 py-1.5 text-sm border rounded"
-                value={slide.bodySize}
-                onChange={(e) => onChange('bodySize', parseInt(e.target.value))}
-              >
-                <option value={1}>Body 1</option>
-                <option value={2}>Body 2</option>
-                <option value={3}>Body 3</option>
-              </select>
+              <label className="text-xs text-gray-600 dark:text-gray-400">
+                Body size: {bodySize}px
+              </label>
+              <input
+                type="range"
+                min="12"
+                max="24"
+                step="1"
+                value={bodySize}
+                onChange={(e) => {
+                  const newValue = parseInt(e.target.value);
+                  console.log('[DEBUG] Changing bodySize to:', newValue);
+                  onChange('bodySize', newValue);
+                }}
+                className="w-full mt-1"
+              />
             </div>
           </div>
         )}
@@ -171,6 +187,16 @@ export function SlideContentEditor({
                   }`}
                 >
                   Center
+                </button>
+                <button
+                  onClick={() => onChange('desktopAlignment', 'right')}
+                  className={`flex-1 px-2 py-1 text-xs rounded ${
+                    slide.desktopAlignment === 'right'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  Right
                 </button>
               </div>
             </div>

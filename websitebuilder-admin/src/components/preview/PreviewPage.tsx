@@ -160,12 +160,12 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
     '--border-radius': globalTheme.appearance?.borderRadius || '8px',
   } as React.CSSProperties : {};
 
-  console.log('Rendering preview with:', {
-    loading,
-    hasHeader: !!structuralComponents.header,
-    headerConfig: structuralComponents.header,
-    hasTheme: !!globalTheme
-  });
+  // console.log('Rendering preview with:', {
+  //   loading,
+  //   hasHeader: !!structuralComponents.header,
+  //   headerConfig: structuralComponents.header,
+  //   hasTheme: !!globalTheme
+  // });
 
   return (
     <div className="min-h-screen" style={{...themeStyles, overflowY: 'auto', height: '100vh'}}>
