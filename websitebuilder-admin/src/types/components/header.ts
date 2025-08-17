@@ -171,6 +171,9 @@ export interface HeaderConfig {
   
   /** Custom CSS */
   customCss?: string;
+  
+  /** Custom hamburger icon color for drawer layout */
+  hamburgerIconColor?: string;
 }
 
 /**

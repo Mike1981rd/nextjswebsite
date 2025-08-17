@@ -541,6 +541,40 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
             </select>
           </div>
 
+          {/* Hamburger Icon Color - Only for drawer layout */}
+          {getValue('layout') === 'drawer' && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Hamburger icon color
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={getValue('hamburgerIconColor') || '#000000'}
+                  onChange={(e) => handleChange('hamburgerIconColor', e.target.value)}
+                  className="w-10 h-10 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={getValue('hamburgerIconColor') || '#000000'}
+                  onChange={(e) => handleChange('hamburgerIconColor', e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={() => handleChange('hamburgerIconColor', '')}
+                  className="px-2 py-1.5 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+                  title="Use default color from theme"
+                >
+                  Default
+                </button>
+              </div>
+              <span className="text-xs text-gray-500 mt-1 block">
+                Custom color for the hamburger menu icon. Leave empty to use text color from selected color scheme.
+              </span>
+            </div>
+          )}
+
           {/* Cart type */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1.5">

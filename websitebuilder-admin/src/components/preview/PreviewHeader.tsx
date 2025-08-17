@@ -78,7 +78,8 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     height: config?.height || 145,
     showSearchIcon: config?.showSearchIcon !== false, // default true
     showUserIcon: config?.showUserIcon !== false, // default true
-    showCartIcon: config?.showCartIcon !== false // default true
+    showCartIcon: config?.showCartIcon !== false, // default true
+    hamburgerIconColor: config?.hamburgerIconColor || '' // custom hamburger color
   };
 
   // Apply typography styles from theme (matching EditorPreview.tsx)
@@ -433,7 +434,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                   <button
                     onClick={() => setDrawerOpen(!drawerOpen)}
                     className="p-1.5 hover:opacity-70 transition-opacity"
-                    style={{ color: colorScheme?.text?.default || '#000000' }}
+                    style={{ color: headerConfig?.hamburgerIconColor || colorScheme?.text?.default || '#000000' }}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -494,7 +495,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                   <button
                     onClick={() => setDrawerOpen(!drawerOpen)}
                     className="p-2 hover:opacity-70 transition-opacity"
-                    style={{ color: colorScheme?.text?.default || '#000000' }}
+                    style={{ color: headerConfig?.hamburgerIconColor || colorScheme?.text?.default || '#000000' }}
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
