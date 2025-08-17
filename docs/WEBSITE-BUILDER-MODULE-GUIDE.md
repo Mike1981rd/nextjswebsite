@@ -926,6 +926,8 @@ useEffect(() => {
 | No usar patrón dual de theme | Theme undefined en editor | `const themeConfig = theme \|\| storeThemeConfig` |
 | Hooks después de returns | Error "Rendered more hooks" | TODOS los hooks antes de returns |
 | No pasar `deviceView` | Móvil no sincroniza | Siempre pasar prop `deviceView` |
+| **No integrar en PreviewContent** | **No se ve en preview real** | **Agregar caso en PreviewContent.tsx** |
+| **Config sin valores por defecto** | **Estructura no visible en editor** | **Agregar fallbacks para todos los valores** |
 
 ### ✅ Checklist de Implementación Correcta
 
@@ -1334,6 +1336,104 @@ export function ConfigPanel({ section }) {
 }
 ```
 
+### 🔴 CORRECCIONES CRÍTICAS PARA MÓDULOS CON HIJOS (Actualizado 17/01/2025)
+
+#### ⚠️ Problema 1: Vista de configuración padre cortada (overflow)
+**Síntomas:** El contenido se desborda hacia la derecha, los controles se cortan, los botones de colapso no se ven.
+
+**❌ INCORRECTO:**
+```typescript
+// Editor con ancho fijo restrictivo
+<div className="w-[320px] h-full overflow-x-hidden">
+  <input className="flex-1" />
+  <span className="w-12">{value}</span> {/* Ancho fijo causa overflow */}
+</div>
+```
+
+**✅ CORRECTO:**
+```typescript
+// Editor sin ancho fijo, sliders flexibles
+<div className="h-full bg-white dark:bg-gray-900 flex flex-col">
+  <div className="flex-1 overflow-y-auto">
+    <input className="flex-1 min-w-0" />     {/* min-w-0 permite encogerse */}
+    <span className="flex-shrink-0">{value}</span> {/* flex-shrink-0 mantiene tamaño */}
+  </div>
+</div>
+```
+
+**Reglas para evitar overflow:**
+- NO usar `w-[320px]` o anchos fijos en el contenedor principal
+- Usar `flex-1 min-w-0` en inputs de sliders
+- Usar `flex-shrink-0` en spans de valores
+- NO forzar `overflow-x-hidden` que oculta contenido
+
+#### ⚠️ Problema 2: Click en hijos no abre configuración
+**Síntomas:** Al hacer click en un hijo, no se abre el editor correcto o no pasa nada.
+
+**SOLUCIÓN COMPLETA - 3 archivos necesarios:**
+
+**1. En [Module]Children.tsx - Usar formato especial para hijos:**
+```typescript
+const handleSelectItem = (itemId: string) => {
+  // CRÍTICO: Usar formato especial para hijos con :child:
+  selectSection(`${section.id}:child:${itemId}`);
+  toggleConfigPanel(true);
+};
+```
+
+**2. En ConfigPanel.tsx - Detectar y renderizar editor de hijos:**
+```typescript
+// Al inicio, detectar si es un hijo del módulo
+const isMulticolumnsItem = selectedSectionId?.includes(':child:') && !isSlideItem;
+const getMulticolumnsSectionId = () => {
+  if (!isMulticolumnsItem || !selectedSectionId) return null;
+  return selectedSectionId.split(':child:')[0];
+};
+const getMulticolumnsItemId = () => {
+  if (!isMulticolumnsItem || !selectedSectionId) return null;
+  return selectedSectionId.split(':child:')[1];
+};
+
+// Renderizar editor correcto DESPUÉS de todos los hooks
+if (isMulticolumnsItem) {
+  const sectionId = getMulticolumnsSectionId();
+  const itemId = getMulticolumnsItemId();
+  if (sectionId && itemId) {
+    return <MulticolumnsItemEditor sectionId={sectionId} itemId={itemId} />;
+  }
+}
+```
+
+**3. En EditorSidebarWithDnD.tsx - Crear sección virtual para hijos:**
+```typescript
+// Después de buscar la sección normal
+const selectedSection = selectedSectionId
+  ? Object.values(sections).flat().find(s => s.id === selectedSectionId)
+  : null;
+
+// Si no se encontró y es un hijo, crear sección virtual
+if (!selectedSection && selectedSectionId?.includes(':child:')) {
+  const [sectionId] = selectedSectionId.split(':child:');
+  const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
+  
+  // Crear sección virtual para que ConfigPanel pueda renderizar
+  selectedSection = {
+    id: selectedSectionId,
+    type: 'MULTICOLUMNS_ITEM' as any,  // Tipo especial para identificar
+    name: 'Icon Column',
+    visible: true,
+    settings: parentSection?.settings || {},
+    sortOrder: 0
+  } as any;
+}
+```
+
+**Checklist de implementación:**
+- [ ] [Module]Children usa formato `parentId:child:childId`
+- [ ] ConfigPanel detecta `:child:` y renderiza editor correcto
+- [ ] EditorSidebarWithDnD crea sección virtual para hijos
+- [ ] [Module]ItemEditor recibe `sectionId` y `itemId` como props
+
 ### 🔴 ERROR COMÚN: Navegación Incorrecta del Botón Back
 
 **Problema**: El botón de retroceso en el editor del hijo lleva a la configuración del padre en vez de volver al sidebar.
@@ -1663,6 +1763,100 @@ text-lg: 1.125rem;  /* 18px - Títulos de sección */
 
 ---
 
+## 🎯 INTEGRACIÓN CRÍTICA EN PreviewContent.tsx (Template Sections)
+
+### ⚠️ IMPORTANTE: Solo para Secciones Template
+Los módulos de tipo **template** (multicolumns, slideshow, etc.) que se guardan en la base de datos **DEBEN** integrarse en `PreviewContent.tsx` para ser visibles en el preview real.
+
+### Pasos de Integración:
+
+#### 1. Importar el componente Preview
+```typescript
+// En PreviewContent.tsx
+import PreviewMulticolumns from './PreviewMulticolumns';
+```
+
+#### 2. Agregar caso en getSectionType()
+```typescript
+const getSectionType = (section: any): string | undefined => {
+  const rawType: string | undefined = section?.sectionType || section?.type;
+  if (!rawType) return undefined;
+  const t = String(rawType);
+  // Agregar nueva línea para tu módulo:
+  if (t === 'Multicolumns' || t === 'multicolumns') return 'multicolumns';
+  return t;
+};
+```
+
+#### 3. Agregar renderizado del componente
+```typescript
+{/* Multicolumns (unified preview component) */}
+{getSectionType(section) === 'multicolumns' && (
+  <PreviewMulticolumns 
+    config={getSectionConfig(section)} 
+    theme={theme}
+    deviceView={deviceView || 'desktop'}
+    isEditor={false}
+  />
+)}
+```
+
+### ❌ Error Común: Módulo no visible en preview real
+**Síntoma**: El módulo se ve en el editor pero no en el preview real  
+**Causa**: Falta integración en PreviewContent.tsx  
+**Solución**: Seguir los 3 pasos anteriores
+
+### ❌ Error Común: Estructura no visible en editor
+**Síntoma**: Al agregar el módulo, no se ve nada o da errores  
+**Causa**: El componente preview asume que todos los valores existen  
+**Solución**: Agregar valores por defecto para TODAS las propiedades:
+
+### ❌ Error Común: Color schemes no se aplican
+**Síntoma**: Los colores no cambian al seleccionar diferentes schemes  
+**Causa**: Estructura incorrecta del colorScheme object  
+**Solución**: Usar la estructura correcta sin anidamiento:
+
+```typescript
+// ❌ INCORRECTO - Estructura anidada
+backgroundColor: colorScheme?.background?.primary
+color: colorScheme?.text?.heading
+
+// ✅ CORRECTO - Estructura plana como otros componentes
+backgroundColor: colorScheme?.background || '#ffffff'
+color: colorScheme?.text || '#000000'
+```
+
+### ❌ Error Común: No se muestra en preview real pero sí en editor
+**Síntoma**: El módulo aparece en editor pero no en preview  
+**Causa**: Condición muy estricta con config.enabled  
+**Solución**: Usar comparación estricta con false:
+
+```typescript
+// ❌ INCORRECTO - No se muestra si enabled es undefined
+if (!config.enabled && !isEditor) return null;
+
+// ✅ CORRECTO - Solo oculta si está explícitamente deshabilitado
+if (config.enabled === false && !isEditor) return null;
+```
+
+```typescript
+// Ejemplos de valores por defecto necesarios:
+const visibleItems = (config.items || []).filter(item => item.visible);
+const layout = config.desktopLayout || 'grid';
+const spacing = config.desktopSpacing || 24;
+const colorScheme = getColorScheme(config.colorScheme || '1');
+
+// Para editor sin datos, mostrar placeholders:
+const itemsToRender = visibleItems.length > 0 ? visibleItems : (isEditor ? [
+  { id: 'placeholder1', icon: 'star', heading: 'Column 1', body: 'Add content' }
+] : []);
+
+// Multiplicadores siempre con fallback a 1:
+fontSize: `${baseSize * (config.headingSize || 1)}px`
+```
+
+---
+
 ## Plantillas de Código
 
 ### Configuración Típica de un Módulo
@@ -1697,6 +1891,28 @@ interface ModuleConfig {
 const getColorScheme = (schemeId: string, theme: any) => {
   const index = parseInt(schemeId || '1') - 1;
   return theme?.colorSchemes?.schemes?.[index];
+};
+
+// Estructura CORRECTA del colorScheme (plana, no anidada):
+interface ColorScheme {
+  background: string;           // Color de fondo principal
+  backgroundSecondary?: string;  // Color de fondo secundario
+  text: string;                  // Color de texto principal
+  textSecondary?: string;        // Color de texto secundario
+  link?: string;                 // Color de enlaces
+  buttonBackground?: string;     // Color de fondo de botones
+  buttonText?: string;           // Color de texto de botones
+  accent?: {                     // Colores de acento (opcional)
+    default?: string;
+    hover?: string;
+  };
+}
+
+// Uso correcto en componentes:
+const colorScheme = theme?.colorSchemes?.schemes?.[colorSchemeIndex] || {
+  background: '#ffffff',
+  text: '#000000',
+  // ... valores por defecto
 };
 ```
 

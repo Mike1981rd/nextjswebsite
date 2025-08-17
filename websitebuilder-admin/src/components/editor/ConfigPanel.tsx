@@ -20,6 +20,8 @@ import SlideEditor from './modules/Slideshow/SlideEditor';
 import MulticolumnsEditor from './modules/Multicolumns/MulticolumnsEditor';
 import MulticolumnsItemEditor from './modules/Multicolumns/MulticolumnsItemEditor';
 import MulticolumnsImageItemEditor from './modules/Multicolumns/MulticolumnsImageItemEditor';
+import GalleryEditor from './modules/Gallery/GalleryEditor';
+import GalleryItemEditor from './modules/Gallery/GalleryItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -60,6 +62,17 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   };
   const getMulticolumnsItemId = () => {
     if (!isMulticolumnsItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[1];
+  };
+  
+  // Check if this is a gallery child item
+  const isGalleryItem = selectedSectionId?.includes(':child:') && !isSlideItem;
+  const getGallerySectionId = () => {
+    if (!isGalleryItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[0];
+  };
+  const getGalleryItemId = () => {
+    if (!isGalleryItem || !selectedSectionId) return null;
     return selectedSectionId.split(':child:')[1];
   };
   
@@ -146,6 +159,20 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     }
   }
   
+  // Return early for Gallery items AFTER all hooks
+  if (isGalleryItem) {
+    const sectionId = getGallerySectionId();
+    const itemId = getGalleryItemId();
+    
+    if (sectionId && itemId) {
+      // Check if it's actually a Gallery section
+      const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
+      if (parentSection?.type === SectionType.GALLERY) {
+        return <GalleryItemEditor sectionId={sectionId} itemId={itemId} />;
+      }
+    }
+  }
+  
   // Return early for multicolumns items AFTER all hooks
   if (isMulticolumnsItem) {
     const sectionId = getMulticolumnsSectionId();
@@ -154,20 +181,22 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     if (sectionId && itemId) {
       // Get the parent section to check item type
       const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
-      const parentConfig = parentSection?.settings as any;
-      const item = parentConfig?.items?.find((i: any) => i.id === itemId);
-      
-      console.log('[DEBUG] Rendering Multicolumns Item Editor:', { 
-        sectionId, 
-        itemId, 
-        itemType: item?.type 
-      });
-      
-      // Render appropriate editor based on item type
-      if (item?.type === 'image') {
-        return <MulticolumnsImageItemEditor sectionId={sectionId} itemId={itemId} />;
-      } else {
-        return <MulticolumnsItemEditor sectionId={sectionId} itemId={itemId} />;
+      if (parentSection?.type === SectionType.MULTICOLUMNS) {
+        const parentConfig = parentSection?.settings as any;
+        const item = parentConfig?.items?.find((i: any) => i.id === itemId);
+        
+        console.log('[DEBUG] Rendering Multicolumns Item Editor:', { 
+          sectionId, 
+          itemId, 
+          itemType: item?.type 
+        });
+        
+        // Render appropriate editor based on item type
+        if (item?.type === 'image') {
+          return <MulticolumnsImageItemEditor sectionId={sectionId} itemId={itemId} />;
+        } else {
+          return <MulticolumnsItemEditor sectionId={sectionId} itemId={itemId} />;
+        }
       }
     }
   }
@@ -267,6 +296,9 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
       case SectionType.MULTICOLUMNS:
         return <MulticolumnsEditor sectionId={section.id} />;
+      
+      case SectionType.GALLERY:
+        return <GalleryEditor sectionId={section.id} />;
 
       case SectionType.IMAGE_WITH_TEXT:
         return (

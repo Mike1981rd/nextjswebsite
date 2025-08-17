@@ -16,6 +16,7 @@ import PreviewAnnouncementBar from '@/components/preview/PreviewAnnouncementBar'
 import PreviewFooter from '@/components/preview/PreviewFooter';
 import PreviewSlideshow from '@/components/preview/PreviewSlideshow';
 import PreviewMulticolumns from '@/components/preview/PreviewMulticolumns';
+import PreviewGallery from '@/components/preview/PreviewGallery';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -555,6 +556,16 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
       case SectionType.MULTICOLUMNS:
         return (
           <PreviewMulticolumns
+            config={section.settings as any}
+            isEditor={true}
+            theme={themeConfig}
+            deviceView={deviceView as 'desktop' | 'mobile'}
+          />
+        );
+      
+      case SectionType.GALLERY:
+        return (
+          <PreviewGallery
             config={section.settings as any}
             isEditor={true}
             theme={themeConfig}

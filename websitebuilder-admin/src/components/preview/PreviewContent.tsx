@@ -5,6 +5,7 @@ import { PageType, Section } from '@/types/editor.types';
 import PreviewImageBanner from './PreviewImageBanner';
 import PreviewSlideshow from './PreviewSlideshow';
 import PreviewMulticolumns from './PreviewMulticolumns';
+import PreviewGallery from './PreviewGallery';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -88,6 +89,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     if (t === 'ImageBanner' || t === 'image_banner') return 'image_banner';
     if (t === 'Slideshow' || t === 'slideshow') return 'slideshow';
     if (t === 'Multicolumns' || t === 'multicolumns') return 'multicolumns';
+    if (t === 'Gallery' || t === 'gallery') return 'gallery';
     return t;
   };
 
@@ -163,6 +165,16 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
               {/* Multicolumns (unified preview component) */}
               {getSectionType(section) === 'multicolumns' && (
                 <PreviewMulticolumns 
+                  config={getSectionConfig(section)} 
+                  theme={theme}
+                  deviceView={deviceView || 'desktop'}
+                  isEditor={false}
+                />
+              )}
+              
+              {/* Gallery (unified preview component) */}
+              {getSectionType(section) === 'gallery' && (
+                <PreviewGallery 
                   config={getSectionConfig(section)} 
                   theme={theme}
                   deviceView={deviceView || 'desktop'}

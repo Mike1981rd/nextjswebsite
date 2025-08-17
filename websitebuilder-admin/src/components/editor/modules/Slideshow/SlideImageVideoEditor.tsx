@@ -40,29 +40,30 @@ export function SlideImageVideoEditor({
       formData.append('type', 'slideshow');
       
       try {
-        const response = await fetch('/api/upload/image', {
+        // Obtener token de autenticación
+        const token = localStorage.getItem('token');
+        
+        // Usar la API real del backend
+        const response = await fetch('http://localhost:5266/api/MediaUpload/image', {
           method: 'POST',
-          body: formData
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData,
+          credentials: 'include'
         });
         
         if (response.ok) {
           const data = await response.json();
           onChange(field, data.url);
         } else {
-          // Por ahora usar un placeholder local
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            onChange(field, e.target?.result as string);
-          };
-          reader.readAsDataURL(file);
+          const error = await response.text();
+          console.error('Upload failed:', error);
+          alert('Error al subir la imagen. Por favor intenta de nuevo.');
         }
       } catch (error) {
-        // Fallback: usar FileReader para preview local
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          onChange(field, e.target?.result as string);
-        };
-        reader.readAsDataURL(file);
+        console.error('Upload error:', error);
+        alert('Error de conexión. Asegúrate de que el backend esté ejecutándose.');
       }
     };
     
@@ -84,23 +85,30 @@ export function SlideImageVideoEditor({
       formData.append('type', 'video');
       
       try {
-        const response = await fetch('/api/upload/video', {
+        // Obtener token de autenticación
+        const token = localStorage.getItem('token');
+        
+        // Usar la API real del backend
+        const response = await fetch('http://localhost:5266/api/MediaUpload/video', {
           method: 'POST',
-          body: formData
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData,
+          credentials: 'include'
         });
         
         if (response.ok) {
           const data = await response.json();
           onChange(field, data.url);
         } else {
-          // Por ahora usar un placeholder local
-          const videoUrl = URL.createObjectURL(file);
-          onChange(field, videoUrl);
+          const error = await response.text();
+          console.error('Upload failed:', error);
+          alert('Error al subir el video. Por favor intenta de nuevo.');
         }
       } catch (error) {
-        // Fallback: usar URL.createObjectURL para preview local
-        const videoUrl = URL.createObjectURL(file);
-        onChange(field, videoUrl);
+        console.error('Upload error:', error);
+        alert('Error de conexión. Asegúrate de que el backend esté ejecutándose.');
       }
     };
     

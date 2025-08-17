@@ -30,6 +30,7 @@ import { AnnouncementChildren } from './AnnouncementChildren';
 import { FooterChildren } from './FooterChildren';
 import SlideshowChildren from './modules/Slideshow/SlideshowChildren';
 import MulticolumnsChildren from './modules/Multicolumns/MulticolumnsChildren';
+import GalleryChildren from './modules/Gallery/GalleryChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -135,21 +136,32 @@ export function EditorSidebarWithDnD() {
     } as any;
   }
   
-  // Check if it's a multicolumns child item (virtual section)
+  // Check if it's a child item (virtual section) - Gallery or Multicolumns
   if (!selectedSection && selectedSectionId?.includes(':child:')) {
-    console.log('[DEBUG] Creating virtual section for multicolumns item:', selectedSectionId);
+    console.log('[DEBUG] Creating virtual section for child item:', selectedSectionId);
     const [sectionId] = selectedSectionId.split(':child:');
     const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
     
-    // Create a virtual section for the multicolumns item
-    selectedSection = {
-      id: selectedSectionId,
-      type: 'MULTICOLUMNS_ITEM' as any,
-      name: 'Icon Column',
-      visible: true,
-      settings: parentSection?.settings || {},
-      sortOrder: 0
-    } as any;
+    // Determine the type based on parent section
+    if (parentSection?.type === SectionType.GALLERY) {
+      selectedSection = {
+        id: selectedSectionId,
+        type: 'GALLERY_ITEM' as any,
+        name: 'Gallery Item',
+        visible: true,
+        settings: parentSection?.settings || {},
+        sortOrder: 0
+      } as any;
+    } else if (parentSection?.type === SectionType.MULTICOLUMNS) {
+      selectedSection = {
+        id: selectedSectionId,
+        type: 'MULTICOLUMNS_ITEM' as any,
+        name: 'Icon Column',
+        visible: true,
+        settings: parentSection?.settings || {},
+        sortOrder: 0
+      } as any;
+    }
   }
 
   // Show Global Settings Panel if active
@@ -268,6 +280,13 @@ export function EditorSidebarWithDnD() {
                               {/* Multicolumns Children - Show column items as child items */}
                               {section.type === SectionType.MULTICOLUMNS && section.visible && (
                                 <MulticolumnsChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+                              
+                              {section.type === SectionType.GALLERY && section.visible && (
+                                <GalleryChildren 
                                   section={section}
                                   groupId={group.id}
                                 />
