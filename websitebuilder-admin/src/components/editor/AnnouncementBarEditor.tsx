@@ -62,6 +62,7 @@ interface AnnouncementBarConfig {
   arrowSize: number;      // Size of navigation arrows (12-24px)
   textSize: number;       // Size of announcement text (12-20px)
   arrowSpacing: number;   // Spacing between arrows and content (0-20px)
+  arrowSpacingMobile?: number;   // Mobile spacing between arrows and content (0-20px)
   
   announcements: Array<{
     id: string;
@@ -100,6 +101,7 @@ function getDefaultConfig(): AnnouncementBarConfig {
     arrowSize: 16,      // Default arrow size
     textSize: 14,       // Default text size
     arrowSpacing: 8,    // Default arrow spacing
+    arrowSpacingMobile: 4, // Default mobile arrow spacing (smaller for mobile)
     announcements: []
   };
 }
@@ -580,10 +582,10 @@ export default function AnnouncementBarEditor() {
             </div>
           </div>
 
-          {/* Arrow Spacing Control */}
+          {/* Arrow Spacing Control - Desktop */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Espaciado de flechas
+              Espaciado de flechas (Desktop)
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -600,6 +602,31 @@ export default function AnnouncementBarEditor() {
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Arrow Spacing Control - Mobile */}
+          <div className="pt-4">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Espaciado de flechas (Móvil)
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="0"
+                max="30"
+                value={localConfig.arrowSpacingMobile ?? 4}
+                onChange={(e) => handleChange('arrowSpacingMobile', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[40px] text-right">
+                  {localConfig.arrowSpacingMobile ?? 4}px
+                </span>
+              </div>
+            </div>
+            <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+              Espaciado optimizado para pantallas móviles
+            </span>
           </div>
 
 

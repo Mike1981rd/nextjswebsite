@@ -351,9 +351,9 @@ export default function PreviewAnnouncementBar({
                     className="absolute hover:opacity-70 transition-opacity"
                     onClick={handlePrevious}
                     style={{ 
-                      left: '55%',  // Moved from 50% to 55% to follow the text offset
-                      transform: `translateX(calc(-55% - ${150 + (configAny?.arrowSpacing || 8)}px))`,
-                      padding: `0 ${configAny?.arrowSpacing || 8}px`
+                      left: isMobile ? '50%' : '55%',  // Center on mobile, offset on desktop
+                      transform: `translateX(calc(${isMobile ? '-50%' : '-55%'} - ${150 + (isMobile ? (configAny?.arrowSpacingMobile ?? 4) : (configAny?.arrowSpacing || 8))}px))`,
+                      padding: `0 ${isMobile ? (configAny?.arrowSpacingMobile ?? 4) : (configAny?.arrowSpacing || 8)}px`
                     }}
                   >
                     <Icons.ChevronLeft 
@@ -365,12 +365,12 @@ export default function PreviewAnnouncementBar({
                   </button>
                 )}
                 
-                {/* Announcement text - centered with slight offset to right */}
+                {/* Announcement text - centered on mobile, offset on desktop */}
                 <div 
                   className={`flex items-center gap-2 ${configAny?.animationStyle && configAny?.autoplay?.mode !== 'none' ? getAnimationClass(configAny?.animationStyle) : ''}`}
                   key={`announcement-${currentAnnouncementIndex}-${animationKey}`}
                   style={{ 
-                    marginLeft: '10%'  // Move 10% to the right
+                    marginLeft: isMobile ? '0' : '10%'  // Centered on mobile, offset on desktop
                   }}
                 >
                   {currentAnnouncement?.icon && renderIcon(currentAnnouncement?.icon)}
@@ -398,9 +398,9 @@ export default function PreviewAnnouncementBar({
                     className="absolute hover:opacity-70 transition-opacity"
                     onClick={handleNext}
                     style={{ 
-                      right: '45%',  // Moved from 50% to 45% to follow the text offset
-                      transform: `translateX(calc(45% + ${150 + (configAny?.arrowSpacing || 8)}px))`,
-                      padding: `0 ${configAny?.arrowSpacing || 8}px`
+                      right: isMobile ? '50%' : '45%',  // Center on mobile, offset on desktop
+                      transform: `translateX(calc(${isMobile ? '50%' : '45%'} + ${150 + (isMobile ? (configAny?.arrowSpacingMobile ?? 4) : (configAny?.arrowSpacing || 8))}px))`,
+                      padding: `0 ${isMobile ? (configAny?.arrowSpacingMobile ?? 4) : (configAny?.arrowSpacing || 8)}px`
                     }}
                   >
                     <Icons.ChevronRight 
