@@ -58,6 +58,11 @@ interface AnnouncementBarConfig {
   
   edgeRounding: number;
   
+  // New slider controls
+  arrowSize: number;      // Size of navigation arrows (12-24px)
+  textSize: number;       // Size of announcement text (12-20px)
+  arrowSpacing: number;   // Spacing between arrows and content (0-20px)
+  
   announcements: Array<{
     id: string;
     text: string;
@@ -92,6 +97,9 @@ function getDefaultConfig(): AnnouncementBarConfig {
     },
     socialMediaUrls: {},
     edgeRounding: 0,
+    arrowSize: 16,      // Default arrow size
+    textSize: 14,       // Default text size
+    arrowSpacing: 8,    // Default arrow spacing
     announcements: []
   };
 }
@@ -523,6 +531,72 @@ export default function AnnouncementBarEditor() {
               <div className="flex items-center gap-1">
                 <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[60px]">
                   {localConfig.edgeRounding === 0 ? 'None' : `Size ${localConfig.edgeRounding}`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Arrow Size Control */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Tamaño de flechas de navegación
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="12"
+                max="24"
+                value={localConfig.arrowSize || 16}
+                onChange={(e) => handleChange('arrowSize', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[40px] text-right">
+                  {localConfig.arrowSize || 16}px
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Text Size Control */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Tamaño del texto de anuncios
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="12"
+                max="20"
+                value={localConfig.textSize || 14}
+                onChange={(e) => handleChange('textSize', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[40px] text-right">
+                  {localConfig.textSize || 14}px
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Arrow Spacing Control */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Espaciado de flechas
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="0"
+                max="50"
+                value={localConfig.arrowSpacing || 8}
+                onChange={(e) => handleChange('arrowSpacing', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[40px] text-right">
+                  {localConfig.arrowSpacing || 8}px
                 </span>
               </div>
             </div>

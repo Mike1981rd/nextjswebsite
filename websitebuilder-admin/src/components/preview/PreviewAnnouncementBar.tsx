@@ -37,8 +37,8 @@ const animationStyles = `
   }
   
   @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-33%); }
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
   }
   
   .animate-fadeIn { animation: fadeIn 0.5s ease-in-out; }
@@ -304,20 +304,27 @@ export default function PreviewAnnouncementBar({
           </div>
 
           {/* Center - Announcement text */}
-          <div className="flex-1 flex items-center justify-center">
-            {/* Announcement content with arrows grouped */}
+          <div className="flex-1 flex items-center justify-center relative">
+            {/* Announcement content with arrows positioned absolutely */}
             {configAny?.animationStyle === 'infinite-marquee' ? (
               // Marquee animation
-              <div className="overflow-hidden whitespace-nowrap flex-1">
+              <div className="overflow-hidden whitespace-nowrap flex-1 relative">
                 <div 
                   className="inline-flex"
-                  style={{ animation: 'marquee 8s linear infinite' }}
+                  style={{ 
+                    animation: 'marquee 15s linear infinite',
+                    paddingLeft: '100%'
+                  }}
                 >
-                  {[...Array(2)].map((_, copyIndex) => (
+                  {[...Array(3)].map((_, copyIndex) => (
                     announcements.map((announcement: any, idx: number) => (
                       <div key={`${copyIndex}-${idx}`} className="inline-flex items-center gap-2 mx-4">
                         {announcement?.icon && renderIcon(announcement.icon)}
-                        <span className={isMobile ? 'text-xs' : 'text-sm'}>
+                        <span 
+                          style={{ 
+                            fontSize: `${configAny?.textSize || (isMobile ? 12 : 14)}px` 
+                          }}
+                        >
                           {announcement?.text || 'Welcome to our store!'}
                         </span>
                         {announcement?.linkText && announcement?.linkUrl && (
@@ -336,25 +343,42 @@ export default function PreviewAnnouncementBar({
                 </div>
               </div>
             ) : (
-              // Static mode and other animations - group arrows with content
-              <div className="flex items-center gap-2" style={{ marginLeft: configAny?.autoplay?.mode === 'none' ? '70px' : '0' }}>
-                {/* Previous button */}
+              // Static mode and other animations - centered content with absolute arrows
+              <>
+                {/* Previous button - positioned absolutely with offset */}
                 {configAny?.showNavigationArrows && announcements.length > 1 && (
                   <button 
-                    className="p-1 hover:opacity-70 transition-opacity"
+                    className="absolute hover:opacity-70 transition-opacity"
                     onClick={handlePrevious}
+                    style={{ 
+                      left: '55%',  // Moved from 50% to 55% to follow the text offset
+                      transform: `translateX(calc(-55% - ${150 + (configAny?.arrowSpacing || 8)}px))`,
+                      padding: `0 ${configAny?.arrowSpacing || 8}px`
+                    }}
                   >
-                    <Icons.ChevronLeft className={isMobile ? 'w-3 h-3' : 'w-4 h-4'} />
+                    <Icons.ChevronLeft 
+                      style={{ 
+                        width: `${configAny?.arrowSize || (isMobile ? 12 : 16)}px`,
+                        height: `${configAny?.arrowSize || (isMobile ? 12 : 16)}px`
+                      }} 
+                    />
                   </button>
                 )}
                 
-                {/* Announcement text */}
+                {/* Announcement text - centered with slight offset to right */}
                 <div 
                   className={`flex items-center gap-2 ${configAny?.animationStyle && configAny?.autoplay?.mode !== 'none' ? getAnimationClass(configAny?.animationStyle) : ''}`}
                   key={`announcement-${currentAnnouncementIndex}-${animationKey}`}
+                  style={{ 
+                    marginLeft: '10%'  // Move 10% to the right
+                  }}
                 >
                   {currentAnnouncement?.icon && renderIcon(currentAnnouncement?.icon)}
-                  <span className={isMobile ? 'text-xs' : 'text-sm'}>
+                  <span 
+                    style={{ 
+                      fontSize: `${configAny?.textSize || (isMobile ? 12 : 14)}px` 
+                    }}
+                  >
                     {currentAnnouncement?.text || 'Welcome to our store!'}
                   </span>
                   {currentAnnouncement?.linkText && currentAnnouncement?.linkUrl && (
@@ -368,16 +392,26 @@ export default function PreviewAnnouncementBar({
                   )}
                 </div>
                 
-                {/* Next button */}
+                {/* Next button - positioned absolutely with offset */}
                 {configAny?.showNavigationArrows && announcements.length > 1 && (
                   <button 
-                    className="p-1 hover:opacity-70 transition-opacity"
+                    className="absolute hover:opacity-70 transition-opacity"
                     onClick={handleNext}
+                    style={{ 
+                      right: '45%',  // Moved from 50% to 45% to follow the text offset
+                      transform: `translateX(calc(45% + ${150 + (configAny?.arrowSpacing || 8)}px))`,
+                      padding: `0 ${configAny?.arrowSpacing || 8}px`
+                    }}
                   >
-                    <Icons.ChevronRight className={isMobile ? 'w-3 h-3' : 'w-4 h-4'} />
+                    <Icons.ChevronRight 
+                      style={{ 
+                        width: `${configAny?.arrowSize || (isMobile ? 12 : 16)}px`,
+                        height: `${configAny?.arrowSize || (isMobile ? 12 : 16)}px`
+                      }} 
+                    />
                   </button>
                 )}
-              </div>
+              </>
             )}
           </div>
 
