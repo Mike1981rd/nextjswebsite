@@ -71,7 +71,7 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
   };
 
   return (
-    <div className="w-[320px] h-full bg-white dark:bg-gray-900 flex flex-col">
+    <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
       <div className="flex-1 overflow-y-auto">
         
         {/* General Settings */}
@@ -93,7 +93,6 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                   value={localConfig.colorScheme}
                   onChange={(e) => handleChange('colorScheme', e.target.value)}
                 >
-                  <option value="primary">Primary</option>
                   {themeConfig?.colorSchemes?.schemes?.map((scheme, index) => (
                     <option key={index} value={String(index + 1)}>
                       {scheme.name || `Color scheme ${index + 1}`}
@@ -188,9 +187,9 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                     step="0.1"
                     value={localConfig.headingSize}
                     onChange={(e) => handleChange('headingSize', parseFloat(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.headingSize}x</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.headingSize}x</span>
                 </div>
               </div>
 
@@ -204,9 +203,9 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                     step="0.1"
                     value={localConfig.bodySize}
                     onChange={(e) => handleChange('bodySize', parseFloat(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.bodySize}x</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.bodySize}x</span>
                 </div>
               </div>
 
@@ -228,6 +227,30 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                   <button
                     onClick={() => handleChange('contentAlignment', 'right')}
                     className={`p-2 rounded ${localConfig.contentAlignment === 'right' ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                  >
+                    <AlignRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-600">Icon alignment</label>
+                <div className="flex gap-1 mt-1">
+                  <button
+                    onClick={() => handleChange('iconAlignment', 'left')}
+                    className={`p-2 rounded ${(localConfig.iconAlignment || localConfig.contentAlignment) === 'left' ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                  >
+                    <AlignLeft className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => handleChange('iconAlignment', 'center')}
+                    className={`p-2 rounded ${(localConfig.iconAlignment || localConfig.contentAlignment) === 'center' ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                  >
+                    <AlignCenter className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => handleChange('iconAlignment', 'right')}
+                    className={`p-2 rounded ${(localConfig.iconAlignment || localConfig.contentAlignment) === 'right' ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
                   >
                     <AlignRight className="w-3 h-3" />
                   </button>
@@ -259,9 +282,9 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                     step="0.1"
                     value={localConfig.columnsHeadingSize}
                     onChange={(e) => handleChange('columnsHeadingSize', parseFloat(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.columnsHeadingSize}x</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.columnsHeadingSize}x</span>
                 </div>
               </div>
 
@@ -275,9 +298,9 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                     step="0.1"
                     value={localConfig.columnsBodySize}
                     onChange={(e) => handleChange('columnsBodySize', parseFloat(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.columnsBodySize}x</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.columnsBodySize}x</span>
                 </div>
               </div>
             </div>
@@ -305,9 +328,9 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                     max="6"
                     value={localConfig.desktopCardsPerRow}
                     onChange={(e) => handleChange('desktopCardsPerRow', parseInt(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-8 text-right">{localConfig.desktopCardsPerRow}</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.desktopCardsPerRow}</span>
                 </div>
               </div>
 
@@ -317,12 +340,13 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                   <input
                     type="range"
                     min="0"
-                    max="48"
+                    max="120"
+                    step="4"
                     value={localConfig.desktopSpaceBetweenCards}
                     onChange={(e) => handleChange('desktopSpaceBetweenCards', parseInt(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.desktopSpaceBetweenCards}px</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.desktopSpaceBetweenCards}px</span>
                 </div>
               </div>
 
@@ -332,12 +356,13 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                   <input
                     type="range"
                     min="0"
-                    max="48"
+                    max="120"
+                    step="4"
                     value={localConfig.desktopSpacing}
                     onChange={(e) => handleChange('desktopSpacing', parseInt(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.desktopSpacing}px</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.desktopSpacing}px</span>
                 </div>
               </div>
 
@@ -347,12 +372,13 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                   <input
                     type="range"
                     min="0"
-                    max="48"
+                    max="80"
+                    step="4"
                     value={localConfig.mobileSpaceBetweenCards}
                     onChange={(e) => handleChange('mobileSpaceBetweenCards', parseInt(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.mobileSpaceBetweenCards}px</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.mobileSpaceBetweenCards}px</span>
                 </div>
               </div>
 
@@ -362,12 +388,13 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                   <input
                     type="range"
                     min="0"
-                    max="48"
+                    max="80"
+                    step="4"
                     value={localConfig.mobileSpacing}
                     onChange={(e) => handleChange('mobileSpacing', parseInt(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.mobileSpacing}px</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.mobileSpacing}px</span>
                 </div>
               </div>
             </div>
@@ -507,13 +534,14 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                   <div className="flex items-center gap-2 mt-1">
                     <input
                       type="range"
-                      min="1"
-                      max="10"
-                      value={localConfig.autoplaySpeed || 3}
+                      min="1000"
+                      max="10000"
+                      step="500"
+                      value={localConfig.autoplaySpeed || 3000}
                       onChange={(e) => handleChange('autoplaySpeed', parseInt(e.target.value))}
-                      className="flex-1"
+                      className="flex-1 min-w-0"
                     />
-                    <span className="text-xs w-8 text-right">{localConfig.autoplaySpeed || 3}s</span>
+                    <span className="text-xs flex-shrink-0 text-right">{((localConfig.autoplaySpeed || 3000) / 1000).toFixed(1)}s</span>
                   </div>
                 </div>
               )}
@@ -556,9 +584,9 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                     max="100"
                     value={localConfig.topPadding}
                     onChange={(e) => handleChange('topPadding', parseInt(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.topPadding}px</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.topPadding}px</span>
                 </div>
               </div>
 
@@ -571,10 +599,29 @@ export default function MulticolumnsEditor({ sectionId }: MulticolumnsEditorProp
                     max="100"
                     value={localConfig.bottomPadding}
                     onChange={(e) => handleChange('bottomPadding', parseInt(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                   />
-                  <span className="text-xs w-12 text-right">{localConfig.bottomPadding}px</span>
+                  <span className="text-xs flex-shrink-0 text-right">{localConfig.bottomPadding}px</span>
                 </div>
+              </div>
+              
+              <div>
+                <label className="text-xs text-gray-600">Container height</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="800"
+                    step="50"
+                    value={localConfig.containerHeight}
+                    onChange={(e) => handleChange('containerHeight', parseInt(e.target.value))}
+                    className="flex-1 min-w-0"
+                  />
+                  <span className="text-xs flex-shrink-0 text-right">
+                    {localConfig.containerHeight === 0 ? 'Auto' : `${localConfig.containerHeight}px`}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Set to 0 for automatic height</p>
               </div>
             </div>
           )}

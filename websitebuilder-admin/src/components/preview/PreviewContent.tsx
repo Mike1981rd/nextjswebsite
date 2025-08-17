@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { PageType, Section } from '@/types/editor.types';
 import PreviewImageBanner from './PreviewImageBanner';
 import PreviewSlideshow from './PreviewSlideshow';
+import PreviewMulticolumns from './PreviewMulticolumns';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -32,7 +33,6 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
         
         if (pageResponse.ok) {
           const page = await pageResponse.json();
-          console.log('Loaded page data:', page);
           setPageData(page);
           
           // Parse sections if they exist
@@ -40,14 +40,9 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
             const parsedSections = typeof page.sections === 'string' 
               ? JSON.parse(page.sections) 
               : page.sections;
-            console.log('Parsed sections:', parsedSections);
-            console.log('Section types:', parsedSections.map((s: any) => s.type));
             setSections(parsedSections);
-          } else {
-            console.log('No sections in page data');
           }
         } else {
-          console.log('No page found for handle:', handle);
           // Page doesn't exist yet, show empty state
           setSections([]);
         }
@@ -92,6 +87,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     const t = String(rawType);
     if (t === 'ImageBanner' || t === 'image_banner') return 'image_banner';
     if (t === 'Slideshow' || t === 'slideshow') return 'slideshow';
+    if (t === 'Multicolumns' || t === 'multicolumns') return 'multicolumns';
     return t;
   };
 
@@ -161,6 +157,16 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                   theme={theme}
                   isEditor={false}
                   deviceView={deviceView}
+                />
+              )}
+              
+              {/* Multicolumns (unified preview component) */}
+              {getSectionType(section) === 'multicolumns' && (
+                <PreviewMulticolumns 
+                  config={getSectionConfig(section)} 
+                  theme={theme}
+                  deviceView={deviceView || 'desktop'}
+                  isEditor={false}
                 />
               )}
               

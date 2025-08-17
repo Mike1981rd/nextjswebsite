@@ -173,7 +173,70 @@ export const SECTION_CONFIGS: Record<SectionType, SectionConfig> = {
     icon: 'columns-3',
     category: 'template',
     defaultSettings: {
-      items: []
+      enabled: true,
+      colorScheme: '1',
+      width: 'large',
+      desktopLayout: 'grid',
+      mobileLayout: '1column',
+      heading: 'Multicolumn',
+      body: '',
+      headingSize: 1.0,
+      bodySize: 1.0,
+      contentAlignment: 'left',
+      columnsHeadingSize: 1.0,
+      columnsBodySize: 1.0,
+      desktopCardsPerRow: 3,
+      desktopSpaceBetweenCards: 24,
+      desktopSpacing: 24,
+      mobileSpaceBetweenCards: 16,
+      mobileSpacing: 24,
+      colorColumns: false,
+      showArrowsOnHover: false,
+      buttonLabel: '',
+      buttonLink: '',
+      buttonStyle: 'solid',
+      autoplay: 'none',
+      autoplaySpeed: 3000,
+      addSidePaddings: false,
+      topPadding: 0,
+      bottomPadding: 0,
+      containerHeight: 0,
+      customCSS: '',
+      items: [
+        {
+          id: `item_${Date.now()}`,
+          type: 'icon',
+          visible: true,
+          icon: 'star',
+          iconSize: 64,
+          heading: 'Icon column',
+          body: 'Pair text with an icon to focus on your chosen product, collection or piece of news.',
+          linkLabel: '',
+          link: ''
+        },
+        {
+          id: `item_${Date.now() + 1}`,
+          type: 'icon',
+          visible: true,
+          icon: 'truck',
+          iconSize: 64,
+          heading: 'Icon column',
+          body: 'Pair text with an icon to focus on your chosen product, collection or piece of news.',
+          linkLabel: '',
+          link: ''
+        },
+        {
+          id: `item_${Date.now() + 2}`,
+          type: 'icon',
+          visible: true,
+          icon: 'gift',
+          iconSize: 64,
+          heading: 'Icon column',
+          body: 'Pair text with an icon to focus on your chosen product, collection or piece of news.',
+          linkLabel: '',
+          link: ''
+        }
+      ]
     }
   },
   [SectionType.COLLAGE]: {

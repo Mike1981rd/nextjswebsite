@@ -24,6 +24,7 @@ export interface MulticolumnsConfig {
   headingSize: number; // Factor de escala para override de tamaño
   bodySize: number; // Factor de escala para override de tamaño
   contentAlignment: 'left' | 'center' | 'right';
+  iconAlignment?: 'left' | 'center' | 'right'; // Alineación independiente para iconos
   
   // Configuración de columnas
   columnsHeadingSize: number; // Tamaño para headings de columnas
@@ -49,10 +50,11 @@ export interface MulticolumnsConfig {
   autoplay: 'none' | 'oneAtATime' | 'seamless';
   autoplaySpeed?: number;
   
-  // Paddings
+  // Paddings & Sizing
   addSidePaddings: boolean;
   topPadding: number;
   bottomPadding: number;
+  containerHeight: number; // Min height in pixels, 0 = auto
   
   // CSS personalizado
   customCSS: string;
@@ -63,27 +65,55 @@ export interface MulticolumnsConfig {
 
 export interface MulticolumnsItemConfig {
   id: string;
+  type: 'icon' | 'image'; // Tipo de columna
   visible: boolean;
-  icon: string; // Nombre del icono o 'custom'
+  
+  // Para icon columns
+  icon?: string; // Nombre del icono o 'custom'
   customIcon?: string; // SVG personalizado si icon === 'custom'
-  iconSize: number;
+  iconSize?: number;
+  
+  // Para image columns
+  image?: string; // URL de la imagen
+  video?: string; // URL del video opcional
+  desktopImageSize?: number; // Tamaño de imagen desktop
+  mobileImageSize?: number; // Tamaño de imagen mobile
+  imageRatio?: number; // Relación de aspecto de imagen
+  
+  // Campos comunes
   heading: string;
   body: string;
   linkLabel: string;
   link: string;
 }
 
-export function getDefaultMulticolumnsItemConfig(): MulticolumnsItemConfig {
-  return {
+export function getDefaultMulticolumnsItemConfig(type: 'icon' | 'image' = 'icon'): MulticolumnsItemConfig {
+  const baseConfig = {
     id: `item_${Date.now()}`,
+    type,
     visible: true,
-    icon: 'star',
-    iconSize: 64,
-    heading: 'Icon column',
-    body: 'Pair text with an icon to focus on your chosen product, collection or piece of news. Add details on shipping and return conditions, product availability, care instructions, matching colors and accessories.',
+    heading: type === 'icon' ? 'Icon column' : 'Image column',
+    body: 'Pair text with an image to focus on your chosen product, collection or piece of news. Add details on shipping and return conditions, product availability, care instructions, matching colors and accessories.',
     linkLabel: 'Link label',
     link: ''
   };
+
+  if (type === 'icon') {
+    return {
+      ...baseConfig,
+      icon: 'star',
+      iconSize: 64
+    };
+  } else {
+    return {
+      ...baseConfig,
+      image: '',
+      video: '',
+      desktopImageSize: 100,
+      mobileImageSize: 100,
+      imageRatio: 1
+    };
+  }
 }
 
 export function getDefaultMulticolumnsConfig(): MulticolumnsConfig {
@@ -114,11 +144,12 @@ export function getDefaultMulticolumnsConfig(): MulticolumnsConfig {
     addSidePaddings: false,
     topPadding: 0,
     bottomPadding: 0,
+    containerHeight: 0,
     customCSS: '',
     items: [
-      getDefaultMulticolumnsItemConfig(),
-      { ...getDefaultMulticolumnsItemConfig(), id: `item_${Date.now() + 1}` },
-      { ...getDefaultMulticolumnsItemConfig(), id: `item_${Date.now() + 2}` }
+      getDefaultMulticolumnsItemConfig('icon'),
+      { ...getDefaultMulticolumnsItemConfig('icon'), id: `item_${Date.now() + 1}` },
+      { ...getDefaultMulticolumnsItemConfig('icon'), id: `item_${Date.now() + 2}` }
     ]
   };
 }

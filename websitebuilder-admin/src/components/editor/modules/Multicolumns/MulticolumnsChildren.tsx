@@ -8,8 +8,8 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
-import { Plus, Eye, EyeOff, Trash2, GripVertical, Image } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Plus, Eye, EyeOff, Trash2, GripVertical, Image, Type } from 'lucide-react';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { 
   SortableContext, 
@@ -21,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { Section } from '@/types/editor.types';
 import { MulticolumnsConfig, MulticolumnsItemConfig, getDefaultMulticolumnsItemConfig } from './types';
+import AddMulticolumnBlockModal from './AddMulticolumnBlockModal';
 
 interface MulticolumnsChildrenProps {
   section: Section;
@@ -91,12 +92,16 @@ function DraggableItem({
         </svg>
       </div>
 
-      {/* Item Icon */}
-      <Image className="w-3.5 h-3.5 text-gray-500 mr-2" />
+      {/* Item Icon based on type */}
+      {item.type === 'image' ? (
+        <Image className="w-3.5 h-3.5 text-gray-500 mr-2" />
+      ) : (
+        <Type className="w-3.5 h-3.5 text-gray-500 mr-2" />
+      )}
       
       {/* Item Title */}
       <span className="flex-1 text-sm text-gray-700">
-        {item.heading || `Icon column ${index + 1}`}
+        {item.heading || (item.type === 'image' ? `Image column ${index + 1}` : `Icon column ${index + 1}`)}
       </span>
 
       {/* Actions */}
@@ -139,12 +144,13 @@ export default function MulticolumnsChildren({ section, groupId }: MulticolumnsC
 
   const config = section.settings as MulticolumnsConfig;
   const items = config?.items || [];
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // IDs para drag & drop
   const itemIds = useMemo(() => items.map(item => item.id), [items]);
 
-  const handleAddItem = () => {
-    const newItem = getDefaultMulticolumnsItemConfig();
+  const handleAddItem = (type: 'icon' | 'image') => {
+    const newItem = getDefaultMulticolumnsItemConfig(type);
     const updatedConfig = {
       ...config,
       items: [...items, newItem]
@@ -199,14 +205,14 @@ export default function MulticolumnsChildren({ section, groupId }: MulticolumnsC
     <div className="pl-8 pb-2">
       {/* Add Item Button - ESTILO AZUL LIMPIO COMO SLIDESHOW */}
       <button
-        onClick={handleAddItem}
+        onClick={() => setShowAddModal(true)}
         className="w-full flex items-center gap-2 pl-8 pr-4 py-2 text-xs text-blue-600 dark:text-blue-400 
                    hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
       >
         <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
           <Plus className="w-3 h-3" />
         </div>
-        <span className="font-medium">Icon column</span>
+        <span className="font-medium">Agregar bloque</span>
       </button>
 
       {/* Items List */}
@@ -233,6 +239,13 @@ export default function MulticolumnsChildren({ section, groupId }: MulticolumnsC
           </SortableContext>
         </DndContext>
       )}
+
+      {/* Add Block Type Modal */}
+      <AddMulticolumnBlockModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSelect={handleAddItem}
+      />
     </div>
   );
 }

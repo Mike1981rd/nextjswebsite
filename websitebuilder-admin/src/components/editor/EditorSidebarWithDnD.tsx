@@ -134,6 +134,23 @@ export function EditorSidebarWithDnD() {
       sortOrder: 0
     } as any;
   }
+  
+  // Check if it's a multicolumns child item (virtual section)
+  if (!selectedSection && selectedSectionId?.includes(':child:')) {
+    console.log('[DEBUG] Creating virtual section for multicolumns item:', selectedSectionId);
+    const [sectionId] = selectedSectionId.split(':child:');
+    const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
+    
+    // Create a virtual section for the multicolumns item
+    selectedSection = {
+      id: selectedSectionId,
+      type: 'MULTICOLUMNS_ITEM' as any,
+      name: 'Icon Column',
+      visible: true,
+      settings: parentSection?.settings || {},
+      sortOrder: 0
+    } as any;
+  }
 
   // Show Global Settings Panel if active
   if (isGlobalSettingsOpen) {

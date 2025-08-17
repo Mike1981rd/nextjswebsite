@@ -19,6 +19,7 @@ import SlideshowEditor from './modules/Slideshow/SlideshowEditor';
 import SlideEditor from './modules/Slideshow/SlideEditor';
 import MulticolumnsEditor from './modules/Multicolumns/MulticolumnsEditor';
 import MulticolumnsItemEditor from './modules/Multicolumns/MulticolumnsItemEditor';
+import MulticolumnsImageItemEditor from './modules/Multicolumns/MulticolumnsImageItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -28,7 +29,7 @@ interface ConfigPanelProps {
 }
 
 export function ConfigPanel({ section }: ConfigPanelProps) {
-  const { selectedSectionId, selectSection, updateSectionSettings } = useEditorStore();
+  const { selectedSectionId, selectSection, updateSectionSettings, sections } = useEditorStore();
   const { headerConfig, updateHeaderConfigLocal, config: structuralComponents } = useStructuralComponents();
   const [settings, setSettings] = useState(section.settings);
   const [hasChanges, setHasChanges] = useState(false);
@@ -50,6 +51,28 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     if (!isSlideItem || !selectedSectionId) return null;
     return selectedSectionId.split(':slide:')[1];
   };
+  
+  // Check if this is a multicolumns child item
+  const isMulticolumnsItem = selectedSectionId?.includes(':child:') && !isSlideItem;
+  const getMulticolumnsSectionId = () => {
+    if (!isMulticolumnsItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[0];
+  };
+  const getMulticolumnsItemId = () => {
+    if (!isMulticolumnsItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[1];
+  };
+  
+  // Debug log for multicolumns
+  if (selectedSectionId?.includes(':child:')) {
+    console.log('[DEBUG] ConfigPanel - Multicolumns detection:', {
+      selectedSectionId,
+      isMulticolumnsItem,
+      sectionId: getMulticolumnsSectionId(),
+      itemId: getMulticolumnsItemId(),
+      section
+    });
+  }
   
   // Get footer block type if it's a footer block
   const getFooterBlockType = (): FooterBlockType | null => {
@@ -120,6 +143,32 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     });
     if (sectionId && slideId) {
       return <SlideEditor sectionId={sectionId} slideId={slideId} />;
+    }
+  }
+  
+  // Return early for multicolumns items AFTER all hooks
+  if (isMulticolumnsItem) {
+    const sectionId = getMulticolumnsSectionId();
+    const itemId = getMulticolumnsItemId();
+    
+    if (sectionId && itemId) {
+      // Get the parent section to check item type
+      const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
+      const parentConfig = parentSection?.settings as any;
+      const item = parentConfig?.items?.find((i: any) => i.id === itemId);
+      
+      console.log('[DEBUG] Rendering Multicolumns Item Editor:', { 
+        sectionId, 
+        itemId, 
+        itemType: item?.type 
+      });
+      
+      // Render appropriate editor based on item type
+      if (item?.type === 'image') {
+        return <MulticolumnsImageItemEditor sectionId={sectionId} itemId={itemId} />;
+      } else {
+        return <MulticolumnsItemEditor sectionId={sectionId} itemId={itemId} />;
+      }
     }
   }
   

@@ -14,8 +14,41 @@ import * as Icons from 'lucide-react';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { MulticolumnsConfig, MulticolumnsItemConfig } from './types';
 
-// Icon categories - compact version
-const iconCategories = [
+// Predefined icons organized by category (same as AnnouncementBar)
+const ICON_CATEGORIES = [
+  {
+    name: 'General',
+    icons: [
+      { value: 'Settings', label: 'Settings', icon: Icons.Settings },
+      { value: 'Search', label: 'Search', icon: Icons.Search },
+      { value: 'Eye', label: 'Eye', icon: Icons.Eye },
+      { value: 'EyeOff', label: 'Eye slash', icon: Icons.EyeOff },
+      { value: 'User', label: 'User', icon: Icons.User },
+      { value: 'HeartOutline', label: 'Love outline', icon: Icons.Heart },
+      { value: 'HeartSolid', label: 'Love solid', icon: Icons.Heart },
+      { value: 'ThumbsUp', label: 'Like', icon: Icons.ThumbsUp },
+      { value: 'ThumbsDown', label: 'Dislike', icon: Icons.ThumbsDown },
+      { value: 'Lightbulb', label: 'Lamp', icon: Icons.Lightbulb },
+      { value: 'StarOutline', label: 'Star outline', icon: Icons.Star },
+      { value: 'StarSolid', label: 'Star solid', icon: Icons.Star },
+      { value: 'Trash2', label: 'Trash', icon: Icons.Trash2 },
+      { value: 'FileText', label: 'Document', icon: Icons.FileText },
+      { value: 'Copy', label: 'Copy', icon: Icons.Copy },
+      { value: 'Share2', label: 'Share', icon: Icons.Share2 },
+      { value: 'Plus', label: 'Plus', icon: Icons.Plus },
+      { value: 'Minus', label: 'Minus', icon: Icons.Minus },
+      { value: 'X', label: 'X', icon: Icons.X },
+      { value: 'Check', label: 'Check', icon: Icons.Check },
+      { value: 'ArrowUp', label: 'Arrow up', icon: Icons.ArrowUp },
+      { value: 'ArrowDown', label: 'Arrow down', icon: Icons.ArrowDown },
+      { value: 'ArrowLeft', label: 'Arrow left', icon: Icons.ArrowLeft },
+      { value: 'ArrowRight', label: 'Arrow right', icon: Icons.ArrowRight },
+      { value: 'ChevronUp', label: 'Chevron up', icon: Icons.ChevronUp },
+      { value: 'ChevronDown', label: 'Chevron down', icon: Icons.ChevronDown },
+      { value: 'ChevronLeft', label: 'Chevron left', icon: Icons.ChevronLeft },
+      { value: 'ChevronRight', label: 'Chevron right', icon: Icons.ChevronRight }
+    ]
+  },
   {
     name: 'Commerce',
     icons: [
@@ -136,6 +169,23 @@ export default function MulticolumnsItemEditor({ sectionId, itemId }: Multicolum
           <ArrowLeft className="w-3.5 h-3.5 text-gray-500" />
           <span className="text-xs font-medium">Icon column</span>
         </button>
+        
+        {/* Visibility toggle */}
+        <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-600">Visible</span>
+            <button
+              onClick={() => handleChange('visible', !localItem.visible)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                localItem.visible ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            >
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                localItem.visible ? 'translate-x-5' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
+        </div>
       </div>
       
       <div className="flex-1 overflow-y-auto">
@@ -167,7 +217,7 @@ export default function MulticolumnsItemEditor({ sectionId, itemId }: Multicolum
                     }
                   }}
                 >
-                  {iconCategories.map(category => (
+                  {ICON_CATEGORIES.map(category => (
                     <optgroup key={category.name} label={category.name}>
                       {category.icons.map(icon => (
                         <option key={icon.value} value={icon.value}>
@@ -277,11 +327,11 @@ export default function MulticolumnsItemEditor({ sectionId, itemId }: Multicolum
               <div>
                 <label className="text-xs text-gray-600">Link</label>
                 <input
-                  type="text"
+                  type="url"
                   className="w-full mt-1 px-2 py-1.5 text-sm border rounded-md"
                   value={localItem.link}
                   onChange={(e) => handleChange('link', e.target.value)}
-                  placeholder="https://..."
+                  placeholder="https://example.com or /page"
                 />
               </div>
 
