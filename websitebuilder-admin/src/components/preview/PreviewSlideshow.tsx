@@ -79,7 +79,23 @@ export default function PreviewSlideshow({
 
   // Get current slide or use defaults
   const slide = visibleSlides[currentSlide] || {};
-  const isMobile = deviceView === 'mobile';
+  // Unified mobile detection (match PreviewImageBanner)
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    if (typeof window !== 'undefined') return window.innerWidth < 768;
+    return false;
+  });
+
+  useEffect(() => {
+    if (deviceView !== undefined) {
+      setIsMobile(deviceView === 'mobile');
+      return;
+    }
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [deviceView]);
   
   // Debug font sizes
   if (slide.heading || slide.body) {

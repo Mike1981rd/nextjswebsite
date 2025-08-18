@@ -169,8 +169,23 @@ export default function PreviewMulticolumns({
     color: colorScheme?.textSecondary || colorScheme?.text,
   };
 
-  // Determine layout based on device (with fallbacks)
-  const isMobile = deviceView === 'mobile';
+  // Determine layout based on device (with fallbacks) - unify mobile detection like ImageBanner
+  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    if (typeof window !== 'undefined') return window.innerWidth < 768;
+    return false;
+  });
+
+  React.useEffect(() => {
+    if (deviceView !== undefined) {
+      setIsMobile(deviceView === 'mobile');
+      return;
+    }
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [deviceView]);
   const layout = isMobile ? (config.mobileLayout || '1column') : (config.desktopLayout || 'grid');
   const cardsPerRow = isMobile ? 1 : (config.desktopCardsPerRow || 3);
   const spacing = isMobile ? (config.mobileSpacing || 24) : (config.desktopSpacing || 24);

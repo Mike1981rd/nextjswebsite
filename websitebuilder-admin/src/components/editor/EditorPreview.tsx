@@ -17,6 +17,7 @@ import PreviewFooter from '@/components/preview/PreviewFooter';
 import PreviewSlideshow from '@/components/preview/PreviewSlideshow';
 import PreviewMulticolumns from '@/components/preview/PreviewMulticolumns';
 import PreviewGallery from '@/components/preview/PreviewGallery';
+import PreviewImageWithText from './modules/ImageWithText/PreviewImageWithText';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -480,24 +481,6 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           />
         );
 
-      case SectionType.IMAGE_WITH_TEXT:
-        const imageLeft = section.settings.imagePosition === 'left';
-        return (
-          <div className="py-12 px-4">
-            <div className={`flex gap-8 items-center ${imageLeft ? '' : 'flex-row-reverse'}`}>
-              <div className="flex-1 bg-gray-200 dark:bg-gray-700 h-64 rounded-lg"></div>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold mb-4">
-                  {section.settings.title || 'Section Title'}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {section.settings.content || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-
       case SectionType.FOOTER:
         return (
           <div className="bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
@@ -570,6 +553,14 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
             isEditor={true}
             theme={themeConfig}
             deviceView={deviceView as 'desktop' | 'mobile'}
+          />
+        );
+      
+      case SectionType.IMAGE_WITH_TEXT:
+        return (
+          <PreviewImageWithText
+            config={section.settings}
+            isEditor={true}
           />
         );
 

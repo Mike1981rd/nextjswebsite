@@ -31,6 +31,7 @@ import { FooterChildren } from './FooterChildren';
 import SlideshowChildren from './modules/Slideshow/SlideshowChildren';
 import MulticolumnsChildren from './modules/Multicolumns/MulticolumnsChildren';
 import GalleryChildren from './modules/Gallery/GalleryChildren';
+import ImageWithTextChildren from './modules/ImageWithText/ImageWithTextChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -148,6 +149,15 @@ export function EditorSidebarWithDnD() {
         id: selectedSectionId,
         type: 'GALLERY_ITEM' as any,
         name: 'Gallery Item',
+        visible: true,
+        settings: parentSection?.settings || {},
+        sortOrder: 0
+      } as any;
+    } else if (parentSection?.type === SectionType.IMAGE_WITH_TEXT) {
+      selectedSection = {
+        id: selectedSectionId,
+        type: 'IMAGEWITHTEXT_ITEM' as any,
+        name: 'Media Item',
         visible: true,
         settings: parentSection?.settings || {},
         sortOrder: 0
@@ -287,6 +297,14 @@ export function EditorSidebarWithDnD() {
                               
                               {section.type === SectionType.GALLERY && section.visible && (
                                 <GalleryChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+                              
+                              {/* ImageWithText Children - Show media items */}
+                              {section.type === SectionType.IMAGE_WITH_TEXT && section.visible && (
+                                <ImageWithTextChildren 
                                   section={section}
                                   groupId={group.id}
                                 />

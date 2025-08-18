@@ -125,6 +125,8 @@ Archivos que deben existir:
 - ✅ `types.ts` - Tipos TypeScript
 - ✅ `index.ts` - Exports
 
+**⚠️ IMPORTANTE: Si Preview${MODULE_NAME}.tsx NO se creó automáticamente, DEBES crearlo manualmente en `websitebuilder-admin/src/components/preview/`**
+
 ### PASO 3: SOLICITAR SCREENSHOTS
 ```
 📸 Por favor proporciona:
@@ -246,6 +248,22 @@ Solo después de las confirmaciones:
 - Definir interfaces para hijos si aplica
 
 #### 6.2 Implementar Editor
+
+**⚠️ IMPORTS CORRECTOS - VERIFICAR ANTES DE USAR:**
+```typescript
+// ✅ IMPORTS CORRECTOS para el Editor:
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp, Upload, Image, Video, X } from 'lucide-react';
+import * as Icons from 'lucide-react';  // Para iconos, NO usar @/lib/icons
+import { useEditorStore } from '@/stores/useEditorStore';
+import useThemeConfigStore from '@/stores/useThemeConfigStore'; // SIN destructuring {}
+import { [ModuleName]Config, getDefault[ModuleName]Config } from './types';
+
+// ❌ NUNCA usar:
+// import { useThemeConfigStore } from '@/stores/useThemeConfigStore'; // INCORRECTO
+// import { iconList } from '@/lib/icons'; // NO EXISTE
+```
+
 - Agregar todos los campos de configuración identificados
 - **⚠️ CRÍTICO: NO usar ancho fijo en contenedor principal**
 ```typescript
@@ -261,13 +279,32 @@ Solo después de las confirmaciones:
 ```
 - Implementar selector de color scheme (SIN opción "Primary"):
 ```typescript
-const { config: themeConfig } = useThemeConfigStore();
+const { config: themeConfig } = useThemeConfigStore(); // NO usar destructuring en import
 <select value={localConfig.colorScheme}>
   {/* NO agregar <option value="primary">Primary</option> */}
   {themeConfig?.colorSchemes?.schemes?.map((scheme, index) => (
     <option value={String(index + 1)}>{scheme.name || `Color scheme ${index + 1}`}</option>
   ))}
 </select>
+```
+
+**⚠️ MANEJO DE ICONOS:**
+```typescript
+// Para selector de iconos en el Editor:
+<select value={localConfig.icon || ''} onChange={(e) => handleUpdate({ icon: e.target.value })}>
+  <option value="">None</option>
+  <option value="Settings">Settings</option>
+  <option value="Search">Search</option>
+  <option value="Home">Home</option>
+  <option value="ShoppingBag">Shopping Bag</option>
+  <option value="Heart">Heart</option>
+  <option value="Star">Star</option>
+  // ... más iconos de lucide-react
+</select>
+
+// Para mostrar icono en Preview:
+const IconComponent = config.icon ? (Icons as any)[config.icon] : null;
+{IconComponent && <IconComponent className="w-8 h-8" />}
 ```
 
 - **⚠️ CRÍTICO: Implementar upload de imágenes/videos si se detectan**
@@ -407,6 +444,21 @@ const handleVideoUpload = async (field?: string) => {
 ```
 
 #### 6.3 Implementar Preview con Vista MÓVIL
+
+**⚠️ IMPORTS CORRECTOS para Preview:**
+```typescript
+// ✅ IMPORTS CORRECTOS para el Preview:
+import React from 'react';
+import { [ModuleName]Config, getDefault[ModuleName]Config } from '@/components/editor/modules/[ModuleName]/types';
+import { GlobalThemeConfig } from '@/types/theme';
+import useThemeConfigStore from '@/stores/useThemeConfigStore'; // SIN destructuring {}
+import { cn } from '@/lib/utils';
+import * as Icons from 'lucide-react'; // Para iconos
+
+// ❌ NUNCA usar:
+// import { useThemeConfigStore } from '@/stores/useThemeConfigStore'; // INCORRECTO
+```
+
 - **⚠️ CRÍTICO: Implementar vista responsive para móvil**
 ```typescript
 // Detectar dispositivo

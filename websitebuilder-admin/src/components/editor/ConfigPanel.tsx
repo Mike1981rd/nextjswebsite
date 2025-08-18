@@ -22,6 +22,8 @@ import MulticolumnsItemEditor from './modules/Multicolumns/MulticolumnsItemEdito
 import MulticolumnsImageItemEditor from './modules/Multicolumns/MulticolumnsImageItemEditor';
 import GalleryEditor from './modules/Gallery/GalleryEditor';
 import GalleryItemEditor from './modules/Gallery/GalleryItemEditor';
+import ImageWithTextEditor from './modules/ImageWithText/ImageWithTextEditor';
+import ImageWithTextItemEditor from './modules/ImageWithText/ImageWithTextItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -66,13 +68,25 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   };
   
   // Check if this is a gallery child item
-  const isGalleryItem = selectedSectionId?.includes(':child:') && !isSlideItem;
+  const isGalleryItem = selectedSectionId?.includes(':child:') && !isSlideItem && 
+    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.GALLERY;
   const getGallerySectionId = () => {
     if (!isGalleryItem || !selectedSectionId) return null;
     return selectedSectionId.split(':child:')[0];
   };
   const getGalleryItemId = () => {
     if (!isGalleryItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[1];
+  };
+  
+  // Check if this is an ImageWithText child item
+  const isImageWithTextItem = selectedSectionId?.includes(':child:') && !isSlideItem && !isGalleryItem;
+  const getImageWithTextSectionId = () => {
+    if (!isImageWithTextItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[0];
+  };
+  const getImageWithTextItemId = () => {
+    if (!isImageWithTextItem || !selectedSectionId) return null;
     return selectedSectionId.split(':child:')[1];
   };
   
@@ -170,6 +184,16 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
       if (parentSection?.type === SectionType.GALLERY) {
         return <GalleryItemEditor sectionId={sectionId} itemId={itemId} />;
       }
+    }
+  }
+  
+  // Return early for ImageWithText items AFTER all hooks
+  if (isImageWithTextItem) {
+    const sectionId = getImageWithTextSectionId();
+    const itemId = getImageWithTextItemId();
+    
+    if (sectionId && itemId) {
+      return <ImageWithTextItemEditor sectionId={sectionId} itemId={itemId} />;
     }
   }
   
@@ -301,45 +325,7 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
         return <GalleryEditor sectionId={section.id} />;
 
       case SectionType.IMAGE_WITH_TEXT:
-        return (
-          <>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Title
-              </label>
-              <input
-                type="text"
-                value={settings.title || ''}
-                onChange={(e) => handleChange('title', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Content
-              </label>
-              <textarea
-                value={settings.content || ''}
-                onChange={(e) => handleChange('content', e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Image Position
-              </label>
-              <select
-                value={settings.imagePosition || 'left'}
-                onChange={(e) => handleChange('imagePosition', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800"
-              >
-                <option value="left">Left</option>
-                <option value="right">Right</option>
-              </select>
-            </div>
-          </>
-        );
+        return <ImageWithTextEditor sectionId={section.id} />;
 
       default:
         return (

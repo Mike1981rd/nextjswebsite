@@ -275,6 +275,98 @@ function Component() {
 **Cause**: Different detection methods or missing deviceView prop
 **Solution**: Use unified mobile detection with deviceView prop
 
+### Device View Contract (Critical)
+
+To guarantee identical behavior between the Editor and the Live Preview, all preview components and their containers MUST follow this contract:
+
+1. Containers (e.g., PreviewContent, PreviewPage):
+   - Pass `deviceView` through as-is. Do NOT coalesce to desktop.
+   - Correct: `deviceView={deviceView}`
+   - Incorrect: `deviceView={deviceView || 'desktop'}`
+
+2. Components (all preview modules):
+   - Implement the canonical mobile detection pattern below.
+   - If `deviceView` is provided, honor it; otherwise detect via viewport and listen to resize.
+
+3. Editor Mobile Override:
+   - The Editor may set `localStorage.editorDeviceView = 'mobile'`. Containers should not override this; components will still behave correctly using the pattern below.
+
+### Canonical Mobile Detection (Copy/Paste for all preview components)
+
+```tsx
+// Canonical mobile detection (use in all preview components)
+const [isMobile, setIsMobile] = useState<boolean>(() => {
+  if (deviceView !== undefined) return deviceView === 'mobile';
+  if (typeof window !== 'undefined') return window.innerWidth < 768;
+  return false;
+});
+
+useEffect(() => {
+  if (deviceView !== undefined) {
+    setIsMobile(deviceView === 'mobile');
+    return;
+  }
+  const onResize = () => setIsMobile(window.innerWidth < 768);
+  onResize();
+  window.addEventListener('resize', onResize);
+  return () => window.removeEventListener('resize', onResize);
+}, [deviceView]);
+```
+
+### Container Usage Guidelines
+
+- In `PreviewContent.tsx` and `PreviewPage.tsx`, always pass `deviceView` without forcing desktop:
+
+```tsx
+// Good
+<PreviewSomeComponent deviceView={deviceView} />
+
+// Bad
+<PreviewSomeComponent deviceView={deviceView || 'desktop'} />
+```
+
+### PR Checklist for New/Updated Preview Modules
+
+- [ ] Container passes `deviceView` as-is (no `|| 'desktop'`)
+- [ ] Component uses the Canonical Mobile Detection pattern
+- [ ] Manual test: Editor mobile vs. Live Preview mobile look identical
+- [ ] No conditional returns before hooks
+- [ ] Resize listener added when `deviceView` is undefined
+
+### Anti-patterns to Avoid
+
+- `const isMobile = deviceView === 'mobile'` without viewport fallback and resize listener
+- Forcing desktop in containers with `deviceView || 'desktop'`
+- Divergent logic between Editor and Live Preview components
+
+### Optional: Shared Hook (Future Improvement)
+
+Centralize the detection to a hook to prevent drift:
+
+```tsx
+// useDeviceView.ts
+export function useDeviceView(deviceView?: 'desktop'|'mobile') {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    if (deviceView !== undefined) {
+      setIsMobile(deviceView === 'mobile');
+      return;
+    }
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [deviceView]);
+  return isMobile;
+}
+```
+
+### QA Checklist (Mobile Consistency)
+
+- Verify Image Banner, Image With Text, Slideshow, and Multicolumns in both Editor and Live Preview
+- Toggle Editor mobile override and confirm parity with Live Preview
+- Resize browser in Live Preview to confirm responsive updates
+
 #### Components Not Updating
 **Cause**: Missing dependencies in useEffect
 **Solution**: Include all reactive values in dependency array
