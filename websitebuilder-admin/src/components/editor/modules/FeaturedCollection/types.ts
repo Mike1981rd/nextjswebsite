@@ -25,7 +25,7 @@ export interface FeaturedCollectionConfig {
   colorScheme?: string;
   width: 'small' | 'medium' | 'large' | 'page' | 'full';
   desktopLayout: 'grid' | 'carousel' | 'slider';
-  mobileLayout: 'carousel' | 'oneColumn' | 'twoColumn';
+  mobileLayout?: 'carousel' | 'oneColumn' | 'twoColumn'; // Deprecated - always use oneColumn
   
   // Content
   heading: string;
@@ -59,6 +59,9 @@ export interface FeaturedCollectionConfig {
   showBuyButton: boolean;
   showReserveButton: boolean;
   buttonStyle: 'solid' | 'outline';
+  addToCartText?: string;
+  buyButtonText?: string;
+  reserveButtonText?: string;
   colorCardBackground?: boolean;
   showCurrencyCode?: boolean;
   showSaleBadge?: boolean;
@@ -83,6 +86,7 @@ export interface FeaturedCollectionConfig {
   // Spacing
   topSpacing: number;
   bottomSpacing: number;
+  headingSpacing?: number;
 }
 
 export function getDefaultFeaturedCollectionConfig(): FeaturedCollectionConfig {
@@ -91,7 +95,7 @@ export function getDefaultFeaturedCollectionConfig(): FeaturedCollectionConfig {
     colorScheme: '1',
     width: 'page',
     desktopLayout: 'grid',
-    mobileLayout: 'carousel',
+    mobileLayout: 'oneColumn',
     heading: 'Featured Collection',
     headingSize: 'h2',
     headingAlignment: 'center',

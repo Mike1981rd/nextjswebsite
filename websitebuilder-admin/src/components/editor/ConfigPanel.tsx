@@ -57,17 +57,6 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     return selectedSectionId.split(':slide:')[1];
   };
   
-  // Check if this is a multicolumns child item
-  const isMulticolumnsItem = selectedSectionId?.includes(':child:') && !isSlideItem;
-  const getMulticolumnsSectionId = () => {
-    if (!isMulticolumnsItem || !selectedSectionId) return null;
-    return selectedSectionId.split(':child:')[0];
-  };
-  const getMulticolumnsItemId = () => {
-    if (!isMulticolumnsItem || !selectedSectionId) return null;
-    return selectedSectionId.split(':child:')[1];
-  };
-  
   // Check if this is a gallery child item
   const isGalleryItem = selectedSectionId?.includes(':child:') && !isSlideItem && 
     Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.GALLERY;
@@ -80,8 +69,21 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     return selectedSectionId.split(':child:')[1];
   };
   
-  // Check if this is an ImageWithText child item
-  const isImageWithTextItem = selectedSectionId?.includes(':child:') && !isSlideItem && !isGalleryItem;
+  // Check if this is a multicolumns child item - must check parent type
+  const isMulticolumnsItem = selectedSectionId?.includes(':child:') && !isSlideItem && !isGalleryItem &&
+    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.MULTICOLUMNS;
+  const getMulticolumnsSectionId = () => {
+    if (!isMulticolumnsItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[0];
+  };
+  const getMulticolumnsItemId = () => {
+    if (!isMulticolumnsItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[1];
+  };
+  
+  // Check if this is an ImageWithText child item - must check parent type
+  const isImageWithTextItem = selectedSectionId?.includes(':child:') && !isSlideItem && !isGalleryItem && !isMulticolumnsItem &&
+    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.IMAGE_WITH_TEXT;
   const getImageWithTextSectionId = () => {
     if (!isImageWithTextItem || !selectedSectionId) return null;
     return selectedSectionId.split(':child:')[0];
@@ -180,25 +182,11 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     const itemId = getGalleryItemId();
     
     if (sectionId && itemId) {
-      // Check if it's actually a Gallery section
-      const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
-      if (parentSection?.type === SectionType.GALLERY) {
-        return <GalleryItemEditor sectionId={sectionId} itemId={itemId} />;
-      }
+      return <GalleryItemEditor sectionId={sectionId} itemId={itemId} />;
     }
   }
   
-  // Return early for ImageWithText items AFTER all hooks
-  if (isImageWithTextItem) {
-    const sectionId = getImageWithTextSectionId();
-    const itemId = getImageWithTextItemId();
-    
-    if (sectionId && itemId) {
-      return <ImageWithTextItemEditor sectionId={sectionId} itemId={itemId} />;
-    }
-  }
-  
-  // Return early for multicolumns items AFTER all hooks
+  // Return early for multicolumns items AFTER all hooks - CHECK BEFORE ImageWithText
   if (isMulticolumnsItem) {
     const sectionId = getMulticolumnsSectionId();
     const itemId = getMulticolumnsItemId();
@@ -206,23 +194,31 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     if (sectionId && itemId) {
       // Get the parent section to check item type
       const parentSection = Object.values(sections).flat().find(s => s.id === sectionId);
-      if (parentSection?.type === SectionType.MULTICOLUMNS) {
-        const parentConfig = parentSection?.settings as any;
-        const item = parentConfig?.items?.find((i: any) => i.id === itemId);
-        
-        console.log('[DEBUG] Rendering Multicolumns Item Editor:', { 
-          sectionId, 
-          itemId, 
-          itemType: item?.type 
-        });
-        
-        // Render appropriate editor based on item type
-        if (item?.type === 'image') {
-          return <MulticolumnsImageItemEditor sectionId={sectionId} itemId={itemId} />;
-        } else {
-          return <MulticolumnsItemEditor sectionId={sectionId} itemId={itemId} />;
-        }
+      const parentConfig = parentSection?.settings as any;
+      const item = parentConfig?.items?.find((i: any) => i.id === itemId);
+      
+      console.log('[DEBUG] Rendering Multicolumns Item Editor:', { 
+        sectionId, 
+        itemId, 
+        itemType: item?.type 
+      });
+      
+      // Render appropriate editor based on item type
+      if (item?.type === 'image') {
+        return <MulticolumnsImageItemEditor sectionId={sectionId} itemId={itemId} />;
+      } else {
+        return <MulticolumnsItemEditor sectionId={sectionId} itemId={itemId} />;
       }
+    }
+  }
+  
+  // Return early for ImageWithText items AFTER all hooks - CHECK AFTER Multicolumns
+  if (isImageWithTextItem) {
+    const sectionId = getImageWithTextSectionId();
+    const itemId = getImageWithTextItemId();
+    
+    if (sectionId && itemId) {
+      return <ImageWithTextItemEditor sectionId={sectionId} itemId={itemId} />;
     }
   }
   

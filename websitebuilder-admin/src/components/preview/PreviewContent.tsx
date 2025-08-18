@@ -7,6 +7,7 @@ import PreviewSlideshow from './PreviewSlideshow';
 import PreviewMulticolumns from './PreviewMulticolumns';
 import PreviewGallery from './PreviewGallery';
 import PreviewImageWithText from '../editor/modules/ImageWithText/PreviewImageWithText';
+import PreviewFeaturedCollection from './PreviewFeaturedCollection';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -92,6 +93,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     if (t === 'Multicolumns' || t === 'multicolumns') return 'multicolumns';
     if (t === 'Gallery' || t === 'gallery') return 'gallery';
     if (t === 'ImageWithText' || t === 'image_with_text') return 'image_with_text';
+    if (t === 'FeaturedCollection' || t === 'featured_collection') return 'featured_collection';
     return t;
   };
 
@@ -179,7 +181,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewGallery 
                   config={getSectionConfig(section)} 
                   theme={theme}
-                  deviceView={deviceView || 'desktop'}
+                  deviceView={deviceView}
                   isEditor={false}
                 />
               )}
@@ -187,6 +189,16 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
               {/* Image With Text (unified preview component) */}
               {getSectionType(section) === 'image_with_text' && (
                 <PreviewImageWithText 
+                  config={getSectionConfig(section)} 
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {/* Featured Collection (unified preview component) */}
+              {getSectionType(section) === 'featured_collection' && (
+                <PreviewFeaturedCollection 
                   config={getSectionConfig(section)} 
                   theme={theme}
                   deviceView={deviceView}

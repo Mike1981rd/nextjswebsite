@@ -228,19 +228,6 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
                 </div>
               </div>
 
-              {/* Mobile Layout */}
-              <div>
-                <label className="text-xs text-gray-600 dark:text-gray-400">Mobile layout</label>
-                <select 
-                  className="w-full mt-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600"
-                  value={localConfig.mobileLayout}
-                  onChange={(e) => handleChange('mobileLayout', e.target.value)}
-                >
-                  <option value="carousel">Carousel</option>
-                  <option value="oneColumn">One column</option>
-                  <option value="twoColumn">Two column</option>
-                </select>
-              </div>
             </div>
           )}
         </div>
@@ -298,6 +285,27 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
                   <option value="left">Left</option>
                   <option value="center">Center</option>
                 </select>
+              </div>
+
+              {/* Heading Spacing */}
+              <div>
+                <label className="text-xs text-gray-600 dark:text-gray-400">
+                  Spacing after heading: {localConfig.headingSpacing ?? 32}px
+                </label>
+                <input
+                  type="range"
+                  className="w-full mt-1"
+                  min="0"
+                  max="80"
+                  step="4"
+                  value={localConfig.headingSpacing ?? 32}
+                  onChange={(e) => handleChange('headingSpacing', parseInt(e.target.value))}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0</span>
+                  <span>40</span>
+                  <span>80</span>
+                </div>
               </div>
             </div>
           )}
@@ -502,21 +510,21 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
               {/* Edge Rounding */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Edge rounding: {localConfig.edgeRounding || 12}px
+                  Edge rounding: {localConfig.edgeRounding ?? 12}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
                   min="0"
-                  max="24"
-                  step="4"
-                  value={localConfig.edgeRounding || 12}
+                  max="32"
+                  step="2"
+                  value={localConfig.edgeRounding ?? 12}
                   onChange={(e) => handleChange('edgeRounding', parseInt(e.target.value))}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Square</span>
-                  <span>Rounded</span>
-                  <span>Very rounded</span>
+                  <span>0</span>
+                  <span>16</span>
+                  <span>32</span>
                 </div>
               </div>
 
@@ -545,42 +553,42 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
               {/* Desktop Space Between Cards */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Desktop space between cards: {localConfig.desktopGap || 24}px
+                  Desktop space between cards: {localConfig.desktopGap ?? 24}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
-                  min="8"
-                  max="48"
-                  step="8"
-                  value={localConfig.desktopGap || 24}
+                  min="0"
+                  max="80"
+                  step="4"
+                  value={localConfig.desktopGap ?? 24}
                   onChange={(e) => handleChange('desktopGap', parseInt(e.target.value))}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Tight</span>
-                  <span>Normal</span>
-                  <span>Wide</span>
+                  <span>0</span>
+                  <span>40</span>
+                  <span>80</span>
                 </div>
               </div>
 
               {/* Mobile Space Between Cards */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Mobile space between cards: {localConfig.mobileGap || 16}px
+                  Mobile space between cards: {localConfig.mobileGap ?? 16}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
-                  min="8"
-                  max="32"
-                  step="8"
-                  value={localConfig.mobileGap || 16}
+                  min="0"
+                  max="48"
+                  step="4"
+                  value={localConfig.mobileGap ?? 16}
                   onChange={(e) => handleChange('mobileGap', parseInt(e.target.value))}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Tight</span>
-                  <span>Normal</span>
-                  <span>Wide</span>
+                  <span>0</span>
+                  <span>24</span>
+                  <span>48</span>
                 </div>
               </div>
             </div>
@@ -838,6 +846,20 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
                 </button>
               </div>
 
+              {/* Add to Cart Button Text */}
+              {localConfig.showAddToCart && (
+                <div>
+                  <label className="text-xs text-gray-600 dark:text-gray-400">Button text</label>
+                  <input
+                    type="text"
+                    className="w-full mt-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600"
+                    value={localConfig.addToCartText || 'Agregar al carrito'}
+                    onChange={(e) => handleChange('addToCartText', e.target.value)}
+                    placeholder="Agregar al carrito"
+                  />
+                </div>
+              )}
+
               {/* Show Buy Button */}
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-600 dark:text-gray-400">Show buy button</span>
@@ -853,6 +875,20 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
                 </button>
               </div>
 
+              {/* Buy Button Text */}
+              {localConfig.showBuyButton && (
+                <div>
+                  <label className="text-xs text-gray-600 dark:text-gray-400">Button text</label>
+                  <input
+                    type="text"
+                    className="w-full mt-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600"
+                    value={localConfig.buyButtonText || 'Comprar ahora'}
+                    onChange={(e) => handleChange('buyButtonText', e.target.value)}
+                    placeholder="Comprar ahora"
+                  />
+                </div>
+              )}
+
               {/* Show Reserve Button */}
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-600 dark:text-gray-400">Show reserve button</span>
@@ -867,6 +903,20 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
                   }`} />
                 </button>
               </div>
+
+              {/* Reserve Button Text */}
+              {localConfig.showReserveButton && (
+                <div>
+                  <label className="text-xs text-gray-600 dark:text-gray-400">Button text</label>
+                  <input
+                    type="text"
+                    className="w-full mt-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600"
+                    value={localConfig.reserveButtonText || 'Reservar'}
+                    onChange={(e) => handleChange('reserveButtonText', e.target.value)}
+                    placeholder="Reservar"
+                  />
+                </div>
+              )}
 
               {/* Color Card Background */}
               <div className="flex items-center justify-between">
@@ -1066,42 +1116,63 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
               {/* Top Spacing */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Top spacing: {localConfig.topSpacing || 40}px
+                  Top spacing: {localConfig.topSpacing ?? 40}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
                   min="0"
                   max="120"
-                  step="20"
-                  value={localConfig.topSpacing || 40}
+                  step="10"
+                  value={localConfig.topSpacing ?? 40}
                   onChange={(e) => handleChange('topSpacing', parseInt(e.target.value))}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>None</span>
-                  <span>Medium</span>
-                  <span>Large</span>
+                  <span>0</span>
+                  <span>60</span>
+                  <span>120</span>
+                </div>
+              </div>
+
+              {/* Heading Spacing */}
+              <div>
+                <label className="text-xs text-gray-600 dark:text-gray-400">
+                  Spacing below heading: {localConfig.headingSpacing ?? 32}px
+                </label>
+                <input
+                  type="range"
+                  className="w-full mt-1"
+                  min="0"
+                  max="80"
+                  step="8"
+                  value={localConfig.headingSpacing ?? 32}
+                  onChange={(e) => handleChange('headingSpacing', parseInt(e.target.value))}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0</span>
+                  <span>40</span>
+                  <span>80</span>
                 </div>
               </div>
 
               {/* Bottom Spacing */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Bottom spacing: {localConfig.bottomSpacing || 40}px
+                  Bottom spacing: {localConfig.bottomSpacing ?? 40}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
                   min="0"
                   max="120"
-                  step="20"
-                  value={localConfig.bottomSpacing || 40}
+                  step="10"
+                  value={localConfig.bottomSpacing ?? 40}
                   onChange={(e) => handleChange('bottomSpacing', parseInt(e.target.value))}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>None</span>
-                  <span>Medium</span>
-                  <span>Large</span>
+                  <span>0</span>
+                  <span>60</span>
+                  <span>120</span>
                 </div>
               </div>
             </div>

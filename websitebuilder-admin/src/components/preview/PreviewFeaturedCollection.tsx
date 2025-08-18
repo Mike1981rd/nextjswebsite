@@ -37,7 +37,7 @@ interface Item {
 export default function PreviewFeaturedCollection({
   config,
   theme,
-  deviceView = 'desktop',
+  deviceView,
   isEditor = false
 }: PreviewFeaturedCollectionProps) {
   
@@ -70,24 +70,33 @@ export default function PreviewFeaturedCollection({
   const [loading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   
-  const isMobile = deviceView === 'mobile';
+  // Mobile detection - using canonical pattern like Multicolumns
+  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    if (typeof window !== 'undefined') return window.innerWidth < 768;
+    return false;
+  });
+
+  React.useEffect(() => {
+    if (deviceView !== undefined) {
+      setIsMobile(deviceView === 'mobile');
+      return;
+    }
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [deviceView]);
   
-  // Only hide if explicitly disabled and not in editor
-  if (finalConfig.enabled === false && !isEditor) return null;
+  // Debug log
+  console.log('FeaturedCollection mobile detection:', {
+    deviceView,
+    isMobile,
+    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'SSR',
+    isEditor
+  });
   
-  // In editor, show disabled state
-  if (finalConfig.enabled === false && isEditor) {
-    return (
-      <section className="relative min-h-[100px] bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-        <div className="text-gray-500 text-center">
-          <div className="text-lg font-medium">Featured Collection (Disabled)</div>
-          <div className="text-sm">Enable in settings to preview</div>
-        </div>
-      </section>
-    );
-  }
-  
-  // Fetch items based on selection
+  // Fetch items based on selection - MUST be before any conditional returns
   useEffect(() => {
     const fetchItems = async () => {
       if (!finalConfig.activeType) {
@@ -317,7 +326,7 @@ export default function PreviewFeaturedCollection({
             });
             
             console.log('FeaturedCollection - Mapped items with image URLs:', mappedItems);
-            setItems(mappedItems.slice(0, finalConfig.cardsToShow || 4));
+            setItems(mappedItems);
           } else {
             console.error('FeaturedCollection - API error:', response.status, response.statusText);
           }
@@ -343,16 +352,38 @@ export default function PreviewFeaturedCollection({
     };
     
     fetchItems();
-  }, [finalConfig.activeType, finalConfig.selectedCollections, finalConfig.selectedProducts, finalConfig.selectedRooms, finalConfig.cardsToShow, isEditor]);
+  }, [finalConfig.activeType, finalConfig.selectedCollections, finalConfig.selectedProducts, finalConfig.selectedRooms, isEditor]);
   
-  // Get color scheme
+  // Only hide if explicitly disabled and not in editor
+  if (finalConfig.enabled === false && !isEditor) return null;
+  
+  // In editor, show disabled state
+  if (finalConfig.enabled === false && isEditor) {
+    return (
+      <section className="relative min-h-[100px] bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
+        <div className="text-gray-500 text-center">
+          <div className="text-lg font-medium">Featured Collection (Disabled)</div>
+          <div className="text-sm">Enable in settings to preview</div>
+        </div>
+      </section>
+    );
+  }
+  
+  // Get color scheme with proper structure
   const colorSchemeIndex = finalConfig.colorScheme ? parseInt(finalConfig.colorScheme) - 1 : 0;
   const colorScheme = themeConfig?.colorSchemes?.schemes?.[colorSchemeIndex] || {
     background: '#ffffff',
     text: '#000000',
-    primary: '#ff6b35',
-    secondary: '#4a5568',
-    accent: '#3182ce',
+    foreground: '#000000',
+    border: '#e5e5e5',
+    link: '#0066cc',
+    solidButton: '#000000',
+    solidButtonText: '#ffffff',
+    outlineButton: '#000000',
+    outlineButtonText: '#000000',
+    imageOverlay: 'rgba(0,0,0,0.3)',
+    primary: '#000000',
+    secondary: '#666666'
   };
   
   // Get typography
@@ -390,44 +421,26 @@ export default function PreviewFeaturedCollection({
     };
   };
   
-  // Get aspect ratio class
+  // Get aspect ratio class - simplified options
   const getAspectRatio = () => {
-    if (finalConfig.imageRatio === 'original') {
-      return ''; // No aspect ratio constraint for original
-    }
-    
     switch(finalConfig.imageRatio) {
-      case 'square-1-1-fill': 
-      case 'square-1-1-fit': 
+      case 'square': 
         return 'aspect-square';
-      case 'portrait-3-4-fill': 
-      case 'portrait-3-4-fit': 
+      case 'portrait': 
         return 'aspect-[3/4]';
-      case 'portrait-large-2-3-fill': 
-      case 'portrait-large-2-3-fit': 
-        return 'aspect-[2/3]';
-      case 'landscape-4-3-fill': 
-      case 'landscape-4-3-fit': 
-        return 'aspect-[4/3]';
+      case 'landscape': 
+        return 'aspect-[3/2]';
+      case 'default':
       default: 
-        return 'aspect-[4/5]';
+        return 'aspect-[4/3]';
     }
   };
   
   const getObjectFit = () => {
-    if (finalConfig.imageRatio === 'original') {
-      return 'w-full h-auto'; // Original size with auto height
-    }
-    if (finalConfig.imageRatio?.includes('fit')) {
-      return 'object-contain';
-    }
     return 'object-cover';
   };
   
   const getImageContainerClass = () => {
-    if (finalConfig.imageRatio === 'original') {
-      return 'relative overflow-hidden bg-gray-100';
-    }
     return cn(
       "relative overflow-hidden bg-gray-100",
       getAspectRatio()
@@ -454,11 +467,28 @@ export default function PreviewFeaturedCollection({
   };
   
   const handleNext = () => {
-    const maxIndex = Math.max(0, items.length - (isMobile ? 1 : finalConfig.desktopColumns));
+    const maxIndex = Math.max(0, itemsToShow.length - (isMobile ? 1 : finalConfig.desktopColumns));
     setCurrentIndex(prev => Math.min(maxIndex, prev + 1));
   };
   
   const getButtonText = () => {
+    // Use custom button text if provided
+    if (finalConfig.showReserveButton && finalConfig.reserveButtonText) {
+      return finalConfig.reserveButtonText;
+    }
+    if (finalConfig.showBuyButton && finalConfig.buyButtonText) {
+      return finalConfig.buyButtonText;
+    }
+    if (finalConfig.showAddToCart && finalConfig.addToCartText) {
+      return finalConfig.addToCartText;
+    }
+    
+    // Default text based on button type
+    if (finalConfig.showReserveButton) return 'Reservar';
+    if (finalConfig.showBuyButton) return 'Comprar ahora';
+    if (finalConfig.showAddToCart) return 'Agregar al carrito';
+    
+    // Fallback based on active type
     switch(finalConfig.activeType) {
       case 'rooms': return 'Reservar';
       case 'collections': return 'Ver colección';
@@ -476,21 +506,33 @@ export default function PreviewFeaturedCollection({
     }
   };
   
-  console.log('FeaturedCollection - Rendering with items:', items.length, items);
+  // Apply cardsToShow limit
+  const itemsToShow = items.slice(0, finalConfig.cardsToShow || 4);
+  
+  console.log('FeaturedCollection - Rendering with items:', itemsToShow.length, itemsToShow);
   
   const renderCard = (item: Item) => (
     <div 
-      className="group relative"
+      className={cn(
+        "group relative",
+        isMobile && "bg-white shadow-sm"
+      )}
       style={{
-        transform: `scale(${(finalConfig.cardSize || 100) / 100})`,
-        transformOrigin: 'top center'
+        borderRadius: `${finalConfig.edgeRounding ?? 12}px`,
+        backgroundColor: isMobile ? colorScheme.background : undefined
       }}
     >
       {/* Image Container */}
       <div 
-        className={getImageContainerClass()}
+        className={cn(
+          getImageContainerClass(),
+          isMobile && "aspect-[4/3]" // Force more square aspect for mobile
+        )}
         style={{ 
-          borderRadius: `${finalConfig.edgeRounding || 8}px`,
+          borderTopLeftRadius: `${finalConfig.edgeRounding ?? 12}px`,
+          borderTopRightRadius: `${finalConfig.edgeRounding ?? 12}px`,
+          borderBottomLeftRadius: (finalConfig.contentPosition === 'bottom' || isMobile) ? 0 : `${finalConfig.edgeRounding ?? 12}px`,
+          borderBottomRightRadius: (finalConfig.contentPosition === 'bottom' || isMobile) ? 0 : `${finalConfig.edgeRounding ?? 12}px`,
           backgroundColor: finalConfig.colorCardBackground ? (colorScheme.secondary + '10') : undefined
         }}
       >
@@ -519,36 +561,42 @@ export default function PreviewFeaturedCollection({
           </div>
         )}
         
-        {finalConfig.imageRatio === 'original' ? (
-          // For original ratio, let the image determine its own height
-          <img
-            src={item.imageUrl || '/api/placeholder/400/500'}
-            alt={item.name}
-            className="w-full h-auto block group-hover:scale-105 transition-transform duration-300"
-            style={{
-              borderRadius: `${finalConfig.edgeRounding || 8}px`
-            }}
-          />
-        ) : (
-          // For other ratios, use aspect ratio container
-          <img
-            src={item.imageUrl || '/api/placeholder/400/500'}
-            alt={item.name}
-            className={cn(
-              "w-full h-full group-hover:scale-105 transition-transform duration-300",
-              getObjectFit()
-            )}
-          />
-        )}
+        <img
+          src={item.imageUrl || '/api/placeholder/400/500'}
+          alt={item.name}
+          className={cn(
+            "w-full h-full group-hover:scale-105 transition-transform duration-300",
+            getObjectFit()
+          )}
+        />
         
-        {/* Content Overlay */}
-        {finalConfig.contentPosition !== 'bottom' && (
-          <div className={cn(
-            "absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-4 flex flex-col",
-            finalConfig.contentPosition === 'top' ? 'justify-start' : 'justify-center'
-          )}>
+        {/* Content Overlay - Only for desktop when not bottom */}
+        {!isMobile && finalConfig.contentPosition !== 'bottom' && (
+          <div 
+            className={cn(
+              "absolute inset-0 p-4 flex flex-col",
+              finalConfig.contentPosition === 'top' ? 'justify-start' : 'justify-center',
+              finalConfig.activeType === 'collections' && finalConfig.collectionContentAlignment === 'left' ? 'items-start' :
+              finalConfig.activeType === 'collections' && finalConfig.collectionContentAlignment === 'right' ? 'items-end' :
+              'items-center'
+            )}
+            style={{
+              background: finalConfig.activeType === 'collections' && finalConfig.enableOverlay
+                ? `linear-gradient(to top, rgba(0,0,0,${(finalConfig.overlayOpacity || 15) / 100}) 0%, transparent 100%)`
+                : 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)'
+            }}
+          >
             <h3 className="text-white font-semibold text-lg">{item.name}</h3>
-            {item.rating && (
+            
+            {/* Show product count for collections */}
+            {finalConfig.activeType === 'collections' && finalConfig.showProductCount && (
+              <p className="text-white/90 text-sm mt-1">
+                {Math.floor(Math.random() * 20) + 5} productos
+              </p>
+            )}
+            
+            {/* Show rating for products/rooms */}
+            {finalConfig.activeType !== 'collections' && item.rating && (
               <div className="flex items-center gap-1 mt-1">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className={cn(
@@ -563,26 +611,32 @@ export default function PreviewFeaturedCollection({
         )}
       </div>
       
-      {/* Content Below */}
-      {finalConfig.contentPosition === 'bottom' && (
-        <div className={cn(
-          "pt-3",
-          finalConfig.contentAlignment === 'center' ? 'text-center' : 'text-left'
-        )}>
-          {/* Name */}
-          <h3 className="text-sm font-normal leading-tight" style={{ color: colorScheme.text }}>
-            {item.name}
-          </h3>
+      {/* Content and Button Section */}
+      <div className={cn(
+        "pt-3",
+        isMobile ? "px-3 pb-3" : "", // Add padding for mobile
+        finalConfig.contentAlignment === 'center' ? 'text-center' : 'text-left'
+      )}>
+        {/* Show content if position is bottom OR on mobile */}
+        {(finalConfig.contentPosition === 'bottom' || isMobile) && (
+          <>
+            {/* Name */}
+            <h3 className={cn(
+              "font-normal leading-tight",
+              isMobile ? "text-base" : "text-sm"
+            )} style={{ color: colorScheme.text }}>
+              {item.name}
+            </h3>
           
           {/* Vendor */}
-          {finalConfig.showVendor && item.vendor && (
+          {finalConfig.showVendor && item.vendor && !isMobile && (
             <p className="text-xs mt-1" style={{ color: colorScheme.secondary }}>
               {item.vendor}
             </p>
           )}
           
           {/* Color Count */}
-          {finalConfig.showColorCount && item.colorCount && item.colorCount > 0 && (
+          {finalConfig.showColorCount && item.colorCount && item.colorCount > 0 && !isMobile && (
             <p className="text-xs mt-1" style={{ color: colorScheme.secondary }}>
               {item.colorCount} {item.colorCount === 1 ? 'color' : 'colores'} disponibles
             </p>
@@ -591,7 +645,8 @@ export default function PreviewFeaturedCollection({
           {/* Rating */}
           {item.rating && finalConfig.productRating !== 'none' && (
             <div className={cn(
-              "flex items-center gap-1 mt-1.5",
+              "flex items-center gap-1",
+              isMobile ? "mt-2" : "mt-1.5",
               finalConfig.contentAlignment === 'center' ? 'justify-center' : 'justify-start'
             )}>
               {(finalConfig.productRating === 'stars-only' || 
@@ -600,7 +655,7 @@ export default function PreviewFeaturedCollection({
                 [...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
-                    className="w-3 h-3"
+                    className={isMobile ? "w-4 h-4" : "w-3 h-3"}
                     style={{
                       fill: i < Math.floor(item.rating || 0) ? (finalConfig.starsColor || '#fbbf24') : '#e5e7eb',
                       color: i < Math.floor(item.rating || 0) ? (finalConfig.starsColor || '#fbbf24') : '#e5e7eb'
@@ -610,13 +665,19 @@ export default function PreviewFeaturedCollection({
               )}
               {(finalConfig.productRating === 'average-rating-only' || 
                 finalConfig.productRating === 'average-rating-and-stars') && (
-                <span className="text-xs ml-0.5" style={{ color: colorScheme.secondary }}>
+                <span className={cn(
+                  "ml-0.5",
+                  isMobile ? "text-sm" : "text-xs"
+                )} style={{ color: colorScheme.secondary }}>
                   {item.rating}
                 </span>
               )}
               {(finalConfig.productRating === 'review-count-only' || 
                 finalConfig.productRating === 'review-count-and-stars') && (
-                <span className="text-xs ml-0.5" style={{ color: colorScheme.secondary }}>
+                <span className={cn(
+                  "ml-0.5",
+                  isMobile ? "text-sm" : "text-xs"
+                )} style={{ color: colorScheme.secondary }}>
                   ({item.reviewCount || 0})
                 </span>
               )}
@@ -625,52 +686,129 @@ export default function PreviewFeaturedCollection({
           
           {/* Prices */}
           {item.price && (
-            <div className="mt-2">
+            <div className={isMobile ? "mt-3" : "mt-2"}>
               <div className={cn(
-                "flex items-baseline gap-1.5 flex-nowrap",
+                "flex items-baseline gap-2 flex-wrap",
                 finalConfig.contentAlignment === 'center' ? 'justify-center' : 'justify-start'
               )}>
-                <span className="text-base font-semibold whitespace-nowrap" style={{ color: colorScheme.text }}>
+                <span className={cn(
+                  "font-bold whitespace-nowrap",
+                  isMobile ? "text-xl" : "text-base font-semibold"
+                )} style={{ color: colorScheme.text }}>
                   ${formatPrice(item.price)}{finalConfig.showCurrencyCode ? ` ${currency}` : ''}
                 </span>
                 {item.originalPrice && item.originalPrice > item.price && (
-                  <span className="text-sm line-through whitespace-nowrap" style={{ color: colorScheme.secondary, opacity: 0.7 }}>
+                  <span className={cn(
+                    "line-through whitespace-nowrap",
+                    isMobile ? "text-base" : "text-sm"
+                  )} style={{ color: colorScheme.secondary, opacity: 0.7 }}>
                     ${formatPrice(item.originalPrice)}{finalConfig.showCurrencyCode ? ` ${currency}` : ''}
                   </span>
                 )}
-                {item.originalPrice && item.originalPrice > item.price && finalConfig.showSaleBadgeNextToPrice && item.discount && (
-                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded whitespace-nowrap"
+                {item.originalPrice && item.originalPrice > item.price && item.discount && (
+                  <span className={cn(
+                    "font-semibold whitespace-nowrap",
+                    isMobile ? "text-sm text-red-600" : "text-xs px-1.5 py-0.5 rounded"
+                  )}
                         style={{ 
-                          backgroundColor: '#fef2f2',
-                          color: '#ef4444'
+                          backgroundColor: isMobile ? 'transparent' : '#fef2f2',
+                          color: isMobile ? undefined : '#ef4444'
                         }}>
-                    -{item.discount}%
+                    {item.discount}% OFF
                   </span>
                 )}
               </div>
             </div>
           )}
-          
-          {/* Button */}
-          {(finalConfig.showAddToCart || finalConfig.showReserveButton) && (
+          </>
+        )}
+        
+        {/* Buttons - Show all enabled buttons */}
+        {(finalConfig.showAddToCart || finalConfig.showBuyButton || finalConfig.showReserveButton) && (
+          <div className={cn(
+            "space-y-2",
+            isMobile ? "mt-4" : "mt-3"
+          )}>
+            {finalConfig.showAddToCart && (
             <button
               className={cn(
-                "w-full mt-3 px-4 py-2.5 rounded-md font-medium transition-colors text-sm",
+                "w-full rounded-md font-medium transition-colors flex items-center justify-center gap-2",
+                isMobile ? "px-4 py-3 text-base" : "px-4 py-2.5 text-sm",
                 finalConfig.buttonStyle === 'solid' 
-                  ? "text-white"
-                  : "border-2"
+                  ? "text-white hover:opacity-90"
+                  : "border-2 hover:bg-opacity-10"
               )}
               style={{
-                backgroundColor: finalConfig.buttonStyle === 'solid' ? colorScheme.primary : 'transparent',
-                borderColor: colorScheme.primary,
-                color: finalConfig.buttonStyle === 'solid' ? 'white' : colorScheme.primary,
+                backgroundColor: finalConfig.buttonStyle === 'solid' ? 
+                  (colorScheme.solidButton || '#000000') : 
+                  'transparent',
+                borderColor: finalConfig.buttonStyle === 'outline' ? 
+                  (colorScheme.outlineButton || '#000000') : 
+                  'transparent',
+                color: finalConfig.buttonStyle === 'solid' ? 
+                  (colorScheme.solidButtonText || '#FFFFFF') : 
+                  (colorScheme.outlineButtonText || '#000000')
               }}
             >
-              {getButtonText()}
+              <ShoppingCart className="w-4 h-4" />
+              {finalConfig.addToCartText || 'Agregar al carrito'}
             </button>
           )}
-        </div>
-      )}
+          
+          {finalConfig.showBuyButton && (
+            <button
+              className={cn(
+                "w-full rounded-md font-medium transition-colors flex items-center justify-center gap-2",
+                isMobile ? "px-4 py-3 text-base" : "px-4 py-2.5 text-sm",
+                finalConfig.buttonStyle === 'solid' 
+                  ? "text-white hover:opacity-90"
+                  : "border-2 hover:bg-opacity-10"
+              )}
+              style={{
+                backgroundColor: finalConfig.buttonStyle === 'solid' ? 
+                  (colorScheme.solidButton || '#000000') : 
+                  'transparent',
+                borderColor: finalConfig.buttonStyle === 'outline' ? 
+                  (colorScheme.outlineButton || '#000000') : 
+                  'transparent',
+                color: finalConfig.buttonStyle === 'solid' ? 
+                  (colorScheme.solidButtonText || '#FFFFFF') : 
+                  (colorScheme.outlineButtonText || '#000000')
+              }}
+            >
+              <CreditCard className="w-4 h-4" />
+              {finalConfig.buyButtonText || 'Comprar ahora'}
+            </button>
+          )}
+          
+          {finalConfig.showReserveButton && (
+            <button
+              className={cn(
+                "w-full rounded-md font-medium transition-colors flex items-center justify-center gap-2",
+                isMobile ? "px-4 py-3 text-base" : "px-4 py-2.5 text-sm",
+                finalConfig.buttonStyle === 'solid' 
+                  ? "text-white hover:opacity-90"
+                  : "border-2 hover:bg-opacity-10"
+              )}
+              style={{
+                backgroundColor: finalConfig.buttonStyle === 'solid' ? 
+                  (colorScheme.solidButton || '#000000') : 
+                  'transparent',
+                borderColor: finalConfig.buttonStyle === 'outline' ? 
+                  (colorScheme.outlineButton || '#000000') : 
+                  'transparent',
+                color: finalConfig.buttonStyle === 'solid' ? 
+                  (colorScheme.solidButtonText || '#FFFFFF') : 
+                  (colorScheme.outlineButtonText || '#000000')
+              }}
+            >
+              <Calendar className="w-4 h-4" />
+              {finalConfig.reserveButtonText || 'Reservar'}
+            </button>
+          )}
+          </div>
+        )}
+      </div>
     </div>
   );
   
@@ -681,14 +819,14 @@ export default function PreviewFeaturedCollection({
         finalConfig.width === 'full' ? 'w-full' : 'container mx-auto px-4'
       )}
       style={{
-        paddingTop: `${finalConfig.topSpacing}px`,
-        paddingBottom: `${finalConfig.bottomSpacing}px`,
+        paddingTop: `${finalConfig.topSpacing ?? 40}px`,
+        paddingBottom: `${finalConfig.bottomSpacing ?? 40}px`,
         backgroundColor: colorScheme?.background || '#ffffff',
       }}
     >
       {/* Heading */}
       {finalConfig.heading && (
-        <div className="mb-8">
+        <div style={{ marginBottom: `${finalConfig.headingSpacing ?? 32}px` }}>
           <h2 style={getHeadingStyles()}>
             {getTitle()}
           </h2>
@@ -701,7 +839,7 @@ export default function PreviewFeaturedCollection({
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-current" 
                style={{ borderColor: colorScheme.primary }} />
         </div>
-      ) : items.length === 0 ? (
+      ) : itemsToShow.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
           <div className="text-gray-500">
             <div className="text-lg font-medium mb-2">No items selected</div>
@@ -716,9 +854,9 @@ export default function PreviewFeaturedCollection({
           {finalConfig.desktopLayout === 'grid' && !isMobile && (
             <div 
               className={cn("grid", getGridCols())}
-              style={{ gap: `${finalConfig.desktopGap}px` }}
+              style={{ gap: `${finalConfig.desktopGap ?? 24}px` }}
             >
-              {items.map(item => (
+              {itemsToShow.map(item => (
                 <div key={item.id}>
                   {renderCard(item)}
                 </div>
@@ -726,11 +864,10 @@ export default function PreviewFeaturedCollection({
             </div>
           )}
           
-          {/* Carousel Layout */}
-          {(finalConfig.desktopLayout === 'carousel' || 
-            finalConfig.desktopLayout === 'slider' || 
-            (isMobile && finalConfig.mobileLayout === 'carousel')) && (
-            <div className="relative">
+          {/* Carousel Layout - Desktop only */}
+          {!isMobile && (finalConfig.desktopLayout === 'carousel' || 
+            finalConfig.desktopLayout === 'slider') && (
+            <div className="relative group">
               <div className="overflow-hidden">
                 <div 
                   className="flex transition-transform duration-300"
@@ -739,7 +876,7 @@ export default function PreviewFeaturedCollection({
                     gap: `${isMobile ? finalConfig.mobileGap : finalConfig.desktopGap}px`
                   }}
                 >
-                  {items.map(item => (
+                  {itemsToShow.map(item => (
                     <div 
                       key={item.id}
                       className="flex-shrink-0"
@@ -751,37 +888,43 @@ export default function PreviewFeaturedCollection({
                 </div>
               </div>
               
-              {/* Navigation Arrows */}
-              {finalConfig.showArrowOnHover && items.length > (isMobile ? 1 : finalConfig.desktopColumns) && (
-                <>
+              {/* Navigation Arrows - Desktop only, bottom right corner */}
+              {!isMobile && finalConfig.showArrowOnHover && itemsToShow.length > finalConfig.desktopColumns && (
+                <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                   <button
                     onClick={handlePrevious}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ backgroundColor: colorScheme.background }}
+                    className="p-2.5 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110"
+                    style={{ 
+                      backgroundColor: `${colorScheme.background}ee`,
+                      border: `1px solid ${colorScheme.border || '#e5e5e5'}`
+                    }}
                     disabled={currentIndex === 0}
                   >
-                    <ChevronLeft className="w-5 h-5" style={{ color: colorScheme.text }} />
+                    <ChevronLeft className="w-4 h-4" style={{ color: colorScheme.text }} />
                   </button>
                   <button
                     onClick={handleNext}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ backgroundColor: colorScheme.background }}
-                    disabled={currentIndex >= items.length - (isMobile ? 1 : finalConfig.desktopColumns)}
+                    className="p-2.5 rounded-full shadow-md backdrop-blur-sm transition-all hover:scale-110"
+                    style={{ 
+                      backgroundColor: `${colorScheme.background}ee`,
+                      border: `1px solid ${colorScheme.border || '#e5e5e5'}`
+                    }}
+                    disabled={currentIndex >= itemsToShow.length - finalConfig.desktopColumns}
                   >
-                    <ChevronRight className="w-5 h-5" style={{ color: colorScheme.text }} />
+                    <ChevronRight className="w-4 h-4" style={{ color: colorScheme.text }} />
                   </button>
-                </>
+                </div>
               )}
             </div>
           )}
           
-          {/* Mobile Grid */}
-          {isMobile && finalConfig.mobileLayout === 'grid' && (
+          {/* Mobile Layout - Always one column */}
+          {isMobile && (
             <div 
-              className="grid grid-cols-2"
-              style={{ gap: `${finalConfig.mobileGap}px` }}
+              className="grid grid-cols-1"
+              style={{ gap: `${finalConfig.mobileGap ?? 16}px` }}
             >
-              {items.map(item => (
+              {itemsToShow.map(item => (
                 <div key={item.id}>
                   {renderCard(item)}
                 </div>

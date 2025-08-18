@@ -361,6 +361,48 @@ export function useDeviceView(deviceView?: 'desktop'|'mobile') {
 }
 ```
 
+### Gotchas: deviceView defaults and container coalescing
+
+- Avoid forcing desktop by default in preview components.
+  - Incorrect: setting a default `deviceView = 'desktop'` in the component props causes the component to ignore `undefined` (intended to mean “use viewport”).
+  - Correct: accept `deviceView?: 'desktop' | 'mobile'` with no default and use the canonical detection.
+
+- Do not coalesce `deviceView` in containers.
+  - Incorrect: `deviceView={deviceView || 'desktop'}`
+  - Correct: `deviceView={deviceView}` (pass through as-is)
+
+Code examples
+
+Incorrect (breaks mobile in real preview):
+```tsx
+// Anti-pattern: default prop forces desktop
+export default function PreviewFeaturedCollection({ deviceView = 'desktop' }: { deviceView?: 'desktop'|'mobile' }) {
+  // ...
+}
+```
+
+Correct (respects editor override and real viewport):
+```tsx
+export default function PreviewFeaturedCollection({ deviceView }: { deviceView?: 'desktop'|'mobile' }) {
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    if (typeof window !== 'undefined') return window.innerWidth < 768;
+    return false;
+  });
+  useEffect(() => {
+    if (deviceView !== undefined) {
+      setIsMobile(deviceView === 'mobile');
+      return;
+    }
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [deviceView]);
+  // ...
+}
+```
+
 ### QA Checklist (Mobile Consistency)
 
 - Verify Image Banner, Image With Text, Slideshow, and Multicolumns in both Editor and Live Preview
