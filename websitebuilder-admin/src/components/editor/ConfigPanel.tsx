@@ -25,6 +25,8 @@ import GalleryItemEditor from './modules/Gallery/GalleryItemEditor';
 import ImageWithTextEditor from './modules/ImageWithText/ImageWithTextEditor';
 import ImageWithTextItemEditor from './modules/ImageWithText/ImageWithTextItemEditor';
 import FeaturedCollectionEditor from './modules/FeaturedCollection/FeaturedCollectionEditor';
+import FAQEditor from './modules/FAQ/FAQEditor';
+import FAQItemEditor from './modules/FAQ/FAQItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -90,6 +92,18 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   };
   const getImageWithTextItemId = () => {
     if (!isImageWithTextItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[1];
+  };
+  
+  // Check if this is a FAQ item (child) - DEBE usar :child:
+  const isFAQItem = selectedSectionId?.includes(':child:') && 
+    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.FAQ;
+  const getFAQSectionId = () => {
+    if (!isFAQItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[0];
+  };
+  const getFAQItemId = () => {
+    if (!isFAQItem || !selectedSectionId) return null;
     return selectedSectionId.split(':child:')[1];
   };
   
@@ -212,7 +226,17 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     }
   }
   
-  // Return early for ImageWithText items AFTER all hooks - CHECK AFTER Multicolumns
+  // Return early for FAQ items AFTER all hooks - CHECK BEFORE ImageWithText
+  if (isFAQItem) {
+    const sectionId = getFAQSectionId();
+    const itemId = getFAQItemId();
+    
+    if (sectionId && itemId) {
+      return <FAQItemEditor sectionId={sectionId} itemId={itemId} />;
+    }
+  }
+  
+  // Return early for ImageWithText items AFTER all hooks - CHECK AFTER FAQ
   if (isImageWithTextItem) {
     const sectionId = getImageWithTextSectionId();
     const itemId = getImageWithTextItemId();
@@ -326,6 +350,9 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
       case SectionType.FEATURED_COLLECTION:
         return <FeaturedCollectionEditor sectionId={section.id} />;
+
+      case SectionType.FAQ:
+        return <FAQEditor sectionId={section.id} />;
 
       default:
         return (

@@ -112,7 +112,18 @@
         "faqs": "Questions",
         "layout": "Layout",
         "expandFirst": "Expand First",
-        "showSearch": "Show Search"
+        "showSearch": "Show Search",
+        "headingSize": "Heading size",
+        "bodySize": "Body size",
+        "headingWeight": "Heading weight",
+        "bodyWeight": "Body weight",
+        "colorTabs": "Color tabs",
+        "colorBackground": "Color background",
+        "width": "Width",
+        "buttonLabel": "Button label",
+        "buttonLink": "Button link",
+        "buttonStyle": "Button style",
+        "collapserStyle": "Collapser style"
       }
     },
     "videos": {

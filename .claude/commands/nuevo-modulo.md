@@ -59,7 +59,10 @@ El backend ya tiene las APIs necesarias en `Controllers/MediaUploadController.cs
 
 ### Cuando ejecutas `/nuevo-modulo`:
 1. 🤖 **Te pregunto** nombre y si tiene hijos
-2. 🔧 **Ejecuto automáticamente** el script `create-template-section.sh`
+2. 🔧 **EJECUTO AUTOMÁTICAMENTE** el script `create-template-section.sh`
+   - Si falla, uso PowerShell como alternativa
+   - Verifico que todos los archivos se crearon
+   - Si falta el Preview, lo creo manualmente
 3. 📄 **Genero** todos los archivos base
 4. 📸 **Te pido** screenshots de configuración
 5. 🔍 **Analizo** y te confirmo lo que identifiqué
@@ -68,7 +71,10 @@ El backend ya tiene las APIs necesarias en `Controllers/MediaUploadController.cs
 8. 🔗 **Integro** automáticamente en el sistema
 9. ✅ **Verifico** que todo funcione
 
-**NO necesitas ejecutar el script manualmente - el comando hace TODO**
+**⚠️ IMPORTANTE:** El script SE EJECUTA AUTOMÁTICAMENTE. Si ves que no se ejecutó:
+- Verificar que el archivo `create-template-section.sh` existe
+- Verificar permisos: `chmod +x create-template-section.sh`
+- Como fallback, Claude ejecutará vía PowerShell
 
 ## 📋 FLUJO COMPLETO DEL COMANDO
 
@@ -81,33 +87,32 @@ Preguntar al usuario:
 
 ### PASO 2: GENERAR ESTRUCTURA BASE
 
-**🎯 MÉTODO PREFERIDO: Script PowerShell nativo**
+**🤖 EJECUCIÓN AUTOMÁTICA DEL SCRIPT**
 
-El usuario debe ejecutar desde PowerShell:
-```powershell
-cd "C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI"
-
-# Si tiene hijos
-.\create-template-section.ps1 -ModuleName "[MODULE_NAME]" -WithChildren
-
-# Si NO tiene hijos
-.\create-template-section.ps1 -ModuleName "[MODULE_NAME]"
-```
-
-**Alternativa: Si prefieres usar el script bash original**
-```powershell
-# Opción 1: Con Git Bash (si está instalado)
-& "C:\Program Files\Git\bin\bash.exe" create-template-section.sh [MODULE_NAME] [--with-children]
-
-# Opción 2: Con WSL
-wsl bash create-template-section.sh [MODULE_NAME] [--with-children]
-```
-
-Verificar que se generaron los archivos:
+Claude Code ejecutará automáticamente el script para generar la estructura base:
 
 ```bash
-# Verificar archivos generados
-echo "\n📁 Verificando archivos generados:"
+# Claude ejecutará automáticamente según la respuesta del usuario:
+if [ "$HAS_CHILDREN" == "si" ]; then
+  echo "🔧 Ejecutando script con hijos..."
+  bash create-template-section.sh "$MODULE_NAME" --with-children
+else
+  echo "🔧 Ejecutando script sin hijos..."
+  bash create-template-section.sh "$MODULE_NAME"
+fi
+```
+
+**⚠️ NOTA:** Si el script falla por permisos, Claude ejecutará como alternativa:
+```bash
+# Alternativa si el script bash no funciona
+powershell.exe -Command "cd 'C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI'; & 'C:\Program Files\Git\bin\bash.exe' create-template-section.sh $MODULE_NAME $CHILDREN_FLAG"
+```
+
+Verificación automática de archivos generados:
+
+```bash
+# Claude verificará automáticamente:
+echo "📁 Verificando archivos generados..."
 ls -la websitebuilder-admin/src/components/editor/modules/$MODULE_NAME/
 
 # Verificar preview
@@ -460,33 +465,58 @@ import * as Icons from 'lucide-react'; // Para iconos
 // import { useThemeConfigStore } from '@/stores/useThemeConfigStore'; // INCORRECTO
 ```
 
-- **⚠️ CRÍTICO: Implementar vista responsive para móvil**
-```typescript
-// Detectar dispositivo
-const isMobile = deviceView === 'mobile';
+- **⚠️ CRÍTICO: Implementar PATRÓN CANÓNICO de detección móvil**
 
-// Aplicar clases responsive
-<div className={cn(
-  "grid gap-6",
-  isMobile ? "grid-cols-1" : "grid-cols-3", // Ejemplo para grid
-  isMobile ? "px-4" : "px-8" // Padding responsive
-)}>
+**OBLIGATORIO - Copiar y pegar este patrón exacto (de live-preview.md):**
+```typescript
+// 🔴 PATRÓN CANÓNICO - USAR EN TODOS LOS PREVIEW COMPONENTS
+const [isMobile, setIsMobile] = useState<boolean>(() => {
+  if (deviceView !== undefined) return deviceView === 'mobile';
+  if (typeof window !== 'undefined') return window.innerWidth < 768;
+  return false;
+});
+
+useEffect(() => {
+  if (deviceView !== undefined) {
+    setIsMobile(deviceView === 'mobile');
+    return;
+  }
+  const onResize = () => setIsMobile(window.innerWidth < 768);
+  onResize();
+  window.addEventListener('resize', onResize);
+  return () => window.removeEventListener('resize', onResize);
+}, [deviceView]);
+
+// ❌ NUNCA HACER:
+// const isMobile = deviceView === 'mobile';  // NO tiene fallback ni resize listener
+```
+
+- **Aplicar clases responsive basadas en isMobile:**
+```typescript
+// Clases responsive basadas en el estado isMobile
+const containerClass = isMobile ? 'px-4' : 'px-8';
+const gridClass = isMobile ? 'grid-cols-1' : 'grid-cols-3';
+const textSize = isMobile ? 'text-sm' : 'text-base';
+const spacing = isMobile ? 'gap-2' : 'gap-4';
+
+// Aplicar en el JSX
+<div className={`grid ${gridClass} ${spacing} ${containerClass}`}>
+  {/* Contenido */}
+</div>
 ```
 
 - **Configuraciones móviles específicas:**
 ```typescript
-// Si hay configuraciones móviles específicas
-const spacing = isMobile && config.mobileSpacing 
-  ? config.mobileSpacing 
-  : config.desktopSpacing;
-
-const layout = isMobile && config.mobileLayout
-  ? config.mobileLayout
-  : config.desktopLayout;
-
 // Tamaños de texto responsive
 const headingSize = isMobile ? "text-2xl" : "text-4xl";
 const bodySize = isMobile ? "text-sm" : "text-base";
+
+// Espaciado responsive
+const paddingClass = isMobile ? "py-4" : "py-8";
+
+// Visibilidad condicional
+{!isMobile && <DesktopOnlyElement />}
+{isMobile && <MobileOnlyElement />}
 ```
 
 - Aplicar color scheme seleccionado con estructura PLANA:
@@ -573,12 +603,12 @@ const getSectionType = (section: any): string | undefined => {
   // ...
 };
 
-// 3. Agregar renderizado
+// 3. Agregar renderizado - NO FORZAR DESKTOP
 {getSectionType(section) === '[module_lower]' && (
   <Preview[Module] 
     config={getSectionConfig(section)} 
     theme={theme}
-    deviceView={deviceView || 'desktop'}
+    deviceView={deviceView}  // ✅ CORRECTO - Sin || 'desktop'
     isEditor={false}
   />
 )}
@@ -744,7 +774,10 @@ Siguiente paso: Agregar sección desde el editor
 □ Condición permisiva para enabled (=== false)
 □ isEditor prop funcionando
 □ Vista desktop funcionando
-□ Vista móvil funcionando
+□ Vista móvil funcionando con PATRÓN CANÓNICO
+□ Resize listener implementado cuando deviceView undefined
+□ Todos los hooks ANTES de returns condicionales
+□ deviceView pasado SIN || 'desktop'
 □ Valores por defecto para editor vacío
 
 ✅ INTEGRACIONES (CRÍTICO)
@@ -789,6 +822,26 @@ TOTAL: [X]/[Y] requisitos cumplidos
 ```
 
 ## 🔴 RECORDATORIOS CRÍTICOS
+
+### ⚡ REGLAS DE HOOKS (CRÍTICO - de live-preview.md):
+1. **TODOS los hooks ANTES de returns condicionales**
+```typescript
+// ❌ INCORRECTO - Causará error "Rendered more hooks than during the previous render"
+function Component() {
+  if (!enabled) return null;  // ERROR!
+  useEffect(() => {});
+}
+
+// ✅ CORRECTO - Hooks antes de condicionales
+function Component() {
+  useEffect(() => {});
+  if (!enabled) return null;  // OK
+}
+```
+
+2. **PATRÓN CANÓNICO de detección móvil es OBLIGATORIO**
+3. **NUNCA pasar deviceView || 'desktop'** - Pasar como está
+4. **INCLUIR resize listener** cuando deviceView es undefined
 
 ### ⚡ RENDIMIENTO Y EJECUCIÓN:
 1. **SIEMPRE usar PowerShell** para comandos npm y dotnet
@@ -852,11 +905,38 @@ backgroundColor: colorScheme?.background?.primary
 if (config.enabled === false && !isEditor) return null;
 ```
 
-### Error 7: TypeScript errors
+### Error 7: Vista móvil no funciona o es inconsistente
+**Síntoma:** Móvil se ve diferente en editor vs preview real
+**Causa:** No usar el patrón canónico de detección móvil
+**Solución:** Implementar el patrón canónico completo:
+```typescript
+// ✅ CORRECTO - Patrón canónico con fallback y resize
+const [isMobile, setIsMobile] = useState<boolean>(() => {
+  if (deviceView !== undefined) return deviceView === 'mobile';
+  if (typeof window !== 'undefined') return window.innerWidth < 768;
+  return false;
+});
+
+useEffect(() => {
+  if (deviceView !== undefined) {
+    setIsMobile(deviceView === 'mobile');
+    return;
+  }
+  const onResize = () => setIsMobile(window.innerWidth < 768);
+  onResize();
+  window.addEventListener('resize', onResize);
+  return () => window.removeEventListener('resize', onResize);
+}, [deviceView]);
+
+// ❌ INCORRECTO - Sin fallback ni resize
+const isMobile = deviceView === 'mobile';
+```
+
+### Error 8: TypeScript errors
 **Síntoma:** Errores de compilación
 **Solución:** Ejecutar `npm run type-check` y corregir tipos
 
-### Error 8: Upload de imágenes/videos no funciona
+### Error 9: Upload de imágenes/videos no funciona
 **Síntoma:** Click en botón upload pero no pasa nada
 **Solución:** Verificar implementación de handlers:
 ```typescript

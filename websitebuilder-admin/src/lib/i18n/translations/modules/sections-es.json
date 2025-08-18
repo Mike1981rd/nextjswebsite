@@ -112,7 +112,18 @@
         "faqs": "Preguntas",
         "layout": "Diseño",
         "expandFirst": "Expandir Primera",
-        "showSearch": "Mostrar Búsqueda"
+        "showSearch": "Mostrar Búsqueda",
+        "headingSize": "Tamaño del título",
+        "bodySize": "Tamaño del cuerpo",
+        "headingWeight": "Grosor del título",
+        "bodyWeight": "Grosor del cuerpo",
+        "colorTabs": "Color de pestañas",
+        "colorBackground": "Color de fondo",
+        "width": "Ancho",
+        "buttonLabel": "Texto del botón",
+        "buttonLink": "Enlace del botón",
+        "buttonStyle": "Estilo del botón",
+        "collapserStyle": "Estilo del colapsador"
       }
     },
     "videos": {

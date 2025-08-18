@@ -8,6 +8,7 @@ import PreviewMulticolumns from './PreviewMulticolumns';
 import PreviewGallery from './PreviewGallery';
 import PreviewImageWithText from '../editor/modules/ImageWithText/PreviewImageWithText';
 import PreviewFeaturedCollection from './PreviewFeaturedCollection';
+import PreviewFAQ from './PreviewFAQ';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -43,6 +44,15 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
             const parsedSections = typeof page.sections === 'string' 
               ? JSON.parse(page.sections) 
               : page.sections;
+            
+            // Debug FAQ sections
+            const faqSections = parsedSections.filter((s: any) => 
+              s.type === 'faq' || s.type === 'FAQ' || s.sectionType === 'faq' || s.sectionType === 'FAQ'
+            );
+            if (faqSections.length > 0) {
+              console.log('[DEBUG] FAQ sections loaded from API:', faqSections);
+            }
+            
             setSections(parsedSections);
           }
         } else {
@@ -94,12 +104,25 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     if (t === 'Gallery' || t === 'gallery') return 'gallery';
     if (t === 'ImageWithText' || t === 'image_with_text') return 'image_with_text';
     if (t === 'FeaturedCollection' || t === 'featured_collection') return 'featured_collection';
+    if (t === 'FAQ' || t === 'faq') return 'faq';
     return t;
   };
 
   // Helper: extract a config object regardless of casing/shape
   const getSectionConfig = (section: any): any => {
     const raw = section?.config ?? section?.settings ?? section?.Config;
+    
+    // Debug for FAQ sections
+    if (section?.type === 'faq' || section?.sectionType === 'FAQ') {
+      console.log('[DEBUG] getSectionConfig for FAQ:', {
+        raw,
+        hasConfig: !!section?.config,
+        hasSettings: !!section?.settings,
+        hasCapitalConfig: !!section?.Config,
+        section
+      });
+    }
+    
     if (!raw) return undefined;
     try {
       return typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -204,6 +227,26 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                   deviceView={deviceView}
                   isEditor={false}
                 />
+              )}
+              
+              {/* FAQ (unified preview component) */}
+              {getSectionType(section) === 'faq' && (
+                (() => {
+                  const faqConfig = getSectionConfig(section);
+                  console.log('[DEBUG] FAQ section rendering:', {
+                    sectionType: getSectionType(section),
+                    config: faqConfig,
+                    rawSection: section
+                  });
+                  return (
+                    <PreviewFAQ 
+                      config={faqConfig} 
+                      theme={theme}
+                      deviceView={deviceView}
+                      isEditor={false}
+                    />
+                  );
+                })()
               )}
               
               {/* Add more section types as they are implemented */}

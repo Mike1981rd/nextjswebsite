@@ -32,6 +32,7 @@ import SlideshowChildren from './modules/Slideshow/SlideshowChildren';
 import MulticolumnsChildren from './modules/Multicolumns/MulticolumnsChildren';
 import GalleryChildren from './modules/Gallery/GalleryChildren';
 import ImageWithTextChildren from './modules/ImageWithText/ImageWithTextChildren';
+import FAQChildren from './modules/FAQ/FAQChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -171,6 +172,15 @@ export function EditorSidebarWithDnD() {
         settings: parentSection?.settings || {},
         sortOrder: 0
       } as any;
+    } else if (parentSection?.type === SectionType.FAQ) {
+      selectedSection = {
+        id: selectedSectionId,
+        type: 'FAQ_ITEM' as any,
+        name: 'FAQ Item',
+        visible: true,
+        settings: parentSection?.settings || {},
+        sortOrder: 0
+      } as any;
     }
   }
 
@@ -305,6 +315,14 @@ export function EditorSidebarWithDnD() {
                               {/* ImageWithText Children - Show media items */}
                               {section.type === SectionType.IMAGE_WITH_TEXT && section.visible && (
                                 <ImageWithTextChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+                              
+                              {/* FAQ Children - Show FAQ items */}
+                              {section.type === SectionType.FAQ && section.visible && (
+                                <FAQChildren 
                                   section={section}
                                   groupId={group.id}
                                 />

@@ -19,6 +19,7 @@ import PreviewMulticolumns from '@/components/preview/PreviewMulticolumns';
 import PreviewGallery from '@/components/preview/PreviewGallery';
 import PreviewImageWithText from './modules/ImageWithText/PreviewImageWithText';
 import PreviewFeaturedCollection from '@/components/preview/PreviewFeaturedCollection';
+import PreviewFAQ from '@/components/preview/PreviewFAQ';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -560,7 +561,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
       case SectionType.IMAGE_WITH_TEXT:
         return (
           <PreviewImageWithText
-            config={section.settings}
+            config={section.settings as any}
             isEditor={true}
           />
         );
@@ -569,6 +570,21 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewFeaturedCollection
             config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+
+      case SectionType.FAQ:
+        // Ensure config has items array
+        const faqConfig = section.settings || {};
+        if (!faqConfig.items) {
+          faqConfig.items = [];
+        }
+        return (
+          <PreviewFAQ
+            config={faqConfig}
             theme={themeConfig}
             deviceView={deviceView}
             isEditor={true}

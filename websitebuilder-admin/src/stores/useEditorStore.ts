@@ -320,13 +320,39 @@ export const useEditorStore = create<EditorStore>()(
             // Also try to save to backend (this might fail with mock page IDs)
             const templateSections = state.sections.template
               .sort((a, b) => a.sortOrder - b.sortOrder)
-              .map(s => ({
-                type: s.type,
-                sortOrder: s.sortOrder,
-                visible: s.visible,
-                name: s.name,
-                settings: s.settings
-              }));
+              .map(s => {
+                // Debug FAQ sections
+                if (s.type === 'faq' || s.type === 'FAQ') {
+                  console.log('[DEBUG] Saving FAQ section:', {
+                    type: s.type,
+                    name: s.name,
+                    settings: s.settings
+                  });
+                }
+                // Map snake_case to PascalCase for backend
+                const typeMapping: { [key: string]: string } = {
+                  'announcement_bar': 'AnnouncementBar',
+                  'header': 'Header',
+                  'image_banner': 'ImageBanner',
+                  'slideshow': 'Slideshow',
+                  'multicolumns': 'Multicolumns',
+                  'image_with_text': 'ImageWithText',
+                  'gallery': 'Gallery',
+                  'featured_collection': 'FeaturedCollection',
+                  'faq': 'FAQ',
+                  'footer': 'Footer'
+                };
+                
+                return {
+                  type: s.type,
+                  sectionType: typeMapping[s.type] || s.type, // Use PascalCase for backend
+                  sortOrder: s.sortOrder,
+                  visible: s.visible,
+                  name: s.name,
+                  settings: s.settings,
+                  config: s.settings // Backend might use 'config' instead of 'settings'
+                };
+              });
 
             console.log('[DEBUG] Attempting to save to backend:', {
               pageId: state.selectedPageId,

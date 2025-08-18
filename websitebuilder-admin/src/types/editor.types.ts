@@ -355,7 +355,24 @@ export const SECTION_CONFIGS: Record<SectionType, SectionConfig> = {
     icon: 'help-circle',
     category: 'template',
     defaultSettings: {
-      questions: []
+      enabled: true,
+      colorScheme: '1',
+      colorBackground: false,
+      colorTabs: 'categories',
+      width: 'page',
+      layout: 'tabs_bottom',
+      expandFirstTab: false,
+      heading: 'Preguntas Frecuentes',
+      body: '',
+      headingSize: 'heading_3',
+      bodySize: 'body_3',
+      headingWeight: 'bold',
+      bodyWeight: 'normal',
+      collapserStyle: 'plus_minus',
+      addSidePaddings: false,
+      topPadding: 96,
+      bottomPadding: 96,
+      items: []
     }
   },
   [SectionType.VIDEOS]: {
