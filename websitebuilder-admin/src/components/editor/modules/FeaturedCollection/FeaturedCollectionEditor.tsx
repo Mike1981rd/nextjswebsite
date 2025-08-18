@@ -25,15 +25,14 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
   const section = Object.values(sections).flat().find(s => s.id === sectionId);
   
   const [localConfig, setLocalConfig] = useState<FeaturedCollectionConfig>(() => {
-    const config = section?.settings || getDefaultFeaturedCollectionConfig();
+    const cfg = (section?.settings ?? {}) as Partial<FeaturedCollectionConfig>;
+    const merged = { ...getDefaultFeaturedCollectionConfig(), ...cfg } as FeaturedCollectionConfig;
     // Ensure arrays are initialized
-    return {
-      ...config,
-      selectedCollections: config.selectedCollections || [],
-      selectedProducts: config.selectedProducts || [],
-      selectedRooms: config.selectedRooms || [],
-      activeType: config.activeType || null
-    };
+    merged.selectedCollections = merged.selectedCollections || [];
+    merged.selectedProducts = merged.selectedProducts || [];
+    merged.selectedRooms = merged.selectedRooms || [];
+    merged.activeType = merged.activeType || null;
+    return merged;
   });
 
   const [expandedSections, setExpandedSections] = useState({
@@ -52,17 +51,14 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
   useEffect(() => {
     const currentSection = Object.values(sections).flat().find(s => s.id === sectionId);
     if (currentSection?.settings) {
-      const newSettings = currentSection.settings;
-      // Ensure arrays are always defined
-      const safeSettings = {
-        ...newSettings,
-        selectedCollections: newSettings.selectedCollections || [],
-        selectedProducts: newSettings.selectedProducts || [],
-        selectedRooms: newSettings.selectedRooms || [],
-        activeType: newSettings.activeType || null
-      };
-      if (JSON.stringify(safeSettings) !== JSON.stringify(localConfig)) {
-        setLocalConfig(safeSettings);
+      const cfg = currentSection.settings as Partial<FeaturedCollectionConfig>;
+      const safe = { ...getDefaultFeaturedCollectionConfig(), ...cfg } as FeaturedCollectionConfig;
+      safe.selectedCollections = safe.selectedCollections || [];
+      safe.selectedProducts = safe.selectedProducts || [];
+      safe.selectedRooms = safe.selectedRooms || [];
+      safe.activeType = safe.activeType || null;
+      if (JSON.stringify(safe) !== JSON.stringify(localConfig)) {
+        setLocalConfig(safe);
       }
     }
   }, [sectionId, sections]);

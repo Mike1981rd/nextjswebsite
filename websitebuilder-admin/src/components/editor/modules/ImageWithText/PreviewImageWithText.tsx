@@ -49,7 +49,7 @@ export default function PreviewImageWithText({ config, isEditor = false, deviceV
   }, [deviceView]);
 
   // Theme colors
-  const colorScheme = themeConfig?.colorSchemes?.schemes?.[parseInt(String(config.colorScheme)) - 1] ?? {};
+  const colorScheme = (themeConfig?.colorSchemes?.schemes?.[parseInt(String(config.colorScheme)) - 1] ?? {}) as { background?: string; text?: string };
   const background = colorScheme.background || '#ffffff';
   const textColor = colorScheme.text || '#000000';
 
@@ -79,7 +79,7 @@ export default function PreviewImageWithText({ config, isEditor = false, deviceV
     : {};
 
   const visibleItems: ImageWithTextItem[] = (config.items || []).filter((i) => i.visible);
-  const IconsMap = Icons as Record<string, React.ComponentType<any>>;
+  const IconsMap = (Icons as unknown) as Record<string, React.ComponentType<any>>;
   const IconComponent = config.icon ? IconsMap[config.icon] ?? null : null;
 
   const getContainerClasses = () => {

@@ -133,7 +133,7 @@ export default function ItemSelector({
           console.log('ItemSelector - First item:', itemsArray[0]);
           
           // Map items to ensure consistent structure
-          const mappedItems = itemsArray.map(item => ({
+          const mappedItems = itemsArray.map((item: any) => ({
             id: item.id || item.Id || item.ID,
             name: item.name || item.Name || item.title || item.Title || 'Sin nombre',
             price: item.price || item.Price || item.basePrice || item.BasePrice,
@@ -259,7 +259,7 @@ export default function ItemSelector({
               <div className="text-center py-4 text-sm text-gray-500">Cargando...</div>
             ) : Array.isArray(filteredItems) && filteredItems.length > 0 ? (
               <div className="space-y-1">
-                {filteredItems.map((item) => (
+                {filteredItems.map((item: Item) => (
                   <label
                     key={item.id}
                     className="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded cursor-pointer"

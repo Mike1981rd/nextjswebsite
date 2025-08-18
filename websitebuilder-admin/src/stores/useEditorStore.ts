@@ -322,7 +322,7 @@ export const useEditorStore = create<EditorStore>()(
               .sort((a, b) => a.sortOrder - b.sortOrder)
               .map(s => {
                 // Debug FAQ sections
-                if (s.type === 'faq' || s.type === 'FAQ') {
+                if (s.type === SectionType.FAQ) {
                   console.log('[DEBUG] Saving FAQ section:', {
                     type: s.type,
                     name: s.name,

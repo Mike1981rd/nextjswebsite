@@ -23,12 +23,10 @@ export default function FAQEditor({ sectionId }: FAQEditorProps) {
   const section = Object.values(sections).flat().find(s => s.id === sectionId);
   
   const [localConfig, setLocalConfig] = useState<FAQConfig>(() => {
-    const config = section?.settings || getDefaultFAQConfig();
-    // Ensure items array exists
-    if (!config.items) {
-      config.items = [];
-    }
-    return config;
+    const cfg = (section?.settings ?? {}) as Partial<FAQConfig>;
+    const merged = { ...getDefaultFAQConfig(), ...cfg } as FAQConfig;
+    if (!merged.items) merged.items = [];
+    return merged;
   });
 
   const [expandedSections, setExpandedSections] = useState({
@@ -45,13 +43,11 @@ export default function FAQEditor({ sectionId }: FAQEditorProps) {
   useEffect(() => {
     const currentSection = Object.values(sections).flat().find(s => s.id === sectionId);
     if (currentSection?.settings) {
-      const newSettings = currentSection.settings;
-      // Ensure items array exists
-      if (!newSettings.items) {
-        newSettings.items = [];
-      }
-      if (JSON.stringify(newSettings) !== JSON.stringify(localConfig)) {
-        setLocalConfig(newSettings);
+      const cfg = currentSection.settings as Partial<FAQConfig>;
+      const safe = { ...getDefaultFAQConfig(), ...cfg } as FAQConfig;
+      if (!safe.items) safe.items = [];
+      if (JSON.stringify(safe) !== JSON.stringify(localConfig)) {
+        setLocalConfig(safe);
       }
     }
   }, [sectionId, sections]);

@@ -8,12 +8,12 @@
 'use client';
 
 import React from 'react';
-import { Controller, Control } from 'react-hook-form';
+import { Controller, Control, FieldValues } from 'react-hook-form';
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, Check } from 'lucide-react';
 import { currencies } from '@/components/ui/CountryFlag';
 
-export interface ControlledCurrencySelectProps<FormValues> {
+export interface ControlledCurrencySelectProps<FormValues extends FieldValues = FieldValues> {
   name: keyof FormValues & string;
   control: Control<FormValues>;
   label?: string;
@@ -22,7 +22,7 @@ export interface ControlledCurrencySelectProps<FormValues> {
   inputFocusStyle?: React.CSSProperties;
 }
 
-export function ControlledCurrencySelect<FormValues>({
+export function ControlledCurrencySelect<FormValues extends FieldValues = FieldValues>({
   name,
   control,
   label,
@@ -35,9 +35,9 @@ export function ControlledCurrencySelect<FormValues>({
       {label && (
         <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{label}</label>
       )}
-      <Controller
-        name={name}
-        control={control}
+      <Controller<FormValues>
+        name={name as any}
+        control={control as Control<FormValues>}
         render={({ field }) => {
           const currentValue = (field.value as string) || 'USD';
           const listedCodes = new Set<string>([

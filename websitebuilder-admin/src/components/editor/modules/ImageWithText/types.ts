@@ -100,4 +100,4 @@ export function getDefaultImageWithTextConfig(): ImageWithTextConfig {
 }
 
 // Tipo de sección para el editor
-export const ImageWithTextSectionType = SectionType.IMAGEWITHTEXT;
+export const ImageWithTextSectionType = SectionType.IMAGE_WITH_TEXT;

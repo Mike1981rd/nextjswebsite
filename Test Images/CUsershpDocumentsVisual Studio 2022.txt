@@ -1,0 +1,67 @@
+C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI\websitebuilder-admin>npx tsc --noEmit --pretty false
+src/components/editor/modules/FAQ/FAQEditor.tsx(25,61): error TS2345: Argument of type '() => Record<string, any> | FAQConfig' is not assignable to parameter of type 'FAQConfig | (() => FAQConfig)'.
+  Type '() => Record<string, any> | FAQConfig' is not assignable to type '() => FAQConfig'.
+    Type 'Record<string, any> | FAQConfig' is not assignable to type 'FAQConfig'.
+      Type 'Record<string, any>' is missing the following properties from type 'FAQConfig': enabled, colorScheme, colorBackground, colorTabs, and 9 more.
+src/components/editor/modules/FAQ/FAQEditor.tsx(54,24): error TS2345: Argument of type 'Record<string, any>' is not assignable to parameter of type 'SetStateAction<FAQConfig>'.
+  Type 'Record<string, any>' is missing the following properties from type 'FAQConfig': enabled, colorScheme, colorBackground, colorTabs, and 9 more.
+src/components/editor/modules/FeaturedCollection/FeaturedCollectionEditor.tsx(27,76): error TS2345: Argument of type '() => { selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; } | { selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; enabled: boolean; ... 46 more ...; headingSpacing?: number; }' is not assignable to parameter of type 'FeaturedCollectionConfig | (() => FeaturedCollectionConfig)'.
+  Type '() => { selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; } | { selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; enabled: boolean; ... 46 more ...; headingSpacing?: number; }' is not assignable to type '() => FeaturedCollectionConfig'.
+    Type '{ selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; } | { selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; enabled: boolean; ... 46 more ...; headingSpacing?: number | undefined; }' is not assignable to type 'FeaturedCollectionConfig'.
+      Type '{ selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; }' is missing the following properties from type 'FeaturedCollectionConfig': enabled, width, desktopLayout, heading, and 17 more.
+src/components/editor/modules/FeaturedCollection/FeaturedCollectionEditor.tsx(65,24): error TS2345: Argument of type '{ selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; }' is not assignable to parameter of type 'SetStateAction<FeaturedCollectionConfig>'.
+  Type '{ selectedCollections: any; selectedProducts: any; selectedRooms: any; activeType: any; }' is missing the following properties from type 'FeaturedCollectionConfig': enabled, width, desktopLayout, heading, and 17 more.
+src/components/editor/modules/FeaturedCollection/ItemSelector.tsx(136,46): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/editor/modules/ImageWithText/PreviewImageWithText.tsx(53,34): error TS2339: Property 'background' does not exist on type '{}'.
+src/components/editor/modules/ImageWithText/PreviewImageWithText.tsx(54,33): error TS2339: Property 'text' does not exist on type '{}'.
+src/components/editor/modules/ImageWithText/PreviewImageWithText.tsx(82,20): error TS2352: Conversion of type 'typeof import("C:/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI/websitebuilder-admin/node_modules/lucide-react/dist/lucide-react")' to type 'Record<string, ComponentType<any>>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'createLucideIcon' is incompatible with index signature.
+    Type '(iconName: string, iconNode: IconNode) => ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>' is not comparable to type 'ComponentType<any>'.
+      Type '(iconName: string, iconNode: IconNode) => ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>' is not comparable to type 'FunctionComponent<any>'.
+        Type 'ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>' is not comparable to type 'ReactNode'.
+src/components/editor/modules/ImageWithText/types.ts(103,53): error TS2551: Property 'IMAGEWITHTEXT' does not exist on type 'typeof SectionType'. Did you mean 'IMAGE_WITH_TEXT'?
+src/components/empresa/fields/ControlledCountrySelect.tsx(18,20): error TS2344: Type 'FormValues' does not satisfy the constraint 'FieldValues'.
+src/components/empresa/fields/ControlledCountrySelect.tsx(40,9): error TS2322: Type 'Control<FormValues>' is not assignable to type 'Control<FieldValues, any, FormValues>'.
+  The types of '_subjects.state' are incompatible between these types.
+    Type 'FormStateSubjectRef<FormValues>' is not assignable to type 'FormStateSubjectRef<FieldValues>'.
+      Type 'FormStateSubjectRef<FormValues>' is not assignable to type '{ readonly observers: Observer<Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }>[]; subscribe: (value: Observer<...>) => Subscription; unsubscribe: Noop; }'.
+        Types of property 'observers' are incompatible.
+          Type 'Observer<Partial<FormState<FormValues>> & { name?: string | undefined; values?: FormValues | undefined; type?: EventType | undefined; }>[]' is not assignable to type 'Observer<Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }>[]'.
+            Type 'Observer<Partial<FormState<FormValues>> & { name?: string | undefined; values?: FormValues | undefined; type?: EventType | undefined; }>' is not assignable to type 'Observer<Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }>'.
+              Type 'Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }' is not assignable to type 'Partial<FormState<FormValues>> & { name?: string | undefined; values?: FormValues | undefined; type?: EventType | undefined; }'.
+                Type 'Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }' is not assignable to type 'Partial<FormState<FormValues>>'.
+                  Types of property 'defaultValues' are incompatible.
+                    Type 'Readonly<{ [x: string]: any; }> | undefined' is not assignable to type 'Readonly<DeepPartial<FormValues>> | undefined'.
+                      Type 'Readonly<{ [x: string]: any; }>' is not assignable to type 'Readonly<DeepPartial<FormValues>>'.
+src/components/empresa/fields/ControlledCurrencySelect.tsx(18,20): error TS2344: Type 'FormValues' does not satisfy the constraint 'FieldValues'.
+src/components/empresa/fields/ControlledCurrencySelect.tsx(40,9): error TS2322: Type 'Control<FormValues>' is not assignable to type 'Control<FieldValues, any, FormValues>'.
+  The types of '_subjects.state' are incompatible between these types.
+    Type 'FormStateSubjectRef<FormValues>' is not assignable to type 'FormStateSubjectRef<FieldValues>'.
+      Type 'FormStateSubjectRef<FormValues>' is not assignable to type '{ readonly observers: Observer<Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }>[]; subscribe: (value: Observer<...>) => Subscription; unsubscribe: Noop; }'.
+        Types of property 'observers' are incompatible.
+          Type 'Observer<Partial<FormState<FormValues>> & { name?: string | undefined; values?: FormValues | undefined; type?: EventType | undefined; }>[]' is not assignable to type 'Observer<Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }>[]'.
+            Type 'Observer<Partial<FormState<FormValues>> & { name?: string | undefined; values?: FormValues | undefined; type?: EventType | undefined; }>' is not assignable to type 'Observer<Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }>'.
+              Type 'Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }' is not assignable to type 'Partial<FormState<FormValues>> & { name?: string | undefined; values?: FormValues | undefined; type?: EventType | undefined; }'.
+                Type 'Partial<FormState<FieldValues>> & { name?: string | undefined; values?: FieldValues | undefined; type?: EventType | undefined; }' is not assignable to type 'Partial<FormState<FormValues>>'.
+                  Types of property 'defaultValues' are incompatible.
+                    Type 'Readonly<{ [x: string]: any; }> | undefined' is not assignable to type 'Readonly<DeepPartial<FormValues>> | undefined'.
+                      Type 'Readonly<{ [x: string]: any; }>' is not assignable to type 'Readonly<DeepPartial<FormValues>>'.
+src/components/preview/PreviewContent.tsx(197,19): error TS2322: Type '"desktop" | "mobile" | undefined' is not assignable to type '"desktop" | "mobile" | "tablet"'.
+  Type 'undefined' is not assignable to type '"desktop" | "mobile" | "tablet"'.
+src/components/preview/PreviewFeaturedCollection.tsx(391,37): error TS2339: Property 'headings' does not exist on type '{}'.
+src/components/preview/PreviewFeaturedCollection.tsx(453,14): error TS2367: This comparison appears to be unintentional because the types '"carousel" | "oneColumn" | "twoColumn" | undefined' and '"grid"' have no overlap.
+src/components/preview/PreviewFeaturedCollection.tsx(536,75): error TS2339: Property 'secondary' does not exist on type 'ColorScheme | { background: string; text: string; foreground: string; border: string; link: string; solidButton: string; solidButtonText: string; outlineButton: string; outlineButtonText: string; imageOverlay: string; primary: string; secondary: string; }'.
+  Property 'secondary' does not exist on type 'ColorScheme'.
+src/components/preview/PreviewFeaturedCollection.tsx(633,69): error TS2339: Property 'secondary' does not exist on type 'ColorScheme | { background: string; text: string; foreground: string; border: string; link: string; solidButton: string; solidButtonText: string; outlineButton: string; outlineButtonText: string; imageOverlay: string; primary: string; secondary: string; }'.
+  Property 'secondary' does not exist on type 'ColorScheme'.
+src/components/preview/PreviewFeaturedCollection.tsx(640,69): error TS2339: Property 'secondary' does not exist on type 'ColorScheme | { background: string; text: string; foreground: string; border: string; link: string; solidButton: string; solidButtonText: string; outlineButton: string; outlineButtonText: string; imageOverlay: string; primary: string; secondary: string; }'.
+  Property 'secondary' does not exist on type 'ColorScheme'.
+src/components/preview/PreviewFeaturedCollection.tsx(671,48): error TS2339: Property 'secondary' does not exist on type 'ColorScheme | { background: string; text: string; foreground: string; border: string; link: string; solidButton: string; solidButtonText: string; outlineButton: string; outlineButtonText: string; imageOverlay: string; primary: string; secondary: string; }'.
+  Property 'secondary' does not exist on type 'ColorScheme'.
+src/components/preview/PreviewFeaturedCollection.tsx(680,48): error TS2339: Property 'secondary' does not exist on type 'ColorScheme | { background: string; text: string; foreground: string; border: string; link: string; solidButton: string; solidButtonText: string; outlineButton: string; outlineButtonText: string; imageOverlay: string; primary: string; secondary: string; }'.
+  Property 'secondary' does not exist on type 'ColorScheme'.
+src/components/preview/PreviewFeaturedCollection.tsx(704,50): error TS2339: Property 'secondary' does not exist on type 'ColorScheme | { background: string; text: string; foreground: string; border: string; link: string; solidButton: string; solidButtonText: string; outlineButton: string; outlineButtonText: string; imageOverlay: string; primary: string; secondary: string; }'.
+  Property 'secondary' does not exist on type 'ColorScheme'.
+src/components/preview/PreviewFeaturedCollection.tsx(840,50): error TS2339: Property 'primary' does not exist on type 'ColorScheme | { background: string; text: string; foreground: string; border: string; link: string; solidButton: string; solidButtonText: string; outlineButton: string; outlineButtonText: string; imageOverlay: string; primary: string; secondary: string; }'.
+  Property 'primary' does not exist on type 'ColorScheme'.
+src/stores/useEditorStore.ts(325,41): error TS2367: This comparison appears to be unintentional because the types 'SectionType.ANNOUNCEMENT_BAR | SectionType.HEADER | SectionType.IMAGE_BANNER | SectionType.CART_DRAWER | SectionType.SEARCH_DRAWER | SectionType.SLIDESHOW | SectionType.MULTICOLUMNS | ... 11 more ... | SectionType.PRODUCT_INFORMATION' and '"FAQ"' have no overlap.

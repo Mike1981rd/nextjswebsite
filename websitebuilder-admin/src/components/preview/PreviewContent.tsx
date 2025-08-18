@@ -15,10 +15,11 @@ interface PreviewContentProps {
   handle: string;
   theme: any;
   companyId?: number;
-  deviceView?: 'desktop' | 'mobile';
+  deviceView?: 'desktop' | 'mobile' | 'tablet';
 }
 
 export default function PreviewContent({ pageType, handle, theme, companyId, deviceView }: PreviewContentProps) {
+  const normalizedDeviceView: 'desktop' | 'mobile' = deviceView === 'mobile' ? 'mobile' : 'desktop';
   const [sections, setSections] = useState<Section[]>([]);
   const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -175,7 +176,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewImageBanner 
                   config={getSectionConfig(section)} 
                   isEditor={false}
-                  deviceView={deviceView}
+                  deviceView={normalizedDeviceView}
                 />
               )}
               
@@ -185,7 +186,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                   settings={getSectionConfig(section)} 
                   theme={theme}
                   isEditor={false}
-                  deviceView={deviceView}
+                  deviceView={normalizedDeviceView}
                 />
               )}
               
@@ -194,7 +195,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewMulticolumns 
                   config={getSectionConfig(section)} 
                   theme={theme}
-                  deviceView={deviceView}
+                  deviceView={normalizedDeviceView}
                   isEditor={false}
                 />
               )}
@@ -204,7 +205,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewGallery 
                   config={getSectionConfig(section)} 
                   theme={theme}
-                  deviceView={deviceView}
+                  deviceView={normalizedDeviceView}
                   isEditor={false}
                 />
               )}
@@ -214,19 +215,20 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewImageWithText 
                   config={getSectionConfig(section)} 
                   theme={theme}
-                  deviceView={deviceView}
+                  deviceView={normalizedDeviceView}
                   isEditor={false}
                 />
               )}
               
               {/* Featured Collection (unified preview component) */}
               {getSectionType(section) === 'featured_collection' && (
-                <PreviewFeaturedCollection 
-                  config={getSectionConfig(section)} 
-                  theme={theme}
-                  deviceView={deviceView}
-                  isEditor={false}
-                />
+                    <PreviewFeaturedCollection 
+                      config={getSectionConfig(section)} 
+                      theme={theme}
+                      deviceView={normalizedDeviceView}
+                      isEditor={false}
+                    />
+
               )}
               
               {/* FAQ (unified preview component) */}
@@ -242,9 +244,10 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                     <PreviewFAQ 
                       config={faqConfig} 
                       theme={theme}
-                      deviceView={deviceView}
+                      deviceView={normalizedDeviceView}
                       isEditor={false}
                     />
+
                   );
                 })()
               )}

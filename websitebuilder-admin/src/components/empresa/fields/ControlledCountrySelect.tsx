@@ -8,12 +8,12 @@
 'use client';
 
 import React from 'react';
-import { Controller, Control } from 'react-hook-form';
+import { Controller, Control, FieldValues } from 'react-hook-form';
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, Check } from 'lucide-react';
 import { CountryFlag, countries } from '@/components/ui/CountryFlag';
 
-export interface ControlledCountrySelectProps<FormValues> {
+export interface ControlledCountrySelectProps<FormValues extends FieldValues = FieldValues> {
   name: keyof FormValues & string;
   control: Control<FormValues>;
   label?: string;
@@ -22,7 +22,7 @@ export interface ControlledCountrySelectProps<FormValues> {
   inputFocusStyle?: React.CSSProperties;
 }
 
-export function ControlledCountrySelect<FormValues>({
+export function ControlledCountrySelect<FormValues extends FieldValues = FieldValues>({
   name,
   control,
   label,
@@ -35,9 +35,9 @@ export function ControlledCountrySelect<FormValues>({
       {label && (
         <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{label}</label>
       )}
-      <Controller
-        name={name}
-        control={control}
+      <Controller<FormValues>
+        name={name as any}
+        control={control as Control<FormValues>}
         render={({ field }) => {
           const currentValue = (field.value as string) || '';
           const listedCodes = new Set<string>([

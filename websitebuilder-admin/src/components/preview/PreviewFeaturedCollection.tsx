@@ -371,7 +371,7 @@ export default function PreviewFeaturedCollection({
   
   // Get color scheme with proper structure
   const colorSchemeIndex = finalConfig.colorScheme ? parseInt(finalConfig.colorScheme) - 1 : 0;
-  const colorScheme = themeConfig?.colorSchemes?.schemes?.[colorSchemeIndex] || {
+  const colorScheme: any = themeConfig?.colorSchemes?.schemes?.[colorSchemeIndex] || {
     background: '#ffffff',
     text: '#000000',
     foreground: '#000000',
@@ -387,8 +387,8 @@ export default function PreviewFeaturedCollection({
   };
   
   // Get typography
-  const typography = themeConfig?.typography || {};
-  const headingStyles = typography?.headings || {};
+  const typography: any = themeConfig?.typography || {};
+  const headingStyles: any = typography?.headings || {};
   
   // Generate heading typography styles
   const getHeadingStyles = (): React.CSSProperties => {
@@ -450,7 +450,7 @@ export default function PreviewFeaturedCollection({
   // Calculate columns
   const getGridCols = () => {
     if (isMobile) {
-      return finalConfig.mobileLayout === 'grid' ? 'grid-cols-2' : 'grid-cols-1';
+      return finalConfig.mobileLayout === 'twoColumn' ? 'grid-cols-2' : 'grid-cols-1';
     }
     switch(finalConfig.desktopColumns) {
       case 1: return 'grid-cols-1';
@@ -533,7 +533,7 @@ export default function PreviewFeaturedCollection({
           borderTopRightRadius: `${finalConfig.edgeRounding ?? 12}px`,
           borderBottomLeftRadius: (finalConfig.contentPosition === 'bottom' || isMobile) ? 0 : `${finalConfig.edgeRounding ?? 12}px`,
           borderBottomRightRadius: (finalConfig.contentPosition === 'bottom' || isMobile) ? 0 : `${finalConfig.edgeRounding ?? 12}px`,
-          backgroundColor: finalConfig.colorCardBackground ? (colorScheme.secondary + '10') : undefined
+          backgroundColor: finalConfig.colorCardBackground ? ((colorScheme.secondary ?? '#666') + '10') : undefined
         }}
       >
         {/* Badge Container - Top Left */}
@@ -630,14 +630,14 @@ export default function PreviewFeaturedCollection({
           
           {/* Vendor */}
           {finalConfig.showVendor && item.vendor && !isMobile && (
-            <p className="text-xs mt-1" style={{ color: colorScheme.secondary }}>
+            <p className="text-xs mt-1" style={{ color: colorScheme.secondary ?? '#666' }}>
               {item.vendor}
             </p>
           )}
           
           {/* Color Count */}
           {finalConfig.showColorCount && item.colorCount && item.colorCount > 0 && !isMobile && (
-            <p className="text-xs mt-1" style={{ color: colorScheme.secondary }}>
+            <p className="text-xs mt-1" style={{ color: colorScheme.secondary ?? '#666' }}>
               {item.colorCount} {item.colorCount === 1 ? 'color' : 'colores'} disponibles
             </p>
           )}
@@ -668,7 +668,7 @@ export default function PreviewFeaturedCollection({
                 <span className={cn(
                   "ml-0.5",
                   isMobile ? "text-sm" : "text-xs"
-                )} style={{ color: colorScheme.secondary }}>
+                )} style={{ color: colorScheme.secondary ?? '#666' }}>
                   {item.rating}
                 </span>
               )}
@@ -677,7 +677,7 @@ export default function PreviewFeaturedCollection({
                 <span className={cn(
                   "ml-0.5",
                   isMobile ? "text-sm" : "text-xs"
-                )} style={{ color: colorScheme.secondary }}>
+                )} style={{ color: colorScheme.secondary ?? '#666' }}>
                   ({item.reviewCount || 0})
                 </span>
               )}
@@ -701,7 +701,7 @@ export default function PreviewFeaturedCollection({
                   <span className={cn(
                     "line-through whitespace-nowrap",
                     isMobile ? "text-base" : "text-sm"
-                  )} style={{ color: colorScheme.secondary, opacity: 0.7 }}>
+                  )} style={{ color: colorScheme.secondary ?? '#666', opacity: 0.7 }}>
                     ${formatPrice(item.originalPrice)}{finalConfig.showCurrencyCode ? ` ${currency}` : ''}
                   </span>
                 )}
@@ -837,7 +837,8 @@ export default function PreviewFeaturedCollection({
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-current" 
-               style={{ borderColor: colorScheme.primary }} />
+                style={{ borderColor: colorScheme.primary ?? '#000' }} />
+
         </div>
       ) : itemsToShow.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">

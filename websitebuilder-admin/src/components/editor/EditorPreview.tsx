@@ -440,7 +440,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewAnnouncementBar
             config={announcementConfig}
-            theme={themeConfig || undefined}
+            theme={themeConfig ?? null}
             pageType={selectedPageType as string}
             deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
@@ -571,7 +571,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           <PreviewFeaturedCollection
             config={section.settings}
             theme={themeConfig || undefined}
-            deviceView={deviceView}
+            deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
           />
         );
@@ -584,9 +584,9 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         }
         return (
           <PreviewFAQ
-            config={faqConfig}
+            config={faqConfig as any}
             theme={themeConfig || undefined}
-            deviceView={deviceView}
+            deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
           />
         );
