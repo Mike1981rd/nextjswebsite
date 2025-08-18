@@ -482,98 +482,106 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
               {/* Cards to Show */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Cards to show: {localConfig.cardsToShow}
+                  Cards to show: {localConfig.cardsToShow || 3}
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
                   min="1"
                   max="12"
-                  value={localConfig.cardsToShow}
+                  value={localConfig.cardsToShow || 3}
                   onChange={(e) => handleChange('cardsToShow', parseInt(e.target.value))}
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>1</span>
+                  <span>6</span>
+                  <span>12</span>
+                </div>
               </div>
 
               {/* Edge Rounding */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Edge rounding: {localConfig.edgeRounding || 8}px
+                  Edge rounding: {localConfig.edgeRounding || 12}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
                   min="0"
-                  max="20"
-                  step="2"
-                  value={localConfig.edgeRounding || 8}
+                  max="24"
+                  step="4"
+                  value={localConfig.edgeRounding || 12}
                   onChange={(e) => handleChange('edgeRounding', parseInt(e.target.value))}
                 />
-              </div>
-
-              {/* Card Size */}
-              <div>
-                <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Card size: {localConfig.cardSize || 100}%
-                </label>
-                <input
-                  type="range"
-                  className="w-full mt-1"
-                  min="50"
-                  max="150"
-                  step="5"
-                  value={localConfig.cardSize || 100}
-                  onChange={(e) => handleChange('cardSize', parseInt(e.target.value))}
-                />
-                <div className="text-xs text-gray-500 mt-1">
-                  Ajusta el tamaño visual de los cards (50% - 150%)
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Square</span>
+                  <span>Rounded</span>
+                  <span>Very rounded</span>
                 </div>
               </div>
 
               {/* Desktop Cards per Row */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Desktop cards per row: {localConfig.desktopColumns}
+                  Desktop cards per row: {localConfig.desktopColumns || 3}
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
                   min="1"
                   max="5"
-                  value={localConfig.desktopColumns}
+                  value={localConfig.desktopColumns || 3}
                   onChange={(e) => handleChange('desktopColumns', parseInt(e.target.value))}
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>1</span>
+                  <span>2</span>
+                  <span>3</span>
+                  <span>4</span>
+                  <span>5</span>
+                </div>
               </div>
 
               {/* Desktop Space Between Cards */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Desktop space between cards: {localConfig.desktopGap}px
+                  Desktop space between cards: {localConfig.desktopGap || 24}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
-                  min="0"
+                  min="8"
                   max="48"
-                  step="4"
-                  value={localConfig.desktopGap}
+                  step="8"
+                  value={localConfig.desktopGap || 24}
                   onChange={(e) => handleChange('desktopGap', parseInt(e.target.value))}
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Tight</span>
+                  <span>Normal</span>
+                  <span>Wide</span>
+                </div>
               </div>
 
               {/* Mobile Space Between Cards */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Mobile space between cards: {localConfig.mobileGap}px
+                  Mobile space between cards: {localConfig.mobileGap || 16}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
-                  min="0"
-                  max="48"
-                  step="4"
-                  value={localConfig.mobileGap}
+                  min="8"
+                  max="32"
+                  step="8"
+                  value={localConfig.mobileGap || 16}
                   onChange={(e) => handleChange('mobileGap', parseInt(e.target.value))}
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Tight</span>
+                  <span>Normal</span>
+                  <span>Wide</span>
+                </div>
               </div>
             </div>
           )}
@@ -708,10 +716,15 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
                   className="w-full mt-1"
                   min="0"
                   max="100"
-                  step="5"
+                  step="10"
                   value={localConfig.overlayOpacity || 15}
                   onChange={(e) => handleChange('overlayOpacity', parseInt(e.target.value))}
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0%</span>
+                  <span>50%</span>
+                  <span>100%</span>
+                </div>
                 <div className="text-xs text-gray-500 mt-1">
                   Only for 'on image' positions
                 </div>
@@ -753,20 +766,27 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
               </div>
 
               {/* Autoplay Speed */}
-              <div style={{ display: localConfig.autoplayMode && localConfig.autoplayMode !== 'none' ? 'block' : 'none' }}>
-                <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Autoplay speed: {localConfig.autoplaySpeed || 5}s
-                </label>
-                <input
-                  type="range"
-                  className="w-full mt-1"
-                  min="3"
-                  max="10"
-                  step="1"
-                  value={localConfig.autoplaySpeed || 5}
-                  onChange={(e) => handleChange('autoplaySpeed', parseInt(e.target.value))}
-                />
-              </div>
+              {localConfig.autoplayMode && localConfig.autoplayMode !== 'none' && (
+                <div>
+                  <label className="text-xs text-gray-600 dark:text-gray-400">
+                    Autoplay speed: {localConfig.autoplaySpeed || 5}s
+                  </label>
+                  <input
+                    type="range"
+                    className="w-full mt-1"
+                    min="3"
+                    max="10"
+                    step="1"
+                    value={localConfig.autoplaySpeed || 5}
+                    onChange={(e) => handleChange('autoplaySpeed', parseInt(e.target.value))}
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>3s</span>
+                    <span>6s</span>
+                    <span>10s</span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1046,33 +1066,43 @@ export default function FeaturedCollectionEditor({ sectionId }: FeaturedCollecti
               {/* Top Spacing */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Top spacing: {localConfig.topSpacing}px
+                  Top spacing: {localConfig.topSpacing || 40}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
                   min="0"
                   max="120"
-                  step="8"
-                  value={localConfig.topSpacing}
+                  step="20"
+                  value={localConfig.topSpacing || 40}
                   onChange={(e) => handleChange('topSpacing', parseInt(e.target.value))}
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>None</span>
+                  <span>Medium</span>
+                  <span>Large</span>
+                </div>
               </div>
 
               {/* Bottom Spacing */}
               <div>
                 <label className="text-xs text-gray-600 dark:text-gray-400">
-                  Bottom spacing: {localConfig.bottomSpacing}px
+                  Bottom spacing: {localConfig.bottomSpacing || 40}px
                 </label>
                 <input
                   type="range"
                   className="w-full mt-1"
                   min="0"
                   max="120"
-                  step="8"
-                  value={localConfig.bottomSpacing}
+                  step="20"
+                  value={localConfig.bottomSpacing || 40}
                   onChange={(e) => handleChange('bottomSpacing', parseInt(e.target.value))}
                 />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>None</span>
+                  <span>Medium</span>
+                  <span>Large</span>
+                </div>
               </div>
             </div>
           )}

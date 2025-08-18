@@ -107,7 +107,7 @@ export function getDefaultFeaturedCollectionConfig(): FeaturedCollectionConfig {
     desktopColumns: 3,
     desktopGap: 24,
     mobileGap: 16,
-    edgeRounding: 8,
+    edgeRounding: 12,
     autoplayMode: 'none',
     autoplaySpeed: 5,
     showArrowOnHover: true,

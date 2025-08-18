@@ -145,8 +145,8 @@ export default function PreviewFeaturedCollection({
   
   // Image aspect ratio classes
   const imageRatioClasses = {
-    default: 'aspect-[4/3]',
-    landscape: 'aspect-[4/3]',
+    default: 'aspect-[4/5]',
+    landscape: 'aspect-[16/10]',
     portrait: 'aspect-[3/4]',
     square: 'aspect-square',
   };
@@ -236,113 +236,126 @@ export default function PreviewFeaturedCollection({
             )}
           `}
           style={{
-            gap: isMobile ? `${config.mobileGap || 16}px` : `${config.desktopGap || 24}px`
+            gap: `${config.desktopGap || 24}px`,
+            rowGap: isMobile ? `${config.mobileGap || 20}px` : `${config.desktopGap || 32}px`
           }}
         >
           {mockItems.slice(0, config.cardsToShow || 3).map((item) => (
             <div 
               key={item.id} 
-              className="group relative overflow-hidden"
-              style={{
-                borderRadius: `${config.edgeRounding || 8}px`
-              }}
+              className="group relative flex flex-col h-full"
             >
-              {/* Card Background */}
-              {config.colorCardBackground && (
-                <div 
-                  className="absolute inset-0"
-                  style={{ backgroundColor: colorScheme.background?.subtle || '#f9fafb' }}
-                />
-              )}
-              
-              {/* Image Container */}
-              <div className="relative overflow-hidden">
-                <div 
-                  className={`${imageRatioClasses[config.imageRatio || 'landscape']} bg-gray-200 relative overflow-hidden`}
-                  style={{ borderRadius: `${config.edgeRounding || 8}px` }}
-                >
-                  {/* Placeholder image */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
-                  
-                  {/* Sale Badge */}
-                  {config.showSaleBadge && item.discount && (
-                    <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 text-xs font-semibold rounded">
-                      {item.discount}% OFF
-                    </div>
-                  )}
-                  
-                  {/* Sold Out Badge */}
-                  {config.showSoldOutBadge && !item.available && (
-                    <div className="absolute top-3 right-3 bg-gray-800 text-white px-2 py-1 text-xs font-semibold rounded">
-                      Sold Out
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Content */}
+              {/* Card wrapper with background */}
               <div 
-                className={`py-5 px-4 ${config.contentAlignment === 'left' ? 'text-left' : 'text-center'}`}
+                className="flex flex-col h-full overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
+                style={{
+                  borderRadius: `${config.edgeRounding || 12}px`,
+                  backgroundColor: config.colorCardBackground ? (colorScheme.background?.subtle || '#ffffff') : 'transparent',
+                  border: config.colorCardBackground ? '1px solid rgba(0,0,0,0.08)' : 'none'
+                }}
               >
-                {/* Title */}
-                <h3 className="font-medium text-xl mb-3">
-                  {item.title}
-                </h3>
-                
-                {/* Rating */}
-                {config.productRating && config.productRating !== 'none' && (
-                  <div className={`flex items-center gap-2 mb-3 ${config.contentAlignment === 'left' ? 'justify-start' : 'justify-center'}`}>
-                    {(config.productRating.includes('stars')) && renderStars(item.rating)}
-                    {config.productRating === 'average-rating-and-stars' && (
-                      <span className="text-sm text-gray-600">{item.rating}</span>
-                    )}
-                    {config.productRating === 'review-count-and-stars' && (
-                      <span className="text-sm text-gray-600">({item.reviewCount})</span>
-                    )}
-                  </div>
-                )}
-                
-                {/* Price */}
-                <div className={`flex items-center gap-3 mb-4 ${config.contentAlignment === 'left' ? 'justify-start' : 'justify-center'}`}>
-                  <span className="text-2xl font-bold">
-                    ${item.price.toFixed(2)} {config.showCurrencyCode && item.currency}
-                  </span>
-                  {item.comparePrice && (
-                    <span className="text-base text-gray-500 line-through">
-                      ${item.comparePrice.toFixed(2)} {config.showCurrencyCode && item.currency}
-                    </span>
-                  )}
-                  {config.showSaleBadgeNextToPrice && item.discount && (
-                    <span className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded font-medium">
-                      {item.discount}% OFF
-                    </span>
-                  )}
-                </div>
-                
-                {/* Button */}
-                {(config.showBuyButton || config.showReserveButton || config.showAddToCart) && (
-                  <button
-                    className={`
-                      w-full py-3 px-6 font-semibold rounded-md transition-all text-base
-                      ${config.buttonStyle === 'outline' ? (
-                        `border-2 hover:bg-gray-50`
-                      ) : (
-                        `text-white hover:opacity-90`
-                      )}
-                    `}
-                    style={{
-                      backgroundColor: config.buttonStyle === 'solid' ? (colorScheme.solidButton?.default || '#ff5722') : 'transparent',
-                      borderColor: config.buttonStyle === 'outline' ? (colorScheme.outlineButton?.default || '#ff5722') : 'transparent',
-                      color: config.buttonStyle === 'solid' ? 
-                        (colorScheme.solidButtonText?.default || '#FFFFFF') : 
-                        (colorScheme.outlineButtonText?.default || '#ff5722')
+                {/* Image Container */}
+                <div className="relative overflow-hidden flex-shrink-0">
+                  <div 
+                    className={`${imageRatioClasses[config.imageRatio || 'default']} bg-gray-100 relative overflow-hidden`}
+                    style={{ 
+                      borderTopLeftRadius: `${config.edgeRounding || 12}px`,
+                      borderTopRightRadius: `${config.edgeRounding || 12}px`,
+                      borderBottomLeftRadius: config.colorCardBackground ? 0 : `${config.edgeRounding || 12}px`,
+                      borderBottomRightRadius: config.colorCardBackground ? 0 : `${config.edgeRounding || 12}px`
                     }}
                   >
-                    {config.showReserveButton ? 'Reservar' : 
-                     config.showBuyButton ? 'Comprar' : 
-                     'Agregar al carrito'}
-                  </button>
-                )}
+                    {/* Placeholder image with better gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300">
+                      {/* Add subtle pattern overlay */}
+                      <div className="absolute inset-0 opacity-10" style={{
+                        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(0,0,0,.05) 35px, rgba(0,0,0,.05) 70px)`
+                      }} />
+                    </div>
+                  
+                    {/* Sale Badge */}
+                    {config.showSaleBadge && item.discount && (
+                      <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1.5 text-sm font-bold rounded-md shadow-md">
+                        {item.discount}% OFF
+                      </div>
+                    )}
+                    
+                    {/* Sold Out Badge */}
+                    {config.showSoldOutBadge && !item.available && (
+                      <div className="absolute top-4 right-4 bg-gray-800 text-white px-3 py-1.5 text-sm font-bold rounded-md shadow-md">
+                        Agotado
+                      </div>
+                    )}
+                  </div>
+                </div>
+              
+                {/* Content */}
+                <div 
+                  className={`flex-grow flex flex-col p-6 ${config.contentAlignment === 'left' ? 'text-left' : 'text-center'}`}
+                >
+                  {/* Title */}
+                  <h3 className="font-semibold text-xl lg:text-2xl mb-3 text-gray-900">
+                    {item.title}
+                  </h3>
+                
+                  {/* Rating */}
+                  {config.productRating && config.productRating !== 'none' && (
+                    <div className={`flex items-center gap-2 mb-4 ${config.contentAlignment === 'left' ? 'justify-start' : 'justify-center'}`}>
+                      {(config.productRating.includes('stars')) && renderStars(item.rating)}
+                      {config.productRating === 'average-rating-and-stars' && (
+                        <span className="text-base text-gray-600 font-medium">{item.rating}</span>
+                      )}
+                      {config.productRating === 'review-count-and-stars' && (
+                        <span className="text-base text-gray-600">({item.reviewCount} reseñas)</span>
+                      )}
+                    </div>
+                  )}
+                
+                  {/* Price */}
+                  <div className={`flex items-center gap-3 mb-6 ${config.contentAlignment === 'left' ? 'justify-start' : 'justify-center'}`}>
+                    <span className="text-2xl lg:text-3xl font-bold text-gray-900">
+                      ${item.price.toFixed(2)} {config.showCurrencyCode && item.currency}
+                    </span>
+                    {item.comparePrice && (
+                      <span className="text-lg text-gray-400 line-through">
+                        ${item.comparePrice.toFixed(2)}
+                      </span>
+                    )}
+                    {config.showSaleBadgeNextToPrice && item.discount && (
+                      <span className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">
+                        -{item.discount}%
+                      </span>
+                    )}
+                  </div>
+                
+                  {/* Spacer to push button to bottom */}
+                  <div className="flex-grow" />
+                  
+                  {/* Button */}
+                  {(config.showBuyButton || config.showReserveButton || config.showAddToCart) && (
+                    <button
+                      className={`
+                        w-full py-3.5 px-6 font-bold rounded-lg transition-all text-base lg:text-lg
+                        ${config.buttonStyle === 'outline' ? (
+                          `border-2 hover:scale-105 transform`
+                        ) : (
+                          `text-white hover:scale-105 transform shadow-md hover:shadow-lg`
+                        )}
+                      `}
+                      style={{
+                        backgroundColor: config.buttonStyle === 'solid' ? (colorScheme.solidButton?.default || '#ff5722') : 'transparent',
+                        borderColor: config.buttonStyle === 'outline' ? (colorScheme.outlineButton?.default || '#ff5722') : 'transparent',
+                        color: config.buttonStyle === 'solid' ? 
+                          (colorScheme.solidButtonText?.default || '#FFFFFF') : 
+                          (colorScheme.outlineButtonText?.default || '#ff5722')
+                      }}
+                    >
+                      {config.showReserveButton ? 'Reservar' : 
+                       config.showBuyButton ? 'Comprar' : 
+                       'Agregar al carrito'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
