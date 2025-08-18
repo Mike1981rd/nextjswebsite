@@ -1,0 +1,82 @@
+ Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+ 🔍 Frontend logger initialized - All errors will be logged to files
+ 🔍 Frontend logger initialized - All errors will be logged to files
+ Watched values - Country:  Currency: USD
+ Watched values - Country:  Currency: USD
+ Settings changed: Object
+ Company data received: Object
+ Form data to reset: Object
+ Watched values - Country: DO Currency: DOP
+ Watched values - Country:  Currency: USD
+ Company data received: Object
+ Form data to reset: Object
+ Watched values - Country:  Currency: USD
+ Company data received: Object
+ Form data to reset: Object
+ Country changed to: 
+ Currency changed to: 
+ Watched values - Country: DO Currency: DOP
+ Currency changed to: 
+ Watched values - Country:  Currency: 
+ [Fast Refresh] rebuilding
+ [Fast Refresh] rebuilding
+ [Fast Refresh] done in 44ms
+ [Fast Refresh] done in 2177ms
+ Settings changed: Object
+ [Fast Refresh] rebuilding
+ [Fast Refresh] rebuilding
+ [Fast Refresh] done in 309ms
+ Watched values - Country:  Currency: USD
+ Company data received: Object
+ Form data to reset: Object
+ Watched values - Country:  Currency: USD
+ Company data received: Object
+ Form data to reset: Object
+ Country changed to: 
+ Currency changed to: 
+ Watched values - Country: DO Currency: DOP
+ Currency changed to: 
+ Watched values - Country:  Currency: 
+hot-reloader-client.js:44 [Fast Refresh] done in 2306ms
+DashboardLayout.tsx:99 Settings changed: Object
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:44 [Fast Refresh] done in 30ms
+hot-reloader-client.js:44 [Fast Refresh] done in 2645ms
+DashboardLayout.tsx:99 Settings changed: Object
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:44 [Fast Refresh] done in 24ms
+hot-reloader-client.js:44 [Fast Refresh] done in 2272ms
+DashboardLayout.tsx:99 Settings changed: Object
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:44 [Fast Refresh] done in 43ms
+hot-reloader-client.js:44 [Fast Refresh] done in 2249ms
+DashboardLayout.tsx:99 Settings changed: Object
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:44 [Fast Refresh] done in 43ms
+hot-reloader-client.js:44 [Fast Refresh] done in 2357ms
+DashboardLayout.tsx:99 Settings changed: Object
+StoreDetailsForm.tsx:122 Watched values - Country:  Currency: USD
+StoreDetailsForm.tsx:128 Company data received: Object
+StoreDetailsForm.tsx:162 Form data to reset: Object
+StoreDetailsForm.tsx:122 Watched values - Country:  Currency: USD
+StoreDetailsForm.tsx:128 Company data received: Object
+StoreDetailsForm.tsx:162 Form data to reset: Object
+StoreDetailsForm.tsx:373 Country changed to: 
+StoreDetailsForm.tsx:616 Currency changed to: 
+StoreDetailsForm.tsx:122 Watched values - Country: DO Currency: DOP
+StoreDetailsForm.tsx:122 Watched values - Country:  Currency: 
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:44 [Fast Refresh] done in 313ms
+logger.ts:131 Fetch finished loading: GET "http://localhost:3000/_next/static/webpack/30db20553be22d72.webpack.hot-update.json".
+window.fetch @ logger.ts:131
+__webpack_require__.hmrM @ webpack.js?v=1755486719742:1364
+Promise.then
+hotCheck @ webpack.js?v=1755486719742:555
+tryApplyUpdates @ hot-reloader-client.js:135
+handleHotUpdate @ hot-reloader-client.js:174
+processMessage @ hot-reloader-client.js:237
+handler @ hot-reloader-client.js:395

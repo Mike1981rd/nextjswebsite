@@ -18,6 +18,7 @@ import PreviewSlideshow from '@/components/preview/PreviewSlideshow';
 import PreviewMulticolumns from '@/components/preview/PreviewMulticolumns';
 import PreviewGallery from '@/components/preview/PreviewGallery';
 import PreviewImageWithText from './modules/ImageWithText/PreviewImageWithText';
+import PreviewFeaturedCollection from '@/components/preview/PreviewFeaturedCollection';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -560,6 +561,16 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewImageWithText
             config={section.settings}
+            isEditor={true}
+          />
+        );
+
+      case SectionType.FEATURED_COLLECTION:
+        return (
+          <PreviewFeaturedCollection
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
             isEditor={true}
           />
         );

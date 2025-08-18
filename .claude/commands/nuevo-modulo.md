@@ -81,25 +81,26 @@ Preguntar al usuario:
 
 ### PASO 2: GENERAR ESTRUCTURA BASE
 
-**Opción A: Claude Code puede ejecutar el script bash** (si está disponible)
-```bash
-cd "/mnt/c/Users/hp/Documents/Visual Studio 2022/Projects/WebsiteBuilderAPI"
+**🎯 MÉTODO PREFERIDO: Script PowerShell nativo**
 
-# Determinar si tiene hijos
-if [ "$WITH_CHILDREN" = "sí" ]; then
-  echo "🚀 Generando módulo $MODULE_NAME con soporte para hijos..."
-  echo "s" | ./create-template-section.sh $MODULE_NAME --with-children
-else
-  echo "🚀 Generando módulo $MODULE_NAME..."
-  echo "s" | ./create-template-section.sh $MODULE_NAME
-fi
-```
-
-**Opción B: Si el script falla, el usuario debe ejecutar desde PowerShell:**
+El usuario debe ejecutar desde PowerShell:
 ```powershell
 cd "C:\Users\hp\Documents\Visual Studio 2022\Projects\WebsiteBuilderAPI"
-# Ejecutar con Git Bash o WSL solo para el script:
-bash create-template-section.sh [ModuleName] [--with-children]
+
+# Si tiene hijos
+.\create-template-section.ps1 -ModuleName "[MODULE_NAME]" -WithChildren
+
+# Si NO tiene hijos
+.\create-template-section.ps1 -ModuleName "[MODULE_NAME]"
+```
+
+**Alternativa: Si prefieres usar el script bash original**
+```powershell
+# Opción 1: Con Git Bash (si está instalado)
+& "C:\Program Files\Git\bin\bash.exe" create-template-section.sh [MODULE_NAME] [--with-children]
+
+# Opción 2: Con WSL
+wsl bash create-template-section.sh [MODULE_NAME] [--with-children]
 ```
 
 Verificar que se generaron los archivos:

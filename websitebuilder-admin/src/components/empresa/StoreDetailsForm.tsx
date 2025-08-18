@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion } from 'framer-motion';
@@ -13,6 +13,8 @@ import * as Select from '@radix-ui/react-select';
 import { ChevronDown, Check } from 'lucide-react';
 import { LogoUploader } from './LogoUploader';
 import { api } from '@/lib/api';
+import { ControlledCountrySelect } from './fields/ControlledCountrySelect';
+import { ControlledCurrencySelect } from './fields/ControlledCurrencySelect';
 
 // Validation Schema
 const storeDetailsSchema = z.object({
@@ -52,11 +54,15 @@ type StoreDetailsFormData = z.infer<typeof storeDetailsSchema>;
 
 export function StoreDetailsForm() {
   const { t } = useI18n();
-  const { company, updateCompany, isLoading, error, refetch } = useCompany() as any;
+  const { company, updateCompany, loading, error, refetch } = useCompany() as any;
   const [isSaving, setIsSaving] = useState(false);
   const [logo, setLogo] = useState<string>('');
   const [logoSize, setLogoSize] = useState<number>(120);
   const [showLogoSuccess, setShowLogoSuccess] = useState(false);
+  
+  // Estados locales para los Select que tienen problemas de renderizado
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
   
   // Get primary color from localStorage (set by ThemeCustomizer)
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
@@ -78,6 +84,7 @@ export function StoreDetailsForm() {
     handleSubmit,
     reset,
     watch,
+    control,
     setValue,
     formState: { errors, isDirty },
   } = useForm<StoreDetailsFormData>({
@@ -109,16 +116,30 @@ export function StoreDetailsForm() {
   // Watch for order ID changes
   const orderIdPrefix = watch('orderIdPrefix');
   const orderIdSuffix = watch('orderIdSuffix');
+  
+  // Debug: Watch country and currency
+  const watchedCountry = watch('country');
+  const watchedCurrency = watch('currency');
+  
+  useEffect(() => {
+    console.log('Watched values - Country:', watchedCountry, 'Currency:', watchedCurrency);
+  }, [watchedCountry, watchedCurrency]);
 
   // Load company data
   useEffect(() => {
     if (company) {
+      console.log('Company data received:', company); // Debug log
       // Set logo with proper URL handling
       if (company.logo) {
         setLogo(company.logo);
       }
       setLogoSize(company.logoSize || 120);
-      reset({
+      
+      // Actualizar estados locales para los Select
+      setSelectedCountry(company.country || '');
+      setSelectedCurrency(company.currency || 'USD');
+      
+      const formData = {
         name: company.name || '',
         primaryColor: company.primaryColor || '#22c55e',
         secondaryColor: company.secondaryColor || '#64748b',
@@ -126,20 +147,23 @@ export function StoreDetailsForm() {
         contactEmail: company.contactEmail || '',
         senderEmail: company.senderEmail || '',
         legalBusinessName: company.legalBusinessName || '',
-        country: company.country || '',
+        country: (company.country || '').toUpperCase(),
         region: company.region || '',
         address: company.address || '',
         apartment: company.apartment || '',
         city: company.city || '',
         state: company.state || '',
         postalCode: company.postalCode || '',
-        timeZone: company.timezone || 'America/Santo_Domingo',
+        timeZone: company.timeZone || 'America/Santo_Domingo',
         metricSystem: company.metricSystem || 'Metric',
         weightUnit: company.weightUnit || 'Kilograms',
-        currency: company.currency || 'USD',
+        currency: (company.currency || 'USD').toUpperCase(),
         orderIdPrefix: company.orderIdPrefix || '#',
         orderIdSuffix: company.orderIdSuffix || '',
-      });
+      };
+      
+      console.log('Form data to reset:', formData); // Debug log
+      reset(formData);
     }
   }, [company, reset]);
 
@@ -173,19 +197,37 @@ export function StoreDetailsForm() {
     try {
       setIsSaving(true);
       
-      // Limpiar campos vacíos antes de enviar
-      const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
-        if (value !== '' && value !== null && value !== undefined) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as any);
-      
-      console.log('Sending data:', cleanedData);
-      await updateCompany(cleanedData);
-      
-      // Mostrar mensaje de éxito (puedes agregar un toast aquí)
-      console.log('Company updated successfully');
+      // Enviar todos los datos, incluyendo strings vacíos
+      // El backend maneja correctamente los valores vacíos
+      console.log('Sending data:', data);
+      await updateCompany(data);
+      // Refrescar los datos del contexto para garantizar consistencia
+      await refetch();
+      // Tomar el valor más reciente del contexto a través de 'company' y resetear
+      if (company) {
+        reset({
+          name: company.name || '',
+          primaryColor: company.primaryColor || '#22c55e',
+          secondaryColor: company.secondaryColor || '#64748b',
+          phoneNumber: company.phoneNumber || '',
+          contactEmail: company.contactEmail || '',
+          senderEmail: company.senderEmail || '',
+          legalBusinessName: company.legalBusinessName || '',
+          country: (company.country || '').toUpperCase(),
+          region: company.region || '',
+          address: company.address || '',
+          apartment: company.apartment || '',
+          city: company.city || '',
+          state: company.state || '',
+          postalCode: company.postalCode || '',
+          timeZone: company.timeZone || 'America/Santo_Domingo',
+          metricSystem: company.metricSystem || 'Metric',
+          weightUnit: company.weightUnit || 'Kilograms',
+          currency: (company.currency || 'USD').toUpperCase(),
+          orderIdPrefix: company.orderIdPrefix || '#',
+          orderIdSuffix: company.orderIdSuffix || '',
+        });
+      }
     } catch (error: any) {
       console.error('Error saving company:', error);
       console.error('Error details:', error.response?.data);
@@ -200,7 +242,7 @@ export function StoreDetailsForm() {
     '--tw-ring-color': primaryColor,
   } as React.CSSProperties;
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
@@ -319,137 +361,14 @@ export function StoreDetailsForm() {
             />
           </div>
           <div className="w-full">
-            <Select.Root value={watch('country') || ''} onValueChange={(value) => { 
-              setValue('country', value, { shouldDirty: true });
-            }}>
-              <Select.Trigger
-                className={`${inputClassName} flex items-center justify-between overflow-hidden`}
-                style={inputFocusStyle}
-              >
-                <Select.Value>
-                  {watch('country') && countries[watch('country') as keyof typeof countries] ? (
-                    <div className="flex items-center gap-2">
-                      <CountryFlag code={countries[watch('country') as keyof typeof countries].flag} />
-                      <span>{countries[watch('country') as keyof typeof countries].name}</span>
-                    </div>
-                  ) : (
-                    <span className="text-gray-500">{t('empresa.billing.countryPlaceholder', 'Country/region')}</span>
-                  )}
-                </Select.Value>
-                <Select.Icon>
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
-                </Select.Icon>
-              </Select.Trigger>
-              
-              <Select.Portal>
-                <Select.Content className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-80 overflow-y-auto">
-                  <Select.Viewport>
-                    <Select.Group>
-                      <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('countries.northAmerica', 'North America')}</Select.Label>
-                      {Object.entries(countries)
-                        .filter(([code]) => ['US', 'CA', 'MX'].includes(code))
-                        .map(([code, country]) => (
-                          <Select.Item
-                            key={code}
-                            value={code}
-                            className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                          >
-                            <CountryFlag code={country.flag} />
-                            <Select.ItemText>{country.name}</Select.ItemText>
-                            <Select.ItemIndicator className="ml-auto">
-                              <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ))}
-                    </Select.Group>
-                    
-                    <Select.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-                    
-                    <Select.Group>
-                      <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('countries.caribbean', 'Caribbean')}</Select.Label>
-                      {Object.entries(countries)
-                        .filter(([code]) => ['DO', 'PR', 'CU', 'JM', 'HT', 'TT', 'BB'].includes(code))
-                        .map(([code, country]) => (
-                          <Select.Item
-                            key={code}
-                            value={code}
-                            className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                          >
-                            <CountryFlag code={country.flag} />
-                            <Select.ItemText>{country.name}</Select.ItemText>
-                            <Select.ItemIndicator className="ml-auto">
-                              <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ))}
-                    </Select.Group>
-                    
-                    <Select.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-                    
-                    <Select.Group>
-                      <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('countries.centralAmerica', 'Central America')}</Select.Label>
-                      {Object.entries(countries)
-                        .filter(([code]) => ['GT', 'SV', 'HN', 'NI', 'CR', 'PA', 'BZ'].includes(code))
-                        .map(([code, country]) => (
-                          <Select.Item
-                            key={code}
-                            value={code}
-                            className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                          >
-                            <CountryFlag code={country.flag} />
-                            <Select.ItemText>{country.name}</Select.ItemText>
-                            <Select.ItemIndicator className="ml-auto">
-                              <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ))}
-                    </Select.Group>
-                    
-                    <Select.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-                    
-                    <Select.Group>
-                      <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('countries.southAmerica', 'South America')}</Select.Label>
-                      {Object.entries(countries)
-                        .filter(([code]) => ['AR', 'BR', 'CL', 'CO', 'EC', 'PY', 'PE', 'UY', 'VE', 'BO', 'GY', 'SR', 'GF'].includes(code))
-                        .map(([code, country]) => (
-                          <Select.Item
-                            key={code}
-                            value={code}
-                            className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                          >
-                            <CountryFlag code={country.flag} />
-                            <Select.ItemText>{country.name}</Select.ItemText>
-                            <Select.ItemIndicator className="ml-auto">
-                              <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ))}
-                    </Select.Group>
-                    
-                    <Select.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-                    
-                    <Select.Group>
-                      <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('countries.europe', 'Europe')}</Select.Label>
-                      {Object.entries(countries)
-                        .filter(([code]) => ['ES', 'FR', 'DE', 'IT', 'PT', 'GB'].includes(code))
-                        .map(([code, country]) => (
-                          <Select.Item
-                            key={code}
-                            value={code}
-                            className="px-3 py-2 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                          >
-                            <CountryFlag code={country.flag} />
-                            <Select.ItemText>{country.name}</Select.ItemText>
-                            <Select.ItemIndicator className="ml-auto">
-                              <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ))}
-                    </Select.Group>
-                  </Select.Viewport>
-                </Select.Content>
-              </Select.Portal>
-            </Select.Root>
+            <ControlledCountrySelect
+              name="country"
+              control={control}
+              label={undefined}
+              placeholder={t('empresa.billing.countryPlaceholder', 'Country/region')}
+              inputClassName={inputClassName}
+              inputFocusStyle={inputFocusStyle}
+            />
           </div>
           <div className="w-full">
             <input
@@ -556,130 +475,14 @@ export function StoreDetailsForm() {
         <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400 mb-4">{t('empresa.currency.description', 'The currency your products are sold in.')}</p>
         
         <div className="max-w-sm">
-          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.currency.label', 'Store currency')}</label>
-          <Select.Root value={watch('currency') || 'USD'} onValueChange={(value) => {
-            setValue('currency', value, { shouldDirty: true });
-          }}>
-            <Select.Trigger
-              className={`${inputClassName} flex items-center justify-between`}
-              style={inputFocusStyle}
-            >
-              <Select.Value>
-                {watch('currency') && currencies[watch('currency') as keyof typeof currencies] ? (
-                  <span>{watch('currency')} - {currencies[watch('currency') as keyof typeof currencies].name}</span>
-                ) : (
-                  <span className="text-gray-500">{t('empresa.currency.placeholder', 'Select currency')}</span>
-                )}
-              </Select.Value>
-              <Select.Icon>
-                <ChevronDown className="h-4 w-4 text-gray-500" />
-              </Select.Icon>
-            </Select.Trigger>
-            
-            <Select.Portal>
-              <Select.Content className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-80 overflow-y-auto">
-                <Select.Viewport>
-                  <Select.Group>
-                    <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('currencies.northAmerica', 'North America')}</Select.Label>
-                    {Object.entries(currencies)
-                      .filter(([code]) => ['USD', 'CAD', 'MXN'].includes(code))
-                      .map(([code, currency]) => (
-                        <Select.Item
-                          key={code}
-                          value={code}
-                          className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                        >
-                          <Select.ItemText>{code} - {currency.name}</Select.ItemText>
-                          <Select.ItemIndicator className="ml-auto">
-                            <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                      ))}
-                  </Select.Group>
-                  
-                  <Select.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-                  
-                  <Select.Group>
-                    <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('currencies.caribbean', 'Caribbean')}</Select.Label>
-                    {Object.entries(currencies)
-                      .filter(([code]) => ['DOP', 'CUP', 'JMD', 'HTG', 'TTD', 'BBD'].includes(code))
-                      .map(([code, currency]) => (
-                        <Select.Item
-                          key={code}
-                          value={code}
-                          className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                        >
-                          <Select.ItemText>{code} - {currency.name}</Select.ItemText>
-                          <Select.ItemIndicator className="ml-auto">
-                            <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                      ))}
-                  </Select.Group>
-                  
-                  <Select.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-                  
-                  <Select.Group>
-                    <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('currencies.centralAmerica', 'Central America')}</Select.Label>
-                    {Object.entries(currencies)
-                      .filter(([code]) => ['GTQ', 'HNL', 'NIO', 'CRC', 'PAB', 'BZD'].includes(code))
-                      .map(([code, currency]) => (
-                        <Select.Item
-                          key={code}
-                          value={code}
-                          className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                        >
-                          <Select.ItemText>{code} - {currency.name}</Select.ItemText>
-                          <Select.ItemIndicator className="ml-auto">
-                            <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                      ))}
-                  </Select.Group>
-                  
-                  <Select.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-                  
-                  <Select.Group>
-                    <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('currencies.southAmerica', 'South America')}</Select.Label>
-                    {Object.entries(currencies)
-                      .filter(([code]) => ['ARS', 'BRL', 'CLP', 'COP', 'PEN', 'UYU', 'PYG', 'BOB', 'VES', 'GYD', 'SRD'].includes(code))
-                      .map(([code, currency]) => (
-                        <Select.Item
-                          key={code}
-                          value={code}
-                          className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                        >
-                          <Select.ItemText>{code} - {currency.name}</Select.ItemText>
-                          <Select.ItemIndicator className="ml-auto">
-                            <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                      ))}
-                  </Select.Group>
-                  
-                  <Select.Separator className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
-                  
-                  <Select.Group>
-                    <Select.Label className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('currencies.europe', 'Europe')}</Select.Label>
-                    {Object.entries(currencies)
-                      .filter(([code]) => ['EUR', 'GBP'].includes(code))
-                      .map(([code, currency]) => (
-                        <Select.Item
-                          key={code}
-                          value={code}
-                          className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer outline-none"
-                        >
-                          <Select.ItemText>{code} - {currency.name}</Select.ItemText>
-                          <Select.ItemIndicator className="ml-auto">
-                            <Check className="h-4 w-4" style={{ color: primaryColor }} />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                      ))}
-                  </Select.Group>
-                </Select.Viewport>
-              </Select.Content>
-            </Select.Portal>
-          </Select.Root>
+          <ControlledCurrencySelect
+            name="currency"
+            control={control}
+            label={t('empresa.currency.label', 'Store currency')}
+            placeholder={t('empresa.currency.placeholder', 'Select currency')}
+            inputClassName={inputClassName}
+            inputFocusStyle={inputFocusStyle}
+          />
         </div>
       </motion.div>
 

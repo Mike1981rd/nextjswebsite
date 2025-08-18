@@ -24,6 +24,7 @@ import GalleryEditor from './modules/Gallery/GalleryEditor';
 import GalleryItemEditor from './modules/Gallery/GalleryItemEditor';
 import ImageWithTextEditor from './modules/ImageWithText/ImageWithTextEditor';
 import ImageWithTextItemEditor from './modules/ImageWithText/ImageWithTextItemEditor';
+import FeaturedCollectionEditor from './modules/FeaturedCollection/FeaturedCollectionEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -326,6 +327,9 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
       case SectionType.IMAGE_WITH_TEXT:
         return <ImageWithTextEditor sectionId={section.id} />;
+
+      case SectionType.FEATURED_COLLECTION:
+        return <FeaturedCollectionEditor sectionId={section.id} />;
 
       default:
         return (

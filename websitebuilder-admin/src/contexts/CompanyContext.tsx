@@ -6,30 +6,45 @@ import { api } from '@/lib/api';
 interface Company {
   id: number;
   name: string;
-  logoUrl?: string;
+  logo?: string;
   logoSize?: number;
-  phone?: string;
-  email?: string;
-  address?: string;
-  city?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  
+  // Profile Section
+  phoneNumber?: string;
+  contactEmail?: string;
+  senderEmail?: string;
+  
+  // Billing Information
+  legalBusinessName?: string;
   country?: string;
+  region?: string;
+  address?: string;
+  apartment?: string;
+  city?: string;
+  state?: string;
   postalCode?: string;
-  taxId?: string;
-  website?: string;
-  description?: string;
-  founded?: number;
-  employees?: string;
-  industry?: string;
-  timezone?: string;
+  
+  // Time Zone & Units
+  timeZone?: string;
+  metricSystem?: string;
+  weightUnit?: string;
+  
+  // Store Currency
   currency?: string;
-  dateFormat?: string;
+  
+  // Order ID Format
   orderIdPrefix?: string;
-  orderIdStartNumber?: number;
-  facebook?: string;
-  twitter?: string;
-  instagram?: string;
-  linkedin?: string;
-  youtube?: string;
+  orderIdSuffix?: string;
+  
+  // Domain info
+  domain?: string;
+  customDomain?: string;
+  subdomain?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface CompanyContextType {
@@ -37,6 +52,7 @@ interface CompanyContextType {
   loading: boolean;
   error: string | null;
   fetchCompany: () => Promise<void>;
+  refetch: () => Promise<void>;
   updateCompany: (data: Partial<Company>) => Promise<Company | null>;
   uploadLogo: (file: File) => Promise<string | null>;
 }
@@ -105,7 +121,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       });
       
       const logoUrl = (response.data as any).logoUrl;
-      setCompany(prev => prev ? { ...prev, logoUrl } : null);
+      setCompany(prev => prev ? { ...prev, logo: logoUrl } : null);
       
       return logoUrl;
     } catch (err: any) {
@@ -134,6 +150,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       loading,
       error,
       fetchCompany,
+      refetch: fetchCompany,  // Alias para compatibilidad
       updateCompany,
       uploadLogo
     }}>
