@@ -21,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { Section } from '@/types/editor.types';
 import { FAQConfig, FAQItemConfig, FAQCategoryConfig, getDefaultFAQItemConfig } from './types';
+import FAQCategoriesChildren from './FAQCategoriesChildren';
 
 interface FAQChildrenProps {
   section: Section;
@@ -218,6 +219,7 @@ export default function FAQChildren({ section, groupId }: FAQChildrenProps) {
 
   return (
     <div className="pl-8 pb-2">
+      {categories.length > 0 && (<FAQCategoriesChildren section={section} groupId={groupId} />)}
       {/* Add Item Button - ESTILO AZUL LIMPIO COMO SLIDESHOW */}
       <button
         onClick={handleAddItem}

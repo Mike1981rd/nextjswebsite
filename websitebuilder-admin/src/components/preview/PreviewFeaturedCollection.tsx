@@ -13,7 +13,7 @@ import { useCompany } from '@/contexts/CompanyContext';
 import { cn } from '@/lib/utils';
 
 interface PreviewFeaturedCollectionProps {
-  config: FeaturedCollectionConfig;
+  config?: Partial<FeaturedCollectionConfig>;
   theme?: GlobalThemeConfig;
   deviceView?: 'desktop' | 'mobile';
   isEditor?: boolean;
@@ -56,7 +56,7 @@ export default function PreviewFeaturedCollection({
     });
   };
   
-  const finalConfig = config || getDefaultFeaturedCollectionConfig();
+  const finalConfig: FeaturedCollectionConfig = { ...getDefaultFeaturedCollectionConfig(), ...(config as any) };
   
   // Debug log
   console.log('PreviewFeaturedCollection rendering:', {

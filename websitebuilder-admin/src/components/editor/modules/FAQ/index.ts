@@ -8,4 +8,5 @@
 export { default as FAQEditor } from './FAQEditor';
 export { default as FAQChildren } from './FAQChildren';
 export { default as FAQItemEditor } from './FAQItemEditor';
+export { default as FAQCategoriesChildren } from './FAQCategoriesChildren';
 export * from './types';

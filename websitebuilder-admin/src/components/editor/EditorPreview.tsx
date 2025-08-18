@@ -440,7 +440,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewAnnouncementBar
             config={announcementConfig}
-            theme={themeConfig}
+            theme={themeConfig || undefined}
             pageType={selectedPageType as string}
             deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
@@ -452,7 +452,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewHeader
             config={headerConfig || structuralComponents?.header}
-            theme={themeConfig}
+            theme={themeConfig || undefined}
             deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
           />
@@ -468,7 +468,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           <PreviewFooter
             key={`footer-${footerKey}`}
             config={footerConfig}
-            theme={themeConfig}
+            theme={themeConfig || undefined}
             deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}
           />
@@ -533,7 +533,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           <PreviewSlideshow
             settings={section.settings as any}
             isEditor={true}
-            theme={themeConfig}
+            theme={themeConfig || undefined}
             deviceView={deviceView as 'desktop' | 'mobile'}
           />
         );
@@ -543,7 +543,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           <PreviewMulticolumns
             config={section.settings as any}
             isEditor={true}
-            theme={themeConfig}
+            theme={themeConfig || undefined}
             deviceView={deviceView as 'desktop' | 'mobile'}
           />
         );
@@ -553,7 +553,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
           <PreviewGallery
             config={section.settings as any}
             isEditor={true}
-            theme={themeConfig}
+            theme={themeConfig || undefined}
             deviceView={deviceView as 'desktop' | 'mobile'}
           />
         );
@@ -570,7 +570,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewFeaturedCollection
             config={section.settings}
-            theme={themeConfig}
+            theme={themeConfig || undefined}
             deviceView={deviceView}
             isEditor={true}
           />
@@ -585,7 +585,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewFAQ
             config={faqConfig}
-            theme={themeConfig}
+            theme={themeConfig || undefined}
             deviceView={deviceView}
             isEditor={true}
           />
