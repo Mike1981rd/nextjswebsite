@@ -173,14 +173,14 @@ export default function PreviewFeaturedCollection({
     const emptyStars = 5 - Math.ceil(rating);
     
     return (
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-1">
         {[...Array(fullStars)].map((_, i) => (
-          <svg key={`full-${i}`} className="w-4 h-4" fill={config.starsColor || '#fbbf24'} viewBox="0 0 20 20">
+          <svg key={`full-${i}`} className="w-5 h-5" fill={config.starsColor || '#fbbf24'} viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
           </svg>
         ))}
         {hasHalfStar && (
-          <svg className="w-4 h-4" fill={config.starsColor || '#fbbf24'} viewBox="0 0 20 20">
+          <svg className="w-5 h-5" fill={config.starsColor || '#fbbf24'} viewBox="0 0 20 20">
             <defs>
               <linearGradient id="half">
                 <stop offset="50%" stopColor={config.starsColor || '#fbbf24'}/>
@@ -191,10 +191,11 @@ export default function PreviewFeaturedCollection({
           </svg>
         )}
         {[...Array(emptyStars)].map((_, i) => (
-          <svg key={`empty-${i}`} className="w-4 h-4" fill="#e5e7eb" viewBox="0 0 20 20">
+          <svg key={`empty-${i}`} className="w-5 h-5" fill="#e5e7eb" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
           </svg>
         ))}
+        <span className="text-sm text-gray-600 ml-1">{rating}</span>
       </div>
     );
   };
@@ -243,9 +244,7 @@ export default function PreviewFeaturedCollection({
               key={item.id} 
               className="group relative overflow-hidden"
               style={{
-                borderRadius: `${config.edgeRounding || 8}px`,
-                transform: `scale(${(config.cardSize || 100) / 100})`,
-                transformOrigin: 'top center'
+                borderRadius: `${config.edgeRounding || 8}px`
               }}
             >
               {/* Card Background */}
@@ -283,16 +282,16 @@ export default function PreviewFeaturedCollection({
               
               {/* Content */}
               <div 
-                className={`p-4 ${config.contentAlignment === 'left' ? 'text-left' : 'text-center'}`}
+                className={`py-5 px-4 ${config.contentAlignment === 'left' ? 'text-left' : 'text-center'}`}
               >
                 {/* Title */}
-                <h3 className="font-medium text-lg mb-2">
+                <h3 className="font-medium text-xl mb-3">
                   {item.title}
                 </h3>
                 
                 {/* Rating */}
                 {config.productRating && config.productRating !== 'none' && (
-                  <div className="flex items-center gap-2 mb-2 justify-center">
+                  <div className={`flex items-center gap-2 mb-3 ${config.contentAlignment === 'left' ? 'justify-start' : 'justify-center'}`}>
                     {(config.productRating.includes('stars')) && renderStars(item.rating)}
                     {config.productRating === 'average-rating-and-stars' && (
                       <span className="text-sm text-gray-600">{item.rating}</span>
@@ -304,17 +303,17 @@ export default function PreviewFeaturedCollection({
                 )}
                 
                 {/* Price */}
-                <div className="flex items-center gap-2 justify-center mb-3">
-                  <span className="text-xl font-bold">
+                <div className={`flex items-center gap-3 mb-4 ${config.contentAlignment === 'left' ? 'justify-start' : 'justify-center'}`}>
+                  <span className="text-2xl font-bold">
                     ${item.price.toFixed(2)} {config.showCurrencyCode && item.currency}
                   </span>
                   {item.comparePrice && (
-                    <span className="text-sm text-gray-500 line-through">
+                    <span className="text-base text-gray-500 line-through">
                       ${item.comparePrice.toFixed(2)} {config.showCurrencyCode && item.currency}
                     </span>
                   )}
                   {config.showSaleBadgeNextToPrice && item.discount && (
-                    <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
+                    <span className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded font-medium">
                       {item.discount}% OFF
                     </span>
                   )}
@@ -324,19 +323,19 @@ export default function PreviewFeaturedCollection({
                 {(config.showBuyButton || config.showReserveButton || config.showAddToCart) && (
                   <button
                     className={`
-                      w-full py-2.5 px-4 font-medium rounded transition-colors
+                      w-full py-3 px-6 font-semibold rounded-md transition-all text-base
                       ${config.buttonStyle === 'outline' ? (
                         `border-2 hover:bg-gray-50`
                       ) : (
-                        `text-white`
+                        `text-white hover:opacity-90`
                       )}
                     `}
                     style={{
-                      backgroundColor: config.buttonStyle === 'solid' ? (colorScheme.solidButton?.default || '#000000') : 'transparent',
-                      borderColor: config.buttonStyle === 'outline' ? (colorScheme.outlineButton?.default || '#000000') : 'transparent',
+                      backgroundColor: config.buttonStyle === 'solid' ? (colorScheme.solidButton?.default || '#ff5722') : 'transparent',
+                      borderColor: config.buttonStyle === 'outline' ? (colorScheme.outlineButton?.default || '#ff5722') : 'transparent',
                       color: config.buttonStyle === 'solid' ? 
                         (colorScheme.solidButtonText?.default || '#FFFFFF') : 
-                        (colorScheme.outlineButtonText?.default || '#000000')
+                        (colorScheme.outlineButtonText?.default || '#ff5722')
                     }}
                   >
                     {config.showReserveButton ? 'Reservar' : 
