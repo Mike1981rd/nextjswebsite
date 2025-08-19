@@ -31,6 +31,7 @@ import TestimonialsEditor from './modules/Testimonials/TestimonialsEditor';
 import RichTextEditor from './modules/RichText/RichTextEditor';
 import RichTextItemEditor from './modules/RichText/RichTextItemEditor';
 import NewsletterEditor from './modules/Newsletter/NewsletterEditor';
+import ContactFormEditor from './modules/ContactForm/ContactFormEditor';
 import NewsletterItemEditor from './modules/Newsletter/NewsletterItemEditor';
 import TestimonialsItemEditor from './modules/Testimonials/TestimonialsItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
@@ -474,6 +475,8 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
           />
         );
 
+      case SectionType.CONTACT_FORM:
+        return <ContactFormEditor sectionId={selectedSectionId} />;
       case SectionType.NEWSLETTER:
         // Find the group ID for this section
         const newsletterGroupId = Object.entries(sections).find(([_, sectionsList]) =>

@@ -12,6 +12,7 @@ import PreviewFAQ from './PreviewFAQ';
 import PreviewTestimonials from './PreviewTestimonials';
 import PreviewRichText from './PreviewRichText';
 import PreviewNewsletter from './PreviewNewsletter';
+import PreviewContactForm from './PreviewContactForm';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -112,6 +113,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     if (t === 'Testimonials' || t === 'testimonials') return 'testimonials';
     if (t === 'RichText' || t === 'rich_text') return 'rich_text';
     if (t === 'Newsletter' || t === 'newsletter') return 'newsletter';
+    if (t === 'ContactForm' || t === 'contact_form') return 'contact_form';
     return t;
   };
 
@@ -280,6 +282,15 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
               {/* Newsletter (unified preview component) */}
               {getSectionType(section) === 'newsletter' && (
                 <PreviewNewsletter 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'contact_form' && (
+                <PreviewContactForm 
                   config={getSectionConfig(section)}
                   theme={theme}
                   deviceView={deviceView}
