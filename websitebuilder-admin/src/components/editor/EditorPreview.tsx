@@ -20,6 +20,7 @@ import PreviewGallery from '@/components/preview/PreviewGallery';
 import PreviewImageWithText from './modules/ImageWithText/PreviewImageWithText';
 import PreviewFeaturedCollection from '@/components/preview/PreviewFeaturedCollection';
 import PreviewFAQ from '@/components/preview/PreviewFAQ';
+import PreviewTestimonials from '@/components/preview/PreviewTestimonials';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -585,6 +586,20 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewFAQ
             config={faqConfig as any}
+            theme={themeConfig || undefined}
+            deviceView={deviceView as 'desktop' | 'mobile'}
+            isEditor={true}
+          />
+        );
+
+      case SectionType.TESTIMONIALS:
+        const testimonialsConfig = section.settings || {};
+        if (!testimonialsConfig.items) {
+          testimonialsConfig.items = [];
+        }
+        return (
+          <PreviewTestimonials
+            config={testimonialsConfig as any}
             theme={themeConfig || undefined}
             deviceView={deviceView as 'desktop' | 'mobile'}
             isEditor={true}

@@ -33,6 +33,7 @@ import MulticolumnsChildren from './modules/Multicolumns/MulticolumnsChildren';
 import GalleryChildren from './modules/Gallery/GalleryChildren';
 import ImageWithTextChildren from './modules/ImageWithText/ImageWithTextChildren';
 import FAQChildren from './modules/FAQ/FAQChildren';
+import TestimonialsChildren from './modules/Testimonials/TestimonialsChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -181,6 +182,15 @@ export function EditorSidebarWithDnD() {
         settings: parentSection?.settings || {},
         sortOrder: 0
       } as any;
+    } else if (parentSection?.type === SectionType.TESTIMONIALS) {
+      selectedSection = {
+        id: selectedSectionId,
+        type: 'TESTIMONIALS_ITEM' as any,
+        name: 'Testimonial',
+        visible: true,
+        settings: parentSection?.settings || {},
+        sortOrder: 0
+      } as any;
     }
   }
 
@@ -323,6 +333,14 @@ export function EditorSidebarWithDnD() {
                               {/* FAQ Children - Show FAQ items */}
                               {section.type === SectionType.FAQ && section.visible && (
                                 <FAQChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+                              
+                              {/* Testimonials Children - Show testimonial items */}
+                              {section.type === SectionType.TESTIMONIALS && section.visible && (
+                                <TestimonialsChildren 
                                   section={section}
                                   groupId={group.id}
                                 />

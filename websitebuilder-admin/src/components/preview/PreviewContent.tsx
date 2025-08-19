@@ -9,6 +9,7 @@ import PreviewGallery from './PreviewGallery';
 import PreviewImageWithText from '../editor/modules/ImageWithText/PreviewImageWithText';
 import PreviewFeaturedCollection from './PreviewFeaturedCollection';
 import PreviewFAQ from './PreviewFAQ';
+import PreviewTestimonials from './PreviewTestimonials';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -19,7 +20,7 @@ interface PreviewContentProps {
 }
 
 export default function PreviewContent({ pageType, handle, theme, companyId, deviceView }: PreviewContentProps) {
-  const normalizedDeviceView: 'desktop' | 'mobile' = deviceView === 'mobile' ? 'mobile' : 'desktop';
+  // DO NOT normalize or coalesce deviceView - pass it through as-is per documentation
   const [sections, setSections] = useState<Section[]>([]);
   const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -106,6 +107,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     if (t === 'ImageWithText' || t === 'image_with_text') return 'image_with_text';
     if (t === 'FeaturedCollection' || t === 'featured_collection') return 'featured_collection';
     if (t === 'FAQ' || t === 'faq') return 'faq';
+    if (t === 'Testimonials' || t === 'testimonials') return 'testimonials';
     return t;
   };
 
@@ -176,7 +178,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewImageBanner 
                   config={getSectionConfig(section)} 
                   isEditor={false}
-                  deviceView={normalizedDeviceView}
+                  deviceView={deviceView as 'desktop' | 'mobile'}
                 />
               )}
               
@@ -186,7 +188,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                   settings={getSectionConfig(section)} 
                   theme={theme}
                   isEditor={false}
-                  deviceView={normalizedDeviceView}
+                  deviceView={deviceView as 'desktop' | 'mobile'}
                 />
               )}
               
@@ -195,7 +197,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewMulticolumns 
                   config={getSectionConfig(section)} 
                   theme={theme}
-                  deviceView={normalizedDeviceView}
+                  deviceView={deviceView as 'desktop' | 'mobile'}
                   isEditor={false}
                 />
               )}
@@ -205,7 +207,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewGallery 
                   config={getSectionConfig(section)} 
                   theme={theme}
-                  deviceView={normalizedDeviceView}
+                  deviceView={deviceView as 'desktop' | 'mobile'}
                   isEditor={false}
                 />
               )}
@@ -215,7 +217,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewImageWithText 
                   config={getSectionConfig(section)} 
                   theme={theme}
-                  deviceView={normalizedDeviceView}
+                  deviceView={deviceView as 'desktop' | 'mobile'}
                   isEditor={false}
                 />
               )}
@@ -225,7 +227,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                     <PreviewFeaturedCollection 
                       config={getSectionConfig(section)} 
                       theme={theme}
-                      deviceView={normalizedDeviceView}
+                      deviceView={deviceView as 'desktop' | 'mobile'}
                       isEditor={false}
                     />
 
@@ -244,12 +246,22 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                     <PreviewFAQ 
                       config={faqConfig} 
                       theme={theme}
-                      deviceView={normalizedDeviceView}
+                      deviceView={deviceView as 'desktop' | 'mobile'}
                       isEditor={false}
                     />
 
                   );
                 })()
+              )}
+              
+              {/* Testimonials (unified preview component) */}
+              {getSectionType(section) === 'testimonials' && (
+                <PreviewTestimonials 
+                  config={getSectionConfig(section)} 
+                  theme={theme}
+                  deviceView={deviceView as 'desktop' | 'mobile'}
+                  isEditor={false}
+                />
               )}
               
               {/* Add more section types as they are implemented */}
