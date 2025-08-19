@@ -10,6 +10,7 @@ import PreviewImageWithText from '../editor/modules/ImageWithText/PreviewImageWi
 import PreviewFeaturedCollection from './PreviewFeaturedCollection';
 import PreviewFAQ from './PreviewFAQ';
 import PreviewTestimonials from './PreviewTestimonials';
+import PreviewRichText from './PreviewRichText';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -108,6 +109,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     if (t === 'FeaturedCollection' || t === 'featured_collection') return 'featured_collection';
     if (t === 'FAQ' || t === 'faq') return 'faq';
     if (t === 'Testimonials' || t === 'testimonials') return 'testimonials';
+    if (t === 'RichText' || t === 'rich_text') return 'rich_text';
     return t;
   };
 
@@ -260,6 +262,15 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                   config={getSectionConfig(section)} 
                   theme={theme}
                   deviceView={deviceView as 'desktop' | 'mobile'}
+                  isEditor={false}
+                />
+              )}
+              
+              {/* Rich Text (unified preview component) */}
+              {getSectionType(section) === 'rich_text' && (
+                <PreviewRichText 
+                  config={getSectionConfig(section)}
+                  deviceView={deviceView as 'desktop' | 'mobile' | 'tablet'}
                   isEditor={false}
                 />
               )}

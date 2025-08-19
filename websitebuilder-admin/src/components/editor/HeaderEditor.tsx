@@ -575,6 +575,106 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
             </div>
           )}
 
+          {/* Search Icon Color */}
+          {getValue('showSearchIcon') !== false && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Search icon color
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={getValue('searchIconColor') || '#000000'}
+                  onChange={(e) => handleChange('searchIconColor', e.target.value)}
+                  className="w-10 h-10 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={getValue('searchIconColor') || '#000000'}
+                  onChange={(e) => handleChange('searchIconColor', e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={() => handleChange('searchIconColor', '')}
+                  className="px-2 py-1.5 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+                  title="Use default color from theme"
+                >
+                  Default
+                </button>
+              </div>
+              <span className="text-xs text-gray-500 mt-1 block">
+                Custom color for the search icon. Leave empty to use text color from selected color scheme.
+              </span>
+            </div>
+          )}
+
+          {/* Cart Icon Color */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              Cart icon color
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={getValue('cartIconColor') || '#000000'}
+                onChange={(e) => handleChange('cartIconColor', e.target.value)}
+                className="w-10 h-10 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={getValue('cartIconColor') || '#000000'}
+                onChange={(e) => handleChange('cartIconColor', e.target.value)}
+                placeholder="#000000"
+                className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <button
+                onClick={() => handleChange('cartIconColor', '')}
+                className="px-2 py-1.5 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+                title="Use default color from theme"
+              >
+                Default
+              </button>
+            </div>
+            <span className="text-xs text-gray-500 mt-1 block">
+              Custom color for the cart icon. Leave empty to use text color from selected color scheme.
+            </span>
+          </div>
+
+          {/* User Icon Color */}
+          {getValue('showUserIcon') !== false && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                User icon color
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={getValue('userIconColor') || '#000000'}
+                  onChange={(e) => handleChange('userIconColor', e.target.value)}
+                  className="w-10 h-10 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={getValue('userIconColor') || '#000000'}
+                  onChange={(e) => handleChange('userIconColor', e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={() => handleChange('userIconColor', '')}
+                  className="px-2 py-1.5 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50"
+                  title="Use default color from theme"
+                >
+                  Default
+                </button>
+              </div>
+              <span className="text-xs text-gray-500 mt-1 block">
+                Custom color for the user icon. Leave empty to use text color from selected color scheme.
+              </span>
+            </div>
+          )}
+
           {/* Cart type */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1.5">

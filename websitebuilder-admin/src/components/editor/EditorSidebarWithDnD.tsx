@@ -34,6 +34,7 @@ import GalleryChildren from './modules/Gallery/GalleryChildren';
 import ImageWithTextChildren from './modules/ImageWithText/ImageWithTextChildren';
 import FAQChildren from './modules/FAQ/FAQChildren';
 import TestimonialsChildren from './modules/Testimonials/TestimonialsChildren';
+import RichTextSidebarChildren from './modules/RichText/RichTextSidebarChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -191,6 +192,15 @@ export function EditorSidebarWithDnD() {
         settings: parentSection?.settings || {},
         sortOrder: 0
       } as any;
+    } else if (parentSection?.type === SectionType.RICH_TEXT) {
+      selectedSection = {
+        id: selectedSectionId,
+        type: 'RICH_TEXT_BLOCK' as any,
+        name: 'Rich Text Block',
+        visible: true,
+        settings: parentSection?.settings || {},
+        sortOrder: 0
+      } as any;
     }
   }
 
@@ -341,6 +351,15 @@ export function EditorSidebarWithDnD() {
                               {/* Testimonials Children - Show testimonial items */}
                               {section.type === SectionType.TESTIMONIALS && section.visible && (
                                 <TestimonialsChildren 
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+
+                              {/* Rich Text Children - Show rich text blocks */}
+                              {section.type === SectionType.RICH_TEXT && section.visible && (
+                                <RichTextSidebarChildren
+                                  blocks={section.settings?.blocks || []}
                                   section={section}
                                   groupId={group.id}
                                 />

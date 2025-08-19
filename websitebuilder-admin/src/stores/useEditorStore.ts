@@ -73,12 +73,67 @@ export const useEditorStore = create<EditorStore>()(
 
         addSection: (groupId, sectionType) => {
           const config = SECTION_CONFIGS[sectionType];
+          let defaultSettings = { ...config.defaultSettings };
+          
+          // Special handling for Rich Text - create default blocks
+          if (sectionType === SectionType.RICH_TEXT) {
+            const timestamp = Date.now();
+            defaultSettings = {
+              colorScheme: '1',
+              colorBackground: false,
+              width: 'page',
+              contentAlignment: 'center',
+              paddingTop: 64,
+              paddingBottom: 64,
+              customCSS: '',
+              blocks: [
+                {
+                  id: `icon-${timestamp}`,
+                  type: 'icon',
+                  icon: 'settings',
+                  size: 48
+                },
+                {
+                  id: `subheading-${timestamp + 1}`,
+                  type: 'subheading',
+                  text: 'RICH TEXT'
+                },
+                {
+                  id: `heading-${timestamp + 2}`,
+                  type: 'heading',
+                  text: 'Tell about your brand',
+                  size: 'h5'
+                },
+                {
+                  id: `text-${timestamp + 3}`,
+                  type: 'text',
+                  columns: 1,
+                  columnContent: [
+                    'Share information about your brand with your customers. Describe a product, make announcements or welcome customers to your store.'
+                  ],
+                  bodySize: 'body3'
+                },
+                {
+                  id: `buttons-${timestamp + 4}`,
+                  type: 'buttons',
+                  buttons: [
+                    {
+                      label: 'Button label',
+                      link: '/pages/about',
+                      style: 'solid'
+                    }
+                  ]
+                }
+              ]
+            };
+          }
+          
           const newSection: Section = {
             id: `${sectionType}_${Date.now()}`,
             type: sectionType,
             name: config.name,
             visible: true,
-            settings: { ...config.defaultSettings },
+            settings: defaultSettings,
             sortOrder: get().sections[groupId].length
           };
 

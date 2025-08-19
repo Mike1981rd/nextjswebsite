@@ -180,6 +180,7 @@ export default function ImageWithTextItemEditor({ sectionId, itemId }: ImageWith
   };
 
   const handleBack = () => {
+    // DEBE volver al panel lateral principal, no al editor del padre
     selectSection(null);
     toggleConfigPanel(false);
   };
@@ -193,7 +194,7 @@ export default function ImageWithTextItemEditor({ sectionId, itemId }: ImageWith
   }
 
   return (
-    <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
+    <div className="w-80 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
       <div className="border-b border-gray-200 dark:border-gray-700 px-3 py-2.5">
         <div className="flex items-center justify-between">

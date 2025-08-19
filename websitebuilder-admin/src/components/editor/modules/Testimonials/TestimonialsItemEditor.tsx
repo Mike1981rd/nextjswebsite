@@ -158,17 +158,17 @@ export default function TestimonialsItemEditor({ sectionId, itemId }: Testimonia
   }
   
   return (
-    <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
+    <div className="w-80 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
-      <div className="border-b p-4">
+      <div className="border-b border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center gap-2">
           <button
             onClick={() => selectSection(null)}
-            className="p-1 hover:bg-gray-100 rounded"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
           >
             <ArrowLeft size={20} />
           </button>
-          <h3 className="font-medium">Testimonial</h3>
+          <h3 className="font-medium text-gray-900 dark:text-white">Testimonial</h3>
         </div>
       </div>
       

@@ -60,6 +60,7 @@ export default function GalleryItemEditor({ sectionId, itemId }: GalleryItemEdit
   };
 
   const handleBackToGallery = () => {
+    // DEBE volver al panel lateral principal, no al editor del padre
     selectSection(null);
   };
 
@@ -152,7 +153,7 @@ export default function GalleryItemEditor({ sectionId, itemId }: GalleryItemEdit
   };
 
   return (
-    <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
+    <div className="w-80 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={handleBackToGallery}

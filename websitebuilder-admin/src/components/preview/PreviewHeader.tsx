@@ -79,7 +79,10 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     showSearchIcon: config?.showSearchIcon !== false, // default true
     showUserIcon: config?.showUserIcon !== false, // default true
     showCartIcon: config?.showCartIcon !== false, // default true
-    hamburgerIconColor: config?.hamburgerIconColor || '' // custom hamburger color
+    hamburgerIconColor: config?.hamburgerIconColor || '', // custom hamburger color
+    searchIconColor: config?.searchIconColor || '', // custom search icon color
+    cartIconColor: config?.cartIconColor || '', // custom cart icon color
+    userIconColor: config?.userIconColor || '' // custom user icon color
   };
 
   // Apply typography styles from theme (matching EditorPreview.tsx)
@@ -174,11 +177,12 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
   // Icon rendering functions (matching EditorPreview.tsx)
   const renderSearchIcon = () => {
     const iconClass = isMobile ? "w-4 h-4" : "w-5 h-5";
+    const iconColor = headerConfig.searchIconColor || colorScheme?.text?.default || '#000000';
     if (isStyle1) {
       // Style 1 - Circle with magnifying glass
       return (
-        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
-             stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+        <svg className={iconClass} fill={isSolid ? iconColor : 'none'} 
+             stroke={iconColor} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="8" fill={isSolid ? undefined : 'none'} />
           <path d="m21 21-4.35-4.35" strokeLinecap="round" />
         </svg>
@@ -186,10 +190,10 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     } else {
       // Style 2 - Standard search icon
       return (
-        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
-             stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+        <svg className={iconClass} fill={isSolid ? iconColor : 'none'} 
+             stroke={iconColor} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-                fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} />
+                fill={isSolid ? iconColor : 'none'} />
         </svg>
       );
     }
@@ -197,11 +201,12 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
   
   const renderUserIcon = () => {
     const iconClass = isMobile ? "w-4 h-4" : "w-5 h-5";
+    const iconColor = headerConfig.userIconColor || colorScheme?.text?.default || '#000000';
     if (isStyle1) {
       // Style 1 - Simple user
       return (
-        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
-             stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+        <svg className={iconClass} fill={isSolid ? iconColor : 'none'} 
+             stroke={iconColor} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <circle cx="12" cy="7" r="4" />
           <path d="M12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
@@ -209,8 +214,8 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     } else {
       // Style 2 - Detailed user
       return (
-        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
-             stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+        <svg className={iconClass} fill={isSolid ? iconColor : 'none'} 
+             stroke={iconColor} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" 
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
@@ -220,11 +225,12 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
   
   const renderCartIcon = () => {
     const iconClass = isMobile ? "w-4 h-4" : "w-5 h-5";
+    const iconColor = headerConfig.cartIconColor || colorScheme?.text?.default || '#000000';
     if (cartType === 'bag') {
       // Bag icon
       return (
-        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
-             stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+        <svg className={iconClass} fill={isSolid ? iconColor : 'none'} 
+             stroke={iconColor} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" 
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
         </svg>
@@ -232,8 +238,8 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     } else {
       // Cart icon
       return (
-        <svg className={iconClass} fill={isSolid ? (colorScheme?.text?.default || '#000000') : 'none'} 
-             stroke={colorScheme?.text?.default || '#000000'} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
+        <svg className={iconClass} fill={isSolid ? iconColor : 'none'} 
+             stroke={iconColor} strokeWidth={isSolid ? "0" : "2"} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" 
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>

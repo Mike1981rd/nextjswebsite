@@ -338,6 +338,14 @@ export const SECTION_CONFIGS: Record<SectionType, SectionConfig> = {
       limit: 4
     }
   },
+  [SectionType.RICH_TEXT]: {
+    type: SectionType.RICH_TEXT,
+    name: 'Rich text',
+    description: 'Add formatted text with headings, paragraphs and buttons',
+    icon: 'type',
+    category: 'template',
+    defaultSettings: {} // Will be populated in the store
+  },
   [SectionType.TESTIMONIALS]: {
     type: SectionType.TESTIMONIALS,
     name: 'Testimonials',

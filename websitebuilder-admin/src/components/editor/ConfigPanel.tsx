@@ -28,6 +28,8 @@ import FeaturedCollectionEditor from './modules/FeaturedCollection/FeaturedColle
 import FAQEditor from './modules/FAQ/FAQEditor';
 import FAQItemEditor from './modules/FAQ/FAQItemEditor';
 import TestimonialsEditor from './modules/Testimonials/TestimonialsEditor';
+import RichTextEditor from './modules/RichText/RichTextEditor';
+import RichTextItemEditor from './modules/RichText/RichTextItemEditor';
 import TestimonialsItemEditor from './modules/Testimonials/TestimonialsItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
@@ -106,6 +108,32 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   };
   const getFAQItemId = () => {
     if (!isFAQItem || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[1];
+  };
+  
+  // Check if this is a Rich Text block (child) - DEBE usar :child: como Testimonials
+  const isRichTextBlock = selectedSectionId?.includes(':child:') && 
+    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.RICH_TEXT;
+  
+  // Debug Rich Text blocks
+  if (selectedSectionId?.includes(':child:')) {
+    const parentSection = Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0]);
+    console.log('[DEBUG] ConfigPanel - Child detection:', {
+      selectedSectionId,
+      parentType: parentSection?.type,
+      isRichTextBlock,
+      isTestimonialsItem: parentSection?.type === SectionType.TESTIMONIALS,
+      isFAQItem: parentSection?.type === SectionType.FAQ,
+      isMulticolumnsItem: parentSection?.type === SectionType.MULTICOLUMNS
+    });
+  }
+  
+  const getRichTextSectionId = () => {
+    if (!isRichTextBlock || !selectedSectionId) return null;
+    return selectedSectionId.split(':child:')[0];
+  };
+  const getRichTextBlockId = () => {
+    if (!isRichTextBlock || !selectedSectionId) return null;
     return selectedSectionId.split(':child:')[1];
   };
   
@@ -250,7 +278,7 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     }
   }
   
-  // Return early for Testimonials items AFTER all hooks
+  // Return early for Testimonials items AFTER all hooks - CHECK AFTER FAQ
   if (isTestimonialsItem) {
     const sectionId = getTestimonialsSectionId();
     const itemId = getTestimonialsItemId();
@@ -260,7 +288,23 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     }
   }
   
-  // Return early for ImageWithText items AFTER all hooks - CHECK AFTER FAQ
+  // Return early for Rich Text blocks AFTER all hooks - CHECK AFTER Testimonials
+  if (isRichTextBlock) {
+    const sectionId = getRichTextSectionId();
+    const blockId = getRichTextBlockId();
+    
+    console.log('[DEBUG] ConfigPanel - Rendering RichTextItemEditor:', {
+      sectionId,
+      blockId,
+      isRichTextBlock
+    });
+    
+    if (sectionId && blockId) {
+      return <RichTextItemEditor sectionId={sectionId} blockId={blockId} />;
+    }
+  }
+  
+  // Return early for ImageWithText items AFTER all hooks - CHECK AFTER Rich Text
   if (isImageWithTextItem) {
     const sectionId = getImageWithTextSectionId();
     const itemId = getImageWithTextItemId();
@@ -380,6 +424,25 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
       case SectionType.TESTIMONIALS:
         return <TestimonialsEditor sectionId={section.id} />;
+
+      case SectionType.RICH_TEXT:
+        // Find the group ID for this section
+        const richTextGroupId = Object.entries(sections).find(([_, sectionsList]) =>
+          sectionsList.some(s => s.id === section.id)
+        )?.[0];
+        
+        return (
+          <RichTextEditor
+            sectionId={section.id}
+            config={section.settings}
+            onUpdate={(config) => {
+              if (richTextGroupId) {
+                updateSectionSettings(richTextGroupId, section.id, config);
+              }
+            }}
+            onClose={handleBack}
+          />
+        );
 
       default:
         return (

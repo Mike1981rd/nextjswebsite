@@ -21,6 +21,7 @@ import PreviewImageWithText from './modules/ImageWithText/PreviewImageWithText';
 import PreviewFeaturedCollection from '@/components/preview/PreviewFeaturedCollection';
 import PreviewFAQ from '@/components/preview/PreviewFAQ';
 import PreviewTestimonials from '@/components/preview/PreviewTestimonials';
+import PreviewRichText from '@/components/preview/PreviewRichText';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -602,6 +603,25 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
             config={testimonialsConfig as any}
             theme={themeConfig || undefined}
             deviceView={deviceView as 'desktop' | 'mobile'}
+            isEditor={true}
+          />
+        );
+
+      case SectionType.RICH_TEXT:
+        const richTextConfig = section.settings || {
+          colorScheme: '1',
+          colorBackground: false,
+          width: 'page',
+          contentAlignment: 'center',
+          paddingTop: 64,
+          paddingBottom: 64,
+          customCSS: '',
+          blocks: []
+        };
+        return (
+          <PreviewRichText
+            config={richTextConfig as any}
+            deviceView={deviceView}
             isEditor={true}
           />
         );
