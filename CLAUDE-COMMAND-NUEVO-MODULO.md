@@ -98,6 +98,59 @@ export interface [Module]ItemConfig {
 - Botón azul "Agregar [item]" al inicio
 - Lista con drag & drop
 - Botones de visibilidad y eliminar
+- Usar pattern :child: para selección
+```
+
+#### 4.1 ITEM EDITOR (wrapper crítico si tiene hijos)
+```typescript
+// /components/editor/modules/[Module]/[Module]ItemEditor.tsx
+export default function [Module]ItemEditor({ sectionId, blockId }: Props) {
+  const { sections, updateSectionSettings, selectSection } = useEditorStore();
+  
+  // Find section and block
+  const section = Object.values(sections).flat().find(s => s.id === sectionId);
+  const blocks = section?.settings?.blocks || [];
+  const block = blocks.find((b: Block) => b.id === blockId);
+  
+  const handleUpdate = (updates: Partial<Block>) => {
+    // Update block in array
+    const newBlocks = blocks.map((b: Block) => 
+      b.id === blockId ? { ...b, ...updates } : b
+    );
+    
+    // Find group and update
+    const groupId = Object.entries(sections).find(([_, list]) =>
+      list.some(s => s.id === sectionId)
+    )?.[0];
+    
+    if (groupId) {
+      updateSectionSettings(groupId, sectionId, {
+        ...section?.settings,
+        blocks: newBlocks
+      });
+    }
+  };
+  
+  const handleBack = () => {
+    selectSection(null); // CRÍTICO: null, no sectionId
+  };
+  
+  return (
+    <[Module]ChildEditor
+      block={block}
+      onUpdate={handleUpdate}
+      onClose={handleBack}
+    />
+  );
+}
+```
+
+#### 4.2 CHILD EDITOR (editor real del hijo)
+```typescript
+// /components/editor/modules/[Module]/[Module]ChildEditor.tsx
+- Recibe block, onUpdate, onClose como props
+- Incluye flecha de regreso con ChevronLeft
+- onClose debe llamar selectSection(null)
 ```
 
 #### 5. INTEGRACIONES
@@ -198,6 +251,7 @@ Para lograrlo:
 1. En [Module]Children usar ID especial: `${section.id}:child:${childId}`
 2. En EditorSidebarWithDnD agregar sección virtual
 3. En ConfigPanel detectar con `selectedSectionId?.includes(':child:')`
+4. **CRÍTICO**: Crear `[Module]ItemEditor.tsx` como wrapper (patrón RichText)
 
 ### ❌ Error 4: Navegación incorrecta
 **EN [Child]Editor.tsx**:
@@ -246,19 +300,19 @@ if (!selectedSection && selectedSectionId?.includes(':child:')) {
 
 ### En ConfigPanel.tsx:
 ```typescript
-// 1. Importar editor hijo
-import [Module]ChildEditor from './modules/[Module]/[Module]ChildEditor';
+// 1. Importar ItemEditor (NO ChildEditor directamente)
+import [Module]ItemEditor from './modules/[Module]/[Module]ItemEditor';
 
 // 2. Detectar hijo (después de línea ~40)
 const is[Module]Child = selectedSectionId?.includes(':child:') && 
-  section.type === SectionType.[MODULE];
+  Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.[MODULE];
 
-// 3. Renderizar editor hijo (después de línea ~110)
+// 3. Renderizar ItemEditor (después de línea ~110)
 if (is[Module]Child) {
   const sectionId = selectedSectionId.split(':child:')[0];
   const childId = selectedSectionId.split(':child:')[1];
   if (sectionId && childId) {
-    return <[Module]ChildEditor sectionId={sectionId} childId={childId} />;
+    return <[Module]ItemEditor sectionId={sectionId} blockId={childId} />;
   }
 }
 ```
@@ -272,8 +326,9 @@ Al terminar, mostrar:
 - types.ts
 - Preview[Module].tsx
 - [Module]Editor.tsx
-- [Module]Children.tsx (si aplica)
-- [Module]ChildEditor.tsx (si aplica)
+- [Module]Children.tsx (si tiene hijos)
+- [Module]ItemEditor.tsx (si tiene hijos - wrapper)
+- [Module]ChildEditor.tsx (si tiene hijos - editor real)
 
 ✅ Integraciones actualizadas:
 - SECTION_CONFIGS ✓

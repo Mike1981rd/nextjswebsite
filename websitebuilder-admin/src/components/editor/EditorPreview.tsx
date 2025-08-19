@@ -22,6 +22,7 @@ import PreviewFeaturedCollection from '@/components/preview/PreviewFeaturedColle
 import PreviewFAQ from '@/components/preview/PreviewFAQ';
 import PreviewTestimonials from '@/components/preview/PreviewTestimonials';
 import PreviewRichText from '@/components/preview/PreviewRichText';
+import PreviewNewsletter from '@/components/preview/PreviewNewsletter';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -621,6 +622,16 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
         return (
           <PreviewRichText
             config={richTextConfig as any}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+
+      case SectionType.NEWSLETTER:
+        return (
+          <PreviewNewsletter
+            config={section.settings}
+            theme={themeConfig}
             deviceView={deviceView}
             isEditor={true}
           />

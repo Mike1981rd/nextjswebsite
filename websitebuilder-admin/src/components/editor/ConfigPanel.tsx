@@ -30,6 +30,8 @@ import FAQItemEditor from './modules/FAQ/FAQItemEditor';
 import TestimonialsEditor from './modules/Testimonials/TestimonialsEditor';
 import RichTextEditor from './modules/RichText/RichTextEditor';
 import RichTextItemEditor from './modules/RichText/RichTextItemEditor';
+import NewsletterEditor from './modules/Newsletter/NewsletterEditor';
+import NewsletterItemEditor from './modules/Newsletter/NewsletterItemEditor';
 import TestimonialsItemEditor from './modules/Testimonials/TestimonialsItemEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
@@ -45,6 +47,13 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   const [settings, setSettings] = useState(section.settings);
   const [hasChanges, setHasChanges] = useState(false);
   const [headerLoading, setHeaderLoading] = useState(false);
+  
+  // Debug log at the very beginning
+  console.log('[DEBUG] ConfigPanel - Rendering with:', {
+    selectedSectionId,
+    sectionType: section?.type,
+    sectionId: section?.id
+  });
   
   // Check if this is an announcement item (child)
   const isAnnouncementItem = section.id.startsWith('announcement-');
@@ -115,6 +124,10 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   const isRichTextBlock = selectedSectionId?.includes(':child:') && 
     Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.RICH_TEXT;
   
+  // Check if this is a Newsletter block (child)
+  const isNewsletterBlock = selectedSectionId?.includes(':child:') && 
+    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.NEWSLETTER;
+  
   // Debug Rich Text blocks
   if (selectedSectionId?.includes(':child:')) {
     const parentSection = Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0]);
@@ -122,6 +135,7 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
       selectedSectionId,
       parentType: parentSection?.type,
       isRichTextBlock,
+      isNewsletterBlock,
       isTestimonialsItem: parentSection?.type === SectionType.TESTIMONIALS,
       isFAQItem: parentSection?.type === SectionType.FAQ,
       isMulticolumnsItem: parentSection?.type === SectionType.MULTICOLUMNS
@@ -304,6 +318,22 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
     }
   }
   
+  // Return early for Newsletter blocks AFTER all hooks
+  if (isNewsletterBlock) {
+    const sectionId = selectedSectionId?.split(':child:')[0];
+    const blockId = selectedSectionId?.split(':child:')[1];
+    
+    console.log('[DEBUG] ConfigPanel - Rendering NewsletterItemEditor:', {
+      sectionId,
+      blockId,
+      isNewsletterBlock
+    });
+    
+    if (sectionId && blockId) {
+      return <NewsletterItemEditor sectionId={sectionId} blockId={blockId} />;
+    }
+  }
+  
   // Return early for ImageWithText items AFTER all hooks - CHECK AFTER Rich Text
   if (isImageWithTextItem) {
     const sectionId = getImageWithTextSectionId();
@@ -438,6 +468,25 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
             onUpdate={(config) => {
               if (richTextGroupId) {
                 updateSectionSettings(richTextGroupId, section.id, config);
+              }
+            }}
+            onClose={handleBack}
+          />
+        );
+
+      case SectionType.NEWSLETTER:
+        // Find the group ID for this section
+        const newsletterGroupId = Object.entries(sections).find(([_, sectionsList]) =>
+          sectionsList.some(s => s.id === section.id)
+        )?.[0];
+        
+        return (
+          <NewsletterEditor
+            sectionId={section.id}
+            config={section.settings}
+            onUpdate={(config) => {
+              if (newsletterGroupId) {
+                updateSectionSettings(newsletterGroupId, section.id, config);
               }
             }}
             onClose={handleBack}

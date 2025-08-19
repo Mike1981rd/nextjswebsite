@@ -11,6 +11,7 @@ import PreviewFeaturedCollection from './PreviewFeaturedCollection';
 import PreviewFAQ from './PreviewFAQ';
 import PreviewTestimonials from './PreviewTestimonials';
 import PreviewRichText from './PreviewRichText';
+import PreviewNewsletter from './PreviewNewsletter';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -110,6 +111,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     if (t === 'FAQ' || t === 'faq') return 'faq';
     if (t === 'Testimonials' || t === 'testimonials') return 'testimonials';
     if (t === 'RichText' || t === 'rich_text') return 'rich_text';
+    if (t === 'Newsletter' || t === 'newsletter') return 'newsletter';
     return t;
   };
 
@@ -271,6 +273,16 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
                 <PreviewRichText 
                   config={getSectionConfig(section)}
                   deviceView={deviceView as 'desktop' | 'mobile' | 'tablet'}
+                  isEditor={false}
+                />
+              )}
+              
+              {/* Newsletter (unified preview component) */}
+              {getSectionType(section) === 'newsletter' && (
+                <PreviewNewsletter 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
                   isEditor={false}
                 />
               )}

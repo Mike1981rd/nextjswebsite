@@ -35,6 +35,7 @@ import ImageWithTextChildren from './modules/ImageWithText/ImageWithTextChildren
 import FAQChildren from './modules/FAQ/FAQChildren';
 import TestimonialsChildren from './modules/Testimonials/TestimonialsChildren';
 import RichTextSidebarChildren from './modules/RichText/RichTextSidebarChildren';
+import NewsletterSidebarChildren from './modules/Newsletter/NewsletterSidebarChildren';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { useEditorTranslations } from '@/hooks/useEditorTranslations';
 import { useSectionDragDrop } from '@/hooks/useSectionDragDrop';
@@ -68,7 +69,9 @@ export function EditorSidebarWithDnD() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 15, // Aumentado de 8 a 15 píxeles para evitar activación accidental
+        tolerance: 5, // Tolerancia adicional para movimientos pequeños
+        delay: 150 // Retraso de 150ms antes de activar el drag
       },
     }),
     useSensor(KeyboardSensor, {
@@ -197,6 +200,15 @@ export function EditorSidebarWithDnD() {
         id: selectedSectionId,
         type: 'RICH_TEXT_BLOCK' as any,
         name: 'Rich Text Block',
+        visible: true,
+        settings: parentSection?.settings || {},
+        sortOrder: 0
+      } as any;
+    } else if (parentSection?.type === SectionType.NEWSLETTER) {
+      selectedSection = {
+        id: selectedSectionId,
+        type: 'NEWSLETTER_BLOCK' as any,
+        name: 'Newsletter Block',
         visible: true,
         settings: parentSection?.settings || {},
         sortOrder: 0
@@ -359,6 +371,15 @@ export function EditorSidebarWithDnD() {
                               {/* Rich Text Children - Show rich text blocks */}
                               {section.type === SectionType.RICH_TEXT && section.visible && (
                                 <RichTextSidebarChildren
+                                  blocks={section.settings?.blocks || []}
+                                  section={section}
+                                  groupId={group.id}
+                                />
+                              )}
+
+                              {/* Newsletter Children - Show newsletter blocks */}
+                              {section.type === SectionType.NEWSLETTER && section.visible && (
+                                <NewsletterSidebarChildren
                                   blocks={section.settings?.blocks || []}
                                   section={section}
                                   groupId={group.id}

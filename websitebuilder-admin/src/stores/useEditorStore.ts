@@ -128,6 +128,65 @@ export const useEditorStore = create<EditorStore>()(
             };
           }
           
+          // Special handling for Newsletter - create default blocks
+          if (sectionType === SectionType.NEWSLETTER) {
+            const timestamp = Date.now();
+            defaultSettings = {
+              colorScheme: '3',
+              colorBackground: false,
+              width: 'screen',
+              desktopRatio: 0.2,
+              mobileRatio: 1.6,
+              desktopImage: '',
+              mobileImage: '',
+              video: '',
+              desktopOverlayOpacity: 0,
+              mobileOverlayOpacity: 0,
+              desktopPosition: 'left',
+              desktopAlignment: 'left',
+              desktopWidth: 704,
+              desktopSpacing: 16,
+              mobilePosition: 'top',
+              mobileAlignment: 'left',
+              desktopContentBackground: 'none',
+              mobileContentBackground: 'none',
+              addSidePaddings: true,
+              paddingTop: 10,
+              paddingBottom: 85,
+              customCSS: '',
+              blocks: [
+                {
+                  id: `subheading-${timestamp}`,
+                  type: 'subheading',
+                  text: 'NEWSLETTER',
+                  visible: true
+                },
+                {
+                  id: `heading-${timestamp + 1}`,
+                  type: 'heading',
+                  text: 'Subscribe',
+                  size: 'h4',
+                  visible: true
+                },
+                {
+                  id: `text-${timestamp + 2}`,
+                  type: 'text',
+                  content: 'Subscribe for early sale access, new in, promotions, and more.',
+                  bodySize: 'body3',
+                  visible: true
+                },
+                {
+                  id: `subscribe-${timestamp + 3}`,
+                  type: 'subscribe',
+                  inputStyle: 'solid',
+                  placeholder: 'Correo electrónico',
+                  buttonText: 'Suscribirse',
+                  visible: true
+                }
+              ]
+            };
+          }
+          
           const newSection: Section = {
             id: `${sectionType}_${Date.now()}`,
             type: sectionType,
