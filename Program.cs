@@ -180,6 +180,7 @@ try
     // Registrar servicio de Reviews
     builder.Services.AddScoped<IReviewService, ReviewService>();
     builder.Services.AddScoped<HostService>();
+    builder.Services.AddScoped<IConfigOptionService, ConfigOptionService>();
 
     // Add HttpContextAccessor
     builder.Services.AddHttpContextAccessor();

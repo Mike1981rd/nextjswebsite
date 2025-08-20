@@ -94,6 +94,7 @@ namespace WebsiteBuilderAPI.Data
         // Host System
         public DbSet<WebsiteBuilderAPI.Models.Host> Hosts { get; set; }
         public DbSet<HostReview> HostReviews { get; set; }
+        public DbSet<ConfigOption> ConfigOptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

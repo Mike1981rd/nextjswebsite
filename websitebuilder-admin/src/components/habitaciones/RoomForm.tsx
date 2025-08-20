@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfigOptions } from '@/hooks/useConfigOptions';
 import RoomFormExtended from './RoomFormExtended';
 import Toggle from '@/components/ui/Toggle';
 import { 
@@ -12,7 +13,8 @@ import {
   TrashIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  CloudArrowUpIcon
+  CloudArrowUpIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 
 interface RoomFormData {
@@ -176,44 +178,15 @@ export default function RoomForm({
     }
   }, []);
 
-  // Room types predefinidos
-  const roomTypes = [
-    { value: 'standard', label: t('rooms.types.standard', 'Estándar') },
-    { value: 'deluxe', label: t('rooms.types.deluxe', 'Deluxe') },
-    { value: 'suite', label: t('rooms.types.suite', 'Suite') },
-    { value: 'junior-suite', label: t('rooms.types.juniorSuite', 'Junior Suite') },
-    { value: 'presidential', label: t('rooms.types.presidential', 'Presidencial') },
-    { value: 'penthouse', label: t('rooms.types.penthouse', 'Penthouse') }
-  ];
-
-  // View types predefinidos
-  const viewTypes = [
-    { value: 'sea', label: t('rooms.views.sea', 'Vista al Mar') },
-    { value: 'city', label: t('rooms.views.city', 'Vista a la Ciudad') },
-    { value: 'garden', label: t('rooms.views.garden', 'Vista al Jardín') },
-    { value: 'pool', label: t('rooms.views.pool', 'Vista a la Piscina') },
-    { value: 'mountain', label: t('rooms.views.mountain', 'Vista a la Montaña') },
-    { value: 'interior', label: t('rooms.views.interior', 'Vista Interior') }
-  ];
-
-  // Amenidades predefinidas - usando keys que serán traducidas en el render
-  const commonAmenities = [
-    { key: 'wifi', label: 'WiFi' },
-    { key: 'tv', label: 'TV' },
-    { key: 'minibar', label: 'Minibar' },
-    { key: 'ac', label: 'Aire Acondicionado' },
-    { key: 'heating', label: 'Calefacción' },
-    { key: 'safe', label: 'Caja Fuerte' },
-    { key: 'balcony', label: 'Balcón' },
-    { key: 'terrace', label: 'Terraza' },
-    { key: 'jacuzzi', label: 'Jacuzzi' },
-    { key: 'seaview', label: 'Vista al Mar' },
-    { key: 'kitchen', label: 'Cocina' },
-    { key: 'microwave', label: 'Microondas' },
-    { key: 'coffee', label: 'Cafetera' },
-    { key: 'hairdryer', label: 'Secador de Pelo' },
-    { key: 'iron', label: 'Plancha' }
-  ];
+  // Cargar opciones dinámicas desde la base de datos
+  const { options: roomTypes, loading: loadingRoomTypes } = useConfigOptions('room_type');
+  const { options: viewTypes, loading: loadingViewTypes } = useConfigOptions('view_type');
+  const { options: amenityOptions, loading: loadingAmenities, incrementUsage } = useConfigOptions('amenity');
+  
+  // Función para navegar a configuración de catálogos
+  const openConfigOptions = () => {
+    window.open('/dashboard/config-options', '_blank');
+  };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -784,39 +757,52 @@ export default function RoomForm({
               
               {/* Amenidades predefinidas */}
               <div className="mb-3">
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  {t('rooms.quickAdd', 'Agregar rápido')}:
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('rooms.quickAdd', 'Agregar rápido')}:
+                  </p>
+                  <button
+                    type="button"
+                    onClick={openConfigOptions}
+                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                    title={t('rooms.manageOptions', 'Gestionar opciones')}
+                  >
+                    <Cog6ToothIcon className="h-4 w-4" />
+                    {t('rooms.customize', 'Personalizar')}
+                  </button>
+                </div>
                 <div className="flex flex-wrap gap-2">
-                  {commonAmenities.map(amenity => {
-                    // Obtener la traducción correcta para amenidades que tienen traducción
-                    const amenityLabel = ['wifi', 'tv', 'minibar', 'jacuzzi'].includes(amenity.key) 
-                      ? amenity.label 
-                      : t(`rooms.amenities.${amenity.key}`, amenity.label);
-                    
-                    return (
+                  {loadingAmenities ? (
+                    <div className="text-xs text-gray-500">Cargando...</div>
+                  ) : (
+                    amenityOptions.map(amenity => (
                       <button
-                        key={amenity.key}
+                        key={amenity.value}
                         type="button"
                         onClick={() => {
-                          if (!formData.amenities?.includes(amenityLabel)) {
+                          if (!formData.amenities?.includes(amenity.label)) {
                             setFormData({
                               ...formData,
-                              amenities: [...(formData.amenities || []), amenityLabel]
+                              amenities: [...(formData.amenities || []), amenity.label]
                             });
+                            // Incrementar contador de uso
+                            incrementUsage(amenity.value);
                           }
                         }}
-                        disabled={formData.amenities?.includes(amenityLabel)}
-                        className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                          formData.amenities?.includes(amenityLabel)
+                        disabled={formData.amenities?.includes(amenity.label)}
+                        className={`px-3 py-1 text-xs rounded-full transition-colors flex items-center gap-1 ${
+                          formData.amenities?.includes(amenity.label)
                             ? 'bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                         }`}
                       >
-                        {amenityLabel}
+                        {amenity.icon && (
+                          <span className="text-sm">{amenity.icon}</span>
+                        )}
+                        {amenity.label}
                       </button>
-                    );
-                  })}
+                    ))
+                  )}
                 </div>
               </div>
 
