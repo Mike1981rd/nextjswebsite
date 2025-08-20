@@ -84,6 +84,12 @@ namespace WebsiteBuilderAPI.Data
         
         // Website Builder Theme Configuration v2.0
         public DbSet<GlobalThemeConfig> GlobalThemeConfigs { get; set; }
+        
+        // Reviews System
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<ReviewMedia> ReviewMedia { get; set; }
+        public DbSet<ReviewInteraction> ReviewInteractions { get; set; }
+        public DbSet<ReviewStatistics> ReviewStatistics { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -993,6 +999,140 @@ namespace WebsiteBuilderAPI.Data
                 // Indexes for performance
                 entity.HasIndex(e => e.IsPublished);
                 entity.HasIndex(e => e.UpdatedAt);
+            });
+
+            // Configuración de Review
+            modelBuilder.Entity<Review>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.AuthorName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.AuthorEmail).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Content).IsRequired().HasMaxLength(5000);
+                entity.Property(e => e.Rating).IsRequired();
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                // Relationships
+                entity.HasOne(e => e.Product)
+                    .WithMany()
+                    .HasForeignKey(e => e.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Room)
+                    .WithMany()
+                    .HasForeignKey(e => e.RoomId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Customer)
+                    .WithMany()
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                    
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.ApprovedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.ApprovedByUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                    
+                entity.HasOne(e => e.RepliedBy)
+                    .WithMany()
+                    .HasForeignKey(e => e.RepliedByUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                
+                // Indexes
+                entity.HasIndex(e => new { e.CompanyId, e.ProductId }).HasFilter("\"ProductId\" IS NOT NULL");
+                entity.HasIndex(e => new { e.CompanyId, e.RoomId }).HasFilter("\"RoomId\" IS NOT NULL");
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.Rating);
+                entity.HasIndex(e => e.CreatedAt);
+                
+                // Ensure either ProductId or RoomId is set (but not both)
+                entity.HasCheckConstraint("CK_Review_ProductOrRoom", 
+                    "(\"ProductId\" IS NOT NULL AND \"RoomId\" IS NULL) OR (\"ProductId\" IS NULL AND \"RoomId\" IS NOT NULL)");
+            });
+
+            // Configuración de ReviewMedia
+            modelBuilder.Entity<ReviewMedia>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.MediaUrl).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.UploadedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Review)
+                    .WithMany(r => r.Media)
+                    .HasForeignKey(e => e.ReviewId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasIndex(e => e.ReviewId);
+            });
+
+            // Configuración de ReviewInteraction
+            modelBuilder.Entity<ReviewInteraction>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Review)
+                    .WithMany(r => r.Interactions)
+                    .HasForeignKey(e => e.ReviewId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Customer)
+                    .WithMany()
+                    .HasForeignKey(e => e.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                    
+                // Unique constraint to prevent duplicate interactions
+                entity.HasIndex(e => new { e.ReviewId, e.CustomerId, e.Type })
+                    .IsUnique()
+                    .HasFilter("\"CustomerId\" IS NOT NULL");
+                    
+                entity.HasIndex(e => new { e.ReviewId, e.SessionId, e.Type })
+                    .IsUnique()
+                    .HasFilter("\"SessionId\" IS NOT NULL");
+            });
+
+            // Configuración de ReviewStatistics
+            modelBuilder.Entity<ReviewStatistics>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.AverageRating).HasPrecision(3, 2);
+                entity.Property(e => e.PositivePercentage).HasPrecision(5, 2);
+                entity.Property(e => e.WeeklyGrowthPercentage).HasPrecision(5, 2);
+                entity.Property(e => e.WeeklyTrend).HasColumnType("jsonb");
+                entity.Property(e => e.LastCalculatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Company)
+                    .WithMany()
+                    .HasForeignKey(e => e.CompanyId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Product)
+                    .WithMany()
+                    .HasForeignKey(e => e.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Room)
+                    .WithMany()
+                    .HasForeignKey(e => e.RoomId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                // Unique index for company-product statistics
+                entity.HasIndex(e => new { e.CompanyId, e.ProductId })
+                    .IsUnique()
+                    .HasFilter("\"ProductId\" IS NOT NULL AND \"RoomId\" IS NULL");
+                    
+                // Unique index for company-room statistics
+                entity.HasIndex(e => new { e.CompanyId, e.RoomId })
+                    .IsUnique()
+                    .HasFilter("\"RoomId\" IS NOT NULL AND \"ProductId\" IS NULL");
+                    
+                // Index for global company statistics
+                entity.HasIndex(e => e.CompanyId)
+                    .HasFilter("\"ProductId\" IS NULL AND \"RoomId\" IS NULL");
             });
         }
     }

@@ -176,6 +176,9 @@ try
     // Registrar servicios de encriptación
     builder.Services.AddScoped<IEncryptionService, EncryptionService>();
     builder.Services.AddScoped<IPaymentProviderService, PaymentProviderService>();
+    
+    // Registrar servicio de Reviews
+    builder.Services.AddScoped<IReviewService, ReviewService>();
 
     // Add HttpContextAccessor
     builder.Services.AddHttpContextAccessor();

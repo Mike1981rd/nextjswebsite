@@ -32,7 +32,8 @@ import {
   OrdersIcon,
   SubscribersIcon,
   NavigationIcon,
-  EditorIcon
+  EditorIcon,
+  ReviewsIcon
 } from '@/components/ui/Icons';
 
 // Define menu item type
@@ -129,6 +130,13 @@ const menuItems: MenuItem[] = [
         href: '/dashboard/orders',
         icon: OrdersIcon,
         permission: 'orders.read'
+      },
+      {
+        id: 'reviews',
+        nameKey: 'navigation.reviews',
+        href: '/dashboard/reviews',
+        icon: ReviewsIcon,
+        permission: 'reviews.read'
       },
       {
         id: 'subscriptores',

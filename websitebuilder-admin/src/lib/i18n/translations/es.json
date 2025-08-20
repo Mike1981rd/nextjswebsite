@@ -51,16 +51,15 @@
     "filters": "Filtros",
     "clearAll": "Limpiar Todo",
     "optional": "Opcional",
-    "saving": "Guardando...",
+    "saving": "Guardando",
     "days": "días",
     "from": "Desde",
-    "to": "Hasta",
+    "to": "a",
     "loading": "Cargando...",
     "error": "Error",
     "discard": "Descartar",
     "saveChanges": "Guardar Cambios",
     "pageOf": "Página {{current}} de {{total}}",
-    "saving": "Guardando",
     "saved": "Guardado",
     "saveSuccess": "Cliente guardado exitosamente",
     "uploading": "Subiendo...",
@@ -106,10 +105,7 @@
     "of": "de",
     "previous": "Anterior",
     "next": "Siguiente",
-    "to": "a",
     "requiredFields": "Indica campos obligatorios",
-    "of": "de",
-    "page": "Página",
     "entries": "entradas",
     "searchUser": "Buscar Usuario",
     "upload": "Cargar",
@@ -125,9 +121,6 @@
     "hours": "horas",
     "ago": "hace",
     "apply": "Aplicar",
-    "saving": "Guardando",
-    "saved": "Guardado",
-    "saveChanges": "Guardar Cambios",
     "unsaved": "Sin guardar",
     "lastSaved": "Guardado por última vez",
     "total": "Total",
@@ -138,26 +131,26 @@
   "navigation": {
     "dashboard": "Panel de Control",
     "empresa": "Empresa",
-    "configuracion": "Configuración",
-    "rolesUsuarios": "Roles & Usuarios",
+    "rolesUsuarios": "Roles y Usuarios",
     "clientes": "Clientes",
-    "habitaciones": "Habitaciones",
-    "notificaciones": "Notificaciones",
-    "locations": "Ubicaciones",
     "reservaciones": "Reservaciones",
-    "orders": "Órdenes",
-    "dominios": "Dominios",
+    "disponibilidad": "Disponibilidad",
     "metodosPago": "Métodos de Pago",
     "colecciones": "Colecciones",
     "productos": "Productos",
-    "paginas": "Páginas",
-    "politicas": "Políticas",
+    "notificaciones": "Notificaciones",
     "websiteBuilder": "Sitio Web",
     "editor": "Editor del Sitio",
-    "navegacion": "Navegación",
     "whatsapp": "WhatsApp",
+    "orders": "Pedidos",
     "subscriptores": "Suscriptores",
-    "dominios": "Dominios"
+    "navegacion": "Navegación",
+    "habitaciones": "Habitaciones",
+    "paginas": "Páginas",
+    "politicas": "Políticas",
+    "reviews": "Reseñas",
+    "dominios": "Dominios",
+    "currentPage": "Página Actual"
   },
   "pages": {
     "title": "Páginas",
@@ -514,7 +507,7 @@
   },
   "dateRange": {
     "today": "Hoy",
-    "yesterday": "Ayer", 
+    "yesterday": "Ayer",
     "last7days": "Últimos 7 días",
     "last30days": "Últimos 30 días",
     "last90days": "Últimos 90 días",
@@ -575,7 +568,21 @@
     "commission": "Comisión",
     "activate": "Activar",
     "deactivate": "Desactivar",
-    "configure": "Configurar",
+    "configure": {
+      "title": "Configurar",
+      "save": "Guardar Configuración",
+      "security": {
+        "title": "Sus credenciales están seguras",
+        "description": "Todas las credenciales se encriptan con AES-256 antes de almacenarse. Los certificados SSL se guardan en un directorio seguro fuera del alcance público."
+      },
+      "testMode": {
+        "title": "Modo de Prueba Activado",
+        "description": "Las transacciones no serán procesadas realmente. Desactive el modo de prueba cuando esté listo para procesar pagos reales."
+      },
+      "required": "requerido",
+      "selectFile": "Seleccionar archivo",
+      "completeFields": "Por favor complete todos los campos requeridos"
+    },
     "testMode": "Modo Prueba",
     "addProvider": "Agregar Proveedor",
     "addProviderDescription": "Añade un nuevo método de pago",
@@ -586,7 +593,13 @@
     "logoUrl": "Logo URL",
     "logoUrlPlaceholder": "https://ejemplo.com/logo.png",
     "cancel": "Cancelar",
-    "add": "Agregar Proveedor",
+    "add": {
+      "title": "Agregar Proveedor de Pago",
+      "subtitle": "Seleccione un proveedor para configurar",
+      "search": "Buscar proveedores...",
+      "noProviders": "No hay proveedores disponibles",
+      "noResults": "No se encontraron proveedores"
+    },
     "error": {
       "loading": "Error al cargar los proveedores de pago",
       "toggle": "Error al cambiar el estado del proveedor",
@@ -634,28 +647,6 @@
         "privateKeyRequired": "La llave privada .key es requerida en modo producción",
         "certificates": "Los certificados SSL son requeridos"
       }
-    },
-    "configure": {
-      "title": "Configurar",
-      "save": "Guardar Configuración",
-      "security": {
-        "title": "Sus credenciales están seguras",
-        "description": "Todas las credenciales se encriptan con AES-256 antes de almacenarse. Los certificados SSL se guardan en un directorio seguro fuera del alcance público."
-      },
-      "testMode": {
-        "title": "Modo de Prueba Activado",
-        "description": "Las transacciones no serán procesadas realmente. Desactive el modo de prueba cuando esté listo para procesar pagos reales."
-      },
-      "required": "requerido",
-      "selectFile": "Seleccionar archivo",
-      "completeFields": "Por favor complete todos los campos requeridos"
-    },
-    "add": {
-      "title": "Agregar Proveedor de Pago",
-      "subtitle": "Seleccione un proveedor para configurar",
-      "search": "Buscar proveedores...",
-      "noProviders": "No hay proveedores disponibles",
-      "noResults": "No se encontraron proveedores"
     }
   },
   "auth": {
@@ -819,18 +810,30 @@
     "unexpectedError": "Error inesperado"
   },
   "subscribers": {
-    "actions": {
-      "loading": "cargar subscriptores",
-      "toggleStatus": "cambiar estado",
-      "delete": "eliminar subscriptor",
-      "convert": "convertir a cliente",
-      "export": "exportar datos"
-    },
-    "statusActive": "activo",
-    "statusInactive": "inactivo",
-    "statusUpdated": "Estado del subscriptor actualizado exitosamente.",
-    "deleteSuccess": "Subscriptor eliminado exitosamente.",
-    "convertSuccess": "Subscriptor convertido a cliente exitosamente."
+    "title": "Subscriptores Newsletter",
+    "subscriber": "Suscriptor",
+    "totalActive": "Activos",
+    "totalInactive": "Inactivos",
+    "converted": "Convertidos",
+    "thisMonth": "Este mes",
+    "conversionRate": "Conversión",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "pending": "Pendientes",
+    "source": "Origen",
+    "subscribed": "Suscrito",
+    "status": "Estado",
+    "search": "Buscar por email o nombre...",
+    "noResults": "No se encontraron subscriptores",
+    "totalSubscribers": "Total: {count} subscriptores",
+    "convertToCustomer": "Convertir a Cliente",
+    "convertingSubscriber": "Convirtiendo suscriptor:",
+    "converting": "Convirtiendo...",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "exportData": "Exportar Subscriptores",
+    "selectFormat": "Selecciona el formato que deseas exportar",
+    "popupBlocked": "Please allow popups to export PDF"
   },
   "export": {
     "noData": "No hay datos para exportar. Primero cargue los datos.",
@@ -965,18 +968,17 @@
     "contact": "Información de contacto"
   },
   "validation": {
-    "required": "Este campo es requerido",
-    "invalidEmail": "Dirección de correo inválida",
-    "passwordMin": "La contraseña debe tener al menos 6 caracteres",
-    "passwordMismatch": "Las contraseñas no coinciden",
-    "selectRole": "Por favor selecciona al menos un rol"
+    "firstNameRequired": "El nombre es requerido",
+    "lastNameRequired": "El apellido es requerido",
+    "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+    "passwordMismatch": "Las contraseñas no coinciden"
   },
   "customers": {
     "title": "Todos los Clientes",
     "subtitle": "Gestiona tu base de clientes",
     "addCustomer": "Agregar Cliente",
     "searchPlaceholder": "Buscar clientes...",
-    "confirmDelete": "¿Estás seguro de que quieres eliminar este cliente?",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este cliente?",
     "confirmDeactivate": "¿Estás seguro de que quieres desactivar este cliente?",
     "confirmActivate": "¿Estás seguro de que quieres activar este cliente?",
     "deactivate": "Desactivar",
@@ -985,7 +987,7 @@
     "totalOrders": "Pedidos",
     "spent": "Gastado",
     "noResults": "No se encontraron clientes",
-    "avatarTypeError": "Por favor selecciona un archivo de imagen válido",
+    "avatarTypeError": "Por favor selecciona un archivo de imagen válido (JPEG, PNG, GIF o WebP)",
     "avatarSizeError": "El tamaño de la imagen no debe exceder 5MB",
     "avatarUploadError": "Error al subir el avatar",
     "sections": {
@@ -993,122 +995,6 @@
       "contact": "Información de Contacto",
       "preferences": "Preferencias"
     },
-    "fields": {
-      "firstName": "Nombre",
-      "lastName": "Apellido",
-      "username": "Nombre de usuario",
-      "email": "Correo electrónico",
-      "phone": "Número de teléfono",
-      "gender": "Género",
-      "birthDate": "Fecha de nacimiento",
-      "status": "Estado",
-      "country": "País",
-      "taxId": "ID Fiscal",
-      "loyaltyTier": "Nivel de lealtad",
-      "language": "Idioma preferido",
-      "currency": "Moneda preferida",
-      "companyName": "Nombre de empresa"
-    },
-    "placeholders": {
-      "firstName": "Ingresa el nombre",
-      "lastName": "Ingresa el apellido",
-      "username": "@usuario",
-      "email": "correo@ejemplo.com",
-      "phone": "+1 (555) 000-0000",
-      "selectCountry": "Selecciona un país",
-      "country": "Ingresa el país",
-      "taxId": "Ingresa ID fiscal",
-      "companyName": "Nombre de empresa"
-    },
-    "gender": {
-      "male": "Masculino",
-      "female": "Femenino",
-      "other": "Otro",
-      "preferNotToSay": "Prefiero no decir"
-    },
-    "loyalty": {
-      "bronze": "Bronce",
-      "silver": "Plata",
-      "gold": "Oro",
-      "platinum": "Platino"
-    },
-    "status": {
-      "active": "Activo",
-      "inactive": "Inactivo",
-      "pending": "Pendiente",
-      "suspended": "Suspendido"
-    },
-    "table": {
-      "customer": "CLIENTE",
-      "customerId": "ID CLIENTE",
-      "country": "PAÍS",
-      "orders": "PEDIDOS",
-      "totalSpent": "TOTAL GASTADO",
-      "actions": "ACCIONES"
-    },
-    "metrics": {
-      "totalOrders": "Pedidos",
-      "totalSpent": "Gastado",
-      "loyaltyPoints": "Puntos",
-      "averageOrder": "Pedido promedio"
-    },
-    "recentOrders": "Pedidos recientes",
-    "viewAllOrders": "Ver todos los pedidos",
-    "newCustomer": "Nuevo Cliente",
-    "searchPlaceholder": "Buscar clientes...",
-    "confirmDelete": "¿Estás seguro de que deseas eliminar este cliente?",
-    "noResults": "No se encontraron clientes",
-    "notFound": "Cliente no encontrado",
-    "email": "Correo",
-    "country": "País",
-    "orders": "Pedidos",
-    "totalOrders": "Pedidos",
-    "spent": "Gastado",
-    "status": {
-      "active": "Activo",
-      "inactive": "Inactivo",
-      "pending": "Pendiente",
-      "suspended": "Suspendido"
-    },
-    "table": {
-      "customer": "CLIENTE",
-      "customerId": "ID DE CLIENTE",
-      "country": "PAÍS",
-      "orders": "PEDIDOS",
-      "totalSpent": "TOTAL GASTADO",
-      "actions": "ACCIONES"
-    },
-    "tabs": {
-      "overview": "Resumen",
-      "security": "Seguridad",
-      "addressBilling": "Dirección y Facturación",
-      "notifications": "Notificaciones",
-      "active": "Activo",
-      "id": "ID"
-    },
-    "actions": {
-      "edit": "Editar",
-      "sendEmail": "Enviar Correo"
-    },
-    "metrics": {
-      "totalOrders": "Total de Pedidos",
-      "totalSpent": "Total Gastado",
-      "averageOrder": "Promedio por Pedido",
-      "loyaltyPoints": "Puntos de Lealtad"
-    },
-    "customerInformation": "Información del Cliente",
-    "profilePhoto": "Foto de Perfil",
-    "profilePhotoDescription": "Sube una foto profesional para el perfil del cliente",
-    "uploadPhoto": "Subir Foto",
-    "removePhoto": "Eliminar",
-    "avatarRequirements": "Formatos aceptados: JPG, PNG, GIF o WebP",
-    "avatarSizeRequirement": "Tamaño máximo del archivo: 5MB",
-    "avatarRecommendation": "Recomendado: Imagen cuadrada, al menos 400x400 píxeles",
-    "changeAvatar": "Cambiar Avatar",
-    "avatarHint": "JPG, PNG, GIF o WebP. Máx 5MB",
-    "avatarTypeError": "Por favor selecciona un archivo de imagen válido (JPEG, PNG, GIF o WebP)",
-    "avatarSizeError": "El tamaño de la imagen no debe exceder 5MB",
-    "avatarUploadError": "Error al subir el avatar",
     "fields": {
       "firstName": "Nombre",
       "lastName": "Apellido",
@@ -1128,11 +1014,83 @@
       "companyName": "Nombre de Empresa",
       "preferredCurrency": "Moneda Preferida"
     },
+    "placeholders": {
+      "firstName": "Ingresa el nombre",
+      "lastName": "Ingresa el apellido",
+      "username": "@usuario",
+      "email": "correo@ejemplo.com",
+      "phone": "+1 (555) 000-0000",
+      "selectCountry": "Selecciona un país",
+      "country": "Ingresa el país",
+      "taxId": "Ingresa ID fiscal",
+      "companyName": "Nombre de empresa"
+    },
     "gender": {
       "male": "Masculino",
       "female": "Femenino",
       "other": "Otro"
     },
+    "loyalty": {
+      "bronze": "Bronce",
+      "silver": "Plata",
+      "gold": "Oro",
+      "platinum": "Platino"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "pending": "Pendiente",
+      "suspended": "Suspendido"
+    },
+    "table": {
+      "customer": "CLIENTE",
+      "customerId": "ID DE CLIENTE",
+      "country": "PAÍS",
+      "orders": "PEDIDOS",
+      "totalSpent": "TOTAL GASTADO",
+      "actions": "ACCIONES"
+    },
+    "metrics": {
+      "totalOrders": "Total de Pedidos",
+      "totalSpent": "Total Gastado",
+      "averageOrder": "Promedio por Pedido",
+      "loyaltyPoints": "Puntos de Lealtad"
+    },
+    "recentOrders": "Pedidos recientes",
+    "viewAllOrders": "Ver todos los pedidos",
+    "newCustomer": "Nuevo Cliente",
+    "notFound": "Cliente no encontrado",
+    "country": "País",
+    "orders": {
+      "orderId": "ID de Pedido",
+      "date": "Fecha",
+      "items": "Artículos",
+      "total": "Total",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "security": "Seguridad",
+      "addressBilling": "Dirección y Facturación",
+      "notifications": "Notificaciones",
+      "active": "Activo",
+      "id": "ID"
+    },
+    "actions": {
+      "edit": "Editar",
+      "sendEmail": "Enviar Correo"
+    },
+    "customerInformation": "Información del Cliente",
+    "profilePhoto": "Foto de Perfil",
+    "profilePhotoDescription": "Sube una foto profesional para el perfil del cliente",
+    "uploadPhoto": "Subir Foto",
+    "removePhoto": "Eliminar",
+    "avatarRequirements": "Formatos aceptados: JPG, PNG, GIF o WebP",
+    "avatarSizeRequirement": "Tamaño máximo del archivo: 5MB",
+    "avatarRecommendation": "Recomendado: Imagen cuadrada, al menos 400x400 píxeles",
+    "changeAvatar": "Cambiar Avatar",
+    "avatarHint": "JPG, PNG, GIF o WebP. Máx 5MB",
     "tier": {
       "bronze": "Bronce",
       "silver": "Plata",
@@ -1149,14 +1107,6 @@
     },
     "orderHistory": "Historial de Pedidos",
     "noOrders": "No se encontraron pedidos",
-    "orders": {
-      "orderId": "ID de Pedido",
-      "date": "Fecha",
-      "items": "Artículos",
-      "total": "Total",
-      "status": "Estado",
-      "actions": "Acciones"
-    },
     "security": {
       "password": "Contraseña",
       "initialPassword": "Contraseña Inicial",
@@ -1413,61 +1363,6 @@
       "publish": "Publicar en motores de búsqueda"
     }
   },
-  "subscribers": {
-    "title": "Subscriptores Newsletter",
-    "subscriber": "Suscriptor",
-    "totalActive": "Activos",
-    "totalInactive": "Inactivos",
-    "converted": "Convertidos",
-    "thisMonth": "Este mes",
-    "conversionRate": "Conversión",
-    "active": "Activo",
-    "inactive": "Inactivo",
-    "pending": "Pendientes",
-    "source": "Origen",
-    "subscribed": "Suscrito",
-    "status": "Estado",
-    "search": "Buscar por email o nombre...",
-    "noResults": "No se encontraron subscriptores",
-    "totalSubscribers": "Total: {count} subscriptores",
-    "convertToCustomer": "Convertir a Cliente",
-    "convertingSubscriber": "Convirtiendo suscriptor:",
-    "converting": "Convirtiendo...",
-    "activate": "Activar",
-    "deactivate": "Desactivar",
-    "exportData": "Exportar Subscriptores",
-    "selectFormat": "Selecciona el formato que deseas exportar",
-    "popupBlocked": "Please allow popups to export PDF"
-  },
-  "navigation": {
-    "dashboard": "Panel de Control",
-    "empresa": "Empresa",
-    "rolesUsuarios": "Roles y Usuarios",
-    "clientes": "Clientes",
-    "reservaciones": "Reservaciones",
-    "disponibilidad": "Disponibilidad",
-    "metodosPago": "Métodos de Pago",
-    "colecciones": "Colecciones",
-    "productos": "Productos",
-    "notificaciones": "Notificaciones",
-    "websiteBuilder": "Sitio Web",
-    "editor": "Editor del Sitio",
-    "whatsapp": "WhatsApp",
-    "orders": "Pedidos",
-    "subscriptores": "Suscriptores",
-    "navegacion": "Navegación",
-    "habitaciones": "Habitaciones",
-    "paginas": "Páginas",
-    "politicas": "Políticas",
-    "dominios": "Dominios",
-    "currentPage": "Página Actual"
-  },
-  "validation": {
-    "firstNameRequired": "El nombre es requerido",
-    "lastNameRequired": "El apellido es requerido",
-    "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
-    "passwordMismatch": "Las contraseñas no coinciden"
-  },
   "menus": {
     "title": "Menús de Navegación",
     "description": "Gestiona los menús de navegación de tu sitio web",
@@ -1671,7 +1566,7 @@
   "rooms": {
     "title": "Habitaciones",
     "manage": "Gestionar Habitaciones",
-    "description": "Administra las habitaciones de tu hotel",
+    "description": "Descripción",
     "new": "Nueva Habitación",
     "edit": "Editar Habitación",
     "create": "Crear Habitación",
@@ -1691,7 +1586,6 @@
     "namePlaceholder": "Ej: Suite Presidencial",
     "code": "Código",
     "codePlaceholder": "Ej: SUITE-101",
-    "description": "Descripción",
     "descriptionPlaceholder": "Describe las características de la habitación...",
     "type": "Tipo de Habitación",
     "viewType": "Tipo de Vista",
@@ -1771,7 +1665,7 @@
     "filterByStatus": "Filtrar por estado",
     "filters": {
       "today": "Hoy",
-      "week": "Esta Semana", 
+      "week": "Esta Semana",
       "month": "Este Mes",
       "all": "Todas",
       "status": "Estado",
@@ -1805,40 +1699,9 @@
       "actions": "Acciones"
     },
     "messages": {
-      "showing": "Mostrando"
-    },
-    "details": {
-      "guestInfo": "Información del Huésped",
-      "billingInfo": "Información de Facturación",
-      "reservationInfo": "Detalles de la Reservación",
-      "paymentSummary": "Resumen de Pago",
-      "fullName": "Nombre Completo",
-      "email": "Email",
-      "phone": "Teléfono",
-      "address": "Dirección",
-      "country": "País",
-      "notProvided": "No proporcionado",
-      "billingAddress": "Dirección de Facturación",
-      "defaultAddress": "Dirección por defecto",
-      "differentAddress": "Dirección diferente",
-      "city": "Ciudad",
-      "state": "Estado/Provincia",
-      "postalCode": "Código Postal",
-      "room": "Habitación",
-      "roomType": "Tipo de Habitación",
-      "numberOfGuests": "Número de Huéspedes",
-      "checkInTime": "Hora de Check-In",
-      "checkOutTime": "Hora de Check-Out",
-      "pricePerNight": "Precio por noche",
-      "numberOfNights": "Número de noches",
-      "totalAmount": "Total",
-      "totalPaid": "Total Pagado",
-      "balance": "Balance Pendiente",
-      "paymentsReceived": "Pagos Realizados",
-      "specialRequests": "Solicitudes Especiales",
-      "internalNotes": "Notas Internas",
-      "additionalInfo": "Información Adicional",
-      "createdOn": "Creada el"
+      "createSuccess": "Reservación creada exitosamente",
+      "createError": "Error al crear la reservación",
+      "connectionError": "Error de conexión al servidor"
     },
     "details": {
       "title": "Reservación",
@@ -1887,24 +1750,6 @@
       "notes": "Notas (opcional)",
       "register": "Registrar Pago"
     },
-    "messages": {
-      "loadError": "Error al cargar las reservaciones",
-      "saveError": "Error al guardar la reservación",
-      "connectionError": "Error de conexión al servidor",
-      "confirmSuccess": "Reservación confirmada exitosamente",
-      "checkInSuccess": "Check-in realizado exitosamente",
-      "checkOutSuccess": "Check-out realizado exitosamente",
-      "cancelSuccess": "Reservación cancelada exitosamente",
-      "paymentSuccess": "Pago registrado exitosamente",
-      "notFound": "Reservación no encontrada",
-      "updateError": "Error al actualizar el estado",
-      "paymentError": "Error al registrar el pago",
-      "printSent": "Documento enviado a imprimir",
-      "cancelReason": "Motivo de cancelación:",
-      "balancePending": "Hay un balance pendiente de",
-      "roomNotAvailable": "La habitación no está disponible para las fechas seleccionadas",
-      "showing": "Mostrando"
-    },
     "status": {
       "pending": "Pendiente",
       "confirmed": "Confirmada",
@@ -1950,11 +1795,6 @@
         "invalidDates": "La fecha de check-out debe ser posterior al check-in",
         "validation": "Por favor corrija los errores en el formulario"
       }
-    },
-    "messages": {
-      "createSuccess": "Reservación creada exitosamente",
-      "createError": "Error al crear la reservación",
-      "connectionError": "Error de conexión al servidor"
     }
   },
   "availability": {
@@ -2072,10 +1912,27 @@
     "title": "Órdenes",
     "subtitle": "Gestiona todas las órdenes de tu tienda",
     "status": {
-      "delivered": "Entregado",
-      "processing": "Procesando",
-      "pending": "Pendiente",
-      "cancelled": "Cancelado"
+      "order": {
+        "pending": "Pendiente",
+        "processing": "Procesando",
+        "completed": "Completada",
+        "cancelled": "Cancelada"
+      },
+      "payment": {
+        "pending": "Pendiente",
+        "paid": "Pagado",
+        "failed": "Fallido",
+        "cancelled": "Cancelado",
+        "refunded": "Reembolsado",
+        "partialrefund": "Reembolso Parcial"
+      },
+      "delivery": {
+        "pending": "Pendiente",
+        "readytopickup": "Listo para Recoger",
+        "dispatched": "Despachado",
+        "outfordelivery": "En Camino",
+        "delivered": "Entregado"
+      }
     },
     "addOrder": "Nueva Orden",
     "createOrder": "Crear Orden",
@@ -2110,7 +1967,10 @@
     "orderDetails": "Detalles de la Orden",
     "placed": "Realizada el",
     "noOrders": "No hay órdenes para mostrar",
-    "items": "artículos",
+    "items": {
+      "title": "Artículos del Pedido",
+      "count": "artículos"
+    },
     "fetchError": "Error al cargar las órdenes",
     "deleteSuccess": "Orden eliminada exitosamente",
     "deleteError": "Error al eliminar la orden",
@@ -2154,29 +2014,6 @@
       "method": "Método",
       "amount": "Monto"
     },
-    "status": {
-      "order": {
-        "pending": "Pendiente",
-        "processing": "Procesando",
-        "completed": "Completada",
-        "cancelled": "Cancelada"
-      },
-      "payment": {
-        "pending": "Pendiente",
-        "paid": "Pagado",
-        "failed": "Fallido",
-        "cancelled": "Cancelado",
-        "refunded": "Reembolsado",
-        "partialrefund": "Reembolso Parcial"
-      },
-      "delivery": {
-        "pending": "Pendiente",
-        "readytopickup": "Listo para Recoger",
-        "dispatched": "Despachado",
-        "outfordelivery": "En Camino",
-        "delivered": "Entregado"
-      }
-    },
     "actions": {
       "title": "Acciones",
       "updatePayment": "Actualizar Pago",
@@ -2217,10 +2054,6 @@
     },
     "billing": {
       "address": "Dirección de Facturación"
-    },
-    "items": {
-      "title": "Artículos del Pedido",
-      "count": "artículos"
     },
     "summary": {
       "title": "Resumen del Pedido",
@@ -2478,5 +2311,109 @@
         }
       }
     }
+  },
+  "reviews": {
+    "title": "Reseñas",
+    "subtitle": "Gestiona las reseñas de productos y habitaciones",
+    "totalReviews": "Total de Reseñas",
+    "averageRating": "Calificación Promedio",
+    "responseRate": "Tasa de Respuesta",
+    "verifiedPurchases": "Compras Verificadas",
+    "filters": "Filtros",
+    "searchPlaceholder": "Buscar por autor, título o contenido...",
+    "status": "Estado",
+    "allStatuses": "Todos los Estados",
+    "approved": "Aprobadas",
+    "pending": "Pendientes",
+    "rejected": "Rechazadas",
+    "hidden": "Ocultas",
+    "rating": "Calificación",
+    "allRatings": "Todas las Calificaciones",
+    "stars": "estrellas",
+    "product": "Producto",
+    "allProducts": "Todos los Productos",
+    "source": "Fuente",
+    "allSources": "Todas las Fuentes",
+    "dateRange": "Rango de Fechas",
+    "last7Days": "Últimos 7 días",
+    "last30Days": "Últimos 30 días",
+    "last90Days": "Últimos 90 días",
+    "lastYear": "Último año",
+    "custom": "Personalizado",
+    "from": "Desde",
+    "to": "Hasta",
+    "applyFilters": "Aplicar Filtros",
+    "clearFilters": "Limpiar Filtros",
+    "exportData": "Exportar Reseñas",
+    "exportDescription": "Elige un formato para exportar los datos de reseñas",
+    "bulkActions": "Acciones Masivas",
+    "selectedItems": "{{count}} seleccionados",
+    "selectAll": "Seleccionar todos",
+    "deselectAll": "Deseleccionar todos",
+    "approveSelected": "Aprobar Seleccionados",
+    "rejectSelected": "Rechazar Seleccionados",
+    "deleteSelected": "Eliminar Seleccionados",
+    "table": {
+      "review": "RESEÑA",
+      "author": "AUTOR",
+      "productRoom": "PRODUCTO/HABITACIÓN",
+      "rating": "CALIFICACIÓN",
+      "status": "ESTADO",
+      "date": "FECHA",
+      "actions": "ACCIONES"
+    },
+    "authorName": "Nombre del Cliente",
+    "authorEmail": "Email",
+    "country": "País",
+    "reviewTitle": "Título",
+    "reviewContent": "Contenido",
+    "verifiedPurchase": "Compra Verificada",
+    "pinned": "Fijada",
+    "pin": "Fijar",
+    "unpin": "Desfijar",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "hide": "Ocultar",
+    "unhide": "Mostrar",
+    "reply": "Responder",
+    "businessReply": "Respuesta del Negocio",
+    "replyPlaceholder": "Escribe tu respuesta a esta reseña...",
+    "postReply": "Publicar Respuesta",
+    "updateReply": "Actualizar Respuesta",
+    "editReply": "Editar Respuesta",
+    "likes": "Me gusta",
+    "dislikes": "No me gusta",
+    "helpful": "Útil",
+    "notFound": "Reseña no encontrada",
+    "manageReview": "Gestionar Reseña",
+    "reviewId": "ID de Reseña",
+    "reviewDetails": "Detalles de la Reseña",
+    "reviewFor": "Reseña para",
+    "roomReview": "Reseña de Habitación",
+    "media": "Multimedia",
+    "createdAt": "Creada",
+    "businessReplyDate": "Fecha de Respuesta",
+    "noReviewsFound": "No se encontraron reseñas",
+    "loadingReviews": "Cargando reseñas...",
+    "errorLoadingReviews": "Error al cargar las reseñas",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta reseña?",
+    "deleteSuccess": "Reseña eliminada exitosamente",
+    "deleteError": "Error al eliminar la reseña",
+    "approveSuccess": "Reseña aprobada exitosamente",
+    "approveError": "Error al aprobar la reseña",
+    "rejectSuccess": "Reseña rechazada exitosamente",
+    "rejectError": "Error al rechazar la reseña",
+    "replySuccess": "Respuesta publicada exitosamente",
+    "replyError": "Error al publicar la respuesta",
+    "pinSuccess": "Reseña fijada exitosamente",
+    "pinError": "Error al fijar la reseña",
+    "unpinSuccess": "Reseña desfijada exitosamente",
+    "unpinError": "Error al desfijar la reseña",
+    "trendingUp": "Tendencia al alza",
+    "trendingDown": "Tendencia a la baja",
+    "mostRecent": "Más Recientes",
+    "highestRated": "Mejor Calificadas",
+    "lowestRated": "Peor Calificadas",
+    "mostHelpful": "Más Útiles"
   }
 }

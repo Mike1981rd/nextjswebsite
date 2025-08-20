@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebsiteBuilderAPI.Data;
@@ -13,9 +14,11 @@ using WebsiteBuilderAPI.Models.ThemeConfig;
 namespace WebsiteBuilderAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250820171900_AddReviewsSystem")]
+    partial class AddReviewsSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2746,16 +2749,13 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("character varying(5)");
 
-                    b.Property<int?>("ProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
 
                     b.Property<int?>("RepliedByUserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RoomId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Source")
@@ -2793,20 +2793,11 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.HasIndex("RepliedByUserId");
 
-                    b.HasIndex("RoomId");
-
                     b.HasIndex("Status");
 
-                    b.HasIndex("CompanyId", "ProductId")
-                        .HasFilter("\"ProductId\" IS NOT NULL");
+                    b.HasIndex("CompanyId", "ProductId");
 
-                    b.HasIndex("CompanyId", "RoomId")
-                        .HasFilter("\"RoomId\" IS NOT NULL");
-
-                    b.ToTable("Reviews", t =>
-                        {
-                            t.HasCheckConstraint("CK_Review_ProductOrRoom", "(\"ProductId\" IS NOT NULL AND \"RoomId\" IS NULL) OR (\"ProductId\" IS NULL AND \"RoomId\" IS NOT NULL)");
-                        });
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.ReviewInteraction", b =>
@@ -2940,9 +2931,6 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<int?>("ProductId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("RoomId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("ThreeStarCount")
                         .HasColumnType("integer");
 
@@ -2962,19 +2950,13 @@ namespace WebsiteBuilderAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId")
-                        .HasFilter("\"ProductId\" IS NULL AND \"RoomId\" IS NULL");
+                        .HasFilter("\"ProductId\" IS NULL");
 
                     b.HasIndex("ProductId");
 
-                    b.HasIndex("RoomId");
-
                     b.HasIndex("CompanyId", "ProductId")
                         .IsUnique()
-                        .HasFilter("\"ProductId\" IS NOT NULL AND \"RoomId\" IS NULL");
-
-                    b.HasIndex("CompanyId", "RoomId")
-                        .IsUnique()
-                        .HasFilter("\"RoomId\" IS NOT NULL AND \"ProductId\" IS NULL");
+                        .HasFilter("\"ProductId\" IS NOT NULL");
 
                     b.ToTable("ReviewStatistics");
                 });
@@ -4200,17 +4182,13 @@ namespace WebsiteBuilderAPI.Migrations
                     b.HasOne("WebsiteBuilderAPI.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("WebsiteBuilderAPI.Models.User", "RepliedBy")
                         .WithMany()
                         .HasForeignKey("RepliedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("WebsiteBuilderAPI.Models.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("ApprovedBy");
 
@@ -4221,8 +4199,6 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("RepliedBy");
-
-                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.ReviewInteraction", b =>
@@ -4267,16 +4243,9 @@ namespace WebsiteBuilderAPI.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("WebsiteBuilderAPI.Models.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.Navigation("Company");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("WebsiteBuilderAPI.Models.RolePermission", b =>
