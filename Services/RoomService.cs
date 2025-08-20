@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using WebsiteBuilderAPI.Data;
@@ -61,6 +62,33 @@ namespace WebsiteBuilderAPI.Services
                 FloorNumber = dto.FloorNumber,
                 ViewType = dto.ViewType,
                 SquareMeters = dto.SquareMeters,
+                // NUEVOS CAMPOS - Ubicación
+                StreetAddress = dto.StreetAddress,
+                City = dto.City,
+                State = dto.State,
+                Country = dto.Country,
+                PostalCode = dto.PostalCode,
+                Neighborhood = dto.Neighborhood,
+                Latitude = dto.Latitude,
+                Longitude = dto.Longitude,
+                // Host
+                HostId = dto.HostId,
+                // Campos JSONB - Convertir de object a JsonDocument
+                SleepingArrangements = dto.SleepingArrangements != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.SleepingArrangements)) : null,
+                HouseRules = dto.HouseRules != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.HouseRules)) : null,
+                CancellationPolicy = dto.CancellationPolicy != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.CancellationPolicy)) : null,
+                CheckInInstructions = dto.CheckInInstructions != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.CheckInInstructions)) : null,
+                SafetyFeatures = dto.SafetyFeatures != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.SafetyFeatures)) : null,
+                HighlightFeatures = dto.HighlightFeatures != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.HighlightFeatures)) : null,
+                AdditionalFees = dto.AdditionalFees != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.AdditionalFees)) : null,
+                // Campos SEO
+                Slug = dto.Slug,
+                MetaTitle = dto.MetaTitle,
+                MetaDescription = dto.MetaDescription,
+                // Estadísticas (valores iniciales por defecto)
+                TotalReviews = 0,
+                AverageRating = 0,
+                ResponseTime = null,
                 Tags = dto.Tags,
                 Amenities = dto.Amenities,
                 Images = dto.Images,
@@ -120,6 +148,88 @@ namespace WebsiteBuilderAPI.Services
             if (dto.SquareMeters.HasValue)
                 room.SquareMeters = dto.SquareMeters.Value == 0 ? null : dto.SquareMeters.Value;
             
+            // NUEVOS CAMPOS - Ubicación
+            if (dto.StreetAddress != null)
+                room.StreetAddress = dto.StreetAddress == "" ? null : dto.StreetAddress;
+            
+            if (dto.City != null)
+                room.City = dto.City == "" ? null : dto.City;
+            
+            if (dto.State != null)
+                room.State = dto.State == "" ? null : dto.State;
+            
+            if (dto.Country != null)
+                room.Country = dto.Country == "" ? null : dto.Country;
+            
+            if (dto.PostalCode != null)
+                room.PostalCode = dto.PostalCode == "" ? null : dto.PostalCode;
+            
+            if (dto.Neighborhood != null)
+                room.Neighborhood = dto.Neighborhood == "" ? null : dto.Neighborhood;
+            
+            if (dto.Latitude.HasValue)
+                room.Latitude = dto.Latitude.Value == 0 ? null : dto.Latitude.Value;
+            
+            if (dto.Longitude.HasValue)
+                room.Longitude = dto.Longitude.Value == 0 ? null : dto.Longitude.Value;
+            
+            // Host
+            if (dto.HostId.HasValue)
+                room.HostId = dto.HostId.Value == 0 ? null : dto.HostId.Value;
+            
+            // Campos JSONB - Convertir de object a JsonDocument
+            if (dto.SleepingArrangements != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.SleepingArrangements);
+                room.SleepingArrangements = JsonDocument.Parse(json);
+            }
+            
+            if (dto.HouseRules != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.HouseRules);
+                room.HouseRules = JsonDocument.Parse(json);
+            }
+            
+            if (dto.CancellationPolicy != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.CancellationPolicy);
+                room.CancellationPolicy = JsonDocument.Parse(json);
+            }
+            
+            if (dto.CheckInInstructions != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.CheckInInstructions);
+                room.CheckInInstructions = JsonDocument.Parse(json);
+            }
+            
+            if (dto.SafetyFeatures != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.SafetyFeatures);
+                room.SafetyFeatures = JsonDocument.Parse(json);
+            }
+            
+            if (dto.HighlightFeatures != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.HighlightFeatures);
+                room.HighlightFeatures = JsonDocument.Parse(json);
+            }
+            
+            if (dto.AdditionalFees != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.AdditionalFees);
+                room.AdditionalFees = JsonDocument.Parse(json);
+            }
+            
+            // Campos SEO
+            if (dto.Slug != null)
+                room.Slug = dto.Slug == "" ? null : dto.Slug;
+            
+            if (dto.MetaTitle != null)
+                room.MetaTitle = dto.MetaTitle == "" ? null : dto.MetaTitle;
+            
+            if (dto.MetaDescription != null)
+                room.MetaDescription = dto.MetaDescription == "" ? null : dto.MetaDescription;
+            
             // Tags y Amenities: lista vacía es válida
             if (dto.Tags != null) 
                 room.Tags = dto.Tags;
@@ -176,6 +286,33 @@ namespace WebsiteBuilderAPI.Services
                 FloorNumber = room.FloorNumber,
                 ViewType = room.ViewType,
                 SquareMeters = room.SquareMeters,
+                // NUEVOS CAMPOS - Ubicación
+                StreetAddress = room.StreetAddress,
+                City = room.City,
+                State = room.State,
+                Country = room.Country,
+                PostalCode = room.PostalCode,
+                Neighborhood = room.Neighborhood,
+                Latitude = room.Latitude,
+                Longitude = room.Longitude,
+                // Host
+                HostId = room.HostId,
+                // Campos JSONB
+                SleepingArrangements = room.SleepingArrangements,
+                HouseRules = room.HouseRules,
+                CancellationPolicy = room.CancellationPolicy,
+                CheckInInstructions = room.CheckInInstructions,
+                SafetyFeatures = room.SafetyFeatures,
+                HighlightFeatures = room.HighlightFeatures,
+                AdditionalFees = room.AdditionalFees,
+                // Campos SEO
+                Slug = room.Slug,
+                MetaTitle = room.MetaTitle,
+                MetaDescription = room.MetaDescription,
+                // Estadísticas (no editables desde UI, calculadas por sistema)
+                TotalReviews = room.TotalReviews,
+                AverageRating = room.AverageRating,
+                ResponseTime = room.ResponseTime,
                 Tags = room.Tags,
                 Amenities = room.Amenities,
                 Images = room.Images,

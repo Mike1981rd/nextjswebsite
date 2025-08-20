@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useToast } from '@/contexts/ToastContext';
+import RoomFormExtended from './RoomFormExtended';
+import Toggle from '@/components/ui/Toggle';
 import { 
   XMarkIcon, 
   PlusIcon,
@@ -24,6 +26,34 @@ interface RoomFormData {
   floorNumber?: number;
   viewType?: string;
   squareMeters?: number;
+  
+  // NUEVOS - Ubicación
+  streetAddress?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  latitude?: number;
+  longitude?: number;
+  neighborhood?: string;
+  
+  // NUEVO - Host
+  hostId?: number;
+  
+  // NUEVOS - Configuraciones JSON
+  sleepingArrangements?: any;
+  houseRules?: any;
+  cancellationPolicy?: any;
+  checkInInstructions?: any;
+  safetyFeatures?: any;
+  highlightFeatures?: any;
+  additionalFees?: any;
+  
+  // NUEVOS - SEO
+  slug?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  
   tags?: string[];
   amenities?: string[];
   images?: string[];
@@ -57,15 +87,60 @@ export default function RoomForm({
     comparePrice: undefined,
     maxOccupancy: 2,
     roomCode: '',
-    roomType: '',
+    roomType: '', // Ensure this is never null
     floorNumber: undefined,
-    viewType: '',
+    viewType: '', // Ensure this is never null
     squareMeters: undefined,
+    // NUEVOS campos inicializados
+    streetAddress: '',
+    city: '',
+    state: '',
+    country: '',
+    postalCode: '',
+    latitude: undefined,
+    longitude: undefined,
+    neighborhood: '',
+    hostId: undefined,
+    sleepingArrangements: {},
+    houseRules: {
+      checkInTime: '15:00',
+      checkOutTime: '11:00',
+      smokingAllowed: false,
+      petsAllowed: false,
+      eventsAllowed: false,
+      quietHours: '22:00 - 08:00',
+      additionalRules: []
+    },
+    cancellationPolicy: {
+      type: 'flexible',
+      description: '',
+      fullRefundDays: 1,
+      partialRefundPercent: 50
+    },
+    checkInInstructions: {},
+    safetyFeatures: {},
+    highlightFeatures: {},
+    additionalFees: {
+      cleaningFee: 0,
+      serviceFee: 0,
+      securityDeposit: 0,
+      petFee: 0,
+      extraGuestFee: 0,
+      extraGuestAfter: 2,
+      weeklyDiscount: 0,
+      monthlyDiscount: 0
+    },
+    slug: '',
+    metaTitle: '',
+    metaDescription: '',
     tags: [],
     amenities: [],
     images: [],
     isActive: true,
-    ...initialData
+    ...initialData,
+    // Ensure select values are never null
+    roomType: initialData?.roomType || '',
+    viewType: initialData?.viewType || ''
   });
 
   const [newTag, setNewTag] = useState('');
@@ -533,21 +608,13 @@ export default function RoomForm({
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="isActive"
+            <div className="pt-2">
+              <Toggle
                 checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="h-4 w-4 rounded focus:ring-2 focus:ring-opacity-30"
-                style={{ 
-                  accentColor: primaryColor,
-                  '--tw-ring-color': primaryColor 
-                } as React.CSSProperties}
+                onChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                label={t('rooms.activeRoom', 'Habitación activa')}
+                size="medium"
               />
-              <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('rooms.activeRoom', 'Habitación activa')}
-              </label>
             </div>
           </div>
         )}
@@ -956,6 +1023,13 @@ export default function RoomForm({
           </div>
         )}
       </div>
+
+      {/* Extended Fields - New tabs for location, policies, fees, SEO */}
+      <RoomFormExtended 
+        formData={formData}
+        setFormData={setFormData}
+        primaryColor={primaryColor}
+      />
 
       {/* Botones de acción */}
       <div className="px-4 sm:px-6 py-4 border-t dark:border-gray-700 flex justify-end gap-3">

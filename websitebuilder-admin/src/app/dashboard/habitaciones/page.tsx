@@ -18,6 +18,41 @@ interface Room {
   floorNumber?: number;
   viewType?: string;
   squareMeters?: number;
+  
+  // NUEVOS - Ubicación
+  streetAddress?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  latitude?: number;
+  longitude?: number;
+  neighborhood?: string;
+  
+  // NUEVO - Host
+  hostId?: number;
+  host?: any;
+  
+  // NUEVOS - Configuraciones JSON
+  sleepingArrangements?: any;
+  houseRules?: any;
+  cancellationPolicy?: any;
+  checkInInstructions?: any;
+  safetyFeatures?: any;
+  highlightFeatures?: any;
+  additionalFees?: any;
+  
+  // NUEVOS - SEO
+  slug?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  
+  // NUEVOS - Estadísticas
+  averageRating?: number;
+  totalReviews?: number;
+  responseRate?: number;
+  responseTime?: string;
+  
   isActive: boolean;
   images?: string[];
   tags?: string[];
