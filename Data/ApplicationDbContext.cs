@@ -90,6 +90,10 @@ namespace WebsiteBuilderAPI.Data
         public DbSet<ReviewMedia> ReviewMedia { get; set; }
         public DbSet<ReviewInteraction> ReviewInteractions { get; set; }
         public DbSet<ReviewStatistics> ReviewStatistics { get; set; }
+        
+        // Host System
+        public DbSet<WebsiteBuilderAPI.Models.Host> Hosts { get; set; }
+        public DbSet<HostReview> HostReviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
