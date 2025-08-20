@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/contexts/I18nContext';
 import { apiClient } from '@/lib/api/client';
+import Toggle from '@/components/ui/Toggle';
 import { 
   ArrowLeft, 
   Save, 
@@ -557,46 +558,25 @@ export default function CreateHostPage() {
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('hosts.sections.verification', 'Verification')}
               </h3>
-              <div className="space-y-3">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isPhoneVerified"
-                    checked={formData.isPhoneVerified}
-                    onChange={handleChange}
-                    className="rounded border-gray-300 dark:border-gray-600 mr-3"
-                    style={{ accentColor: primaryColor }}
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {t('hosts.fields.phoneVerified', 'Phone Verified')}
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isEmailVerified"
-                    checked={formData.isEmailVerified}
-                    onChange={handleChange}
-                    className="rounded border-gray-300 dark:border-gray-600 mr-3"
-                    style={{ accentColor: primaryColor }}
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {t('hosts.fields.emailVerified', 'Email Verified')}
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isIdentityVerified"
-                    checked={formData.isIdentityVerified}
-                    onChange={handleChange}
-                    className="rounded border-gray-300 dark:border-gray-600 mr-3"
-                    style={{ accentColor: primaryColor }}
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {t('hosts.fields.identityVerified', 'Identity Verified')}
-                  </span>
-                </label>
+              <div className="space-y-4">
+                <Toggle
+                  checked={formData.isPhoneVerified}
+                  onChange={(checked) => setFormData(prev => ({ ...prev, isPhoneVerified: checked }))}
+                  label={t('hosts.fields.phoneVerified', 'Phone Verified')}
+                  description={t('hosts.phoneVerifiedDesc', 'Phone number has been verified')}
+                />
+                <Toggle
+                  checked={formData.isEmailVerified}
+                  onChange={(checked) => setFormData(prev => ({ ...prev, isEmailVerified: checked }))}
+                  label={t('hosts.fields.emailVerified', 'Email Verified')}
+                  description={t('hosts.emailVerifiedDesc', 'Email address has been verified')}
+                />
+                <Toggle
+                  checked={formData.isIdentityVerified}
+                  onChange={(checked) => setFormData(prev => ({ ...prev, isIdentityVerified: checked }))}
+                  label={t('hosts.fields.identityVerified', 'Identity Verified')}
+                  description={t('hosts.identityVerifiedDesc', 'Government ID has been verified')}
+                />
               </div>
             </div>
 
@@ -605,39 +585,19 @@ export default function CreateHostPage() {
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {t('hosts.sections.status', 'Status')}
               </h3>
-              <div className="space-y-3">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isSuperhost"
-                    checked={formData.isSuperhost}
-                    onChange={handleChange}
-                    className="rounded border-gray-300 dark:border-gray-600 mr-3"
-                    style={{ accentColor: primaryColor }}
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {t('hosts.fields.isSuperhost', 'Superhost')}
-                    <span className="ml-2 text-xs text-gray-500">
-                      ({t('hosts.superhostDescription', 'Special badge for exceptional hosts')})
-                    </span>
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isActive"
-                    checked={formData.isActive}
-                    onChange={handleChange}
-                    className="rounded border-gray-300 dark:border-gray-600 mr-3"
-                    style={{ accentColor: primaryColor }}
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {t('hosts.fields.isActive', 'Active')}
-                    <span className="ml-2 text-xs text-gray-500">
-                      ({t('hosts.activeDescription', 'Host is available for bookings')})
-                    </span>
-                  </span>
-                </label>
+              <div className="space-y-4">
+                <Toggle
+                  checked={formData.isSuperhost}
+                  onChange={(checked) => setFormData(prev => ({ ...prev, isSuperhost: checked }))}
+                  label={t('hosts.fields.isSuperhost', 'Superhost')}
+                  description={t('hosts.superhostDescription', 'Special badge for exceptional hosts')}
+                />
+                <Toggle
+                  checked={formData.isActive}
+                  onChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
+                  label={t('hosts.fields.isActive', 'Active')}
+                  description={t('hosts.activeDescription', 'Host is available for bookings')}
+                />
               </div>
             </div>
 
