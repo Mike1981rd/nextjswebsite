@@ -77,6 +77,13 @@ const menuItems: MenuItem[] = [
     permission: 'customers.read'
   },
   {
+    id: 'hosts',
+    nameKey: 'navigation.hosts',
+    href: '/dashboard/hosts',
+    icon: UsersIcon,
+    permission: 'hosts.read'
+  },
+  {
     id: 'habitaciones',
     nameKey: 'navigation.habitaciones',
     href: '/dashboard/habitaciones',

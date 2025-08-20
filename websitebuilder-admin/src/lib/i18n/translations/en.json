@@ -132,6 +132,7 @@
     "empresa": "Company",
     "rolesUsuarios": "Roles & Users",
     "clientes": "Customers",
+    "hosts": "Hosts",
     "reservaciones": "Reservations",
     "disponibilidad": "Availability",
     "metodosPago": "Payment Methods",
@@ -2401,5 +2402,83 @@
     "highestRated": "Highest Rated",
     "lowestRated": "Lowest Rated",
     "mostHelpful": "Most Helpful"
+  },
+  "hosts": {
+    "title": "Hosts",
+    "subtitle": "Manage your platform hosts",
+    "addHost": "Add Host",
+    "searchPlaceholder": "Search hosts...",
+    "confirmDelete": "Are you sure you want to delete this host?",
+    "confirmDeactivate": "Are you sure you want to deactivate this host?",
+    "confirmActivate": "Are you sure you want to activate this host?",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "noResults": "No hosts found",
+    "viewDetails": "View Details",
+    "editHost": "Edit Host",
+    "newHost": "New Host",
+    "hostDetails": "Host Details",
+    "sections": {
+      "personal": "Personal Information",
+      "verification": "Verification",
+      "metrics": "Metrics",
+      "configuration": "Configuration"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "bio": "Biography",
+      "dateOfBirth": "Date of Birth",
+      "languages": "Languages",
+      "profilePicture": "Profile Picture",
+      "joinedDate": "Joined Date",
+      "responseTime": "Response Time",
+      "acceptanceRate": "Acceptance Rate",
+      "overallRating": "Overall Rating",
+      "totalReviews": "Total Reviews",
+      "isActive": "Active",
+      "isSuperhost": "Superhost",
+      "isVerified": "Verified",
+      "phoneVerified": "Phone Verified",
+      "emailVerified": "Email Verified",
+      "identityVerified": "Identity Verified",
+      "roomCount": "Rooms",
+      "activeRooms": "Active Rooms"
+    },
+    "table": {
+      "name": "NAME",
+      "email": "EMAIL",
+      "rating": "RATING",
+      "reviews": "REVIEWS",
+      "rooms": "ROOMS",
+      "status": "STATUS",
+      "joined": "JOINED",
+      "actions": "ACTIONS"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "superhost": "Superhost"
+    },
+    "metrics": {
+      "responseTimeMinutes": "min response",
+      "acceptanceRatePercent": "% acceptance",
+      "totalProperties": "Total Properties",
+      "activeProperties": "Active Properties"
+    },
+    "messages": {
+      "createSuccess": "Host created successfully",
+      "createError": "Error creating host",
+      "updateSuccess": "Host updated successfully",
+      "updateError": "Error updating host",
+      "deleteSuccess": "Host deleted successfully",
+      "deleteError": "Error deleting host",
+      "verifySuccess": "Verification updated successfully",
+      "verifyError": "Error updating verification"
+    }
   }
 }

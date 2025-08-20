@@ -101,7 +101,13 @@ export default function TestimonialsChildren({ section, groupId }: TestimonialsC
   const items = config?.items || [];
   
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 15,
+        tolerance: 5,
+        delay: 150
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })

@@ -113,3 +113,4 @@ lerna-debug.log*
 # Serilog log files
 logs/
 *.log
+.git-ssh/

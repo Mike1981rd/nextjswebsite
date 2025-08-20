@@ -179,6 +179,7 @@ try
     
     // Registrar servicio de Reviews
     builder.Services.AddScoped<IReviewService, ReviewService>();
+    builder.Services.AddScoped<HostService>();
 
     // Add HttpContextAccessor
     builder.Services.AddHttpContextAccessor();

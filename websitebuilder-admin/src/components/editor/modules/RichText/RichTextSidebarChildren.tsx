@@ -143,7 +143,13 @@ export default function RichTextSidebarChildren({ blocks, section, groupId }: Ri
   }
   
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 15,
+        tolerance: 5,
+        delay: 150
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })

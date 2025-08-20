@@ -1,0 +1,154 @@
+Host FrontPage Logs
+
+
+react-dom.development.js:38560 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+LoggerInitializer.tsx:12 🔍 Frontend logger initialized - All errors will be logged to files
+LoggerInitializer.tsx:12 🔍 Frontend logger initialized - All errors will be logged to files
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EyeIcon' is not exported from '@/components/ui/Icons' (imported as 'EyeIcon').
+console.warn @ logger.ts:105
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'CheckIcon' is not exported from '@/components/ui/Icons' (imported as 'CheckIcon').
+console.warn @ logger.ts:105
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EditIcon' is not exported from '@/components/ui/Icons' (imported as 'EditIcon').
+console.warn @ logger.ts:105
+DashboardLayout.tsx:99 Settings changed: Object
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EyeIcon' is not exported from '@/components/ui/Icons' (imported as 'EyeIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'CheckIcon' is not exported from '@/components/ui/Icons' (imported as 'CheckIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EditIcon' is not exported from '@/components/ui/Icons' (imported as 'EditIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+hot-reloader-client.js:44 [Fast Refresh] done in 86ms
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EyeIcon' is not exported from '@/components/ui/Icons' (imported as 'EyeIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'CheckIcon' is not exported from '@/components/ui/Icons' (imported as 'CheckIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EditIcon' is not exported from '@/components/ui/Icons' (imported as 'EditIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+hot-reloader-client.js:44 [Fast Refresh] done in 909ms
+DashboardLayout.tsx:99 Settings changed: Object
+:5266/api/api/hosts:1  Failed to load resource: the server responded with a status of 404 (Not Found)
+app-index.js:33 API Error: Object
+window.console.error @ app-index.js:33
+app-index.js:33 Error loading hosts: AxiosError
+window.console.error @ app-index.js:33
+:5266/api/api/hosts:1  Failed to load resource: the server responded with a status of 404 (Not Found)
+app-index.js:33 API Error: Object
+window.console.error @ app-index.js:33
+app-index.js:33 Error loading hosts: AxiosError
+window.console.error @ app-index.js:33
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EyeIcon' is not exported from '@/components/ui/Icons' (imported as 'EyeIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'CheckIcon' is not exported from '@/components/ui/Icons' (imported as 'CheckIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EditIcon' is not exported from '@/components/ui/Icons' (imported as 'EditIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+hot-reloader-client.js:44 [Fast Refresh] done in 1628ms
+:5266/api/api/hosts:1  Failed to load resource: the server responded with a status of 404 (Not Found)
+app-index.js:33 API Error: Object
+window.console.error @ app-index.js:33
+app-index.js:33 Error creating host: AxiosError
+window.console.error @ app-index.js:33
+hot-reloader-client.js:187 [Fast Refresh] rebuilding
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EyeIcon' is not exported from '@/components/ui/Icons' (imported as 'EyeIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+processMessage @ hot-reloader-client.js:227
+handler @ hot-reloader-client.js:395
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'CheckIcon' is not exported from '@/components/ui/Icons' (imported as 'CheckIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+processMessage @ hot-reloader-client.js:227
+handler @ hot-reloader-client.js:395
+logger.ts:105 ./src/components/reviews/ReviewRow.tsx
+Attempted import error: 'EditIcon' is not exported from '@/components/ui/Icons' (imported as 'EditIcon').
+
+Import trace for requested module:
+./src/components/reviews/ReviewRow.tsx
+./src/components/reviews/ReviewsTable.tsx
+./src/app/dashboard/reviews/page.tsx
+console.warn @ logger.ts:105
+processMessage @ hot-reloader-client.js:227
+handler @ hot-reloader-client.js:395
+logger.ts:131 Fetch finished loading: GET "http://localhost:3000/_next/static/webpack/bb752e407d550949.webpack.hot-update.json".
+window.fetch @ logger.ts:131
+__webpack_require__.hmrM @ webpack.js?v=1755715339831:1364
+Promise.then
+hotCheck @ webpack.js?v=1755715339831:555
+tryApplyUpdates @ hot-reloader-client.js:135
+handleHotUpdate @ hot-reloader-client.js:174
+processMessage @ hot-reloader-client.js:237
+handler @ hot-reloader-client.js:395
+hot-reloader-client.js:44 [Fast Refresh] done in 318ms
+logger.ts:317 Fetch finished loading: POST "http://localhost:5266/api/logs/frontend".
+flush @ logger.ts:317
+eval @ logger.ts:301

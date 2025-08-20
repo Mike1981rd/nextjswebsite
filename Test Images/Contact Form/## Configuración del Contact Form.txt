@@ -1,0 +1,72 @@
+## Configuración del Contact Form
+
+### 1. Esquema de Color
+- **Tipo:** Dropdown/Select
+- **Opciones:**
+  - Scheme 1
+  - Scheme 2
+  - Scheme 3 ✓ (seleccionado)
+  - Scheme 4
+  - Scheme 5
+- **Nota:** "Learn about color schemes"
+
+### 2. Ancho (Width)
+- **Tipo:** Dropdown/Select
+- **Valor actual:** Extra small
+
+### 3. Contenido
+
+#### Heading (Encabezado)
+- **Tipo:** Campo de texto
+- **Valor:** "Estamos aquí para aclarar todas tus interrogantes."
+
+#### Body (Cuerpo)
+- **Tipo:** Editor de texto rico
+- **Herramientas disponibles:** Negrita, Cursiva, Subrayado, Link
+- **Valor:** "Solicita una demostración en línea adaptada a tus necesidades y descubre todo lo que Aurora puede ofrecerte."
+
+#### Heading size
+- **Tipo:** Dropdown/Select
+- **Valor actual:** Heading 5
+
+#### Body size
+- **Tipo:** Dropdown/Select
+- **Valor actual:** Body 3
+
+#### Content alignment
+- **Tipo:** Botones de selección
+- **Opciones:** Left ✓ | Center
+
+### 4. Formulario
+
+#### Input style
+- **Tipo:** Botones de selección
+- **Opciones:** Solid ✓ | Outline
+
+#### Show phone number input
+- **Tipo:** Toggle (desactivado)
+
+#### Show reCAPTCHA terms
+- **Tipo:** Toggle (desactivado)
+
+### 5. Paddings (Espaciados)
+
+- **Add side paddings**
+  - **Tipo:** Toggle (activado)
+  
+- **Top padding**
+  - **Tipo:** Slider + Input numérico
+  - **Valor:** 96 px
+  
+- **Bottom padding**
+  - **Tipo:** Slider + Input numérico
+  - **Valor:** 96 px
+
+### 6. CSS Personalizado
+- **Tipo:** Área de texto expandible
+- **Estado:** Colapsado
+
+### 7. Acciones
+- **Eliminar sección**
+  - **Tipo:** Botón de acción (rojo)
+  - **Icono:** Papelera

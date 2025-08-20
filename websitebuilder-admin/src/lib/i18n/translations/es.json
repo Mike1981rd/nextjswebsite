@@ -133,6 +133,7 @@
     "empresa": "Empresa",
     "rolesUsuarios": "Roles y Usuarios",
     "clientes": "Clientes",
+    "hosts": "Anfitriones",
     "reservaciones": "Reservaciones",
     "disponibilidad": "Disponibilidad",
     "metodosPago": "Métodos de Pago",
@@ -2415,5 +2416,83 @@
     "highestRated": "Mejor Calificadas",
     "lowestRated": "Peor Calificadas",
     "mostHelpful": "Más Útiles"
+  },
+  "hosts": {
+    "title": "Anfitriones",
+    "subtitle": "Gestiona los anfitriones de tu plataforma",
+    "addHost": "Agregar Anfitrión",
+    "searchPlaceholder": "Buscar anfitriones...",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este anfitrión?",
+    "confirmDeactivate": "¿Estás seguro de que quieres desactivar este anfitrión?",
+    "confirmActivate": "¿Estás seguro de que quieres activar este anfitrión?",
+    "deactivate": "Desactivar",
+    "activate": "Activar",
+    "noResults": "No se encontraron anfitriones",
+    "viewDetails": "Ver Detalles",
+    "editHost": "Editar Anfitrión",
+    "newHost": "Nuevo Anfitrión",
+    "hostDetails": "Detalles del Anfitrión",
+    "sections": {
+      "personal": "Información Personal",
+      "verification": "Verificación",
+      "metrics": "Métricas",
+      "configuration": "Configuración"
+    },
+    "fields": {
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo Electrónico",
+      "phone": "Teléfono",
+      "bio": "Biografía",
+      "dateOfBirth": "Fecha de Nacimiento",
+      "languages": "Idiomas",
+      "profilePicture": "Foto de Perfil",
+      "joinedDate": "Fecha de Registro",
+      "responseTime": "Tiempo de Respuesta",
+      "acceptanceRate": "Tasa de Aceptación",
+      "overallRating": "Calificación General",
+      "totalReviews": "Total de Reseñas",
+      "isActive": "Activo",
+      "isSuperhost": "Superanfitrión",
+      "isVerified": "Verificado",
+      "phoneVerified": "Teléfono Verificado",
+      "emailVerified": "Email Verificado",
+      "identityVerified": "Identidad Verificada",
+      "roomCount": "Habitaciones",
+      "activeRooms": "Habitaciones Activas"
+    },
+    "table": {
+      "name": "NOMBRE",
+      "email": "EMAIL",
+      "rating": "CALIFICACIÓN",
+      "reviews": "RESEÑAS",
+      "rooms": "HABITACIONES",
+      "status": "ESTADO",
+      "joined": "REGISTRO",
+      "actions": "ACCIONES"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "verified": "Verificado",
+      "unverified": "No Verificado",
+      "superhost": "Superanfitrión"
+    },
+    "metrics": {
+      "responseTimeMinutes": "min de respuesta",
+      "acceptanceRatePercent": "% aceptación",
+      "totalProperties": "Propiedades Totales",
+      "activeProperties": "Propiedades Activas"
+    },
+    "messages": {
+      "createSuccess": "Anfitrión creado exitosamente",
+      "createError": "Error al crear el anfitrión",
+      "updateSuccess": "Anfitrión actualizado exitosamente",
+      "updateError": "Error al actualizar el anfitrión",
+      "deleteSuccess": "Anfitrión eliminado exitosamente",
+      "deleteError": "Error al eliminar el anfitrión",
+      "verifySuccess": "Verificación actualizada exitosamente",
+      "verifyError": "Error al actualizar la verificación"
+    }
   }
 }
