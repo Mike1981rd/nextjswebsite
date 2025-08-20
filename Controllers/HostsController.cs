@@ -133,6 +133,64 @@ namespace WebsiteBuilderAPI.Controllers
             return NoContent();
         }
         
+        // PATCH: api/hosts/5
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PatchHost(int id, [FromBody] Dictionary<string, object> updates)
+        {
+            _logger.LogInformation("PatchHost called for id: {id} with updates: {@updates}", id, updates);
+            
+            // Match the token's lowercase claim
+            var companyIdClaim = User.FindFirst("companyId")?.Value;
+            int companyId;
+            
+            if (string.IsNullOrEmpty(companyIdClaim) || !int.TryParse(companyIdClaim, out companyId))
+            {
+                // Fallback to default company (same as CompanyService)
+                companyId = 1;
+                _logger.LogWarning("CompanyId not found in token, using default: {companyId}", companyId);
+            }
+            
+            // Create UpdateHostDto with only the fields that are being updated
+            var dto = new UpdateHostDto();
+            
+            // Handle isActive update
+            if (updates.ContainsKey("isActive") && updates["isActive"] != null)
+            {
+                if (bool.TryParse(updates["isActive"].ToString(), out bool isActive))
+                {
+                    dto.IsActive = isActive;
+                }
+            }
+            
+            // Add other fields as needed in the future
+            if (updates.ContainsKey("isSuperhost") && updates["isSuperhost"] != null)
+            {
+                if (bool.TryParse(updates["isSuperhost"].ToString(), out bool isSuperhost))
+                {
+                    dto.IsSuperhost = isSuperhost;
+                }
+            }
+            
+            try
+            {
+                var result = await _hostService.UpdateHostAsync(id, dto, companyId);
+                
+                if (!result)
+                {
+                    _logger.LogWarning("Host not found or not authorized: {id}", id);
+                    return NotFound();
+                }
+                
+                _logger.LogInformation("Host patched successfully: {id}", id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error patching host: {message}", ex.Message);
+                return BadRequest(new { message = "Error updating host", error = ex.Message });
+            }
+        }
+        
         // DELETE: api/hosts/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHost(int id)

@@ -82,13 +82,35 @@ export default function HostsPage() {
 
 
   const handleToggleActive = async (host: Host) => {
+    const newStatus = !host.isActive;
+    const confirmMessage = newStatus 
+      ? t('hosts.confirmActivate', 'Are you sure you want to activate this host?')
+      : t('hosts.confirmDeactivate', 'Are you sure you want to deactivate this host?');
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+    
     try {
-      await apiClient.put(`/hosts/${host.id}`, {
-        isActive: !host.isActive
+      // Use PATCH for partial update or PUT with explicit Content-Type
+      const response = await apiClient.patch(`/hosts/${host.id}`, {
+        isActive: newStatus
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      await loadHosts();
-    } catch (error) {
-      console.error('Error updating host:', error);
+      
+      if (response.status === 200 || response.status === 204) {
+        await loadHosts();
+      }
+    } catch (error: any) {
+      console.error('Error updating host status:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
+      alert(t('hosts.errorUpdatingStatus', 'Error updating host status. Please try again.'));
     }
   };
 
