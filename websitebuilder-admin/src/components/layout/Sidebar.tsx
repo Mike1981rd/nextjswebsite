@@ -77,25 +77,40 @@ const menuItems: MenuItem[] = [
     permission: 'customers.read'
   },
   {
-    id: 'hosts',
-    nameKey: 'navigation.hosts',
-    href: '/dashboard/hosts',
-    icon: UsersIcon,
-    permission: 'hosts.read'
-  },
-  {
-    id: 'habitaciones',
-    nameKey: 'navigation.habitaciones',
-    href: '/dashboard/habitaciones',
+    id: 'hotel',
+    nameKey: 'navigation.hotel',
     icon: RoomsIcon,
-    permission: 'rooms.read'
-  },
-  {
-    id: 'colecciones',
-    nameKey: 'navigation.colecciones',
-    href: '/dashboard/colecciones',
-    icon: CollectionsIcon,
-    permission: 'collections.read'
+    permission: 'hotel.read',
+    children: [
+      {
+        id: 'reservaciones',
+        nameKey: 'navigation.reservaciones',
+        href: '/dashboard/reservaciones',
+        icon: ReservationsIcon,
+        permission: 'reservations.read'
+      },
+      {
+        id: 'habitaciones',
+        nameKey: 'navigation.habitaciones',
+        href: '/dashboard/habitaciones',
+        icon: RoomsIcon,
+        permission: 'rooms.read'
+      },
+      {
+        id: 'hosts',
+        nameKey: 'navigation.hosts',
+        href: '/dashboard/hosts',
+        icon: UsersIcon,
+        permission: 'hosts.read'
+      },
+      {
+        id: 'disponibilidad',
+        nameKey: 'navigation.disponibilidad',
+        href: '/dashboard/disponibilidad',
+        icon: AvailabilityIcon,
+        permission: 'availability.read'
+      }
+    ]
   },
   {
     id: 'productos',
@@ -103,13 +118,6 @@ const menuItems: MenuItem[] = [
     href: '/dashboard/productos',
     icon: ProductsIcon,
     permission: 'products.read'
-  },
-  {
-    id: 'notificaciones',
-    nameKey: 'navigation.notificaciones',
-    href: '/notificaciones',
-    icon: NotificationIcon,
-    permission: 'notifications.read'
   },
   {
     id: 'sitio-web',
@@ -130,6 +138,20 @@ const menuItems: MenuItem[] = [
         href: '/whatsapp',
         icon: WhatsAppIcon,
         permission: 'whatsapp.read'
+      },
+      {
+        id: 'colecciones',
+        nameKey: 'navigation.colecciones',
+        href: '/dashboard/colecciones',
+        icon: CollectionsIcon,
+        permission: 'collections.read'
+      },
+      {
+        id: 'notificaciones',
+        nameKey: 'navigation.notificaciones',
+        href: '/notificaciones',
+        icon: NotificationIcon,
+        permission: 'notifications.read'
       },
       {
         id: 'orders',
@@ -179,20 +201,6 @@ const menuItems: MenuItem[] = [
         href: '/dashboard/dominios',
         icon: DomainsIcon,
         permission: 'domains.read'
-      },
-      {
-        id: 'reservaciones',
-        nameKey: 'navigation.reservaciones',
-        href: '/dashboard/reservaciones',
-        icon: ReservationsIcon,
-        permission: 'reservations.read'
-      },
-      {
-        id: 'disponibilidad',
-        nameKey: 'navigation.disponibilidad',
-        href: '/dashboard/disponibilidad',
-        icon: AvailabilityIcon,
-        permission: 'availability.read'
       }
     ]
   }
@@ -207,7 +215,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggle, className }: SidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>(['sitio-web']); // Default expanded
+  const [expandedItems, setExpandedItems] = useState<string[]>(['sitio-web', 'hotel']); // Default expanded
   const { t } = useI18n();
   const { company } = useCompany();
   const { hasPermission: checkPermission, loading: permissionsLoading } = usePermissions();
