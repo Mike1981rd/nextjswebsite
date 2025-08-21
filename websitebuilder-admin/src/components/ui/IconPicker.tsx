@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   HomeIcon, WifiIcon, TvIcon, FireIcon, LockClosedIcon,
   SunIcon, SparklesIcon, StarIcon, BuildingOfficeIcon,
@@ -31,7 +31,7 @@ import {
 
 interface IconPickerProps {
   value?: string;
-  onChange: (icon: string, type: 'heroicon' | 'emoji') => void;
+  onChange: (icon: string, type: 'heroicon' | 'emoji' | 'custom') => void;
   className?: string;
 }
 
@@ -122,12 +122,39 @@ const emojis = [
 export default function IconPicker({ value, onChange, className = '' }: IconPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'heroicons' | 'emojis'>('heroicons');
+  const [activeTab, setActiveTab] = useState<'heroicons' | 'emojis' | 'custom'>('heroicons');
   const [selectedIcon, setSelectedIcon] = useState(value || '');
+  const [customIcons, setCustomIcons] = useState<{id: string, name: string, url: string}[]>([]);
+  const [dropdownPosition, setDropdownPosition] = useState<'down' | 'left'>('down');
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setSelectedIcon(value || '');
   }, [value]);
+
+  useEffect(() => {
+    // Cargar iconos personalizados desde localStorage cuando se abre el picker
+    if (isOpen) {
+      const savedIcons = JSON.parse(localStorage.getItem('customIcons') || '[]');
+      setCustomIcons(savedIcons);
+      
+      // Determinar la posición del dropdown
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        const spaceRight = window.innerWidth - rect.right;
+        const dropdownWidth = 384; // 96 * 4 (w-96 en tailwind)
+        
+        // Si estamos en un offcanvas o no hay suficiente espacio a la derecha
+        const isInOffcanvas = buttonRef.current.closest('.offcanvas-content') !== null;
+        
+        if (isInOffcanvas || spaceRight < dropdownWidth) {
+          setDropdownPosition('left');
+        } else {
+          setDropdownPosition('down');
+        }
+      }
+    }
+  }, [isOpen]);
 
   const filteredHeroicons = heroicons.filter(icon => 
     icon.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -138,9 +165,22 @@ export default function IconPicker({ value, onChange, className = '' }: IconPick
     emoji.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSelectIcon = (icon: string, type: 'heroicon' | 'emoji') => {
-    setSelectedIcon(icon);
-    onChange(icon, type);
+  const filteredCustomIcons = customIcons.filter(icon => 
+    icon.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleSelectIcon = (icon: string, type: 'heroicon' | 'emoji' | 'custom') => {
+    // Para iconos personalizados, guardar solo el ID, no el base64 completo
+    if (type === 'custom') {
+      const customIcon = customIcons.find(i => i.url === icon);
+      if (customIcon) {
+        setSelectedIcon(customIcon.id);
+        onChange(customIcon.id, type);
+      }
+    } else {
+      setSelectedIcon(icon);
+      onChange(icon, type);
+    }
     setIsOpen(false);
   };
 
@@ -154,11 +194,24 @@ export default function IconPicker({ value, onChange, className = '' }: IconPick
       return <span className="text-2xl">{selectedIcon}</span>;
     }
 
+    // Si es un icono personalizado (por ID)
+    if (selectedIcon.startsWith('custom-')) {
+      const customIcon = customIcons.find(i => i.id === selectedIcon);
+      if (customIcon) {
+        return <img src={customIcon.url} alt={customIcon.name} className="h-7 w-7 object-contain" />;
+      }
+    }
+
+    // Si es un icono personalizado antiguo (base64 o URL - para compatibilidad)
+    if (selectedIcon.startsWith('data:') || selectedIcon.startsWith('http')) {
+      return <img src={selectedIcon} alt="Custom icon" className="h-7 w-7 object-contain" />;
+    }
+
     // Si es un heroicon
     const heroicon = heroicons.find(h => h.name === selectedIcon);
     if (heroicon) {
       const Icon = heroicon.icon;
-      return <Icon className="h-6 w-6" />;
+      return <Icon className="h-7 w-7" />;
     }
 
     return <span className="text-gray-400">Icono no encontrado</span>;
@@ -167,12 +220,13 @@ export default function IconPicker({ value, onChange, className = '' }: IconPick
   return (
     <div className={`relative ${className}`}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
       >
         {renderSelectedIcon()}
-        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -186,7 +240,11 @@ export default function IconPicker({ value, onChange, className = '' }: IconPick
           />
           
           {/* Picker Modal */}
-          <div className="absolute top-full mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+          <div className={`absolute ${
+            dropdownPosition === 'left' 
+              ? 'right-0 top-1/2 -translate-y-1/2 mr-12' 
+              : 'top-full mt-2 left-0'
+          } w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50`}>
             {/* Search */}
             <div className="p-4 border-b dark:border-gray-700">
               <input
@@ -222,6 +280,19 @@ export default function IconPicker({ value, onChange, className = '' }: IconPick
               >
                 Emojis
               </button>
+              {customIcons.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('custom')}
+                  className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
+                    activeTab === 'custom'
+                      ? 'text-primary-600 border-b-2 border-primary-600'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  Personalizados ({customIcons.length})
+                </button>
+              )}
             </div>
 
             {/* Icons Grid */}
@@ -242,7 +313,7 @@ export default function IconPicker({ value, onChange, className = '' }: IconPick
                     </button>
                   ))}
                 </div>
-              ) : (
+              ) : activeTab === 'emojis' ? (
                 <div className="grid grid-cols-8 gap-2">
                   {filteredEmojis.map(({ emoji, label }) => (
                     <button
@@ -258,12 +329,33 @@ export default function IconPicker({ value, onChange, className = '' }: IconPick
                     </button>
                   ))}
                 </div>
+              ) : (
+                <div className="grid grid-cols-8 gap-2">
+                  {filteredCustomIcons.map((icon) => (
+                    <button
+                      key={icon.id}
+                      type="button"
+                      onClick={() => handleSelectIcon(icon.url, 'custom')}
+                      title={icon.name}
+                      className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                        selectedIcon === icon.url ? 'bg-primary-100 dark:bg-primary-900' : ''
+                      }`}
+                    >
+                      <img 
+                        src={icon.url} 
+                        alt={icon.name}
+                        className="h-6 w-6 object-contain mx-auto"
+                      />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
             {/* No results */}
             {((activeTab === 'heroicons' && filteredHeroicons.length === 0) ||
-              (activeTab === 'emojis' && filteredEmojis.length === 0)) && (
+              (activeTab === 'emojis' && filteredEmojis.length === 0) ||
+              (activeTab === 'custom' && filteredCustomIcons.length === 0)) && (
               <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                 No se encontraron iconos
               </div>

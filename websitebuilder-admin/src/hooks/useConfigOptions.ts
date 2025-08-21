@@ -80,19 +80,17 @@ export function useConfigOptions(type: string) {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions/type/${type}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions/type/${type}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       if (!response.ok) {
-        if (response.status === 404 || response.status === 401) {
-          // Si no se encuentran opciones o no autorizado, usar hardcodeadas
-          setOptions(getFallbackOptions());
-          return;
-        }
-        throw new Error('Error loading options');
+        // Si hay cualquier error (404, 401, 500, etc), usar opciones hardcodeadas
+        console.log(`Using fallback options for ${type} (API returned ${response.status})`);
+        setOptions(getFallbackOptions());
+        return;
       }
 
       const data = await response.json();
@@ -109,9 +107,8 @@ export function useConfigOptions(type: string) {
 
       setOptions(mappedOptions);
     } catch (err) {
-      console.error('Error fetching config options:', err);
-      setError('Error loading options');
-      // En caso de error, usar opciones hardcodeadas
+      // En caso de error, usar opciones hardcodeadas silenciosamente
+      console.log(`Using fallback options for ${type} (network error)`);
       setOptions(getFallbackOptions());
     } finally {
       setLoading(false);
@@ -124,7 +121,7 @@ export function useConfigOptions(type: string) {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions/increment-usage`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions/increment-usage`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

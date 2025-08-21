@@ -6,6 +6,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useConfigOptions } from '@/hooks/useConfigOptions';
 import RoomFormExtended from './RoomFormExtended';
 import Toggle from '@/components/ui/Toggle';
+import QuickAddOffcanvas from '@/components/ui/QuickAddOffcanvas';
 import { 
   XMarkIcon, 
   PlusIcon,
@@ -13,8 +14,7 @@ import {
   TrashIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  CloudArrowUpIcon,
-  Cog6ToothIcon
+  CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
 
 interface RoomFormData {
@@ -81,6 +81,8 @@ export default function RoomForm({
   const [activeTab, setActiveTab] = useState<'general' | 'pricing' | 'features' | 'media'>('general');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [hosts, setHosts] = useState<any[]>([]);
+  const [loadingHosts, setLoadingHosts] = useState(false);
   
   const [formData, setFormData] = useState<RoomFormData>({
     name: '',
@@ -178,14 +180,59 @@ export default function RoomForm({
     }
   }, []);
 
+  // Load hosts
+  useEffect(() => {
+    loadHosts();
+  }, []);
+
+  const loadHosts = async () => {
+    try {
+      setLoadingHosts(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hosts`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setHosts(data);
+      }
+    } catch (error) {
+      console.error('Error loading hosts:', error);
+    } finally {
+      setLoadingHosts(false);
+    }
+  };
+
   // Cargar opciones dinámicas desde la base de datos
   const { options: roomTypes, loading: loadingRoomTypes } = useConfigOptions('room_type');
   const { options: viewTypes, loading: loadingViewTypes } = useConfigOptions('view_type');
   const { options: amenityOptions, loading: loadingAmenities, incrementUsage } = useConfigOptions('amenity');
   
-  // Función para navegar a configuración de catálogos
-  const openConfigOptions = () => {
-    window.open('/dashboard/config-options', '_blank');
+  // Estados para los modales de agregar rápido
+  const [showQuickAddOffcanvas, setShowQuickAddOffcanvas] = useState(false);
+  const [quickAddType, setQuickAddType] = useState<'amenity' | 'room_type' | 'view_type' | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Función para abrir el modal de agregar rápido
+  const openQuickAdd = (type: 'amenity' | 'room_type' | 'view_type') => {
+    setQuickAddType(type);
+    setShowQuickAddOffcanvas(true);
+  };
+  
+  // Función para refrescar las opciones después de agregar
+  const handleOptionAdded = (newOption: any) => {
+    // Forzar recarga de opciones
+    setRefreshKey(prev => prev + 1);
+    
+    // Si es una amenidad, agregarla automáticamente al formulario
+    if (quickAddType === 'amenity' && newOption.label) {
+      setFormData(prev => ({
+        ...prev,
+        amenities: [...(prev.amenities || []), newOption.label]
+      }));
+    }
   };
 
   const validateForm = (): boolean => {
@@ -420,7 +467,8 @@ export default function RoomForm({
   ];
 
   return (
-    <form onSubmit={handleSubmit}>
+    <>
+      <form onSubmit={handleSubmit}>
       {/* Tabs - Mobile */}
       <div className="sm:hidden">
         <div className="px-4 py-3 bg-white dark:bg-gray-800">
@@ -521,6 +569,50 @@ export default function RoomForm({
               </div>
             </div>
 
+            {/* Host selector and Max Occupancy */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('rooms.host', 'Host')}
+                </label>
+                <select
+                  value={formData.hostId || ''}
+                  onChange={(e) => setFormData({ ...formData, hostId: e.target.value ? parseInt(e.target.value) : undefined })}
+                  className={getInputClassName(false)}
+                  style={getInputStyle()}
+                  onFocus={handleInputFocus}
+                  onBlur={(e) => handleInputBlur(e, false)}
+                  disabled={loadingHosts}
+                >
+                  <option value="">{loadingHosts ? t('common.loading', 'Cargando...') : t('rooms.selectHost', 'Seleccionar host')}</option>
+                  {hosts.map(host => (
+                    <option key={host.id} value={host.id}>
+                      {host.fullName || `${host.firstName} ${host.lastName}`} {host.isSuperhost ? '⭐' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('rooms.maxOccupancy', 'Ocupación Máxima')} *
+                </label>
+                <input
+                  type="number"
+                  value={formData.maxOccupancy}
+                  onChange={(e) => setFormData({ ...formData, maxOccupancy: parseInt(e.target.value) || 1 })}
+                  className={getInputClassName(!!errors.maxOccupancy)}
+                  style={getInputStyle()}
+                  onFocus={handleInputFocus}
+                  onBlur={(e) => handleInputBlur(e, !!errors.maxOccupancy)}
+                  min={1}
+                  placeholder={t('rooms.maxOccupancyPlaceholder', 'Ej: 4')}
+                />
+                {errors.maxOccupancy && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.maxOccupancy}</p>
+                )}
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('rooms.description', 'Descripción')}
@@ -539,9 +631,19 @@ export default function RoomForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('rooms.type', 'Tipo de Habitación')}
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('rooms.type', 'Tipo de Habitación')}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => openQuickAdd('room_type')}
+                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                  >
+                    <PlusIcon className="h-3 w-3" />
+                    {t('common.add', 'Agregar')}
+                  </button>
+                </div>
                 <select
                   value={formData.roomType}
                   onChange={(e) => setFormData({ ...formData, roomType: e.target.value })}
@@ -560,9 +662,19 @@ export default function RoomForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('rooms.viewType', 'Tipo de Vista')}
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('rooms.viewType', 'Tipo de Vista')}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => openQuickAdd('view_type')}
+                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                  >
+                    <PlusIcon className="h-3 w-3" />
+                    {t('common.add', 'Agregar')}
+                  </button>
+                </div>
                 <select
                   value={formData.viewType}
                   onChange={(e) => setFormData({ ...formData, viewType: e.target.value })}
@@ -694,25 +806,6 @@ export default function RoomForm({
         {activeTab === 'features' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('rooms.maxOccupancy', 'Ocupación Máxima')} *
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={formData.maxOccupancy}
-                  onChange={(e) => setFormData({ ...formData, maxOccupancy: parseInt(e.target.value) || 1 })}
-                  className={getInputClassName(!!errors.maxOccupancy)}
-                  style={getInputStyle()}
-                  onFocus={handleInputFocus}
-                  onBlur={(e) => handleInputBlur(e, !!errors.maxOccupancy)}
-                />
-                {errors.maxOccupancy && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.maxOccupancy}</p>
-                )}
-              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -761,15 +854,17 @@ export default function RoomForm({
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {t('rooms.quickAdd', 'Agregar rápido')}:
                   </p>
-                  <button
-                    type="button"
-                    onClick={openConfigOptions}
-                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
-                    title={t('rooms.manageOptions', 'Gestionar opciones')}
-                  >
-                    <Cog6ToothIcon className="h-4 w-4" />
-                    {t('rooms.customize', 'Personalizar')}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openQuickAdd('amenity')}
+                      className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                      title={t('rooms.addNew', 'Agregar nueva')}
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                      {t('rooms.addNew', 'Nueva')}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {loadingAmenities ? (
@@ -1046,5 +1141,52 @@ export default function RoomForm({
         </button>
       </div>
     </form>
+
+    {/* Quick Add Modal - Fuera del form principal */}
+    {quickAddType && (
+      <QuickAddOffcanvas
+        type={quickAddType}
+        isOpen={showQuickAddOffcanvas}
+        onClose={() => {
+          setShowQuickAddOffcanvas(false);
+          setQuickAddType(null);
+        }}
+        onAdd={(newOption) => {
+          // Actualizar el formulario con la nueva opción
+          if (quickAddType === 'amenity') {
+            // Agregar la nueva amenidad al formulario
+            setFormData(prev => ({
+              ...prev,
+              amenities: [...prev.amenities, newOption.value]
+            }));
+          } else if (quickAddType === 'room_type') {
+            // Seleccionar el nuevo tipo de habitación
+            setFormData(prev => ({
+              ...prev,
+              roomType: newOption.value
+            }));
+          } else if (quickAddType === 'view_type') {
+            // Seleccionar el nuevo tipo de vista
+            setFormData(prev => ({
+              ...prev,
+              viewType: newOption.value
+            }));
+          }
+          
+          // Refrescar las opciones
+          setRefreshKey(prev => prev + 1);
+          setShowQuickAddOffcanvas(false);
+          setQuickAddType(null);
+        }}
+        existingOptions={
+          quickAddType === 'amenity' 
+            ? amenityOptions.map(a => a.value)
+            : quickAddType === 'room_type'
+            ? roomTypes.map(r => r.value)
+            : viewTypes.map(v => v.value)
+        }
+      />
+    )}
+    </>
   );
 }

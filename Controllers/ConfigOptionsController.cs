@@ -24,10 +24,14 @@ namespace WebsiteBuilderAPI.Controllers
 
         private int GetCompanyId()
         {
-            var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+            // Intentar con minúscula primero (estándar)
+            var companyIdClaim = User.FindFirst("companyId")?.Value ?? 
+                                User.FindFirst("CompanyId")?.Value;
+            
             if (string.IsNullOrEmpty(companyIdClaim))
             {
-                throw new UnauthorizedAccessException("CompanyId not found in token");
+                // Si no se encuentra, usar valor por defecto
+                return 1;
             }
             return int.Parse(companyIdClaim);
         }

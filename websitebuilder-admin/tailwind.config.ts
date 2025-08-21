@@ -81,6 +81,10 @@ const config: Config = {
       fontFamily: {
         'sans': ['Inter', 'system-ui', 'sans-serif'],
       },
+      // Scale utilities
+      scale: {
+        '102': '1.02',
+      },
       // Animations
       animation: {
         'shimmer': 'shimmer 2s linear infinite',

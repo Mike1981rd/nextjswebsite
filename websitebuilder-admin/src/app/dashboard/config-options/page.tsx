@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useToast } from '@/contexts/ToastContext';
 import IconPicker from '@/components/ui/IconPicker';
+import IconRenderer from '@/components/ui/IconRenderer';
 import Toggle from '@/components/ui/Toggle';
+import Offcanvas from '@/components/ui/Offcanvas';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -34,7 +36,7 @@ interface ConfigOption {
 
 export default function ConfigOptionsPage() {
   const { t, language } = useI18n();
-  const { showToast } = useToast() as any;
+  const toast = useToast();
   
   const [options, setOptions] = useState<ConfigOption[]>([]);
   const [filteredOptions, setFilteredOptions] = useState<ConfigOption[]>([]);
@@ -43,6 +45,7 @@ export default function ConfigOptionsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingOption, setEditingOption] = useState<ConfigOption | null>(null);
+  const [customIcons, setCustomIcons] = useState<{id: string, name: string, url: string}[]>([]);
   const [formData, setFormData] = useState({
     type: 'amenity',
     value: '',
@@ -59,6 +62,7 @@ export default function ConfigOptionsPage() {
     { value: 'amenity', label: t('config.types.amenity', 'Amenidades'), icon: SparklesIcon },
     { value: 'room_type', label: t('config.types.roomType', 'Tipos de Habitación'), icon: HomeIcon },
     { value: 'view_type', label: t('config.types.viewType', 'Tipos de Vista'), icon: EyeIcon },
+    { value: 'icons', label: t('config.types.icons', 'Iconos'), icon: SparklesIcon },
     { value: 'policy_type', label: t('config.types.policyType', 'Tipos de Política'), icon: Cog6ToothIcon }
   ];
 
@@ -71,6 +75,9 @@ export default function ConfigOptionsPage() {
 
   useEffect(() => {
     fetchOptions();
+    // Cargar iconos personalizados desde localStorage
+    const savedIcons = JSON.parse(localStorage.getItem('customIcons') || '[]');
+    setCustomIcons(savedIcons);
   }, []);
 
   useEffect(() => {
@@ -80,7 +87,7 @@ export default function ConfigOptionsPage() {
   const fetchOptions = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -99,7 +106,7 @@ export default function ConfigOptionsPage() {
       setOptions(data);
     } catch (error) {
       console.error('Error:', error);
-      showToast(t('common.error', 'Error al cargar las opciones'), 'error');
+      toast.error(t('common.error', 'Error al cargar las opciones'));
     } finally {
       setLoading(false);
     }
@@ -107,8 +114,9 @@ export default function ConfigOptionsPage() {
 
   const initializeDefaults = async () => {
     try {
+      console.log('Inicializando opciones por defecto...');
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions/initialize-defaults`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions/initialize-defaults`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -116,11 +124,17 @@ export default function ConfigOptionsPage() {
       });
 
       if (response.ok) {
-        showToast(t('config.defaultsInitialized', 'Opciones por defecto inicializadas'), 'success');
-        fetchOptions();
+        const result = await response.text();
+        console.log('Respuesta del servidor:', result);
+        toast.success(t('config.defaultsInitialized', 'Opciones por defecto inicializadas'));
+        await fetchOptions(); // Esperar a que se recarguen las opciones
+      } else {
+        console.error('Error en la respuesta:', response.status, response.statusText);
+        toast.error(t('config.error', 'Error al inicializar opciones'));
       }
     } catch (error) {
       console.error('Error inicializando defaults:', error);
+      toast.error(t('config.error', 'Error al inicializar opciones'));
     }
   };
 
@@ -142,8 +156,8 @@ export default function ConfigOptionsPage() {
     try {
       const token = localStorage.getItem('token');
       const url = editingOption 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions/${editingOption.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions/${editingOption.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions`;
 
       const method = editingOption ? 'PUT' : 'POST';
       
@@ -171,18 +185,17 @@ export default function ConfigOptionsPage() {
         throw new Error(error.error || 'Error al guardar');
       }
 
-      showToast(
+      toast.success(
         editingOption 
           ? t('config.updated', 'Opción actualizada exitosamente')
-          : t('config.created', 'Opción creada exitosamente'),
-        'success'
+          : t('config.created', 'Opción creada exitosamente')
       );
 
       setShowModal(false);
       resetForm();
-      fetchOptions();
+      await fetchOptions(); // Refresh the list to show updated icons
     } catch (error: any) {
-      showToast(error.message || t('common.error', 'Error al guardar'), 'error');
+      toast.error(error.message || t('common.error', 'Error al guardar'));
     }
   };
 
@@ -193,7 +206,7 @@ export default function ConfigOptionsPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -205,17 +218,17 @@ export default function ConfigOptionsPage() {
         throw new Error(error.error || 'Error al eliminar');
       }
 
-      showToast(t('config.deleted', 'Opción eliminada exitosamente'), 'success');
+      toast.success(t('config.deleted', 'Opción eliminada exitosamente'));
       fetchOptions();
     } catch (error: any) {
-      showToast(error.message || t('common.error', 'Error al eliminar'), 'error');
+      toast.error(error.message || t('common.error', 'Error al eliminar'));
     }
   };
 
   const handleToggleActive = async (option: ConfigOption) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions/${option.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions/${option.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -263,15 +276,63 @@ export default function ConfigOptionsPage() {
     });
   };
 
-  const renderIcon = (option: ConfigOption) => {
-    if (!option.icon) return null;
-
-    if (option.iconType === 'emoji' || option.icon.length <= 3) {
-      return <span className="text-xl">{option.icon}</span>;
+  // Función para manejar la carga de iconos personalizados
+  const handleIconUpload = async (file: File) => {
+    // Validar tamaño del archivo (máximo 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error(t('config.icons.fileTooLarge', 'El archivo es demasiado grande. Máximo 2MB'));
+      return;
     }
 
-    // Para heroicons, por ahora mostrar un icono genérico
-    return <SparklesIcon className="h-5 w-5" />;
+    // Validar tipo de archivo
+    const validTypes = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      toast.error(t('config.icons.invalidFileType', 'Tipo de archivo no válido'));
+      return;
+    }
+
+    try {
+      // Convertir archivo a base64
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        const newIcon = {
+          id: `custom-${Date.now()}`,
+          name: file.name.replace(/\.[^/.]+$/, ''),
+          url: result
+        };
+        
+        // Guardar en localStorage
+        const savedIcons = JSON.parse(localStorage.getItem('customIcons') || '[]');
+        savedIcons.push(newIcon);
+        localStorage.setItem('customIcons', JSON.stringify(savedIcons));
+        
+        // Actualizar estado
+        setCustomIcons([...customIcons, newIcon]);
+        toast.success(t('config.icons.uploadSuccess', 'Icono agregado exitosamente'));
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading icon:', error);
+      toast.error(t('config.icons.uploadError', 'Error al cargar el icono'));
+    }
+  };
+
+  // Función para eliminar iconos personalizados
+  const handleDeleteCustomIcon = (id: string) => {
+    // Eliminar de localStorage
+    const savedIcons = JSON.parse(localStorage.getItem('customIcons') || '[]');
+    const filteredIcons = savedIcons.filter((icon: any) => icon.id !== id);
+    localStorage.setItem('customIcons', JSON.stringify(filteredIcons));
+    
+    // Actualizar estado
+    setCustomIcons(customIcons.filter(icon => icon.id !== id));
+    toast.success(t('config.icons.deleteSuccess', 'Icono eliminado exitosamente'));
+  };
+
+  const renderIcon = (option: ConfigOption) => {
+    if (!option.icon) return null;
+    return <IconRenderer icon={option.icon} iconType={option.iconType as 'heroicon' | 'emoji' | 'custom'} className="h-8 w-8" />;
   };
 
   if (loading) {
@@ -283,8 +344,16 @@ export default function ConfigOptionsPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
+    <div className="p-4 sm:p-6">
+      {/* Mobile Title - Centered */}
+      <div className="sm:hidden mb-4 text-center">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          {t('config.title', 'Gestión de Catálogos')}
+        </h1>
+      </div>
+
+      {/* Desktop Title */}
+      <div className="hidden sm:block mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           {t('config.title', 'Gestión de Catálogos')}
         </h1>
@@ -293,56 +362,186 @@ export default function ConfigOptionsPage() {
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-        <nav className="flex space-x-8">
+      {/* Tabs - Pills verticales en móvil, horizontal en desktop */}
+      <div className="mb-4 sm:mb-6">
+        {/* Mobile Pills */}
+        <div className="sm:hidden flex flex-col items-center space-y-2 mb-4">
           {optionTypes.map(type => {
             const Icon = type.icon;
             return (
               <button
                 key={type.value}
                 onClick={() => setActiveTab(type.value)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+                className={`w-full max-w-[220px] py-3 px-4 rounded-full font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
                   activeTab === type.value
-                    ? 'border-primary-600 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-primary-600 text-white shadow-lg transform scale-105 ring-2 ring-primary-400 ring-offset-2 dark:ring-offset-gray-800'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-102'
                 }`}
               >
-                <Icon className="h-5 w-5" />
-                {type.label}
+                <Icon className={`h-4 w-4 transition-transform duration-300 ${activeTab === type.value ? 'scale-110' : ''}`} />
+                <span>{type.label.split(' ')[0]}</span>
               </button>
             );
           })}
-        </nav>
+        </div>
+
+        {/* Desktop Tabs */}
+        <div className="hidden sm:block border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex space-x-8">
+            {optionTypes.map(type => {
+              const Icon = type.icon;
+              return (
+                <button
+                  key={type.value}
+                  onClick={() => setActiveTab(type.value)}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+                    activeTab === type.value
+                      ? 'border-primary-600 text-primary-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  {type.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
       </div>
 
       {/* Search and Add */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="relative flex-1 sm:max-w-md order-2 sm:order-1">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t('common.search', 'Buscar...')}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
           />
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setFormData(prev => ({ ...prev, type: activeTab }));
-            setShowModal(true);
-          }}
-          className="ml-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
-        >
-          <PlusIcon className="h-5 w-5" />
-          {t('config.addOption', 'Agregar Opción')}
-        </button>
+        <div className="flex gap-2 order-1 sm:order-2">
+          {options.filter(o => o.isDefault).length === 0 && (
+            <button
+              onClick={initializeDefaults}
+              className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base whitespace-nowrap"
+            >
+              <SparklesIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="hidden sm:inline">{t('config.initializeDefaults', 'Inicializar Catálogo Base')}</span>
+              <span className="sm:hidden">{t('common.init', 'Iniciar')}</span>
+            </button>
+          )}
+          {activeTab !== 'icons' && (
+            <button
+              onClick={() => {
+                resetForm();
+                setFormData(prev => ({ ...prev, type: activeTab }));
+                setShowModal(true);
+              }}
+              className="px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-1 sm:gap-2 text-sm sm:text-base whitespace-nowrap"
+            >
+              <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="hidden sm:inline">{t('config.addOption', 'Agregar Opción')}</span>
+              <span className="sm:hidden">{t('common.add', 'Agregar')}</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Options Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      {/* Contenido según el tab activo */}
+      {activeTab === 'icons' ? (
+        // Vista de iconos
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              {t('config.icons.defaultIcons', 'Iconos Disponibles')}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              {t('config.icons.description', 'Estos son los iconos disponibles para usar en el sistema')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4">
+            {/* Iconos de Heroicons */}
+            <div className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <HomeIcon className="h-10 w-10 text-gray-700 dark:text-gray-300 mb-2" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">home</span>
+            </div>
+            <div className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <SparklesIcon className="h-10 w-10 text-gray-700 dark:text-gray-300 mb-2" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">sparkles</span>
+            </div>
+            <div className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <EyeIcon className="h-10 w-10 text-gray-700 dark:text-gray-300 mb-2" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">eye</span>
+            </div>
+            <div className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <Cog6ToothIcon className="h-10 w-10 text-gray-700 dark:text-gray-300 mb-2" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">cog</span>
+            </div>
+            
+            {/* Agregar más iconos aquí */}
+          </div>
+
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('config.icons.customIcons', 'Iconos Personalizados')}
+            </h3>
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+              <input
+                type="file"
+                id="icon-upload"
+                accept=".svg,.png,.jpg,.jpeg"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleIconUpload(file);
+                  }
+                }}
+              />
+              <label
+                htmlFor="icon-upload"
+                className="inline-block px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors cursor-pointer"
+              >
+                <PlusIcon className="h-5 w-5 inline mr-2" />
+                {t('config.icons.addCustom', 'Agregar Icono Personalizado')}
+              </label>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                {t('config.icons.supportedFormats', 'Formatos soportados: SVG, PNG, JPG')}
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                {t('config.icons.maxSize', 'Tamaño máximo: 2MB')}
+              </p>
+            </div>
+            
+            {/* Lista de iconos personalizados */}
+            <div className="mt-6">
+              {customIcons.length > 0 && (
+                <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4">
+                  {customIcons.map((icon, index) => (
+                    <div key={index} className="relative group flex flex-col items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <img src={icon.url} alt={icon.name} className="h-10 w-10 object-contain mb-2" />
+                      <span className="text-xs text-gray-600 dark:text-gray-400">{icon.name}</span>
+                      <button
+                        onClick={() => handleDeleteCustomIcon(icon.id)}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <TrashIcon className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        // Vista de tabla para otras opciones
+        <>
+        {/* Desktop Table */}
+        <div className="hidden sm:block bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
@@ -373,7 +572,7 @@ export default function ConfigOptionsPage() {
             {filteredOptions.map(option => (
               <tr key={option.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center justify-center w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-center w-12 h-12">
                     {renderIcon(option)}
                   </div>
                 </td>
@@ -431,25 +630,114 @@ export default function ConfigOptionsPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
-        {filteredOptions.length === 0 && (
+        {/* Mobile Cards */}
+        <div className="sm:hidden space-y-3">
+          {filteredOptions.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 text-center text-gray-500 dark:text-gray-400">
+              {t('config.noOptions', 'No se encontraron opciones')}
+            </div>
+          ) : (
+            filteredOptions.map(option => (
+              <div key={option.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="flex items-center justify-center w-12 h-12">
+                      {renderIcon(option)}
+                    </div>
+                    <button
+                      onClick={() => openEditModal(option)}
+                      className="p-1.5 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                    >
+                      <PencilIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </button>
+                    <div className="flex-1 ml-2">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {language === 'es' ? option.labelEs : option.labelEn}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {language === 'es' ? option.labelEn : option.labelEs}
+                      </p>
+                    </div>
+                  </div>
+                  {option.isCustom && (
+                    <button
+                      onClick={() => handleDelete(option.id)}
+                      className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                      <TrashIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">{t('config.value', 'Valor')}:</span>
+                    <code className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">
+                      {option.value}
+                    </code>
+                  </div>
+                  
+                  {option.category && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">{t('config.category', 'Categoría')}:</span>
+                      <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
+                        {option.category}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">{t('config.usage', 'Uso')}:</span>
+                    <span className="text-gray-900 dark:text-white">{option.usageCount}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">{t('config.status', 'Estado')}:</span>
+                    <Toggle
+                      checked={option.isActive}
+                      onChange={() => handleToggleActive(option)}
+                      size="small"
+                    />
+                  </div>
+                  
+                  {option.isDefault && (
+                    <div className="pt-2">
+                      <span className="inline-flex items-center px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">
+                        {t('config.default', 'Por defecto')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        </>
+      )}
+
+      {/* Mensaje cuando no hay opciones */}
+      {activeTab !== 'icons' && filteredOptions.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 dark:text-gray-400">
               {t('config.noOptions', 'No se encontraron opciones')}
             </p>
           </div>
         )}
-      </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-              {editingOption 
-                ? t('config.editOption', 'Editar Opción')
-                : t('config.addOption', 'Agregar Opción')}
-            </h2>
+      {/* Offcanvas */}
+      <Offcanvas
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          resetForm();
+        }}
+        title={editingOption 
+          ? t('config.editOption', 'Editar Opción')
+          : t('config.addOption', 'Agregar Opción')}
+        width="600px"
+      >
 
             <div className="space-y-4">
               {!editingOption && (
@@ -557,26 +845,24 @@ export default function ConfigOptionsPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  resetForm();
-                }}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                {t('common.cancel', 'Cancelar')}
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                {t('common.save', 'Guardar')}
-              </button>
-            </div>
-          </div>
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => {
+              setShowModal(false);
+              resetForm();
+            }}
+            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            {t('common.cancel', 'Cancelar')}
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            {t('common.save', 'Guardar')}
+          </button>
         </div>
-      )}
+      </Offcanvas>
     </div>
   );
 }

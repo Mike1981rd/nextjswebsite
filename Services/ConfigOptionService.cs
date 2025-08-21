@@ -186,18 +186,37 @@ namespace WebsiteBuilderAPI.Services
 
         public async Task InitializeDefaultOptionsAsync(int companyId)
         {
-            // Verificar si ya existen opciones para esta empresa
-            var hasOptions = await _context.ConfigOptions
-                .AnyAsync(o => o.CompanyId == companyId);
+            // Verificar si ya existen opciones POR DEFECTO para esta empresa
+            var hasDefaultOptions = await _context.ConfigOptions
+                .AnyAsync(o => o.CompanyId == companyId && o.IsDefault == true);
 
-            if (hasOptions)
+            if (hasDefaultOptions)
+            {
+                _logger.LogInformation("Ya existen opciones por defecto para Company {CompanyId}", companyId);
                 return;
+            }
 
             _logger.LogInformation("Inicializando opciones por defecto para Company {CompanyId}", companyId);
 
             var defaultOptions = GetDefaultOptions(companyId);
-            _context.ConfigOptions.AddRange(defaultOptions);
+            
+            // Verificar y agregar solo las opciones que no existen
+            foreach (var option in defaultOptions)
+            {
+                var exists = await _context.ConfigOptions
+                    .AnyAsync(o => o.CompanyId == companyId && 
+                                  o.Type == option.Type && 
+                                  o.Value == option.Value);
+                
+                if (!exists)
+                {
+                    _context.ConfigOptions.Add(option);
+                }
+            }
+            
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Se agregaron {Count} opciones por defecto para Company {CompanyId}", 
+                defaultOptions.Count, companyId);
         }
 
         private static List<ConfigOption> GetDefaultOptions(int companyId)
