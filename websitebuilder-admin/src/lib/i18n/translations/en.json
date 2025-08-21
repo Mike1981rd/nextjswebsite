@@ -136,6 +136,7 @@
     "hosts": "Hosts",
     "reservaciones": "Reservations",
     "disponibilidad": "Availability",
+    "gestionCatalogo": "Catalog Management",
     "metodosPago": "Payment Methods",
     "colecciones": "Collections",
     "productos": "Products",
@@ -2480,6 +2481,28 @@
       "deleteError": "Error deleting host",
       "verifySuccess": "Verification updated successfully",
       "verifyError": "Error updating verification"
+    }
+  },
+  "config": {
+    "title": "Catalog Management",
+    "description": "Customize the available options in your system",
+    "addOption": "Add Option",
+    "initializeDefaults": "Initialize Base Catalog",
+    "defaultsInitialized": "Default options initialized",
+    "types": {
+      "amenity": "Amenities",
+      "roomType": "Room Types",
+      "viewType": "View Types",
+      "icons": "Icons",
+      "policyType": "Policy Types"
+    },
+    "editOption": "Edit Option",
+    "icons": {
+      "defaultIcons": "Available Icons",
+      "description": "These are the icons available for use in the system",
+      "customIcons": "Custom Icons",
+      "addCustom": "Add Custom Icon",
+      "supportedFormats": "Supported formats: SVG, PNG, JPG"
     }
   }
 }

@@ -137,6 +137,7 @@
     "hosts": "Anfitriones",
     "reservaciones": "Reservaciones",
     "disponibilidad": "Disponibilidad",
+    "gestionCatalogo": "Gestión de Catálogo",
     "metodosPago": "Métodos de Pago",
     "colecciones": "Colecciones",
     "productos": "Productos",
@@ -2494,6 +2495,28 @@
       "deleteError": "Error al eliminar el anfitrión",
       "verifySuccess": "Verificación actualizada exitosamente",
       "verifyError": "Error al actualizar la verificación"
+    }
+  },
+  "config": {
+    "title": "Gestión de Catálogos",
+    "description": "Personaliza las opciones disponibles en tu sistema",
+    "addOption": "Agregar Opción",
+    "initializeDefaults": "Inicializar Catálogo Base",
+    "defaultsInitialized": "Opciones por defecto inicializadas",
+    "types": {
+      "amenity": "Amenidades",
+      "roomType": "Tipos de Habitación",
+      "viewType": "Tipos de Vista",
+      "icons": "Iconos",
+      "policyType": "Tipos de Política"
+    },
+    "editOption": "Editar Opción",
+    "icons": {
+      "defaultIcons": "Iconos Disponibles",
+      "description": "Estos son los iconos disponibles para usar en el sistema",
+      "customIcons": "Iconos Personalizados",
+      "addCustom": "Agregar Icono Personalizado",
+      "supportedFormats": "Formatos soportados: SVG, PNG, JPG"
     }
   }
 }

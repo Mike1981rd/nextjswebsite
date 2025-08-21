@@ -22,7 +22,7 @@ export default function QuickAddModal({
   existingOptions = []
 }: QuickAddModalProps) {
   const { t, language } = useI18n();
-  const { showToast } = useToast() as any;
+  const { error: showError, success: showSuccess } = useToast();
   
   const [formData, setFormData] = useState({
     value: '',
@@ -91,18 +91,18 @@ export default function QuickAddModal({
     
     // Validaciones
     if (!formData.labelEs.trim()) {
-      showToast(t('validation.required', 'La etiqueta en español es obligatoria'), 'error');
+      showError(t('validation.required', 'La etiqueta en español es obligatoria'));
       return;
     }
     
     if (!formData.labelEn.trim()) {
-      showToast(t('validation.required', 'La etiqueta en inglés es obligatoria'), 'error');
+      showError(t('validation.required', 'La etiqueta en inglés es obligatoria'));
       return;
     }
     
     // Verificar si ya existe
     if (existingOptions.includes(formData.value)) {
-      showToast(t('config.alreadyExists', 'Esta opción ya existe'), 'error');
+      showError(t('config.alreadyExists', 'Esta opción ya existe'));
       return;
     }
     
@@ -110,7 +110,7 @@ export default function QuickAddModal({
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ConfigOptions`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -144,10 +144,10 @@ export default function QuickAddModal({
         iconType: newOption.iconType
       });
       
-      showToast(t('config.added', 'Opción agregada exitosamente'), 'success');
+      showSuccess(t('config.added', 'Opción agregada exitosamente'));
       onClose();
     } catch (error: any) {
-      showToast(error.message || t('common.error', 'Error al agregar'), 'error');
+      showError(error.message || t('common.error', 'Error al agregar'));
     } finally {
       setSaving(false);
     }

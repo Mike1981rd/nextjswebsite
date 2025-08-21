@@ -109,6 +109,13 @@ const menuItems: MenuItem[] = [
         href: '/dashboard/disponibilidad',
         icon: AvailabilityIcon,
         permission: 'availability.read'
+      },
+      {
+        id: 'gestion-catalogo',
+        nameKey: 'navigation.gestionCatalogo',
+        href: '/dashboard/config-options',
+        icon: CollectionsIcon,
+        permission: 'config.read'
       }
     ]
   },
