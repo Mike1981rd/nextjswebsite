@@ -19,7 +19,7 @@ import {
   Grid,
   LayoutGrid,
   Box,
-  FileText
+  Bed
 } from 'lucide-react';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { useEditorStore } from '@/stores/useEditorStore';
@@ -73,7 +73,7 @@ function EditorPageContent() {
     { id: '5', name: t('editor.pageTypes.collection', 'Colección'), type: PageType.COLLECTION, icon: Grid },
     { id: '6', name: t('editor.pageTypes.allCollections', 'Todas las colecciones'), type: PageType.ALL_COLLECTIONS, icon: LayoutGrid },
     { id: '7', name: t('editor.pageTypes.allProducts', 'Todos los productos'), type: PageType.ALL_PRODUCTS, icon: Box },
-    { id: '8', name: t('editor.pageTypes.custom', 'Página personalizada'), type: PageType.CUSTOM, icon: FileText }
+    { id: '8', name: t('editor.pageTypes.custom', 'Habitaciones'), type: PageType.CUSTOM, icon: Bed }
   ], [t]);
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

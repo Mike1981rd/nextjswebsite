@@ -9,6 +9,7 @@ export interface ImageBannerConfig {
   // General
   colorScheme: '1' | '2' | '3' | '4' | '5';
   colorBackground: boolean;
+  showOnlyOnHomePage: boolean;
   width: 'small' | 'medium' | 'large' | 'page' | 'screen';
   desktopRatio: number;
   mobileRatio: number;

@@ -95,6 +95,7 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
       // General
       colorScheme: '1',
       colorBackground: false,
+      showOnlyOnHomePage: false,
       width: 'large',
       desktopRatio: 2.1,
       mobileRatio: 1.6,
@@ -199,6 +200,20 @@ export default function ImageBannerEditor({ sectionId }: ImageBannerEditorProps)
                     localConfig.colorBackground ? 'translate-x-5' : 'translate-x-1'
                   }`} />
                 </button>
+              </div>
+
+              {/* Show Only on Home Page */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="showOnlyHomePage"
+                  checked={localConfig.showOnlyOnHomePage}
+                  onChange={(e) => handleChange({ showOnlyOnHomePage: e.target.checked })}
+                  className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <label htmlFor="showOnlyHomePage" className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  Show only on home page
+                </label>
               </div>
 
               {/* Width */}

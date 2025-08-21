@@ -484,6 +484,7 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
             config={section.settings}
             isEditor={true}
             deviceView={deviceView as 'desktop' | 'mobile'}
+            pageType={selectedPageType as string}
           />
         );
 

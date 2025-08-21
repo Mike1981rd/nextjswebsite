@@ -332,7 +332,9 @@ export default function ConfigOptionsPage() {
 
   const renderIcon = (option: ConfigOption) => {
     if (!option.icon) return null;
-    return <IconRenderer icon={option.icon} iconType={option.iconType as 'heroicon' | 'emoji' | 'custom'} className="h-8 w-8" />;
+    // Usar tamaño más grande para iconos personalizados
+    const iconSize = option.iconType === 'custom' ? "h-12 w-12" : "h-8 w-8";
+    return <IconRenderer icon={option.icon} iconType={option.iconType as 'heroicon' | 'emoji' | 'custom'} className={iconSize} />;
   };
 
   if (loading) {
@@ -519,11 +521,11 @@ export default function ConfigOptionsPage() {
             {/* Lista de iconos personalizados */}
             <div className="mt-6">
               {customIcons.length > 0 && (
-                <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-4">
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-4">
                   {customIcons.map((icon, index) => (
                     <div key={index} className="relative group flex flex-col items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                      <img src={icon.url} alt={icon.name} className="h-10 w-10 object-contain mb-2" />
-                      <span className="text-xs text-gray-600 dark:text-gray-400">{icon.name}</span>
+                      <img src={icon.url} alt={icon.name} className="h-16 w-16 object-contain mb-2" />
+                      <span className="text-xs text-gray-600 dark:text-gray-400 text-center break-all">{icon.name}</span>
                       <button
                         onClick={() => handleDeleteCustomIcon(icon.id)}
                         className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
@@ -572,7 +574,7 @@ export default function ConfigOptionsPage() {
             {filteredOptions.map(option => (
               <tr key={option.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center justify-center w-12 h-12">
+                  <div className="flex items-center justify-center w-16 h-16">
                     {renderIcon(option)}
                   </div>
                 </td>
@@ -643,7 +645,7 @@ export default function ConfigOptionsPage() {
               <div key={option.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 flex-1">
-                    <div className="flex items-center justify-center w-12 h-12">
+                    <div className="flex items-center justify-center w-16 h-16">
                       {renderIcon(option)}
                     </div>
                     <button

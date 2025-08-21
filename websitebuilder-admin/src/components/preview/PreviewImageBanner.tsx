@@ -18,9 +18,10 @@ interface PreviewImageBannerProps {
   isEditor?: boolean;
   deviceView?: 'desktop' | 'mobile';
   theme?: any; // Theme from PreviewPage for live preview
+  pageType?: string; // To check if current page is home
 }
 
-export default function PreviewImageBanner({ config, isEditor = false, deviceView, theme }: PreviewImageBannerProps) {
+export default function PreviewImageBanner({ config, isEditor = false, deviceView, theme, pageType }: PreviewImageBannerProps) {
   // Mobile detection state
   const [isMobile, setIsMobile] = useState(() => {
     if (deviceView !== undefined) return deviceView === 'mobile';
@@ -51,53 +52,42 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
     return () => window.removeEventListener('resize', checkMobile);
   }, [deviceView]);
 
-  // All hooks MUST come before conditional returns
-  // Check if config is completely empty or missing required fields
-  if (!config || (Object.keys(config).length === 0 && config.constructor === Object)) {
-    // Don't render if config is null, undefined, or empty object
-    return null;
-  }
-  
-  // Also check if there's no content to display
-  if (!config.heading && !config.body && !config.subheading && !config.desktopImage && !config.mobileImage) {
-    // Don't render if there's no content at all
-    return null;
-  }
-  
-  // Apply defaults to config
-  const configWithDefaults = {
-    ...config,
-    // Add defaults for properties that might be missing in config
-    colorScheme: config.colorScheme || '1',
-    colorBackground: config.colorBackground ?? false,
-    width: config.width || 'page' as const,
-    desktopRatio: config.desktopRatio || 16/9,
-    mobileRatio: config.mobileRatio || 1,
-    desktopPosition: config.desktopPosition || 'center',
-    desktopAlignment: config.desktopAlignment || 'center' as const,
-    desktopWidth: config.desktopWidth || 50,
-    desktopSpacing: config.desktopSpacing || 4,
-    mobilePosition: config.mobilePosition || 'center' as const,
-    mobileAlignment: config.mobileAlignment || 'center' as const,
-    desktopBackground: config.desktopBackground || 'none' as const,
-    mobileBackground: config.mobileBackground || 'none' as const,
-    headingSize: config.headingSize || 2 as const,
-    bodySize: config.bodySize || 1 as const,
-    firstButtonStyle: config.firstButtonStyle || 'solid' as const,
-    secondButtonStyle: config.secondButtonStyle || 'outline' as const,
-    desktopOverlayOpacity: config.desktopOverlayOpacity ?? 0,
-    mobileOverlayOpacity: config.mobileOverlayOpacity ?? 0,
-    topPadding: config.topPadding ?? 0,
-    bottomPadding: config.bottomPadding ?? 0,
-    addSidePaddings: config.addSidePaddings ?? false
-  };
-  
-  // Use the config with defaults from here on
-  config = configWithDefaults;
+  // Apply defaults to config BEFORE any hooks
+  const configWithDefaults = useMemo(() => {
+    if (!config) return null;
+    
+    return {
+      ...config,
+      // Add defaults for properties that might be missing in config
+      colorScheme: config.colorScheme || '1',
+      colorBackground: config.colorBackground ?? false,
+      showOnlyOnHomePage: config.showOnlyOnHomePage ?? false,
+      width: config.width || 'page' as const,
+      desktopRatio: config.desktopRatio || 16/9,
+      mobileRatio: config.mobileRatio || 1,
+      desktopPosition: config.desktopPosition || 'center',
+      desktopAlignment: config.desktopAlignment || 'center' as const,
+      desktopWidth: config.desktopWidth || 50,
+      desktopSpacing: config.desktopSpacing || 4,
+      mobilePosition: config.mobilePosition || 'center' as const,
+      mobileAlignment: config.mobileAlignment || 'center' as const,
+      desktopBackground: config.desktopBackground || 'none' as const,
+      mobileBackground: config.mobileBackground || 'none' as const,
+      headingSize: config.headingSize || 2 as const,
+      bodySize: config.bodySize || 1 as const,
+      firstButtonStyle: config.firstButtonStyle || 'solid' as const,
+      secondButtonStyle: config.secondButtonStyle || 'outline' as const,
+      desktopOverlayOpacity: config.desktopOverlayOpacity ?? 0,
+      mobileOverlayOpacity: config.mobileOverlayOpacity ?? 0,
+      topPadding: config.topPadding ?? 0,
+      bottomPadding: config.bottomPadding ?? 0,
+      addSidePaddings: config.addSidePaddings ?? false
+    };
+  }, [config]);
   
   // Get the selected color scheme
   const colorScheme = useMemo(() => {
-    if (!themeConfig?.colorSchemes?.schemes) {
+    if (!themeConfig?.colorSchemes?.schemes || !configWithDefaults) {
       // Fallback to default if no theme config
       return {
         text: '#000000',
@@ -109,8 +99,8 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
       };
     }
     
-    // Find the scheme by ID (config.colorScheme is "1", "2", etc.)
-    const schemeIndex = parseInt(config.colorScheme) - 1;
+    // Find the scheme by ID (configWithDefaults.colorScheme is "1", "2", etc.)
+    const schemeIndex = parseInt(configWithDefaults.colorScheme) - 1;
     const selectedScheme = themeConfig.colorSchemes.schemes[schemeIndex];
     
     if (!selectedScheme) {
@@ -119,7 +109,7 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
     }
     
     return selectedScheme;
-  }, [themeConfig, config.colorScheme]);
+  }, [themeConfig, configWithDefaults]);
 
   // Width classes
   const widthClasses = {
@@ -237,36 +227,53 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
     return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
 
+  // NOW we can do conditional returns, after all hooks
+  // Check if config is valid
+  if (!configWithDefaults) {
+    return null;
+  }
+  
+  // Check if should show based on page type
+  if (configWithDefaults.showOnlyOnHomePage && pageType && pageType !== 'HOME' && pageType !== 'home') {
+    return null;
+  }
+  
+  // Check if there's no content to display
+  if (!configWithDefaults.heading && !configWithDefaults.body && !configWithDefaults.subheading && 
+      !configWithDefaults.desktopImage && !configWithDefaults.mobileImage) {
+    return null;
+  }
+
   return (
     <section 
       className={`relative overflow-hidden`}
       style={{
-        paddingTop: `${config.topPadding}px`,
-        paddingBottom: `${config.bottomPadding}px`,
-        ...(config.colorBackground ? { backgroundColor: colorScheme.background } : {})
+        paddingTop: `${configWithDefaults.topPadding}px`,
+        paddingBottom: `${configWithDefaults.bottomPadding}px`,
+        ...(configWithDefaults.colorBackground ? { backgroundColor: colorScheme.background } : {})
       }}
     >
       {/* Desktop View */}
       {!isMobile && (
         <div 
-          className={`relative ${widthClasses[config.width]} ${config.addSidePaddings ? 'px-4 lg:px-8' : ''}`}
-          style={{ aspectRatio: config.desktopRatio }}
+          className={`relative ${widthClasses[configWithDefaults.width]} ${configWithDefaults.addSidePaddings ? 'px-4 lg:px-8' : ''}`}
+          style={{ aspectRatio: configWithDefaults.desktopRatio }}
         >
           {/* Background Media */}
-          {config.desktopImage && (
+          {configWithDefaults.desktopImage && (
             <>
-              {isVideo(config.desktopImage) ? (
+              {isVideo(configWithDefaults.desktopImage) ? (
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
-                  src={config.desktopImage}
+                  src={configWithDefaults.desktopImage}
                   autoPlay
                   loop
-                  muted={!config.videoSound}
+                  muted={!configWithDefaults.videoSound}
                   playsInline
                 />
               ) : (
                 <img
-                  src={config.desktopImage}
+                  src={configWithDefaults.desktopImage}
                   alt=""
                   className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -274,24 +281,24 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
               {/* Overlay */}
               <div 
                 className="absolute inset-0 bg-black"
-                style={{ opacity: config.desktopOverlayOpacity !== undefined ? config.desktopOverlayOpacity / 100 : 0 }}
+                style={{ opacity: configWithDefaults.desktopOverlayOpacity !== undefined ? configWithDefaults.desktopOverlayOpacity / 100 : 0 }}
               />
             </>
           )}
 
           {/* Content Container */}
-          <div className={`relative h-full flex ${desktopPositionClasses[config.desktopPosition]} p-8`}>
+          <div className={`relative h-full flex ${desktopPositionClasses[configWithDefaults.desktopPosition]} p-8`}>
             <div 
-              className={`${backgroundStyles[config.desktopBackground]} ${config.desktopBackground !== 'none' ? 'p-8 rounded-lg' : ''}`}
+              className={`${backgroundStyles[configWithDefaults.desktopBackground]} ${configWithDefaults.desktopBackground !== 'none' ? 'p-8 rounded-lg' : ''}`}
               style={{ 
-                width: `${config.desktopWidth}%`,
+                width: `${configWithDefaults.desktopWidth}%`,
                 maxWidth: '800px',
-                ...getContentBackgroundStyle(config.desktopBackground)
+                ...getContentBackgroundStyle(configWithDefaults.desktopBackground)
               }}
             >
-              <div className={`${alignmentClasses[config.desktopAlignment]} space-y-${Math.ceil(config.desktopSpacing / 20) || 4}`}>
+              <div className={`${alignmentClasses[configWithDefaults.desktopAlignment]} space-y-${Math.ceil(configWithDefaults.desktopSpacing / 20) || 4}`}>
                 {/* Subheading */}
-                {config.subheading && (
+                {configWithDefaults.subheading && (
                   <p 
                     className={`text-sm opacity-80`}
                     style={{ 
@@ -299,63 +306,63 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                       ...bodyTypographyStyles
                     } as React.CSSProperties}
                   >
-                    {config.subheading}
+                    {configWithDefaults.subheading}
                   </p>
                 )}
 
                 {/* Heading */}
-                {config.heading && (
+                {configWithDefaults.heading && (
                   <h2 
-                    className={`${(headingSizeClasses as any)[config.headingSize] || ''}`}
+                    className={`${(headingSizeClasses as any)[configWithDefaults.headingSize] || ''}`}
                     style={{ 
                       color: colorScheme.text,
                       ...headingTypographyStyles,
-                      fontWeight: config.headingFontWeight || (headingTypographyStyles as any)?.fontWeight || '700'
+                      fontWeight: configWithDefaults.headingFontWeight || (headingTypographyStyles as any)?.fontWeight || '700'
                     } as React.CSSProperties}
                   >
-                    {config.heading}
+                    {configWithDefaults.heading}
                   </h2>
                 )}
 
                 {/* Body */}
-                {config.body && (
+                {configWithDefaults.body && (
                   <p 
-                    className={`${(bodySizeClasses as any)[config.bodySize] || ''} opacity-90`}
+                    className={`${(bodySizeClasses as any)[configWithDefaults.bodySize] || ''} opacity-90`}
                     style={{ 
                       color: colorScheme.text,
                       ...bodyTypographyStyles,
-                      fontWeight: config.bodyFontWeight || (bodyTypographyStyles as any)?.fontWeight || '400'
+                      fontWeight: configWithDefaults.bodyFontWeight || (bodyTypographyStyles as any)?.fontWeight || '400'
                     } as React.CSSProperties}
                   >
-                    {config.body}
+                    {configWithDefaults.body}
                   </p>
                 )}
 
                 {/* Buttons */}
-                {(config.firstButtonLabel || config.secondButtonLabel) && (
-                  <div className={`flex gap-4 mt-6 ${config.desktopAlignment === 'center' ? 'justify-center' : ''}`}>
-                    {config.firstButtonLabel && (
+                {(configWithDefaults.firstButtonLabel || configWithDefaults.secondButtonLabel) && (
+                  <div className={`flex gap-4 mt-6 ${configWithDefaults.desktopAlignment === 'center' ? 'justify-center' : ''}`}>
+                    {configWithDefaults.firstButtonLabel && (
                       <a
-                        href={config.firstButtonLink || '#'}
-                        className={`px-6 py-3 rounded-md ${getButtonClasses(config.firstButtonStyle || 'solid')}`}
+                        href={configWithDefaults.firstButtonLink || '#'}
+                        className={`px-6 py-3 rounded-md ${getButtonClasses(configWithDefaults.firstButtonStyle || 'solid')}`}
                         style={{
-                          ...getButtonStyles(config.firstButtonStyle || 'solid'),
+                          ...getButtonStyles(configWithDefaults.firstButtonStyle || 'solid'),
                           ...buttonTypographyStyles
                         } as React.CSSProperties}
                       >
-                        {config.firstButtonLabel}
+                        {configWithDefaults.firstButtonLabel}
                       </a>
                     )}
-                    {config.secondButtonLabel && (
+                    {configWithDefaults.secondButtonLabel && (
                       <a
-                        href={config.secondButtonLink || '#'}
-                        className={`px-6 py-3 rounded-md ${getButtonClasses(config.secondButtonStyle || 'outline')}`}
+                        href={configWithDefaults.secondButtonLink || '#'}
+                        className={`px-6 py-3 rounded-md ${getButtonClasses(configWithDefaults.secondButtonStyle || 'outline')}`}
                         style={{
-                          ...getButtonStyles(config.secondButtonStyle || 'outline'),
+                          ...getButtonStyles(configWithDefaults.secondButtonStyle || 'outline'),
                           ...buttonTypographyStyles
                         } as React.CSSProperties}
                       >
-                        {config.secondButtonLabel}
+                        {configWithDefaults.secondButtonLabel}
                       </a>
                     )}
                   </div>
@@ -369,14 +376,14 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
       {/* Mobile View */}
       {isMobile && (
         <div 
-          className={`relative ${config.addSidePaddings ? 'mx-4' : ''}`}
-          style={{ aspectRatio: config.mobileRatio }}
+          className={`relative ${configWithDefaults.addSidePaddings ? 'mx-4' : ''}`}
+          style={{ aspectRatio: configWithDefaults.mobileRatio }}
         >
           {/* Background Media - Use mobile image if available, otherwise desktop */}
-          {(config.mobileImage || config.desktopImage) && (
+          {(configWithDefaults.mobileImage || configWithDefaults.desktopImage) && (
             <>
               {(() => {
-                const mediaUrl = config.mobileImage || config.desktopImage;
+                const mediaUrl = configWithDefaults.mobileImage || configWithDefaults.desktopImage;
                 if (isVideo(mediaUrl)) {
                   return (
                     <video
@@ -384,7 +391,7 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                       src={mediaUrl}
                       autoPlay
                       loop
-                      muted={!config.videoSound}
+                      muted={!configWithDefaults.videoSound}
                       playsInline
                     />
                   );
@@ -401,20 +408,20 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
               {/* Overlay */}
               <div 
                 className="absolute inset-0 bg-black"
-                style={{ opacity: config.mobileOverlayOpacity !== undefined ? config.mobileOverlayOpacity / 100 : 0 }}
+                style={{ opacity: configWithDefaults.mobileOverlayOpacity !== undefined ? configWithDefaults.mobileOverlayOpacity / 100 : 0 }}
               />
             </>
           )}
 
           {/* Content Container */}
-          <div className={`relative h-full flex ${mobilePositionClasses[config.mobilePosition]} ${config.mobileAlignment === 'center' ? 'justify-center' : 'justify-start'} p-6`}>
+          <div className={`relative h-full flex ${mobilePositionClasses[configWithDefaults.mobilePosition]} ${configWithDefaults.mobileAlignment === 'center' ? 'justify-center' : 'justify-start'} p-6`}>
             <div 
-              className={`${backgroundStyles[config.mobileBackground]} ${config.mobileBackground !== 'none' ? 'p-6 rounded-lg' : ''} w-full max-w-md`}
-              style={getContentBackgroundStyle(config.mobileBackground)}
+              className={`${backgroundStyles[configWithDefaults.mobileBackground]} ${configWithDefaults.mobileBackground !== 'none' ? 'p-6 rounded-lg' : ''} w-full max-w-md`}
+              style={getContentBackgroundStyle(configWithDefaults.mobileBackground)}
             >
-              <div className={`${alignmentClasses[config.mobileAlignment]} space-y-3`}>
+              <div className={`${alignmentClasses[configWithDefaults.mobileAlignment]} space-y-3`}>
                 {/* Subheading */}
-                {config.subheading && (
+                {configWithDefaults.subheading && (
                   <p 
                     className={`text-xs opacity-80`}
                     style={{ 
@@ -422,63 +429,63 @@ export default function PreviewImageBanner({ config, isEditor = false, deviceVie
                       ...bodyTypographyStyles
                     } as React.CSSProperties}
                   >
-                    {config.subheading}
+                    {configWithDefaults.subheading}
                   </p>
                 )}
 
                 {/* Heading */}
-                {config.heading && (
+                {configWithDefaults.heading && (
                   <h2 
-                    className={`${(headingSizeClasses as any)[config.headingSize] || ''}`}
+                    className={`${(headingSizeClasses as any)[configWithDefaults.headingSize] || ''}`}
                     style={{ 
                       color: colorScheme.text,
                       ...headingTypographyStyles,
-                      fontWeight: config.headingFontWeight || (headingTypographyStyles as any)?.fontWeight || '700'
+                      fontWeight: configWithDefaults.headingFontWeight || (headingTypographyStyles as any)?.fontWeight || '700'
                     } as React.CSSProperties}
                   >
-                    {config.heading}
+                    {configWithDefaults.heading}
                   </h2>
                 )}
 
                 {/* Body */}
-                {config.body && (
+                {configWithDefaults.body && (
                   <p 
-                    className={`${(bodySizeClasses as any)[config.bodySize] || ''} opacity-90`}
+                    className={`${(bodySizeClasses as any)[configWithDefaults.bodySize] || ''} opacity-90`}
                     style={{ 
                       color: colorScheme.text,
                       ...bodyTypographyStyles,
-                      fontWeight: config.bodyFontWeight || (bodyTypographyStyles as any)?.fontWeight || '400'
+                      fontWeight: configWithDefaults.bodyFontWeight || (bodyTypographyStyles as any)?.fontWeight || '400'
                     } as React.CSSProperties}
                   >
-                    {config.body}
+                    {configWithDefaults.body}
                   </p>
                 )}
 
                 {/* Buttons */}
-                {(config.firstButtonLabel || config.secondButtonLabel) && (
-                  <div className={`flex flex-col sm:flex-row gap-3 mt-4 ${config.mobileAlignment === 'center' ? 'items-center justify-center' : 'items-start'}`}>
-                    {config.firstButtonLabel && (
+                {(configWithDefaults.firstButtonLabel || configWithDefaults.secondButtonLabel) && (
+                  <div className={`flex flex-col sm:flex-row gap-3 mt-4 ${configWithDefaults.mobileAlignment === 'center' ? 'items-center justify-center' : 'items-start'}`}>
+                    {configWithDefaults.firstButtonLabel && (
                       <a
-                        href={config.firstButtonLink || '#'}
-                        className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(config.firstButtonStyle)}`}
+                        href={configWithDefaults.firstButtonLink || '#'}
+                        className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(configWithDefaults.firstButtonStyle)}`}
                         style={{
-                          ...getButtonStyles(config.firstButtonStyle || 'solid'),
+                          ...getButtonStyles(configWithDefaults.firstButtonStyle || 'solid'),
                           ...buttonTypographyStyles
                         } as React.CSSProperties}
                       >
-                        {config.firstButtonLabel}
+                        {configWithDefaults.firstButtonLabel}
                       </a>
                     )}
-                    {config.secondButtonLabel && (
+                    {configWithDefaults.secondButtonLabel && (
                       <a
-                        href={config.secondButtonLink || '#'}
-                        className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(config.secondButtonStyle || 'outline')}`}
+                        href={configWithDefaults.secondButtonLink || '#'}
+                        className={`px-5 py-2.5 rounded-md text-sm ${getButtonClasses(configWithDefaults.secondButtonStyle || 'outline')}`}
                         style={{
-                          ...getButtonStyles(config.secondButtonStyle || 'outline'),
+                          ...getButtonStyles(configWithDefaults.secondButtonStyle || 'outline'),
                           ...buttonTypographyStyles
                         } as React.CSSProperties}
                       >
-                        {config.secondButtonLabel}
+                        {configWithDefaults.secondButtonLabel}
                       </a>
                     )}
                   </div>
