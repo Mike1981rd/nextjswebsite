@@ -368,6 +368,208 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
                 </div>
               </div>
             </div>
+
+            {/* Safety and Property Section */}
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <h3 className="font-medium text-lg mb-4">{t('rooms.safetyAndProperty', 'Seguridad y Propiedad')}</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rooms.safetyInformation', 'Información de Seguridad')}
+                  </label>
+                  <textarea
+                    value={formData.safetyAndProperty?.content || ''}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        safetyAndProperty: {
+                          ...formData.safetyAndProperty,
+                          content: e.target.value
+                        }
+                      });
+                    }}
+                    rows={5}
+                    placeholder={t('rooms.safetyPlaceholder', 'Describe las medidas de seguridad, detectores de humo, extintores, salidas de emergencia, etc.')}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Toggle
+                    checked={formData.safetyAndProperty?.smokeDetector || false}
+                    onChange={(checked) => {
+                      setFormData({
+                        ...formData,
+                        safetyAndProperty: {
+                          ...formData.safetyAndProperty,
+                          smokeDetector: checked
+                        }
+                      });
+                    }}
+                    label={t('rooms.smokeDetector', 'Detector de humo')}
+                    size="small"
+                  />
+
+                  <Toggle
+                    checked={formData.safetyAndProperty?.carbonMonoxideDetector || false}
+                    onChange={(checked) => {
+                      setFormData({
+                        ...formData,
+                        safetyAndProperty: {
+                          ...formData.safetyAndProperty,
+                          carbonMonoxideDetector: checked
+                        }
+                      });
+                    }}
+                    label={t('rooms.carbonMonoxideDetector', 'Detector de monóxido')}
+                    size="small"
+                  />
+
+                  <Toggle
+                    checked={formData.safetyAndProperty?.fireExtinguisher || false}
+                    onChange={(checked) => {
+                      setFormData({
+                        ...formData,
+                        safetyAndProperty: {
+                          ...formData.safetyAndProperty,
+                          fireExtinguisher: checked
+                        }
+                      });
+                    }}
+                    label={t('rooms.fireExtinguisher', 'Extintor')}
+                    size="small"
+                  />
+
+                  <Toggle
+                    checked={formData.safetyAndProperty?.firstAidKit || false}
+                    onChange={(checked) => {
+                      setFormData({
+                        ...formData,
+                        safetyAndProperty: {
+                          ...formData.safetyAndProperty,
+                          firstAidKit: checked
+                        }
+                      });
+                    }}
+                    label={t('rooms.firstAidKit', 'Botiquín')}
+                    size="small"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Guest Maximum Section */}
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <h3 className="font-medium text-lg mb-4">{t('rooms.guestMaximum', 'Límites de Huéspedes')}</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rooms.maxAdults', 'Máximo de adultos')}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.guestMaximum?.maxAdults || formData.maxOccupancy || 2}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        guestMaximum: {
+                          ...formData.guestMaximum,
+                          maxAdults: parseInt(e.target.value)
+                        }
+                      });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rooms.maxChildren', 'Máximo de niños')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.guestMaximum?.maxChildren || 0}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        guestMaximum: {
+                          ...formData.guestMaximum,
+                          maxChildren: parseInt(e.target.value)
+                        }
+                      });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rooms.maxInfants', 'Máximo de infantes')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.guestMaximum?.maxInfants || 0}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        guestMaximum: {
+                          ...formData.guestMaximum,
+                          maxInfants: parseInt(e.target.value)
+                        }
+                      });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('rooms.maxPets', 'Máximo de mascotas')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.guestMaximum?.maxPets || 0}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        guestMaximum: {
+                          ...formData.guestMaximum,
+                          maxPets: parseInt(e.target.value)
+                        }
+                      });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('rooms.additionalGuestInfo', 'Información adicional sobre huéspedes')}
+                </label>
+                <textarea
+                  value={formData.guestMaximum?.additionalInfo || ''}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      guestMaximum: {
+                        ...formData.guestMaximum,
+                        additionalInfo: e.target.value
+                      }
+                    });
+                  }}
+                  rows={3}
+                  placeholder={t('rooms.guestInfoPlaceholder', 'Ej: Los niños menores de 2 años se hospedan gratis en cunas.')}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
           </div>
         )}
 

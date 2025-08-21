@@ -27,6 +27,8 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
   const [loading, setLoading] = useState(true);
   const [companyId, setCompanyId] = useState<number | null>(null);
   const [editorDeviceView, setEditorDeviceView] = useState<'desktop' | 'mobile' | undefined>(undefined);
+  // Temporary migration: map legacy 'custom' handle to 'habitaciones' slug only for CUSTOM page type
+  const effectiveHandle = pageType === PageType.CUSTOM && handle === 'custom' ? 'habitaciones' : handle;
 
   useEffect(() => {
     // Get company ID from localStorage or use default
@@ -197,6 +199,7 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
           theme={globalTheme}
           isEditor={false}
           deviceView={editorDeviceView}
+          pageType={pageType as unknown as string}
         />
       )}
 
@@ -204,7 +207,7 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
       <main className="flex-1">
         <PreviewContent 
           pageType={pageType} 
-          handle={handle}
+          handle={effectiveHandle}
           theme={globalTheme}
           companyId={companyId || undefined}
           deviceView={editorDeviceView}

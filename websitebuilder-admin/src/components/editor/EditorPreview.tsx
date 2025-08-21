@@ -24,6 +24,18 @@ import PreviewTestimonials from '@/components/preview/PreviewTestimonials';
 import PreviewRichText from '@/components/preview/PreviewRichText';
 import PreviewNewsletter from '@/components/preview/PreviewNewsletter';
 import PreviewContactForm from '@/components/preview/PreviewContactForm';
+import PreviewRoomsPage from '@/components/preview/PreviewRoomsPage';
+import PreviewRoomGallery from '@/components/preview/PreviewRoomGallery';
+import PreviewRoomTitleHost from '@/components/preview/PreviewRoomTitleHost';
+import PreviewRoomHighlights from '@/components/preview/PreviewRoomHighlights';
+import PreviewRoomDescription from '@/components/preview/PreviewRoomDescription';
+import PreviewRoomAmenities from '@/components/preview/PreviewRoomAmenities';
+import PreviewRoomSleeping from '@/components/preview/PreviewRoomSleeping';
+import PreviewRoomReviews from '@/components/preview/PreviewRoomReviews';
+import PreviewRoomMap from '@/components/preview/PreviewRoomMap';
+import PreviewRoomCalendar from '@/components/preview/PreviewRoomCalendar';
+import PreviewRoomHostCard from '@/components/preview/PreviewRoomHostCard';
+import PreviewRoomThings from '@/components/preview/PreviewRoomThings';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 
@@ -632,6 +644,105 @@ export function EditorPreview({ deviceView = 'desktop' }: EditorPreviewProps) {
       case SectionType.CONTACT_FORM:
         return (
           <PreviewContactForm
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_gallery':
+        return (
+          <PreviewRoomGallery
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_title_host':
+        return (
+          <PreviewRoomTitleHost
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_highlights':
+        return (
+          <PreviewRoomHighlights
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_description':
+        return (
+          <PreviewRoomDescription
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_amenities':
+        return (
+          <PreviewRoomAmenities
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_sleeping':
+        return (
+          <PreviewRoomSleeping
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_reviews':
+        return (
+          <PreviewRoomReviews
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_map':
+        return (
+          <PreviewRoomMap
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_calendar':
+        return (
+          <PreviewRoomCalendar
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_host_card':
+        return (
+          <PreviewRoomHostCard
+            config={section.settings}
+            theme={themeConfig}
+            deviceView={deviceView}
+            isEditor={true}
+          />
+        );
+      case 'room_things':
+        return (
+          <PreviewRoomThings
             config={section.settings}
             theme={themeConfig}
             deviceView={deviceView}

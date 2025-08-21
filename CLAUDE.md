@@ -447,3 +447,115 @@ Claude: *modifica /components/editor/GlobalSettingsPanel.tsx*
 **Última actualización:** 2025-01-13
 **Versión:** 3.5 (Incluye documentación crítica de arquitectura y troubleshooting)
 **Crítico:** Los archivos blueprint, logs, ARCHITECTURE y TROUBLESHOOTING DEBEN leerse SIEMPRE
+
+---
+
+## 📄 Guía de Implementación: Live Preview de Páginas (Editor → Preview Real)
+
+Esta guía resume el contrato técnico y los anti-patrones para implementar la vista previa real de páginas (Home, Product, Custom/Habitaciones, etc.), evitando regresiones.
+
+### 1) Flujo de datos y orden de carga
+- Estructurales (anónimos publicados): Header, Footer, AnnouncementBar, ImageBanner
+  - GET `/api/structural-components/company/{companyId}/published`
+- Tema global (anónimo publicado):
+  - GET `/api/global-theme-config/company/{companyId}/published`
+- Secciones de página (contenido)
+  - PRIMERO: localStorage por tipo de página: `page_sections_{pageType}`
+  - LUEGO: backend por slug: GET `/api/websitepages/company/{companyId}/slug/{handle}`
+
+Notas:
+- `companyId` se obtiene de localStorage; el Editor lo guarda siempre.
+- No forzar deviceView a desktop; ver contrato en (4).
+
+### 2) Slugs y handles (Reglas y alias)
+- CUSTOM (Habitaciones): slug estándar `habitaciones`.
+  - Backend: endpoint `ensure-custom` MIGRA `custom → habitaciones` y, si no existe, CREA con `PageType = "CUSTOM"`.
+  - Frontend (Next.js): redirect 301 `/custom → /habitaciones` en `next.config.mjs`.
+  - Router de preview `[handle]/page.tsx`: aceptar alias necesarios (ej. `all-collections`, `all-products`).
+  - Editor: el botón de preview abre `/habitaciones` para CUSTOM.
+- Para otras páginas, usar handles definidos en `[handle]/page.tsx` sin forzar alias no documentados.
+
+Recomendación operativa:
+- Mantener alias/redirects por un tiempo y actualizar menús al slug final.
+
+### 3) Claves de sincronización en localStorage (evitar fugas entre páginas)
+- Usar SIEMPRE claves por tipo de página, NO por ID temporal:
+  - `page_sections_home`, `page_sections_product`, `page_sections_custom`, etc.
+- Editor al guardar: persistir `page_sections_{pageType}`.
+- Preview al leer: intentar primero `page_sections_{pageType}` y luego backend (slug).
+
+Pitfall común:
+- Guardar con `page_sections_{pageId}` provoca colisiones y hace que Home muestre secciones de otra página.
+
+### 4) Contrato de deviceView (paridad Editor ↔ Preview real)
+- Contenedores (PreviewPage/PreviewContent): pasar `deviceView` tal cual, sin `|| 'desktop'`.
+- Componentes de preview: patrón de detección CANÓNICO (copiar/pegar):
+  ```tsx
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (deviceView !== undefined) return deviceView === 'mobile';
+    if (typeof window !== 'undefined') return window.innerWidth < 768;
+    return false;
+  });
+  useEffect(() => {
+    if (deviceView !== undefined) { setIsMobile(deviceView === 'mobile'); return; }
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [deviceView]);
+  ```
+- Editor solo fuerza `localStorage.editorDeviceView = 'mobile'` cuando la vista móvil está activa; en desktop se retira el override.
+
+Anti-patrón:
+- Establecer default prop `deviceView = 'desktop'` en componentes o contenedores.
+
+### 5) Módulos de Habitaciones (room_*) aislados a CUSTOM
+- Los módulos `room_*` (galería, título/host, amenities, mapa, calendario, etc.) solo deben renderizarse/cargarse cuando `pageType === CUSTOM`.
+- En el Store (carga de secciones) y en el render del Preview, filtrar `room_*` fuera de páginas que no sean CUSTOM.
+
+Beneficios:
+- Evita que Home o Product muestren bloques de Habitaciones por error.
+
+### 6) Router de Preview y alias correctos
+- `[handle]/page.tsx` debe aceptar:
+  - `home`, `product`, `cart`, `checkout`, `collection`
+  - `all_collections` y alias `all-collections`
+  - `all_products` y alias `all-products`
+  - `custom` (alias histórico) y `habitaciones` (slug final)
+
+### 7) Troubleshooting rápido (síntomas → causa → fix)
+- Home muestra Habitaciones
+  - Causa: claves de localStorage por ID, o fallback de slug aplicado fuera de CUSTOM, o `room_*` sin filtro.
+  - Fix: usar `page_sections_{pageType}`, fallback de slug SOLO en CUSTOM, filtrar `room_*` en no-CUSTOM.
+- Preview móvil no coincide con editor
+  - Causa: `deviceView` coalescido a desktop, o patrón de detección incompleto.
+  - Fix: contrato de (4); nunca `|| 'desktop'`.
+- `/custom` sigue activo tras migración
+  - Causa: links antiguos.
+  - Fix: redirect 301 en Next.js y actualizar menús a `/habitaciones`.
+
+### 8) Checklist para nuevas páginas/secciones
+- [ ] Agregar handle en `[handle]/page.tsx` (incluyendo alias si aplica)
+- [ ] Usar `page_sections_{pageType}` para sincronización local
+- [ ] NO coalescer `deviceView`
+- [ ] Componentes siguen el patrón canónico de móvil
+- [ ] Si se añaden módulos exclusivos de una página (p.ej., `room_*`), filtrar en Store/Preview según `pageType`
+- [ ] Si se cambian slugs, añadir redirect 301 en Next.js y alias en router
+
+### 9) Fragmentos de referencia (cambios mínimos recomendados)
+- Editor (abrir preview CUSTOM):
+  ```ts
+  case PageType.CUSTOM:
+    handle = 'habitaciones';
+    break;
+  ```
+- Next.js redirect (`next.config.mjs`):
+  ```js
+  async redirects() {
+    return [{ source: '/custom', destination: '/habitaciones', permanent: true }];
+  }
+  ```
+- Backend (ensure-custom):
+  - Buscar `habitaciones`; si no existe, migrar `custom → habitaciones`; si no hay ninguna, crear `CUSTOM` con slug `habitaciones`.
+
+Con esto, el Preview Real queda consistente, resiliente a cambios de slug y sin fugas entre páginas.

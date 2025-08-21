@@ -32,6 +32,7 @@ namespace WebsiteBuilderAPI.Services
         public async Task<List<RoomResponseDto>> GetAllAsync(int companyId)
         {
             var rooms = await _context.Rooms
+                .Include(r => r.Host) // Include Host data
                 .Where(r => r.CompanyId == companyId)
                 .OrderBy(r => r.RoomCode ?? r.Name)
                 .ToListAsync();
@@ -42,6 +43,7 @@ namespace WebsiteBuilderAPI.Services
         public async Task<RoomResponseDto?> GetByIdAsync(int companyId, int id)
         {
             var room = await _context.Rooms
+                .Include(r => r.Host) // Include Host data
                 .FirstOrDefaultAsync(r => r.Id == id && r.CompanyId == companyId);
 
             return room != null ? MapToDto(room) : null;
@@ -81,6 +83,10 @@ namespace WebsiteBuilderAPI.Services
                 SafetyFeatures = dto.SafetyFeatures != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.SafetyFeatures)) : null,
                 HighlightFeatures = dto.HighlightFeatures != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.HighlightFeatures)) : null,
                 AdditionalFees = dto.AdditionalFees != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.AdditionalFees)) : null,
+                SafetyAndProperty = dto.SafetyAndProperty != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.SafetyAndProperty)) : null,
+                GuestMaximum = dto.GuestMaximum != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.GuestMaximum)) : null,
+                RoomDetails = dto.RoomDetails != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.RoomDetails)) : null,
+                CommonSpaces = dto.CommonSpaces != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.CommonSpaces)) : null,
                 // Campos SEO
                 Slug = dto.Slug,
                 MetaTitle = dto.MetaTitle,
@@ -220,6 +226,30 @@ namespace WebsiteBuilderAPI.Services
                 room.AdditionalFees = JsonDocument.Parse(json);
             }
             
+            if (dto.SafetyAndProperty != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.SafetyAndProperty);
+                room.SafetyAndProperty = JsonDocument.Parse(json);
+            }
+            
+            if (dto.GuestMaximum != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.GuestMaximum);
+                room.GuestMaximum = JsonDocument.Parse(json);
+            }
+            
+            if (dto.RoomDetails != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.RoomDetails);
+                room.RoomDetails = JsonDocument.Parse(json);
+            }
+            
+            if (dto.CommonSpaces != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.CommonSpaces);
+                room.CommonSpaces = JsonDocument.Parse(json);
+            }
+            
             // Campos SEO
             if (dto.Slug != null)
                 room.Slug = dto.Slug == "" ? null : dto.Slug;
@@ -297,6 +327,21 @@ namespace WebsiteBuilderAPI.Services
                 Longitude = room.Longitude,
                 // Host
                 HostId = room.HostId,
+                Host = room.Host != null ? new {
+                    id = room.Host.Id,
+                    firstName = room.Host.FirstName,
+                    lastName = room.Host.LastName,
+                    fullName = room.Host.FullName,
+                    profilePicture = room.Host.ProfilePicture,
+                    bio = room.Host.Bio,
+                    joinedDate = room.Host.JoinedDate,
+                    isVerified = room.Host.IsVerified,
+                    isSuperhost = room.Host.IsSuperhost,
+                    overallRating = room.Host.OverallRating,
+                    totalReviews = room.Host.TotalReviews,
+                    responseTimeMinutes = room.Host.ResponseTimeMinutes,
+                    languages = room.Host.Languages
+                } : null,
                 // Campos JSONB
                 SleepingArrangements = room.SleepingArrangements,
                 HouseRules = room.HouseRules,
@@ -305,6 +350,10 @@ namespace WebsiteBuilderAPI.Services
                 SafetyFeatures = room.SafetyFeatures,
                 HighlightFeatures = room.HighlightFeatures,
                 AdditionalFees = room.AdditionalFees,
+                SafetyAndProperty = room.SafetyAndProperty,
+                GuestMaximum = room.GuestMaximum,
+                RoomDetails = room.RoomDetails,
+                CommonSpaces = room.CommonSpaces,
                 // Campos SEO
                 Slug = room.Slug,
                 MetaTitle = room.MetaTitle,

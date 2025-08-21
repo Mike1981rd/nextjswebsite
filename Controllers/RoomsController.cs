@@ -42,6 +42,43 @@ namespace WebsiteBuilderAPI.Controllers
             }
         }
 
+        [HttpGet("company/{companyId}/public")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPublicRooms(int companyId)
+        {
+            try
+            {
+                var rooms = await _roomService.GetAllAsync(companyId);
+                // Filter only active/available rooms for public view
+                var publicRooms = rooms.Where(r => r.IsActive).ToList();
+                return Ok(publicRooms);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Error al obtener las habitaciones", details = ex.Message });
+            }
+        }
+
+        [HttpGet("company/{companyId}/first-active")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetFirstActiveRoom(int companyId)
+        {
+            try
+            {
+                var rooms = await _roomService.GetAllAsync(companyId);
+                var firstActive = rooms.FirstOrDefault(r => r.IsActive);
+                
+                if (firstActive == null)
+                    return NotFound(new { error = "No hay habitaciones activas" });
+                    
+                return Ok(firstActive);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Error al obtener la habitación", details = ex.Message });
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

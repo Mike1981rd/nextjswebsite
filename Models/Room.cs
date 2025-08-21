@@ -45,6 +45,10 @@ namespace WebsiteBuilderAPI.Models
         public JsonDocument? SafetyFeatures { get; set; } // Características de seguridad
         public JsonDocument? HighlightFeatures { get; set; } // Características destacadas
         public JsonDocument? AdditionalFees { get; set; } // Tarifas adicionales
+        public JsonDocument? SafetyAndProperty { get; set; } // Seguridad y propiedad - Rich text
+        public JsonDocument? GuestMaximum { get; set; } // Límites de huéspedes
+        public JsonDocument? RoomDetails { get; set; } // Detalles de la habitación
+        public JsonDocument? CommonSpaces { get; set; } // Espacios comunes
         
         // Organización y búsqueda
         public List<string>? Tags { get; set; } // JSONB para búsquedas

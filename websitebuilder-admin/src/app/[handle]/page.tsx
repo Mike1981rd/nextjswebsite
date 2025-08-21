@@ -3,6 +3,7 @@ import PreviewPage from '@/components/preview/PreviewPage';
 import { PageType } from '@/types/editor.types';
 
 // Valid page handles that map to PageType enum
+// Include common aliases used by the editor buttons
 const validHandles: Record<string, PageType> = {
   'home': PageType.HOME,
   'product': PageType.PRODUCT,
@@ -10,8 +11,11 @@ const validHandles: Record<string, PageType> = {
   'checkout': PageType.CHECKOUT,
   'collection': PageType.COLLECTION,
   'all_collections': PageType.ALL_COLLECTIONS,
+  'all-collections': PageType.ALL_COLLECTIONS, // alias with hyphen
   'all_products': PageType.ALL_PRODUCTS,
-  'custom': PageType.CUSTOM
+  'all-products': PageType.ALL_PRODUCTS, // alias with hyphen
+  'custom': PageType.CUSTOM,
+  'habitaciones': PageType.CUSTOM
 };
 
 interface PageProps {

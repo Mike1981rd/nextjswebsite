@@ -77,7 +77,21 @@ function EditorPageContent() {
   ], [t]);
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedPageId, setSelectedPageId] = useState(mockPages[0]?.id || '1');
+  const [selectedPageId, setSelectedPageId] = useState<string>('1');
+  
+  // Initialize selectedPageId based on store's selectedPageType only on first load
+  useEffect(() => {
+    if (selectedPageType && mockPages.length > 0 && !hasInitialized) {
+      const pageFromStore = mockPages.find(p => p.type === selectedPageType);
+      if (pageFromStore) {
+        console.log('[DEBUG] Initial sync of selectedPageId from store:', {
+          pageId: pageFromStore.id,
+          pageType: selectedPageType
+        });
+        setSelectedPageId(pageFromStore.id);
+      }
+    }
+  }, [selectedPageType, mockPages.length, hasInitialized]);
   
   // Find the selected page from mockPages (this will update when language changes)
   const selectedPage = mockPages.find(p => p.id === selectedPageId) || mockPages[0];
@@ -86,6 +100,15 @@ function EditorPageContent() {
   useEffect(() => {
     console.log('[DEBUG] EditorPage - hasStructuralChanges:', hasStructuralChanges, 'isDirty:', isDirty);
   }, [hasStructuralChanges, isDirty]);
+
+  // Debug selected page changes
+  useEffect(() => {
+    console.log('[DEBUG] Selected page changed:', {
+      selectedPageId,
+      selectedPageType,
+      selectedPageName: selectedPage?.name
+    });
+  }, [selectedPageId, selectedPageType, selectedPage]);
 
   // Keyboard shortcut for Undo only
   useEffect(() => {
@@ -108,10 +131,19 @@ function EditorPageContent() {
 
   useEffect(() => {
     // Load initial page after translations are ready
-    if (!storePageId && mockPages.length > 0) {
+    // Only select first page if there's no page selected in store
+    if (!storePageId && !selectedPageType && mockPages.length > 0 && !hasInitialized) {
+      console.log('[DEBUG] No page in store, selecting home');
       handlePageSelect(mockPages[0]);
+    } else if (selectedPageType && mockPages.length > 0 && !hasInitialized) {
+      // If there's a page type in store but no initialization done yet, load that page
+      const pageToLoad = mockPages.find(p => p.type === selectedPageType);
+      if (pageToLoad) {
+        console.log('[DEBUG] Loading page from store:', pageToLoad.name);
+        handlePageSelect(pageToLoad);
+      }
     }
-  }, [mockPages, storePageId]);
+  }, [mockPages.length, storePageId, selectedPageType, hasInitialized]);
 
   // Initialize structural components once when editor loads
   useEffect(() => {
@@ -148,12 +180,55 @@ function EditorPageContent() {
       pageName: page.name
     });
     
+    // Immediately update the dropdown selection
     setSelectedPageId(page.id);
-    setSelectedPage(page.id, page.type);
     setIsDropdownOpen(false);
     
-    // First, try to load from localStorage
-    const pageKey = `page_sections_${page.id}`;
+    // If it's the custom page, ensure it exists in the database and get real ID
+    if (page.type === PageType.CUSTOM) {
+      // Set the page type immediately
+      setSelectedPage(page.id, page.type);
+      
+      try {
+        const companyId = parseInt(localStorage.getItem('companyId') || '1');
+        const token = localStorage.getItem('token');
+        
+        // Always call ensure-custom to create or update the page
+        // This will also update old 'custom' slugs to 'habitaciones'
+        console.log('[DEBUG] Calling ensure-custom endpoint to create/update page');
+        const ensureResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/websitepages/company/${companyId}/ensure-custom`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        if (ensureResponse.ok) {
+          const pageData = await ensureResponse.json();
+          console.log('[DEBUG] Custom page ensured, updating with real ID:', pageData);
+          // Update with the real database ID for saving
+          setSelectedPage(pageData.id.toString(), page.type);
+        } else {
+          console.error('[DEBUG] Failed to ensure custom page:', ensureResponse.status);
+        }
+      } catch (error) {
+        console.error('[DEBUG] Error ensuring custom page exists:', error);
+      }
+    } else {
+      console.log('[DEBUG] Setting page for non-custom:', {
+        pageId: page.id,
+        pageType: page.type,
+        pageName: page.name
+      });
+      setSelectedPage(page.id, page.type);
+    }
+    
+    // First, try to load from localStorage by page type (avoids collisions by mock IDs)
+    const pageKey = `page_sections_${page.type.toLowerCase()}`;
     const savedSections = localStorage.getItem(pageKey);
     
     if (savedSections) {
@@ -425,7 +500,34 @@ function EditorPageContent() {
                     localStorage.removeItem('editorDeviceView');
                   }
                   // Open preview in new tab with the current page handle
-                  const handle = selectedPage.type;
+                  // Map page type to the correct URL handle
+                  let handle = 'home';
+                  switch(selectedPage.type) {
+                    case PageType.HOME:
+                      handle = 'home';
+                      break;
+                    case PageType.PRODUCT:
+                      handle = 'product';
+                      break;
+                    case PageType.CART:
+                      handle = 'cart';
+                      break;
+                    case PageType.CHECKOUT:
+                      handle = 'checkout';
+                      break;
+                    case PageType.COLLECTION:
+                      handle = 'collection';
+                      break;
+                    case PageType.ALL_COLLECTIONS:
+                      handle = 'all-collections';
+                      break;
+                    case PageType.ALL_PRODUCTS:
+                      handle = 'all-products';
+                      break;
+                    case PageType.CUSTOM:
+                      handle = 'habitaciones';
+                      break;
+                  }
                   window.open(`/${handle}`, '_blank');
                 }}
                 className="p-1.5 hover:bg-gray-100 rounded transition-colors" 

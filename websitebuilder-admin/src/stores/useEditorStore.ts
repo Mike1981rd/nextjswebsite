@@ -317,6 +317,7 @@ export const useEditorStore = create<EditorStore>()(
           };
 
           // Only process template sections from the page
+          const currentPageType = state.selectedPageType;
           sections.forEach((section) => {
             const config = SECTION_CONFIGS[section.type];
             console.log('[DEBUG] Processing section:', {
@@ -324,7 +325,12 @@ export const useEditorStore = create<EditorStore>()(
               hasConfig: !!config,
               category: config?.category
             });
-            if (config && config.category === 'template') {
+            // Filter: prevent room_* sections on non-CUSTOM pages
+            if (
+              config &&
+              config.category === 'template' &&
+              !(String(section.type).startsWith('room_') && currentPageType !== PageType.CUSTOM)
+            ) {
               newSections.template.push(section);
             }
           });
@@ -421,7 +427,9 @@ export const useEditorStore = create<EditorStore>()(
 
           try {
             // Save to localStorage for persistence (temporary solution)
-            const pageKey = `page_sections_${state.selectedPageId}`;
+            // Store by page type to avoid collisions with DB page IDs
+            const keyType = (state.selectedPageType ?? PageType.HOME) as unknown as string;
+            const pageKey = `page_sections_${keyType.toLowerCase()}`;
             const sectionsToSave = state.sections.template;
             localStorage.setItem(pageKey, JSON.stringify(sectionsToSave));
             console.log('[DEBUG] ✅ Saved sections to localStorage:', {

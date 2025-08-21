@@ -50,6 +50,10 @@ interface RoomFormData {
   safetyFeatures?: any;
   highlightFeatures?: any;
   additionalFees?: any;
+  safetyAndProperty?: any;
+  guestMaximum?: any;
+  roomDetails?: any;
+  commonSpaces?: any;
   
   // NUEVOS - SEO
   slug?: string;
@@ -124,6 +128,22 @@ export default function RoomForm({
     checkInInstructions: {},
     safetyFeatures: {},
     highlightFeatures: {},
+    safetyAndProperty: {
+      content: '',
+      smokeDetector: false,
+      carbonMonoxideDetector: false,
+      fireExtinguisher: false,
+      firstAidKit: false
+    },
+    guestMaximum: {
+      maxAdults: 2,
+      maxChildren: 0,
+      maxInfants: 0,
+      maxPets: 0,
+      additionalInfo: ''
+    },
+    roomDetails: {},
+    commonSpaces: {},
     additionalFees: {
       cleaningFee: 0,
       serviceFee: 0,

@@ -13,6 +13,17 @@ import PreviewTestimonials from './PreviewTestimonials';
 import PreviewRichText from './PreviewRichText';
 import PreviewNewsletter from './PreviewNewsletter';
 import PreviewContactForm from './PreviewContactForm';
+import PreviewRoomGallery from './PreviewRoomGallery';
+import PreviewRoomTitleHost from './PreviewRoomTitleHost';
+import PreviewRoomHighlights from './PreviewRoomHighlights';
+import PreviewRoomDescription from './PreviewRoomDescription';
+import PreviewRoomAmenities from './PreviewRoomAmenities';
+import PreviewRoomSleeping from './PreviewRoomSleeping';
+import PreviewRoomReviews from './PreviewRoomReviews';
+import PreviewRoomMap from './PreviewRoomMap';
+import PreviewRoomCalendar from './PreviewRoomCalendar';
+import PreviewRoomHostCard from './PreviewRoomHostCard';
+import PreviewRoomThings from './PreviewRoomThings';
 
 interface PreviewContentProps {
   pageType: PageType;
@@ -34,37 +45,60 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
       const effectiveCompanyId = companyId || parseInt(localStorage.getItem('companyId') || '1');
       if (!effectiveCompanyId) return;
 
+      // First, try to load from localStorage (for real-time preview sync) by page type
+      const pageKey = `page_sections_${pageType.toLowerCase()}`;
+      const localSections = localStorage.getItem(pageKey);
+      
+      if (localSections) {
+        try {
+          const parsedLocalSections = JSON.parse(localSections);
+          setSections(parsedLocalSections);
+          setLoading(false);
+          return; // Use localStorage data if available
+        } catch (e) {
+          console.error('Error parsing localStorage sections:', e);
+        }
+      }
+
       try {
-        // Try to load page by slug/handle
-        const pageResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/websitepages/company/${effectiveCompanyId}/slug/${handle}`
-        );
-        
-        if (pageResponse.ok) {
+        // Try to load page by slug/handle. Support migration ONLY for CUSTOM pages.
+        const handlesToTry = pageType === PageType.CUSTOM
+          ? ['habitaciones', 'custom']
+          : [handle];
+
+        let loaded = false;
+        for (const h of handlesToTry) {
+          console.log('[DEBUG] Loading page with handle:', h, 'for company:', effectiveCompanyId);
+          const pageResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/websitepages/company/${effectiveCompanyId}/slug/${h}`
+          );
+          console.log('[DEBUG] Page response status:', pageResponse.status);
+          if (!pageResponse.ok) {
+            continue;
+          }
           const page = await pageResponse.json();
           setPageData(page);
-          
-          // Parse sections if they exist
           if (page.sections) {
-            const parsedSections = typeof page.sections === 'string' 
-              ? JSON.parse(page.sections) 
+            const parsedSections = typeof page.sections === 'string'
+              ? JSON.parse(page.sections)
               : page.sections;
-            
-            // Debug FAQ sections
-            const faqSections = parsedSections.filter((s: any) => 
+            const faqSections = parsedSections.filter((s: any) =>
               s.type === 'faq' || s.type === 'FAQ' || s.sectionType === 'faq' || s.sectionType === 'FAQ'
             );
             if (faqSections.length > 0) {
               console.log('[DEBUG] FAQ sections loaded from API:', faqSections);
             }
-            
             setSections(parsedSections);
           }
-        } else {
+          loaded = true;
+          break;
+        }
+
+        if (!loaded) {
           // Page doesn't exist yet, show empty state
           setSections([]);
         }
-        
+
       } catch (error) {
         console.error('Error loading page sections:', error);
         setSections([]);
@@ -74,7 +108,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     };
 
     loadPageSections();
-  }, [companyId, handle]);
+  }, [companyId, handle, pageType]);
 
   if (loading) {
     return (
@@ -114,6 +148,17 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     if (t === 'RichText' || t === 'rich_text') return 'rich_text';
     if (t === 'Newsletter' || t === 'newsletter') return 'newsletter';
     if (t === 'ContactForm' || t === 'contact_form') return 'contact_form';
+    if (t === 'RoomGallery' || t === 'room_gallery') return 'room_gallery';
+    if (t === 'RoomTitleHost' || t === 'room_title_host') return 'room_title_host';
+    if (t === 'RoomHighlights' || t === 'room_highlights') return 'room_highlights';
+    if (t === 'RoomDescription' || t === 'room_description') return 'room_description';
+    if (t === 'RoomAmenities' || t === 'room_amenities') return 'room_amenities';
+    if (t === 'RoomSleeping' || t === 'room_sleeping') return 'room_sleeping';
+    if (t === 'RoomReviews' || t === 'room_reviews') return 'room_reviews';
+    if (t === 'RoomMap' || t === 'room_map') return 'room_map';
+    if (t === 'RoomCalendar' || t === 'room_calendar') return 'room_calendar';
+    if (t === 'RoomHostCard' || t === 'room_host_card') return 'room_host_card';
+    if (t === 'RoomThings' || t === 'room_things') return 'room_things';
     return t;
   };
 
@@ -140,6 +185,8 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     }
   };
 
+  // Removed special handling for Custom/Rooms page - now uses regular sections
+
   return (
     <div className="min-h-[60vh]" style={containerStyle}>
       {sections.length === 0 ? (
@@ -158,6 +205,14 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
         <div className="space-y-8 py-8">
           {sections.map((section, index) => (
             <div key={index} className="section">
+              {(() => {
+                const t = getSectionType(section);
+                // Guard: do not render room_* sections on non-CUSTOM pages
+                if (t && t.startsWith('room_') && pageType !== PageType.CUSTOM) {
+                  return null;
+                }
+                return undefined;
+              })()}
               {/* Render each section based on its type */}
               {getSectionType(section) === 'hero' && (
                 <div className="text-center py-20 bg-gray-100 rounded">
@@ -291,6 +346,105 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
               
               {getSectionType(section) === 'contact_form' && (
                 <PreviewContactForm 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_gallery' && (
+                <PreviewRoomGallery 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_title_host' && (
+                <PreviewRoomTitleHost 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_highlights' && (
+                <PreviewRoomHighlights 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_description' && (
+                <PreviewRoomDescription 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_amenities' && (
+                <PreviewRoomAmenities 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_sleeping' && (
+                <PreviewRoomSleeping 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_reviews' && (
+                <PreviewRoomReviews 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_map' && (
+                <PreviewRoomMap 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_calendar' && (
+                <PreviewRoomCalendar 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_host_card' && (
+                <PreviewRoomHostCard 
+                  config={getSectionConfig(section)}
+                  theme={theme}
+                  deviceView={deviceView}
+                  isEditor={false}
+                />
+              )}
+              
+              {getSectionType(section) === 'room_things' && (
+                <PreviewRoomThings 
                   config={getSectionConfig(section)}
                   theme={theme}
                   deviceView={deviceView}

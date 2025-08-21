@@ -3296,6 +3296,9 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<string>("City")
                         .HasColumnType("text");
 
+                    b.Property<JsonDocument>("CommonSpaces")
+                        .HasColumnType("jsonb");
+
                     b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
@@ -3315,6 +3318,9 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.Property<int?>("FloorNumber")
                         .HasColumnType("integer");
+
+                    b.Property<JsonDocument>("GuestMaximum")
+                        .HasColumnType("jsonb");
 
                     b.Property<JsonDocument>("HighlightFeatures")
                         .HasColumnType("jsonb");
@@ -3366,8 +3372,14 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<string>("RoomCode")
                         .HasColumnType("text");
 
+                    b.Property<JsonDocument>("RoomDetails")
+                        .HasColumnType("jsonb");
+
                     b.Property<string>("RoomType")
                         .HasColumnType("text");
+
+                    b.Property<JsonDocument>("SafetyAndProperty")
+                        .HasColumnType("jsonb");
 
                     b.Property<JsonDocument>("SafetyFeatures")
                         .HasColumnType("jsonb");

@@ -90,8 +90,8 @@ namespace WebsiteBuilderAPI.Controllers
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
-                        .Where(x => x.Value.Errors.Count > 0)
-                        .Select(x => new { field = x.Key, errors = x.Value.Errors.Select(e => e.ErrorMessage) })
+                        .Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                        .Select(x => new { field = x.Key, errors = x.Value!.Errors.Select(e => e.ErrorMessage) })
                         .ToList();
                     return BadRequest(new { error = "Validation failed", details = errors });
                 }
@@ -128,8 +128,8 @@ namespace WebsiteBuilderAPI.Controllers
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState
-                        .Where(x => x.Value.Errors.Count > 0)
-                        .Select(x => new { field = x.Key, errors = x.Value.Errors.Select(e => e.ErrorMessage) })
+                        .Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                        .Select(x => new { field = x.Key, errors = x.Value!.Errors.Select(e => e.ErrorMessage) })
                         .ToList();
                     return BadRequest(new { error = "Validation failed", details = errors });
                 }

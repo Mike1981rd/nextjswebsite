@@ -73,6 +73,10 @@ namespace WebsiteBuilderAPI.DTOs.Rooms
         public object? SafetyFeatures { get; set; }
         public object? HighlightFeatures { get; set; }
         public object? AdditionalFees { get; set; }
+        public object? SafetyAndProperty { get; set; }
+        public object? GuestMaximum { get; set; }
+        public object? RoomDetails { get; set; }
+        public object? CommonSpaces { get; set; }
 
         // Organización
         public List<string>? Tags { get; set; }

@@ -145,6 +145,57 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         /// <summary>
+        /// Ensure custom page exists for a company
+        /// </summary>
+        [HttpPost("company/{companyId}/ensure-custom")]
+        public async Task<ActionResult<WebsitePageDto>> EnsureCustomPage(int companyId)
+        {
+            try
+            {
+                // Check if target slug already exists
+                var existingPage = await _builderService.GetPageBySlugAsync(companyId, "habitaciones");
+                if (existingPage != null)
+                {
+                    return Ok(existingPage);
+                }
+
+                // Migrate legacy slug 'custom' → 'habitaciones' if present
+                var legacyPage = await _builderService.GetPageBySlugAsync(companyId, "custom");
+                if (legacyPage != null)
+                {
+                    var updateDto = new UpdateWebsitePageDto
+                    {
+                        Slug = "habitaciones",
+                        Name = legacyPage.Name ?? "Habitaciones",
+                        MetaTitle = legacyPage.MetaTitle ?? "Habitaciones - Nuestro alojamiento",
+                        MetaDescription = legacyPage.MetaDescription ?? "Descubre nuestras habitaciones y servicios de alojamiento",
+                        IsActive = true
+                    };
+                    var updated = await _builderService.UpdatePageAsync(legacyPage.Id, updateDto);
+                    return Ok(updated ?? legacyPage);
+                }
+
+                // Create the custom page if it doesn't exist
+                var createDto = new CreateWebsitePageDto
+                {
+                    PageType = "CUSTOM", // Use uppercase value to pass validation
+                    Slug = "habitaciones",
+                    Name = "Habitaciones",
+                    MetaTitle = "Habitaciones - Nuestro alojamiento",
+                    MetaDescription = "Descubre nuestras habitaciones y servicios de alojamiento"
+                };
+
+                var page = await _builderService.CreatePageAsync(companyId, createDto);
+                return CreatedAtAction(nameof(GetPage), new { pageId = page.Id }, page);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error ensuring custom page for company {CompanyId}", companyId);
+                return StatusCode(500, "An error occurred while ensuring the custom page exists");
+            }
+        }
+
+        /// <summary>
         /// Replace all sections of a page (bulk update from editor)
         /// </summary>
         [HttpPut("{pageId}/sections")]

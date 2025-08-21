@@ -34,6 +34,17 @@ import NewsletterEditor from './modules/Newsletter/NewsletterEditor';
 import ContactFormEditor from './modules/ContactForm/ContactFormEditor';
 import NewsletterItemEditor from './modules/Newsletter/NewsletterItemEditor';
 import TestimonialsItemEditor from './modules/Testimonials/TestimonialsItemEditor';
+import RoomGalleryEditor from './modules/RoomGallery/RoomGalleryEditor';
+import RoomTitleHostEditor from './modules/RoomTitleHost/RoomTitleHostEditor';
+import RoomHighlightsEditor from './modules/RoomHighlights/RoomHighlightsEditor';
+import RoomDescriptionEditor from './modules/RoomDescription/RoomDescriptionEditor';
+import RoomAmenitiesEditor from './modules/RoomAmenities/RoomAmenitiesEditor';
+import RoomSleepingEditor from './modules/RoomSleeping/RoomSleepingEditor';
+import RoomReviewsEditor from './modules/RoomReviews/RoomReviewsEditor';
+import RoomMapEditor from './modules/RoomMap/RoomMapEditor';
+import RoomCalendarEditor from './modules/RoomCalendar/RoomCalendarEditor';
+import RoomHostCardEditor from './modules/RoomHostCard/RoomHostCardEditor';
+import RoomThingsEditor from './modules/RoomThings/RoomThingsEditor';
 import { useStructuralComponents } from '@/hooks/useStructuralComponents';
 import { HeaderConfig } from '@/types/components/header';
 import { FooterBlockType } from './modules/Footer/FooterTypes';
@@ -477,6 +488,28 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
 
       case SectionType.CONTACT_FORM:
         return <ContactFormEditor sectionId={selectedSectionId} />;
+      case 'room_gallery' as any:
+        return <RoomGalleryEditor sectionId={selectedSectionId} />;
+      case 'room_title_host' as any:
+        return <RoomTitleHostEditor sectionId={selectedSectionId} />;
+      case 'room_highlights' as any:
+        return <RoomHighlightsEditor sectionId={selectedSectionId} />;
+      case 'room_description' as any:
+        return <RoomDescriptionEditor sectionId={selectedSectionId} />;
+      case 'room_amenities' as any:
+        return <RoomAmenitiesEditor sectionId={selectedSectionId} />;
+      case 'room_sleeping' as any:
+        return <RoomSleepingEditor sectionId={selectedSectionId} />;
+      case 'room_reviews' as any:
+        return <RoomReviewsEditor sectionId={selectedSectionId} />;
+      case 'room_map' as any:
+        return <RoomMapEditor sectionId={selectedSectionId} />;
+      case 'room_calendar' as any:
+        return <RoomCalendarEditor sectionId={selectedSectionId} />;
+      case 'room_host_card' as any:
+        return <RoomHostCardEditor sectionId={selectedSectionId} />;
+      case 'room_things' as any:
+        return <RoomThingsEditor sectionId={selectedSectionId} />;
       case SectionType.NEWSLETTER:
         // Find the group ID for this section
         const newsletterGroupId = Object.entries(sections).find(([_, sectionsList]) =>

@@ -451,5 +451,275 @@ export const SECTION_CONFIGS: Record<SectionType, SectionConfig> = {
       showDescription: true,
       showVariants: true
     }
+  },
+  ['room_gallery' as any]: {
+    type: 'room_gallery' as any,
+    name: 'Room Gallery',
+    description: 'Airbnb-style photo gallery',
+    icon: 'images',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      roomId: undefined,
+      images: [
+        "https://a0.muscache.com/im/pictures/miso/Hosting-52250898/original/f2563160-2ae7-4e77-ba23-ddc37eb69a16.jpeg?w=1200",
+        "https://a0.muscache.com/im/pictures/miso/Hosting-52250898/original/bd736170-1ade-409f-85f9-a83e607efa66.jpeg?w=800",
+        "https://a0.muscache.com/im/pictures/miso/Hosting-52250898/original/76e5f102-3099-42f5-997e-3fb1bb9c2c6e.jpeg?w=800",
+        "https://a0.muscache.com/im/pictures/miso/Hosting-52250898/original/889862f5-5804-4b68-ab1e-1edf2586105f.jpeg?w=800",
+        "https://a0.muscache.com/im/pictures/miso/Hosting-52250898/original/5d9241e9-ab07-444d-b476-f509f74a3df8.jpeg?w=800"
+      ],
+      layoutStyle: 'airbnb',
+      cornerRadius: 'medium',
+      showAllPhotosButton: true,
+      autoFetch: true
+    }
+  },
+  ['room_title_host' as any]: {
+    type: 'room_title_host' as any,
+    name: 'Room Title & Host',
+    description: 'Room title, location and host info',
+    icon: 'home',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      title: 'Beautiful Room in City Center',
+      location: 'San Francisco, California',
+      guests: 4,
+      bedrooms: 2,
+      beds: 2,
+      baths: 1,
+      rating: 4.92,
+      reviewCount: 124,
+      hostName: 'John',
+      hostImage: 'https://a0.muscache.com/defaults/user_pic-64x64.png?v=3',
+      hostVerified: true,
+      hostSuperhost: true,
+      hostYears: 5,
+      showShareSave: true
+    }
+  },
+  ['room_highlights' as any]: {
+    type: 'room_highlights' as any,
+    name: 'Room Highlights',
+    description: 'Key features and highlights',
+    icon: 'sparkles',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      highlights: [
+        {
+          id: '1',
+          icon: 'Sparkles',
+          title: 'Dedicated workspace',
+          description: 'A room with wifi that\'s well-suited for working.'
+        },
+        {
+          id: '2', 
+          icon: 'MapPin',
+          title: 'Great location',
+          description: '95% of recent guests gave the location a 5-star rating.'
+        },
+        {
+          id: '3',
+          icon: 'Calendar',
+          title: 'Free cancellation before Feb 14',
+          description: 'Get a full refund if you change your mind.'
+        }
+      ]
+    }
+  },
+  ['room_description' as any]: {
+    type: 'room_description' as any,
+    name: 'Room Description',
+    description: 'Detailed room description',
+    icon: 'file-text',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      description: 'This stylish apartment is perfect for your stay...',
+      showMore: true,
+      maxLines: 3
+    }
+  },
+  ['room_amenities' as any]: {
+    type: 'room_amenities' as any,
+    name: 'Room Amenities',
+    description: 'What this place offers',
+    icon: 'list-checks',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      title: 'What this place offers',
+      amenities: [
+        { id: '1', icon: 'Wifi', name: 'Wifi', available: true },
+        { id: '2', icon: 'Tv', name: 'TV', available: true },
+        { id: '3', icon: 'Utensils', name: 'Kitchen', available: true },
+        { id: '4', icon: 'Car', name: 'Free parking', available: true },
+        { id: '5', icon: 'Wind', name: 'Air conditioning', available: true }
+      ],
+      columns: 2,
+      showUnavailable: true
+    }
+  },
+  ['room_sleeping' as any]: {
+    type: 'room_sleeping' as any,
+    name: 'Room Sleeping',
+    description: 'Where you\'ll sleep',
+    icon: 'bed',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      title: 'Where you\'ll sleep',
+      areas: [
+        {
+          id: '1',
+          icon: 'Bed',
+          title: 'Bedroom 1',
+          description: '1 queen bed'
+        },
+        {
+          id: '2',
+          icon: 'Bed',
+          title: 'Bedroom 2', 
+          description: '2 single beds'
+        }
+      ]
+    }
+  },
+  ['room_reviews' as any]: {
+    type: 'room_reviews' as any,
+    name: 'Room Reviews',
+    description: 'Guest reviews and ratings',
+    icon: 'star',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      title: 'Guest reviews',
+      averageRating: 4.92,
+      totalReviews: 124,
+      reviews: [
+        {
+          id: '1',
+          author: 'Sarah',
+          avatar: '',
+          date: 'December 2023',
+          rating: 5,
+          comment: 'Great place to stay! The location was perfect and the host was very responsive.'
+        },
+        {
+          id: '2',
+          author: 'John',
+          avatar: '',
+          date: 'November 2023',
+          rating: 5,
+          comment: 'Beautiful apartment with all the amenities needed. Would definitely stay again!'
+        },
+        {
+          id: '3',
+          author: 'Maria',
+          avatar: '',
+          date: 'October 2023',
+          rating: 4,
+          comment: 'Nice and clean place. Very comfortable beds and great neighborhood.'
+        },
+        {
+          id: '4',
+          author: 'David',
+          avatar: '',
+          date: 'September 2023',
+          rating: 5,
+          comment: 'Exceeded our expectations! The photos don\'t do it justice.'
+        }
+      ],
+      showAllButton: true
+    }
+  },
+  ['room_map' as any]: {
+    type: 'room_map' as any,
+    name: 'Room Map',
+    description: 'Location and map',
+    icon: 'map-pin',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      title: 'Where you\'ll be',
+      address: '123 Main Street, San Francisco, CA 94102',
+      neighborhood: 'Downtown',
+      city: 'San Francisco, California',
+      description: 'Great location with easy access to public transportation.',
+      mapImage: '',
+      showExactLocation: false
+    }
+  },
+  ['room_calendar' as any]: {
+    type: 'room_calendar' as any,
+    name: 'Room Calendar',
+    description: 'Availability calendar and pricing',
+    icon: 'calendar',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      title: 'Select check-in date',
+      subtitle: 'Add your travel dates for exact pricing',
+      minimumNights: 2,
+      blockedDates: [],
+      pricePerNight: 125,
+      cleaningFee: 45,
+      serviceFee: 28,
+      showPricing: true
+    }
+  },
+  ['room_host_card' as any]: {
+    type: 'room_host_card' as any,
+    name: 'Room Host Card',
+    description: 'Detailed host information',
+    icon: 'user-circle',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      title: 'Meet your Host',
+      hostName: 'Sarah',
+      hostImage: '',
+      hostSince: '2018',
+      reviewCount: 256,
+      rating: 4.95,
+      responseRate: 100,
+      responseTime: 'within an hour',
+      isSuperhost: true,
+      isVerified: true,
+      bio: 'Hi! I\'m Sarah, and I love hosting guests from around the world.',
+      languages: ['English', 'Spanish', 'French'],
+      work: 'Interior Designer',
+      location: 'San Francisco, California'
+    }
+  },
+  ['room_things' as any]: {
+    type: 'room_things' as any,
+    name: 'Room Things to Know',
+    description: 'House rules and policies',
+    icon: 'info',
+    category: 'template',
+    defaultSettings: {
+      enabled: true,
+      title: 'Things to know',
+      houseRules: [
+        'Check-in: 3:00 PM - 10:00 PM',
+        'Checkout before 11:00 AM',
+        'No smoking',
+        'No pets',
+        'No parties or events'
+      ],
+      safetyProperty: [
+        'Carbon monoxide alarm',
+        'Smoke alarm',
+        'First aid kit',
+        'Fire extinguisher'
+      ],
+      cancellationPolicy: [
+        'Free cancellation before Feb 14',
+        'After that, cancel up to 7 days before check-in and get a 50% refund'
+      ],
+      showMoreButton: true
+    }
   }
 };
