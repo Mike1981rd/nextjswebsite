@@ -48,6 +48,7 @@ namespace WebsiteBuilderAPI.DTOs.Rooms
         public object? GuestMaximum { get; set; }
         public object? RoomDetails { get; set; }
         public object? CommonSpaces { get; set; }
+        public object? Highlights { get; set; } // Puntos destacados de la habitación
 
         // Organización
         public List<string>? Tags { get; set; }

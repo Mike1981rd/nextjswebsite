@@ -87,6 +87,7 @@ namespace WebsiteBuilderAPI.Services
                 GuestMaximum = dto.GuestMaximum != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.GuestMaximum)) : null,
                 RoomDetails = dto.RoomDetails != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.RoomDetails)) : null,
                 CommonSpaces = dto.CommonSpaces != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.CommonSpaces)) : null,
+                Highlights = dto.Highlights != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.Highlights)) : null, // NUEVO - Campo Highlights agregado
                 // Campos SEO
                 Slug = dto.Slug,
                 MetaTitle = dto.MetaTitle,
@@ -250,6 +251,13 @@ namespace WebsiteBuilderAPI.Services
                 room.CommonSpaces = JsonDocument.Parse(json);
             }
             
+            // NUEVO - Campo Highlights agregado
+            if (dto.Highlights != null)
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(dto.Highlights);
+                room.Highlights = JsonDocument.Parse(json);
+            }
+            
             // Campos SEO
             if (dto.Slug != null)
                 room.Slug = dto.Slug == "" ? null : dto.Slug;
@@ -354,6 +362,7 @@ namespace WebsiteBuilderAPI.Services
                 GuestMaximum = room.GuestMaximum,
                 RoomDetails = room.RoomDetails,
                 CommonSpaces = room.CommonSpaces,
+                Highlights = room.Highlights, // NUEVO - Campo Highlights agregado
                 // Campos SEO
                 Slug = room.Slug,
                 MetaTitle = room.MetaTitle,

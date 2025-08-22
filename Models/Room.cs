@@ -49,6 +49,7 @@ namespace WebsiteBuilderAPI.Models
         public JsonDocument? GuestMaximum { get; set; } // Límites de huéspedes
         public JsonDocument? RoomDetails { get; set; } // Detalles de la habitación
         public JsonDocument? CommonSpaces { get; set; } // Espacios comunes
+        public JsonDocument? Highlights { get; set; } // Puntos destacados de la habitación (location, check-in, wifi, parking, etc.)
         
         // Organización y búsqueda
         public List<string>? Tags { get; set; } // JSONB para búsquedas

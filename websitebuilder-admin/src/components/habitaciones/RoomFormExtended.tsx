@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import Toggle from '@/components/ui/Toggle';
+import RoomHighlightsTab from './RoomHighlightsTab';
 import { 
   MapPinIcon,
   HomeIcon,
   DocumentTextIcon,
   ShieldCheckIcon,
   CurrencyDollarIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 
 interface ExtendedFieldsProps {
@@ -20,7 +22,7 @@ interface ExtendedFieldsProps {
 
 export default function RoomFormExtended({ formData, setFormData, primaryColor }: ExtendedFieldsProps) {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'location' | 'policies' | 'sleeping' | 'fees' | 'seo'>('location');
+  const [activeTab, setActiveTab] = useState<'location' | 'policies' | 'sleeping' | 'fees' | 'seo' | 'highlights'>('location');
 
   // Initialize complex JSON fields if they don't exist
   useEffect(() => {
@@ -155,6 +157,21 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
           >
             <MagnifyingGlassIcon className="w-5 h-5 inline mr-2" />
             SEO
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab('highlights');
+            }}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'highlights'
+                ? `border-[${primaryColor}] text-[${primaryColor}]`
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <SparklesIcon className="w-5 h-5 inline mr-2" />
+            {t('rooms.highlights', 'Highlights')}
           </button>
         </nav>
       </div>
@@ -1021,6 +1038,15 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
               </p>
             </div>
           </div>
+        )}
+
+        {/* Highlights Tab */}
+        {activeTab === 'highlights' && (
+          <RoomHighlightsTab 
+            formData={formData}
+            setFormData={setFormData}
+            primaryColor={primaryColor}
+          />
         )}
       </div>
     </div>

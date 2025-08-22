@@ -3351,6 +3351,9 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<JsonDocument>("HighlightFeatures")
                         .HasColumnType("jsonb");
 
+                    b.Property<JsonDocument>("Highlights")
+                        .HasColumnType("jsonb");
+
                     b.Property<int?>("HostId")
                         .HasColumnType("integer");
 

@@ -104,6 +104,7 @@ export default function PreviewRoomTitleHost({
           console.log('Room data fetched:', data); // Debug log
           console.log('SleepingArrangements:', data.sleepingArrangements); // Debug log
           console.log('Host data:', data.host); // Debug log
+          console.log('Room highlights:', data.highlights); // Debug log for highlights
           setRoomData(data);
           
           // If room has hostId, fetch complete host data
@@ -399,11 +400,60 @@ export default function PreviewRoomTitleHost({
                 <div className="py-6 border-b" style={{ borderColor: colorScheme?.border || '#e5e7eb' }}>
                   {(() => {
                     const getIcon = (iconName: string) => {
-                      const IconComponent = Icons[iconName as keyof typeof Icons];
+                      // Map icon names to Lucide icon components
+                      const iconMap: { [key: string]: any } = {
+                        'map-pin': Icons.MapPin,
+                        'MapPin': Icons.MapPin,
+                        'key': Icons.Key,
+                        'Key': Icons.Key,
+                        'wifi': Icons.Wifi,
+                        'Wifi': Icons.Wifi,
+                        'sparkles': Icons.Sparkles,
+                        'Sparkles': Icons.Sparkles,
+                        'shield': Icons.Shield,
+                        'Shield': Icons.Shield,
+                        'home': Icons.Home,
+                        'Home': Icons.Home,
+                        'clock': Icons.Clock,
+                        'Clock': Icons.Clock,
+                        'user': Icons.User,
+                        'User': Icons.User,
+                        'star': Icons.Star,
+                        'Star': Icons.Star,
+                        'building': Icons.Building,
+                        'Building': Icons.Building,
+                        'truck': Icons.Truck,
+                        'Truck': Icons.Truck,
+                        'car': Icons.Car,
+                        'Car': Icons.Car,
+                        'DoorOpen': Icons.DoorOpen,
+                        'Award': Icons.Award
+                      };
+                      
+                      const IconComponent = iconMap[iconName] || Icons[iconName as keyof typeof Icons];
                       return IconComponent ? <IconComponent className="w-6 h-6" /> : <Sparkles className="w-6 h-6" />;
                     };
 
-                    // Default highlights if none provided
+                    // Try to get highlights from room data first
+                    let roomHighlights = [];
+                    if (roomData?.highlights) {
+                      try {
+                        const parsedHighlights = typeof roomData.highlights === 'string' 
+                          ? JSON.parse(roomData.highlights) 
+                          : roomData.highlights;
+                        
+                        // Filter only active highlights and sort by displayOrder
+                        roomHighlights = Array.isArray(parsedHighlights) 
+                          ? parsedHighlights
+                              .filter((h: any) => h.isActive !== false)
+                              .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                          : [];
+                      } catch (e) {
+                        console.error('Error parsing room highlights:', e);
+                      }
+                    }
+
+                    // Default highlights if none provided from room or config
                     const defaultHighlights = [
                       {
                         id: 'great-location',
@@ -413,7 +463,7 @@ export default function PreviewRoomTitleHost({
                       },
                       {
                         id: 'self-checkin',
-                        icon: 'DoorOpen',
+                        icon: 'Key',
                         title: 'Self check-in',
                         description: 'Check yourself in with the keypad.'
                       },
@@ -425,9 +475,12 @@ export default function PreviewRoomTitleHost({
                       }
                     ];
 
-                    const displayHighlights = config.highlights && config.highlights.length > 0 
-                      ? config.highlights 
-                      : defaultHighlights;
+                    // Priority: Room highlights > Config highlights > Default highlights
+                    const displayHighlights = roomHighlights.length > 0 
+                      ? roomHighlights
+                      : (config.highlights && config.highlights.length > 0 
+                        ? config.highlights 
+                        : defaultHighlights);
 
                     return (
                       <div className="space-y-4">
