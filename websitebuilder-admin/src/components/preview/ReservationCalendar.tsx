@@ -47,7 +47,6 @@ export default function ReservationCalendar({
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
   const [availability, setAvailability] = useState<AvailabilityData>({});
   const [loading, setLoading] = useState(true);
-  const [isAnimating, setIsAnimating] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Initialize dates when modal opens
@@ -55,9 +54,6 @@ export default function ReservationCalendar({
     if (isOpen) {
       setSelectedCheckIn(checkInDate);
       setSelectedCheckOut(checkOutDate);
-      setIsAnimating(true);
-      // Start animation
-      setTimeout(() => setIsAnimating(false), 300);
       
       // If we have dates, set the calendar to show them
       if (checkInDate) {
@@ -428,23 +424,17 @@ export default function ReservationCalendar({
 
   return (
     <>
-      {/* Backdrop with fade animation */}
+      {/* Backdrop without animation - simple fade */}
       <div 
-        className={`fixed inset-0 bg-black z-50 transition-opacity duration-300 ${
-          isAnimating ? 'opacity-0' : 'bg-opacity-50'
-        }`}
+        className="fixed inset-0 bg-black bg-opacity-50 z-50"
         onClick={onClose}
       />
       
-      {/* Modal with scale animation */}
+      {/* Modal without scale animation - just appear */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div 
           ref={modalRef}
-          className={`
-            bg-white rounded-xl max-w-3xl w-full shadow-2xl pointer-events-auto
-            transition-all duration-300 transform
-            ${isAnimating ? 'scale-95 opacity-0' : 'scale-100 opacity-100'}
-          `}
+          className="bg-white rounded-xl max-w-3xl w-full shadow-2xl pointer-events-auto"
           style={{ backgroundColor: colorScheme?.background || '#ffffff' }}
         >
           {/* Show skeleton loader while loading initial data */}
