@@ -27,67 +27,67 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
         /// Reference to the company
         /// </summary>
         [ForeignKey("CompanyId")]
-        public virtual Company Company { get; set; }
+        public virtual Company Company { get; set; } = null!;
 
         /// <summary>
         /// Page appearance settings
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public AppearanceConfig Appearance { get; set; }
+        public AppearanceConfig Appearance { get; set; } = new AppearanceConfig();
 
         /// <summary>
         /// Typography settings for different text types
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public TypographyConfig Typography { get; set; }
+        public TypographyConfig Typography { get; set; } = new TypographyConfig();
 
         /// <summary>
         /// Color schemes (up to 5)
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public ColorSchemesConfig ColorSchemes { get; set; }
+        public ColorSchemesConfig ColorSchemes { get; set; } = new ColorSchemesConfig();
 
         /// <summary>
         /// Product card display settings
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public ProductCardsConfig ProductCards { get; set; }
+        public ProductCardsConfig ProductCards { get; set; } = new ProductCardsConfig();
 
         /// <summary>
         /// Product badge settings
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public ProductBadgesConfig ProductBadges { get; set; }
+        public ProductBadgesConfig ProductBadges { get; set; } = new ProductBadgesConfig();
 
         /// <summary>
         /// Shopping cart configuration
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public CartConfig Cart { get; set; }
+        public CartConfig Cart { get; set; } = new CartConfig();
 
         /// <summary>
         /// Favicon settings
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public FaviconConfig Favicon { get; set; }
+        public FaviconConfig Favicon { get; set; } = new FaviconConfig();
 
         /// <summary>
         /// Navigation and search settings
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public NavigationConfig Navigation { get; set; }
+        public NavigationConfig Navigation { get; set; } = new NavigationConfig();
 
         /// <summary>
         /// Social media links
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public SocialMediaConfig SocialMedia { get; set; }
+        public SocialMediaConfig SocialMedia { get; set; } = new SocialMediaConfig();
 
         /// <summary>
         /// Product variant swatches
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public SwatchesConfig Swatches { get; set; }
+        public SwatchesConfig Swatches { get; set; } = new SwatchesConfig();
 
         /// <summary>
         /// Version of the configuration schema
@@ -129,17 +129,17 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
     #region Typography Configuration
     public class TypographyConfig
     {
-        public FontConfig headings { get; set; }
-        public FontConfig body { get; set; }
-        public FontConfig menu { get; set; }
-        public FontConfig productCardName { get; set; }
-        public FontConfig buttons { get; set; }
+        public FontConfig headings { get; set; } = new FontConfig();
+        public FontConfig body { get; set; } = new FontConfig();
+        public FontConfig menu { get; set; } = new FontConfig();
+        public FontConfig productCardName { get; set; } = new FontConfig();
+        public FontConfig buttons { get; set; } = new FontConfig();
     }
 
     public class FontConfig
     {
-        public string fontFamily { get; set; }
-        public string fontWeight { get; set; }
+        public string fontFamily { get; set; } = "system-ui";
+        public string fontWeight { get; set; } = "normal";
         public bool? useUppercase { get; set; }
         public int? fontSize { get; set; }
         public decimal? letterSpacing { get; set; }
@@ -155,31 +155,31 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
 
     public class ColorScheme
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string Text { get; set; }
-        public string Background { get; set; }
-        public string Foreground { get; set; }
-        public string Border { get; set; }
-        public string Link { get; set; }
-        public string SolidButton { get; set; }
-        public string SolidButtonText { get; set; }
-        public string OutlineButton { get; set; }
-        public string OutlineButtonText { get; set; }
-        public string ImageOverlay { get; set; }
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Text { get; set; } = "#000000";
+        public string Background { get; set; } = "#FFFFFF";
+        public string Foreground { get; set; } = "#F0F0F0";
+        public string Border { get; set; } = "#CCCCCC";
+        public string Link { get; set; } = "#0066CC";
+        public string SolidButton { get; set; } = "#000000";
+        public string SolidButtonText { get; set; } = "#FFFFFF";
+        public string OutlineButton { get; set; } = "#000000";
+        public string OutlineButtonText { get; set; } = "#000000";
+        public string ImageOverlay { get; set; } = "rgba(0,0,0,0.3)";
     }
     #endregion
 
     #region Product Cards Configuration
     public class ProductCardsConfig
     {
-        public ProductImageConfig Image { get; set; }
-        public ProductVisibilityConfig Visibility { get; set; }
-        public ProductRatingConfig Rating { get; set; }
-        public ProductPriceConfig Price { get; set; }
-        public ProductEffectsConfig Effects { get; set; }
-        public ProductSwatchesConfig Swatches { get; set; }
-        public ProductButtonsConfig Buttons { get; set; }
+        public ProductImageConfig Image { get; set; } = new ProductImageConfig();
+        public ProductVisibilityConfig Visibility { get; set; } = new ProductVisibilityConfig();
+        public ProductRatingConfig Rating { get; set; } = new ProductRatingConfig();
+        public ProductPriceConfig Price { get; set; } = new ProductPriceConfig();
+        public ProductEffectsConfig Effects { get; set; } = new ProductEffectsConfig();
+        public ProductSwatchesConfig Swatches { get; set; } = new ProductSwatchesConfig();
+        public ProductButtonsConfig Buttons { get; set; } = new ProductButtonsConfig();
     }
 
     public class ProductImageConfig
@@ -232,14 +232,14 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
     #region Product Badges Configuration
     public class ProductBadgesConfig
     {
-        public BadgePositionConfig Position { get; set; }
-        public BadgeConfig SoldOut { get; set; }
-        public BadgeConfig Sale { get; set; }
-        public BadgeConfig SaleByPrice { get; set; }
-        public SaleHighlightConfig SaleHighlight { get; set; }
-        public BadgeConfig Custom1 { get; set; }
-        public BadgeConfig Custom2 { get; set; }
-        public BadgeConfig Custom3 { get; set; }
+        public BadgePositionConfig Position { get; set; } = new BadgePositionConfig();
+        public BadgeConfig SoldOut { get; set; } = new BadgeConfig();
+        public BadgeConfig Sale { get; set; } = new BadgeConfig();
+        public BadgeConfig SaleByPrice { get; set; } = new BadgeConfig();
+        public SaleHighlightConfig SaleHighlight { get; set; } = new SaleHighlightConfig();
+        public BadgeConfig Custom1 { get; set; } = new BadgeConfig();
+        public BadgeConfig Custom2 { get; set; } = new BadgeConfig();
+        public BadgeConfig Custom3 { get; set; } = new BadgeConfig();
     }
 
     public class BadgePositionConfig
@@ -250,17 +250,17 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
     public class BadgeConfig
     {
         public bool Enabled { get; set; }
-        public string Background { get; set; }
-        public string Text { get; set; }
-        public string DisplayAs { get; set; }
-        public string TextContent { get; set; }
-        public string Tag { get; set; }
+        public string Background { get; set; } = "#000000";
+        public string Text { get; set; } = "#FFFFFF";
+        public string DisplayAs { get; set; } = "badge";
+        public string TextContent { get; set; } = "";
+        public string Tag { get; set; } = "";
     }
 
     public class SaleHighlightConfig
     {
         public bool Enabled { get; set; }
-        public string TextColor { get; set; }
+        public string TextColor { get; set; } = "#FF0000";
     }
     #endregion
 
@@ -269,8 +269,8 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
     {
         public string DrawerType { get; set; } = "drawer-and-page";
         public bool ShowStickyCart { get; set; } = false;
-        public CartStatusColorsConfig CartStatusColors { get; set; }
-        public FreeShippingConfig FreeShipping { get; set; }
+        public CartStatusColorsConfig CartStatusColors { get; set; } = new CartStatusColorsConfig();
+        public FreeShippingConfig FreeShipping { get; set; } = new FreeShippingConfig();
     }
 
     public class CartStatusColorsConfig
@@ -300,8 +300,8 @@ namespace WebsiteBuilderAPI.Models.ThemeConfig
     #region Navigation Configuration
     public class NavigationConfig
     {
-        public SearchConfig Search { get; set; }
-        public BackToTopConfig BackToTop { get; set; }
+        public SearchConfig Search { get; set; } = new SearchConfig();
+        public BackToTopConfig BackToTop { get; set; } = new BackToTopConfig();
     }
 
     public class SearchConfig

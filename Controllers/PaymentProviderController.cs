@@ -151,8 +151,13 @@ namespace WebsiteBuilderAPI.Controllers
                 }
 
                 // Return updated provider info
-                var updatedProvider = await _paymentProviderService.GetByIdAsync(providerDto.Id);
-                return Ok(updatedProvider);
+                if (providerDto != null)
+                {
+                    var updatedProvider = await _paymentProviderService.GetByIdAsync(providerDto.Id);
+                    return Ok(updatedProvider);
+                }
+                
+                return BadRequest(new { message = "Failed to create payment provider" });
             }
             catch (ArgumentException ex)
             {

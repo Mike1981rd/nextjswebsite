@@ -1,24 +1,40 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Star, Share, Heart, Medal, Shield, Calendar } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Star, Share, Heart, Medal, Shield, Calendar, ChevronDown, Sparkles } from 'lucide-react';
+import * as Icons from 'lucide-react';
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
+
+interface Highlight {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+}
 
 interface RoomTitleHostConfig {
   enabled: boolean;
-  title: string;
-  location: string;
-  guests: number;
-  bedrooms: number;
-  beds: number;
-  baths: number;
-  rating: number;
-  reviewCount: number;
-  hostName: string;
-  hostImage: string;
-  hostVerified: boolean;
-  hostSuperhost: boolean;
-  hostYears: number;
-  showShareSave: boolean;
+  colorScheme?: 1 | 2 | 3 | 4 | 5;
+  fontSize?: {
+    title: number;
+    subtitle: number;
+    details: number;
+  };
+  alignment?: 'left' | 'center' | 'right';
+  showRating?: boolean;
+  showSuperhost?: boolean;
+  showHostImage?: boolean;
+  showHostVerification?: boolean;
+  showReservationWidget?: boolean;
+  reserveButtonText?: string; // Custom button text
+  showHighlights?: boolean; // Show highlights section
+  highlights?: Highlight[]; // Highlights configuration
+  spacing?: 'compact' | 'comfortable' | 'spacious';
+  hostImageSize?: number; // Size in pixels
+  paddingTop?: number; // Internal top padding in pixels
+  paddingBottom?: number; // Internal bottom padding in pixels
+  containerPaddingTop?: number; // External container top margin
+  containerPaddingBottom?: number; // External container bottom margin
 }
 
 interface PreviewRoomTitleHostProps {
@@ -35,6 +51,18 @@ export default function PreviewRoomTitleHost({
   theme 
 }: PreviewRoomTitleHostProps) {
   
+  // Get theme config from store or prop
+  const storeThemeConfig = useThemeConfigStore(state => state.config);
+  const themeConfig = theme || storeThemeConfig;
+  
+  // Get the selected color scheme
+  const colorScheme = useMemo(() => {
+    if (!themeConfig?.colorSchemes?.schemes) return null;
+    
+    const schemeIndex = (config.colorScheme || 1) - 1;
+    return themeConfig.colorSchemes.schemes[schemeIndex] || themeConfig.colorSchemes.schemes[0];
+  }, [themeConfig, config.colorScheme]);
+  
   // Mobile detection
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (deviceView !== undefined) return deviceView === 'mobile';
@@ -44,6 +72,9 @@ export default function PreviewRoomTitleHost({
 
   const [roomData, setRoomData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [checkInDate, setCheckInDate] = useState<string>('');
+  const [checkOutDate, setCheckOutDate] = useState<string>('');
+  const [guests, setGuests] = useState(1);
 
   useEffect(() => {
     if (deviceView !== undefined) {
@@ -103,113 +134,389 @@ export default function PreviewRoomTitleHost({
     }
   }
 
-  // Use room data if available, fallback to config
+  // Use room data if available, with default fallbacks
   const displayData = roomData ? {
-    title: roomData.name || config.title,
+    title: roomData.name || 'Beautiful Room in City Center',
     location: roomData.city ? 
       `${roomData.neighborhood ? roomData.neighborhood + ', ' : ''}${roomData.city}${roomData.state ? ', ' + roomData.state : ''}`.trim() : 
-      config.location,
-    guests: roomData.maxOccupancy || config.guests,
-    bedrooms: sleepingArrangements?.totalRooms || sleepingArrangements?.totalBedrooms || config.bedrooms,
-    beds: sleepingArrangements?.totalBeds || config.beds,
-    baths: sleepingArrangements?.totalBathrooms || config.baths,
-    rating: roomData.averageRating || config.rating,
-    reviewCount: roomData.totalReviews || config.reviewCount,
-    hostName: roomData.host?.fullName || roomData.host?.firstName || config.hostName,
-    hostImage: roomData.host?.profilePicture || config.hostImage,
-    hostVerified: roomData.host?.isVerified || config.hostVerified,
-    hostSuperhost: roomData.host?.isSuperhost || config.hostSuperhost,
+      'San Francisco, California',
+    guests: roomData.maxOccupancy || 4,
+    bedrooms: sleepingArrangements?.totalRooms || sleepingArrangements?.totalBedrooms || 2,
+    beds: sleepingArrangements?.totalBeds || 2,
+    baths: sleepingArrangements?.totalBathrooms || 1,
+    rating: roomData.averageRating || 4.92,
+    reviewCount: roomData.totalReviews || 124,
+    hostName: roomData.host?.fullName || roomData.host?.firstName || 'John',
+    hostImage: roomData.host?.profilePicture || 'https://a0.muscache.com/defaults/user_pic-225x225.png?v=3',
+    hostVerified: roomData.host?.isVerified !== undefined ? roomData.host.isVerified : true,
+    hostSuperhost: roomData.host?.isSuperhost !== undefined ? roomData.host.isSuperhost : true,
     hostYears: roomData.host?.joinedDate ? 
       new Date().getFullYear() - new Date(roomData.host.joinedDate).getFullYear() : 
-      config.hostYears,
-    showShareSave: config.showShareSave
-  } : config;
+      5
+  } : {
+    title: 'Beautiful Room in City Center',
+    location: 'San Francisco, California',
+    guests: 4,
+    bedrooms: 2,
+    beds: 2,
+    baths: 1,
+    rating: 4.92,
+    reviewCount: 124,
+    hostName: 'John',
+    hostImage: 'https://a0.muscache.com/defaults/user_pic-225x225.png?v=3',
+    hostVerified: true,
+    hostSuperhost: true,
+    hostYears: 5
+  };
+  
+  // Get spacing classes
+  const getSpacing = () => {
+    switch(config.spacing) {
+      case 'compact': return 'py-3 px-4';
+      case 'spacious': return 'py-8 px-8';
+      default: return 'py-6 px-6';
+    }
+  };
+  
+  // Get alignment styles
+  const getAlignment = () => {
+    switch(config.alignment) {
+      case 'center': return 'text-center';
+      case 'right': return 'text-right';
+      default: return 'text-left';
+    }
+  };
+  
+  // Get font sizes
+  const getFontSizes = () => ({
+    title: config.fontSize?.title ? `${config.fontSize.title}%` : '100%',
+    subtitle: config.fontSize?.subtitle ? `${config.fontSize.subtitle}%` : '90%',
+    details: config.fontSize?.details ? `${config.fontSize.details}%` : '85%'
+  });
+
+  const fontSizes = getFontSizes();
+  
+  // Get host image size - default to 48px if not specified
+  const hostImageSize = config.hostImageSize || 48;
+  
+  // Get container spacing - asegurarse de que 0 se respete
+  const containerTopPadding = config.containerPaddingTop !== undefined ? config.containerPaddingTop : 0;
+  const containerBottomPadding = config.containerPaddingBottom !== undefined ? config.containerPaddingBottom : 0;
+  
+  // Calculate price per night (sample data)
+  const pricePerNight = roomData?.pricePerNight || 43;
+  const totalNights = 2;
+  const cleaningFee = 15;
+  const serviceFee = 8;
+  const totalBeforeTaxes = (pricePerNight * totalNights) + cleaningFee + serviceFee;
+  const [showPriceDetails, setShowPriceDetails] = useState(false);
 
   return (
-    <div className="container mx-auto px-6 py-6">
-      {/* Debug indicator for editor mode */}
-      {isEditor && (
-        <div className="mb-2 text-xs text-gray-500">
-          {loading ? '⏳ Loading room data...' : roomData ? '✅ Using real room data' : '📝 Using config data'}
-        </div>
-      )}
-      
-      {/* Title and actions row */}
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-semibold mb-2">
-            {displayData.title || 'Beautiful Room in City Center'}
-          </h1>
-          
-          <div className="flex items-center gap-2 text-sm">
-            {displayData.rating > 0 && (
-              <>
-                <Star className="w-4 h-4 fill-current" />
-                <span className="font-semibold">{displayData.rating}</span>
-                <span className="text-gray-600">
-                  ({displayData.reviewCount} reviews)
-                </span>
-                <span className="text-gray-400">·</span>
-              </>
-            )}
-            {displayData.hostSuperhost && (
-              <>
-                <Medal className="w-4 h-4" />
-                <span className="text-gray-600">Superhost</span>
-                <span className="text-gray-400">·</span>
-              </>
-            )}
-            <span className="text-gray-600 underline">
-              {displayData.location || 'San Francisco, California'}
-            </span>
-          </div>
-        </div>
-
-        {displayData.showShareSave && !isMobile && (
-          <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition">
-              <Share className="w-4 h-4" />
-              <span className="text-sm font-medium underline">Share</span>
-            </button>
-            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition">
-              <Heart className="w-4 h-4" />
-              <span className="text-sm font-medium underline">Save</span>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Property info */}
-      <div className="flex items-center gap-2 text-base mb-6">
-        <span>{displayData.guests || 4} guests</span>
-        <span className="text-gray-400">·</span>
-        <span>{displayData.bedrooms || 2} bedrooms</span>
-        <span className="text-gray-400">·</span>
-        <span>{displayData.beds || 2} beds</span>
-        <span className="text-gray-400">·</span>
-        <span>{displayData.baths || 1} bath{displayData.baths > 1 ? 's' : ''}</span>
-      </div>
-
-      {/* Host info */}
-      <div className="flex items-center gap-4 py-6 border-t border-b">
-        <div className="relative">
-          <img
-            src={displayData.hostImage || 'https://a0.muscache.com/defaults/user_pic-64x64.png?v=3'}
-            alt={displayData.hostName || 'Host'}
-            className="w-12 h-12 rounded-full object-cover"
-          />
-          {displayData.hostVerified && (
-            <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
-              <Shield className="w-4 h-4 text-blue-500 fill-current" />
+    <div style={{ 
+      marginTop: `${containerTopPadding}px`,
+      marginBottom: `${containerBottomPadding}px`
+    }}>
+      <div 
+        style={{ 
+          backgroundColor: colorScheme?.background || '#ffffff',
+          color: colorScheme?.text || '#000000',
+          paddingTop: `${config.paddingTop || 24}px`,
+          paddingBottom: `${config.paddingBottom || 24}px`
+        }}
+      >
+        <div className={`container mx-auto ${getSpacing()}`}>
+          {/* Debug indicator for editor mode */}
+          {isEditor && (
+            <div className="mb-2 text-xs" style={{ color: colorScheme?.text || '#6b7280', opacity: 0.6 }}>
+              {loading ? '⏳ Loading room data...' : roomData ? '✅ Using real room data' : '📝 Using config data'}
             </div>
           )}
-        </div>
-        <div>
-          <div className="font-semibold text-base">
-            Hosted by {displayData.hostName || 'John'}
-          </div>
-          <div className="text-sm text-gray-600">
-            {displayData.hostYears || 5} years hosting
+          
+          {/* Two column layout for desktop with reservation widget */}
+          <div className={`${config.showReservationWidget !== false && !isMobile ? 'flex gap-8 items-start' : ''}`}>
+            {/* Left column - Main content */}
+            <div className={`${config.showReservationWidget !== false && !isMobile ? 'flex-1' : 'w-full'}`}>
+              {/* Title and actions row */}
+              <div className={`flex ${config.alignment === 'center' ? 'flex-col items-center' : config.alignment === 'right' ? 'flex-row-reverse' : ''} justify-between items-start mb-4`}>
+                <div className={getAlignment()}>
+                  <h1 
+                    className="text-2xl md:text-3xl font-semibold mb-2"
+                    style={{ 
+                      fontSize: fontSizes.title,
+                      color: colorScheme?.text || '#000000'
+                    }}
+                  >
+                    {displayData.title}
+                  </h1>
+                  
+                  <div 
+                    className={`flex ${config.alignment === 'center' ? 'justify-center' : ''} items-center gap-2 text-sm`}
+                    style={{ fontSize: fontSizes.subtitle }}
+                  >
+                    {config.showRating !== false && displayData.rating > 0 && (
+                      <>
+                        <Star className="w-4 h-4 fill-current" style={{ color: colorScheme?.text || '#000000' }} />
+                        <span className="font-semibold" style={{ color: colorScheme?.text || '#000000' }}>{displayData.rating}</span>
+                        <span style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>
+                          ({displayData.reviewCount} reviews)
+                        </span>
+                        <span style={{ color: colorScheme?.text || '#000000', opacity: 0.4 }}>·</span>
+                      </>
+                    )}
+                    {config.showSuperhost !== false && displayData.hostSuperhost && (
+                      <>
+                        <Medal className="w-4 h-4" style={{ color: colorScheme?.text || '#000000' }} />
+                        <span style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>Superhost</span>
+                        <span style={{ color: colorScheme?.text || '#000000', opacity: 0.4 }}>·</span>
+                      </>
+                    )}
+                    <span style={{ color: colorScheme?.link || colorScheme?.text || '#000000', textDecoration: 'underline' }}>
+                      {displayData.location}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Property info */}
+              <div 
+                className={`flex ${config.alignment === 'center' ? 'justify-center' : ''} items-center gap-2 text-base mb-6`}
+                style={{ fontSize: fontSizes.details }}
+              >
+                <span style={{ color: colorScheme?.text || '#000000' }}>{displayData.guests} guests</span>
+                <span style={{ color: colorScheme?.text || '#000000', opacity: 0.4 }}>·</span>
+                <span style={{ color: colorScheme?.text || '#000000' }}>{displayData.bedrooms} bedrooms</span>
+                <span style={{ color: colorScheme?.text || '#000000', opacity: 0.4 }}>·</span>
+                <span style={{ color: colorScheme?.text || '#000000' }}>{displayData.beds} beds</span>
+                <span style={{ color: colorScheme?.text || '#000000', opacity: 0.4 }}>·</span>
+                <span style={{ color: colorScheme?.text || '#000000' }}>{displayData.baths} bath{displayData.baths > 1 ? 's' : ''}</span>
+              </div>
+
+              {/* Host info */}
+              <div 
+                className={`flex ${config.alignment === 'center' ? 'justify-center' : ''} items-center gap-4 py-6 border-t border-b`}
+                style={{ borderColor: colorScheme?.border || '#e5e7eb' }}
+              >
+                {config.showHostImage !== false && (
+                  <div className="relative">
+                    <img
+                      src={displayData.hostImage}
+                      alt={displayData.hostName}
+                      className="rounded-full object-cover"
+                      style={{
+                        width: `${hostImageSize}px`,
+                        height: `${hostImageSize}px`,
+                        imageRendering: '-webkit-optimize-contrast',
+                        WebkitBackfaceVisibility: 'hidden',
+                        transform: 'translateZ(0)',
+                        filter: 'none'
+                      }}
+                      loading="eager"
+                      decoding="sync"
+                    />
+                    {config.showHostVerification !== false && displayData.hostVerified && (
+                      <div 
+                        className="absolute bg-white rounded-full p-0.5"
+                        style={{
+                          bottom: '-4px',
+                          right: '-4px'
+                        }}
+                      >
+                        <Shield className="w-4 h-4 text-blue-500 fill-current" />
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className={getAlignment()}>
+                  <div className="font-semibold text-base" style={{ color: colorScheme?.text || '#000000' }}>
+                    Hosted by {displayData.hostName}
+                  </div>
+                  <div className="text-sm" style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>
+                    {displayData.hostYears} years hosting
+                  </div>
+                </div>
+              </div>
+
+              {/* Room Highlights - Below host info */}
+              {config.showHighlights !== false && (
+                <div className="py-6 border-b" style={{ borderColor: colorScheme?.border || '#e5e7eb' }}>
+                  {(() => {
+                    const getIcon = (iconName: string) => {
+                      const IconComponent = Icons[iconName as keyof typeof Icons];
+                      return IconComponent ? <IconComponent className="w-6 h-6" /> : <Sparkles className="w-6 h-6" />;
+                    };
+
+                    // Default highlights if none provided
+                    const defaultHighlights = [
+                      {
+                        id: 'great-location',
+                        icon: 'MapPin',
+                        title: 'Great location',
+                        description: '90% of recent guests gave the location a 5-star rating.'
+                      },
+                      {
+                        id: 'self-checkin',
+                        icon: 'DoorOpen',
+                        title: 'Self check-in',
+                        description: 'Check yourself in with the keypad.'
+                      },
+                      {
+                        id: 'superhost',
+                        icon: 'Award',
+                        title: `${displayData.hostName} is a Superhost`,
+                        description: 'Superhosts are experienced, highly rated hosts.'
+                      }
+                    ];
+
+                    const displayHighlights = config.highlights && config.highlights.length > 0 
+                      ? config.highlights 
+                      : defaultHighlights;
+
+                    return (
+                      <div className="space-y-4">
+                        {displayHighlights.slice(0, 3).map((highlight) => (
+                          <div key={highlight.id} className="flex gap-4">
+                            <div className="flex-shrink-0" style={{ color: colorScheme?.text || '#000000' }}>
+                              {getIcon(highlight.icon)}
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-base mb-1" style={{ color: colorScheme?.text || '#000000' }}>
+                                {highlight.title}
+                              </h3>
+                              <p className="text-sm" style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>
+                                {highlight.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+
+            {/* Right column - Reservation Widget */}
+            {config.showReservationWidget !== false && !isMobile && (
+              <div className="w-[370px] flex-shrink-0 h-fit">
+                <div 
+                  className="sticky top-20 rounded-xl shadow-xl p-6"
+                  style={{
+                    backgroundColor: colorScheme?.cardBackground || '#ffffff',
+                    border: `1px solid ${colorScheme?.border || '#e5e7eb'}`,
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)'
+                  }}
+                >
+                  {/* Price */}
+                  <div className="mb-4">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xl font-semibold" style={{ color: colorScheme?.text || '#000000' }}>
+                        ${totalBeforeTaxes} USD
+                      </span>
+                      <span className="text-sm" style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>
+                        for {totalNights} nights
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Date inputs */}
+                  <div className="grid grid-cols-2 gap-0">
+                    <div 
+                      className="p-3 border rounded-tl-lg"
+                      style={{ borderColor: colorScheme?.border || '#b0b0b0' }}
+                    >
+                      <label className="text-[10px] font-semibold uppercase block" style={{ color: colorScheme?.text || '#000000' }}>
+                        CHECK-IN
+                      </label>
+                      <input 
+                        type="text"
+                        value="9/26/2025"
+                        readOnly
+                        className="w-full text-sm bg-transparent outline-none mt-1"
+                        style={{ color: colorScheme?.text || '#000000' }}
+                      />
+                    </div>
+                    <div 
+                      className="p-3 border border-l-0 rounded-tr-lg"
+                      style={{ borderColor: colorScheme?.border || '#b0b0b0' }}
+                    >
+                      <label className="text-[10px] font-semibold uppercase block" style={{ color: colorScheme?.text || '#000000' }}>
+                        CHECKOUT
+                      </label>
+                      <input 
+                        type="text"
+                        value="9/28/2025"
+                        readOnly
+                        className="w-full text-sm bg-transparent outline-none mt-1"
+                        style={{ color: colorScheme?.text || '#000000' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Guests selector */}
+                  <div 
+                    className="p-3 border border-t-0 rounded-b-lg mb-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition"
+                    style={{ borderColor: colorScheme?.border || '#b0b0b0' }}
+                  >
+                    <div>
+                      <label className="text-[10px] font-semibold uppercase block" style={{ color: colorScheme?.text || '#000000' }}>
+                        GUESTS
+                      </label>
+                      <span className="text-sm mt-1 block" style={{ color: colorScheme?.text || '#000000' }}>
+                        {guests} guest{guests > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <ChevronDown className="w-5 h-5" style={{ color: colorScheme?.text || '#000000' }} />
+                  </div>
+
+                  {/* Reserve button */}
+                  <button 
+                    className="w-full py-3 px-6 rounded-lg font-semibold transition-all hover:opacity-90"
+                    style={{
+                      backgroundColor: colorScheme?.solidButton || '#FF385C',
+                      color: colorScheme?.solidButtonText || '#ffffff',
+                      fontSize: '16px'
+                    }}
+                  >
+                    {config.reserveButtonText || 'Reserve'}
+                  </button>
+
+                  {/* Won't be charged message */}
+                  <p className="text-center text-sm mt-2 mb-4" style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>
+                    You won't be charged yet
+                  </p>
+
+                  {/* Price breakdown */}
+                  <div className="space-y-3 pt-4 border-t" style={{ borderColor: colorScheme?.border || '#e5e7eb' }}>
+                    <button 
+                      onClick={() => setShowPriceDetails(!showPriceDetails)}
+                      className="w-full flex items-center justify-between text-sm hover:underline"
+                      style={{ color: colorScheme?.text || '#000000' }}
+                    >
+                      <span>${pricePerNight} x {totalNights} nights</span>
+                      <span>${pricePerNight * totalNights}</span>
+                    </button>
+                    
+                    {showPriceDetails && (
+                      <>
+                        <div className="flex items-center justify-between text-sm" style={{ color: colorScheme?.text || '#000000' }}>
+                          <span className="underline cursor-pointer">Cleaning fee</span>
+                          <span>${cleaningFee}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm" style={{ color: colorScheme?.text || '#000000' }}>
+                          <span className="underline cursor-pointer">Service fee</span>
+                          <span>${serviceFee}</span>
+                        </div>
+                      </>
+                    )}
+                    
+                    <div className="pt-3 border-t flex items-center justify-between font-semibold" style={{ borderColor: colorScheme?.border || '#e5e7eb' }}>
+                      <span style={{ color: colorScheme?.text || '#000000' }}>Total before taxes</span>
+                      <span style={{ color: colorScheme?.text || '#000000' }}>${totalBeforeTaxes}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

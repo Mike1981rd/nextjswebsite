@@ -87,7 +87,7 @@ namespace WebsiteBuilderAPI.Controllers
                                         
                                         if (System.IO.File.Exists(logoPath))
                                         {
-                                            column.Item().MaxHeight(50).MaxWidth(200).Image(logoPath, ImageScaling.FitArea);
+                                            column.Item().MaxHeight(50).MaxWidth(200).Image(logoPath).FitArea();
                                         }
                                         else
                                         {

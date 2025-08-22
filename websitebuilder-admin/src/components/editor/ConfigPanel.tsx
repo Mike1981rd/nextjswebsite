@@ -68,81 +68,81 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   });
   
   // Check if this is an announcement item (child)
-  const isAnnouncementItem = section.id.startsWith('announcement-');
+  const isAnnouncementItem = section?.id && typeof section.id === 'string' && section.id.startsWith('announcement-');
   
   // Check if this is a footer block (child)
-  const isFooterBlock = section.id.startsWith('footer-block-');
+  const isFooterBlock = section?.id && typeof section.id === 'string' && section.id.startsWith('footer-block-');
   
   // Check if this is a slideshow slide (child)
-  const isSlideItem = selectedSectionId?.includes(':slide:');
+  const isSlideItem = selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':slide:');
   const getSlideshowSectionId = () => {
-    if (!isSlideItem || !selectedSectionId) return null;
+    if (!isSlideItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':slide:')[0];
   };
   const getSlideId = () => {
-    if (!isSlideItem || !selectedSectionId) return null;
+    if (!isSlideItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':slide:')[1];
   };
   
   // Check if this is a gallery child item
-  const isGalleryItem = selectedSectionId?.includes(':child:') && !isSlideItem && 
-    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.GALLERY;
+  const isGalleryItem = selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:') && !isSlideItem && 
+    Object.values(sections).flat().find(s => s.id === (typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[0] : ''))?.type === SectionType.GALLERY;
   const getGallerySectionId = () => {
-    if (!isGalleryItem || !selectedSectionId) return null;
+    if (!isGalleryItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[0];
   };
   const getGalleryItemId = () => {
-    if (!isGalleryItem || !selectedSectionId) return null;
+    if (!isGalleryItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[1];
   };
   
   // Check if this is a multicolumns child item - must check parent type
-  const isMulticolumnsItem = selectedSectionId?.includes(':child:') && !isSlideItem && !isGalleryItem &&
-    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.MULTICOLUMNS;
+  const isMulticolumnsItem = selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:') && !isSlideItem && !isGalleryItem &&
+    Object.values(sections).flat().find(s => s.id === (typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[0] : ''))?.type === SectionType.MULTICOLUMNS;
   const getMulticolumnsSectionId = () => {
-    if (!isMulticolumnsItem || !selectedSectionId) return null;
+    if (!isMulticolumnsItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[0];
   };
   const getMulticolumnsItemId = () => {
-    if (!isMulticolumnsItem || !selectedSectionId) return null;
+    if (!isMulticolumnsItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[1];
   };
   
   // Check if this is an ImageWithText child item - must check parent type
-  const isImageWithTextItem = selectedSectionId?.includes(':child:') && !isSlideItem && !isGalleryItem && !isMulticolumnsItem &&
-    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.IMAGE_WITH_TEXT;
+  const isImageWithTextItem = selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:') && !isSlideItem && !isGalleryItem && !isMulticolumnsItem &&
+    Object.values(sections).flat().find(s => s.id === (typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[0] : ''))?.type === SectionType.IMAGE_WITH_TEXT;
   const getImageWithTextSectionId = () => {
-    if (!isImageWithTextItem || !selectedSectionId) return null;
+    if (!isImageWithTextItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[0];
   };
   const getImageWithTextItemId = () => {
-    if (!isImageWithTextItem || !selectedSectionId) return null;
+    if (!isImageWithTextItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[1];
   };
   
   // Check if this is a FAQ item (child) - DEBE usar :child:
-  const isFAQItem = selectedSectionId?.includes(':child:') && 
-    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.FAQ;
+  const isFAQItem = selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:') && 
+    Object.values(sections).flat().find(s => s.id === (typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[0] : ''))?.type === SectionType.FAQ;
   const getFAQSectionId = () => {
-    if (!isFAQItem || !selectedSectionId) return null;
+    if (!isFAQItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[0];
   };
   const getFAQItemId = () => {
-    if (!isFAQItem || !selectedSectionId) return null;
+    if (!isFAQItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[1];
   };
   
   // Check if this is a Rich Text block (child) - DEBE usar :child: como Testimonials
-  const isRichTextBlock = selectedSectionId?.includes(':child:') && 
-    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.RICH_TEXT;
+  const isRichTextBlock = selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:') && 
+    Object.values(sections).flat().find(s => s.id === (typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[0] : ''))?.type === SectionType.RICH_TEXT;
   
   // Check if this is a Newsletter block (child)
-  const isNewsletterBlock = selectedSectionId?.includes(':child:') && 
-    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.NEWSLETTER;
+  const isNewsletterBlock = selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:') && 
+    Object.values(sections).flat().find(s => s.id === (typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[0] : ''))?.type === SectionType.NEWSLETTER;
   
   // Debug Rich Text blocks
-  if (selectedSectionId?.includes(':child:')) {
-    const parentSection = Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0]);
+  if (selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:')) {
+    const parentSection = Object.values(sections).flat().find(s => s.id === selectedSectionId.split(':child:')[0]);
     console.log('[DEBUG] ConfigPanel - Child detection:', {
       selectedSectionId,
       parentType: parentSection?.type,
@@ -155,28 +155,28 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   }
   
   const getRichTextSectionId = () => {
-    if (!isRichTextBlock || !selectedSectionId) return null;
+    if (!isRichTextBlock || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[0];
   };
   const getRichTextBlockId = () => {
-    if (!isRichTextBlock || !selectedSectionId) return null;
+    if (!isRichTextBlock || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[1];
   };
   
   // Check if this is a Testimonials item (child) - DEBE usar :child:
-  const isTestimonialsItem = selectedSectionId?.includes(':child:') && 
-    Object.values(sections).flat().find(s => s.id === selectedSectionId?.split(':child:')[0])?.type === SectionType.TESTIMONIALS;
+  const isTestimonialsItem = selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:') && 
+    Object.values(sections).flat().find(s => s.id === (typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[0] : ''))?.type === SectionType.TESTIMONIALS;
   const getTestimonialsSectionId = () => {
-    if (!isTestimonialsItem || !selectedSectionId) return null;
+    if (!isTestimonialsItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[0];
   };
   const getTestimonialsItemId = () => {
-    if (!isTestimonialsItem || !selectedSectionId) return null;
+    if (!isTestimonialsItem || !selectedSectionId || typeof selectedSectionId !== 'string') return null;
     return selectedSectionId.split(':child:')[1];
   };
   
   // Debug log for multicolumns
-  if (selectedSectionId?.includes(':child:')) {
+  if (selectedSectionId && typeof selectedSectionId === 'string' && selectedSectionId.includes(':child:')) {
     console.log('[DEBUG] ConfigPanel - Multicolumns detection:', {
       selectedSectionId,
       isMulticolumnsItem,
@@ -332,8 +332,8 @@ export function ConfigPanel({ section }: ConfigPanelProps) {
   
   // Return early for Newsletter blocks AFTER all hooks
   if (isNewsletterBlock) {
-    const sectionId = selectedSectionId?.split(':child:')[0];
-    const blockId = selectedSectionId?.split(':child:')[1];
+    const sectionId = typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[0] : null;
+    const blockId = typeof selectedSectionId === 'string' ? selectedSectionId.split(':child:')[1] : null;
     
     console.log('[DEBUG] ConfigPanel - Rendering NewsletterItemEditor:', {
       sectionId,

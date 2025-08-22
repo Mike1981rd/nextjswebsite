@@ -633,7 +633,7 @@ namespace WebsiteBuilderAPI.Services
                 await CreateSectionAsync(newPage.Id, sectionDto);
             }
 
-            return await GetPageByIdAsync(newPage.Id);
+            return await GetPageByIdAsync(newPage.Id) ?? throw new InvalidOperationException($"Failed to retrieve created page with ID {newPage.Id}");
         }
 
         #endregion

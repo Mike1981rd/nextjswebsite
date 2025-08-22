@@ -6,10 +6,10 @@ namespace WebsiteBuilderAPI.DTOs.Policies
     {
         [Required]
         [MaxLength(255)]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         
         [Required]
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
         
         public bool IsRequired { get; set; }
         public bool IsActive { get; set; }

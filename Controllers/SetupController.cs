@@ -68,10 +68,10 @@ namespace WebsiteBuilderAPI.Controllers
         {
             try
             {
-                var permissionsCount = _context.Permissions.Count();
-                var rolesCount = _context.Roles.Count();
-                var usersCount = _context.Users.Count();
-                var userRolesCount = _context.UserRoles.Count();
+                var permissionsCount = await _context.Permissions.CountAsync();
+                var rolesCount = await _context.Roles.CountAsync();
+                var usersCount = await _context.Users.CountAsync();
+                var userRolesCount = await _context.UserRoles.CountAsync();
 
                 var stats = new
                 {
@@ -79,8 +79,8 @@ namespace WebsiteBuilderAPI.Controllers
                     totalRoles = rolesCount,
                     totalUsers = usersCount,
                     totalUserRoleAssignments = userRolesCount,
-                    systemRoles = _context.Roles.Where(r => r.IsSystemRole).Select(r => r.Name).ToList(),
-                    resources = _context.Permissions.Select(p => p.Resource).Distinct().OrderBy(r => r).ToList()
+                    systemRoles = await _context.Roles.Where(r => r.IsSystemRole).Select(r => r.Name).ToListAsync(),
+                    resources = await _context.Permissions.Select(p => p.Resource).Distinct().OrderBy(r => r).ToListAsync()
                 };
 
                 return Ok(stats);
@@ -99,10 +99,10 @@ namespace WebsiteBuilderAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> DebugRoles()
         {
-            var roles = _context.Roles
+            var roles = await _context.Roles
                 .Select(r => new { r.Id, r.Name, r.IsSystemRole })
                 .OrderBy(r => r.Name)
-                .ToList();
+                .ToListAsync();
 
             var adminUser = _context.Users
                 .Where(u => u.Email == "admin@websitebuilder.com")

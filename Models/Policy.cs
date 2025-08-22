@@ -29,7 +29,7 @@ namespace WebsiteBuilderAPI.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         
         // Navigation property
-        public virtual Company Company { get; set; }
+        public virtual Company Company { get; set; } = null!;
     }
     
     public static class PolicyTypes

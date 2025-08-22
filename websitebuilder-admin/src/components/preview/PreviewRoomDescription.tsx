@@ -1,13 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronRight } from 'lucide-react';
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
 
 interface RoomDescriptionConfig {
   enabled: boolean;
-  description: string;
-  showMore: boolean;
-  maxLines: number;
+  colorScheme?: 1 | 2 | 3 | 4 | 5;
+  alignment?: 'left' | 'center' | 'right' | 'justify';
+  fontSize?: {
+    heading: number;
+    body: number;
+  };
+  showHeading?: boolean;
+  headingText?: string;
+  showMore?: boolean;
+  paddingTop?: number;
+  paddingBottom?: number;
+  containerPaddingTop?: number;
+  containerPaddingBottom?: number;
 }
 
 interface PreviewRoomDescriptionProps {
@@ -24,13 +35,28 @@ export default function PreviewRoomDescription({
   theme 
 }: PreviewRoomDescriptionProps) {
   
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Get theme config from store or prop
+  const storeThemeConfig = useThemeConfigStore(state => state.config);
+  const themeConfig = theme || storeThemeConfig;
+  
+  // Get the selected color scheme
+  const colorScheme = useMemo(() => {
+    if (!themeConfig?.colorSchemes?.schemes) return null;
+    
+    const schemeIndex = (config.colorScheme || 1) - 1;
+    return themeConfig.colorSchemes.schemes[schemeIndex] || themeConfig.colorSchemes.schemes[0];
+  }, [themeConfig, config.colorScheme]);
+  
+  // Mobile detection
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (deviceView !== undefined) return deviceView === 'mobile';
     if (typeof window !== 'undefined') return window.innerWidth < 768;
     return false;
   });
+  
+  const [isExpanded, setIsExpanded] = useState(false);
   const [roomData, setRoomData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (deviceView !== undefined) {
@@ -43,11 +69,12 @@ export default function PreviewRoomDescription({
     return () => window.removeEventListener('resize', onResize);
   }, [deviceView]);
 
-  // Auto-fetch room data
+  // Auto-fetch room data for both editor and preview
   useEffect(() => {
     const fetchRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
+      setLoading(true);
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
@@ -58,41 +85,123 @@ export default function PreviewRoomDescription({
         }
       } catch (error) {
         console.error('Error fetching room data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (isEditor && config.enabled) {
+    if (config.enabled) {
       fetchRoomData();
     }
-  }, [isEditor, config.enabled]);
+  }, [config.enabled]);
 
-  const description = roomData?.description || config.description;
-
-  if (!config.enabled || !description) {
+  if (!config.enabled) {
     return null;
   }
 
-  const shouldShowButton = config.showMore && description.length > 200;
+  // Use room data if available, otherwise fall back to default
+  const description = roomData?.description || 
+    `This stylish apartment is perfect for your San Francisco stay. Located in the heart of the city, you'll be within walking distance of the best restaurants, cafes, and attractions.
+
+The space features modern amenities, comfortable furnishings, and plenty of natural light. The fully equipped kitchen allows you to prepare your own meals, while the cozy living area is perfect for relaxing after a day of exploring.
+
+Whether you're here for business or pleasure, this apartment provides the perfect home base for your San Francisco adventure.`;
+
+  const shouldShowButton = config.showMore !== false && description.length > 200;
   const displayText = !isExpanded && shouldShowButton 
     ? description.slice(0, 200) + '...'
     : description;
 
+  // Get alignment style
+  const getAlignment = () => {
+    switch(config.alignment) {
+      case 'center': return 'text-center';
+      case 'right': return 'text-right';
+      case 'justify': return 'text-justify';
+      default: return 'text-left';
+    }
+  };
+
+  // Get typography from theme config
+  const headingTypography = themeConfig?.typography?.headings ? {
+    fontFamily: `'${themeConfig.typography.headings.fontFamily}', sans-serif`,
+    fontWeight: themeConfig.typography.headings.fontWeight || '400',
+    textTransform: themeConfig.typography.headings.useUppercase ? 'uppercase' : 'none',
+    fontSize: `${config.fontSize?.heading || 100}%`,
+    letterSpacing: `${themeConfig.typography.headings.letterSpacing || 0}px`
+  } : { fontSize: `${config.fontSize?.heading || 100}%` };
+
+  const bodyTypography = themeConfig?.typography?.body ? {
+    fontFamily: `'${themeConfig.typography.body.fontFamily}', sans-serif`,
+    fontWeight: themeConfig.typography.body.fontWeight || '400',
+    textTransform: themeConfig.typography.body.useUppercase ? 'uppercase' : 'none',
+    fontSize: `${config.fontSize?.body || 100}%`,
+    letterSpacing: `${themeConfig.typography.body.letterSpacing || 0}px`
+  } : { fontSize: `${config.fontSize?.body || 100}%` };
+
   return (
-    <div className="container mx-auto px-6 py-6 border-t">
-      <div className="max-w-3xl">
-        <p className="text-base text-gray-700 whitespace-pre-wrap">
-          {displayText}
-        </p>
-        
-        {shouldShowButton && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="mt-3 flex items-center gap-1 font-semibold underline hover:no-underline"
-          >
-            {isExpanded ? 'Show less' : 'Show more'}
-            <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-          </button>
-        )}
+    <div style={{ 
+      marginTop: config.containerPaddingTop !== undefined ? `${config.containerPaddingTop}px` : '0px',
+      marginBottom: `${config.containerPaddingBottom || 24}px`
+    }}>
+      {/* Contenedor principal con color SIN BORDE */}
+      <div 
+        style={{
+          backgroundColor: colorScheme?.background || '#ffffff',
+          color: colorScheme?.text || '#000000',
+          paddingTop: `${config.paddingTop || 24}px`,
+          paddingBottom: `${config.paddingBottom || 24}px`
+        }}
+      >
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl">
+            {/* Debug indicator for editor mode */}
+            {isEditor && (
+              <div className="mb-2 text-xs" style={{ color: colorScheme?.text || '#6b7280', opacity: 0.6 }}>
+                {loading ? '⏳ Loading room data...' : roomData ? '✅ Using real room data' : '📝 Using default data'}
+              </div>
+            )}
+            
+            {/* Heading */}
+            {config.showHeading !== false && config.headingText && (
+              <h2 
+                className={`text-2xl md:text-3xl font-semibold mb-4 ${getAlignment()}`}
+                style={{
+                  ...headingTypography,
+                  color: colorScheme?.text || '#000000'
+                }}
+              >
+                {config.headingText}
+              </h2>
+            )}
+            
+            {/* Description */}
+            <p 
+              className={`text-base whitespace-pre-wrap ${getAlignment()}`}
+              style={{
+                ...bodyTypography,
+                color: colorScheme?.text || '#000000'
+              }}
+            >
+              {displayText}
+            </p>
+            
+            {/* Show More/Less Button */}
+            {shouldShowButton && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={`mt-3 flex items-center gap-1 font-semibold underline hover:no-underline ${
+                  config.alignment === 'center' ? 'mx-auto' : 
+                  config.alignment === 'right' ? 'ml-auto' : ''
+                }`}
+                style={{ color: colorScheme?.link || colorScheme?.text || '#000000' }}
+              >
+                {isExpanded ? 'Show less' : 'Show more'}
+                <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

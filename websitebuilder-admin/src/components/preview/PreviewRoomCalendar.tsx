@@ -147,53 +147,6 @@ export default function PreviewRoomCalendar({
           </div>
         </div>
 
-        {/* Pricing card */}
-        {config.showPricing && (
-          <div className="lg:w-96">
-            <div className="border rounded-xl p-6 sticky top-6">
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-2xl font-semibold">${config.pricePerNight}</span>
-                <span className="text-gray-600">night</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-px border rounded-lg overflow-hidden mb-4">
-                <button className="bg-white p-3 text-left hover:bg-gray-50">
-                  <div className="text-xs font-medium">CHECK-IN</div>
-                  <div className="text-sm">Add date</div>
-                </button>
-                <button className="bg-white p-3 text-left hover:bg-gray-50">
-                  <div className="text-xs font-medium">CHECKOUT</div>
-                  <div className="text-sm">Add date</div>
-                </button>
-              </div>
-
-              <button className="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-3 rounded-lg font-medium mb-4">
-                Check availability
-              </button>
-
-              {nights > 0 && (
-                <div className="space-y-2 pt-4 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span className="underline">${config.pricePerNight} x {nights} nights</span>
-                    <span>${totalPrice}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="underline">Cleaning fee</span>
-                    <span>${config.cleaningFee}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="underline">Service fee</span>
-                    <span>${config.serviceFee}</span>
-                  </div>
-                  <div className="flex justify-between font-semibold pt-2 border-t">
-                    <span>Total</span>
-                    <span>${totalWithFees}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
