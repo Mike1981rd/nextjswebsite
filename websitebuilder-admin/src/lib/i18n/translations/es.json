@@ -2487,7 +2487,20 @@
       "emailVerified": "Email Verificado",
       "identityVerified": "Identidad Verificada",
       "roomCount": "Habitaciones",
-      "activeRooms": "Habitaciones Activas"
+      "activeRooms": "Habitaciones Activas",
+      "yearStartedHosting": "Anfitrión Desde",
+      "aboutMe": "Acerca de Mí",
+      "location": "Ubicación",
+      "work": "Trabajo",
+      "attributes": "Atributos/Cualidades",
+      "hobbies": "Hobbies e Intereses"
+    },
+    "placeholders": {
+      "aboutMe": "Cuéntale a los huéspedes más sobre ti, tus intereses y qué te hace un gran anfitrión...",
+      "location": "ej: Madrid, España",
+      "work": "ej: Diseñador Gráfico, Profesor, etc.",
+      "addAttribute": "ej: Amigable, Puntual, Comunicativo",
+      "addHobby": "ej: Fotografía, Senderismo, Cocina"
     },
     "table": {
       "name": "NOMBRE",

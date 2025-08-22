@@ -71,6 +71,7 @@ export default function PreviewRoomTitleHost({
   });
 
   const [roomData, setRoomData] = useState<any>(null);
+  const [hostData, setHostData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [checkInDate, setCheckInDate] = useState<string>('');
   const [checkOutDate, setCheckOutDate] = useState<string>('');
@@ -94,6 +95,7 @@ export default function PreviewRoomTitleHost({
       
       setLoading(true);
       try {
+        // First fetch room data
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
         );
@@ -103,6 +105,27 @@ export default function PreviewRoomTitleHost({
           console.log('SleepingArrangements:', data.sleepingArrangements); // Debug log
           console.log('Host data:', data.host); // Debug log
           setRoomData(data);
+          
+          // If room has hostId, fetch complete host data
+          if (data.hostId) {
+            try {
+              const hostResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/hosts/by-room/${data.id}`
+              );
+              if (hostResponse.ok) {
+                const fullHostData = await hostResponse.json();
+                console.log('Full host data fetched:', fullHostData); // Debug log
+                setHostData(fullHostData);
+              }
+            } catch (hostError) {
+              console.error('Error fetching host data:', hostError);
+              // Use basic host data from room if available
+              setHostData(data.host);
+            }
+          } else if (data.host) {
+            // Use host data from room if no hostId
+            setHostData(data.host);
+          }
         }
       } catch (error) {
         console.error('Error fetching room data:', error);
@@ -134,6 +157,27 @@ export default function PreviewRoomTitleHost({
     }
   }
 
+  // Use host data from fetch or fallback to room data
+  const currentHost = hostData || roomData?.host;
+  
+  // Calculate years hosting from yearStartedHosting or joinedDate
+  const getHostingYears = () => {
+    const currentYear = new Date().getFullYear();
+    
+    // First priority: Use yearStartedHosting if available
+    if (currentHost?.yearStartedHosting) {
+      return currentYear - currentHost.yearStartedHosting;
+    }
+    
+    // Fallback: Calculate from joinedDate
+    if (currentHost?.joinedDate) {
+      return currentYear - new Date(currentHost.joinedDate).getFullYear();
+    }
+    
+    // Default
+    return 0;
+  };
+  
   // Use room data if available, with default fallbacks
   const displayData = roomData ? {
     title: roomData.name || 'Beautiful Room in City Center',
@@ -146,13 +190,19 @@ export default function PreviewRoomTitleHost({
     baths: sleepingArrangements?.totalBathrooms || 1,
     rating: roomData.averageRating || 4.92,
     reviewCount: roomData.totalReviews || 124,
-    hostName: roomData.host?.fullName || roomData.host?.firstName || 'John',
-    hostImage: roomData.host?.profilePicture || 'https://a0.muscache.com/defaults/user_pic-225x225.png?v=3',
-    hostVerified: roomData.host?.isVerified !== undefined ? roomData.host.isVerified : true,
-    hostSuperhost: roomData.host?.isSuperhost !== undefined ? roomData.host.isSuperhost : true,
-    hostYears: roomData.host?.joinedDate ? 
-      new Date().getFullYear() - new Date(roomData.host.joinedDate).getFullYear() : 
-      5
+    hostName: currentHost?.fullName || currentHost?.firstName || 'John',
+    hostImage: currentHost?.profilePicture || 'https://a0.muscache.com/defaults/user_pic-225x225.png?v=3',
+    hostVerified: currentHost?.isVerified !== undefined ? currentHost.isVerified : true,
+    hostSuperhost: currentHost?.isSuperhost !== undefined ? currentHost.isSuperhost : true,
+    hostYears: getHostingYears(),
+    hostLocation: currentHost?.location || '',
+    hostWork: currentHost?.work || '',
+    hostLanguages: currentHost?.languages || [],
+    hostAttributes: currentHost?.attributes || [],
+    hostHobbies: currentHost?.hobbies || [],
+    hostAboutMe: currentHost?.aboutMe || currentHost?.bio || '',
+    hostResponseTime: currentHost?.responseTimeMinutes || 60,
+    hostAcceptanceRate: currentHost?.acceptanceRate || 95
   } : {
     title: 'Beautiful Room in City Center',
     location: 'San Francisco, California',
@@ -166,7 +216,15 @@ export default function PreviewRoomTitleHost({
     hostImage: 'https://a0.muscache.com/defaults/user_pic-225x225.png?v=3',
     hostVerified: true,
     hostSuperhost: true,
-    hostYears: 5
+    hostYears: 0,
+    hostLocation: '',
+    hostWork: '',
+    hostLanguages: [],
+    hostAttributes: [],
+    hostHobbies: [],
+    hostAboutMe: '',
+    hostResponseTime: 60,
+    hostAcceptanceRate: 95
   };
   
   // Get spacing classes

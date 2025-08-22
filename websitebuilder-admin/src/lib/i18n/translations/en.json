@@ -2473,7 +2473,20 @@
       "emailVerified": "Email Verified",
       "identityVerified": "Identity Verified",
       "roomCount": "Rooms",
-      "activeRooms": "Active Rooms"
+      "activeRooms": "Active Rooms",
+      "yearStartedHosting": "Hosting Since",
+      "aboutMe": "About Me",
+      "location": "Location",
+      "work": "Work",
+      "attributes": "Attributes/Qualities",
+      "hobbies": "Hobbies & Interests"
+    },
+    "placeholders": {
+      "aboutMe": "Tell guests more about yourself, your interests, and what makes you a great host...",
+      "location": "e.g., Madrid, Spain",
+      "work": "e.g., Graphic Designer, Teacher, etc.",
+      "addAttribute": "e.g., Friendly, Punctual, Communicative",
+      "addHobby": "e.g., Photography, Hiking, Cooking"
     },
     "table": {
       "name": "NAME",

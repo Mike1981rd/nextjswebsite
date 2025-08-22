@@ -6,15 +6,15 @@ namespace WebsiteBuilderAPI.DTOs.NewsletterSubscribers
     {
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email format")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Phone { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Phone { get; set; }
         
         // Tracking parameters (optional, filled by JavaScript)
-        public string SourcePage { get; set; }
-        public string SourceCampaign { get; set; }
+        public string? SourcePage { get; set; }
+        public string? SourceCampaign { get; set; }
         public string Language { get; set; } = "es";
         
         // GDPR Consent (required for public subscription)
@@ -25,6 +25,6 @@ namespace WebsiteBuilderAPI.DTOs.NewsletterSubscribers
         public bool AcceptedTerms { get; set; }
         
         // Optional: Company domain for multi-tenant (if needed later)
-        public string CompanyDomain { get; set; }
+        public string? CompanyDomain { get; set; }
     }
 }

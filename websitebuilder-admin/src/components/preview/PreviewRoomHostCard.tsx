@@ -42,6 +42,7 @@ export default function PreviewRoomHostCard({
   });
 
   const [roomData, setRoomData] = useState<any>(null);
+  const [hostData, setHostData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -69,6 +70,25 @@ export default function PreviewRoomHostCard({
           const data = await response.json();
           console.log('Room host data:', data.host); // Debug log
           setRoomData(data);
+          
+          // If room has hostId, fetch complete host data
+          if (data.hostId) {
+            try {
+              const hostResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/hosts/by-room/${data.id}`
+              );
+              if (hostResponse.ok) {
+                const fullHostData = await hostResponse.json();
+                console.log('Full host data fetched:', fullHostData); // Debug log
+                setHostData(fullHostData);
+              }
+            } catch (hostError) {
+              console.error('Error fetching host data:', hostError);
+              setHostData(data.host);
+            }
+          } else if (data.host) {
+            setHostData(data.host);
+          }
         }
       } catch (error) {
         console.error('Error fetching room data:', error);
@@ -87,18 +107,42 @@ export default function PreviewRoomHostCard({
     return null;
   }
 
-  // Use room data if available, fallback to config
-  const displayData = roomData?.host ? {
+  // Use host data from fetch or fallback to room data/config
+  const currentHost = hostData || roomData?.host;
+  
+  // Calculate years hosting
+  const getHostingYears = () => {
+    const currentYear = new Date().getFullYear();
+    
+    if (currentHost?.yearStartedHosting) {
+      return currentHost.yearStartedHosting;
+    }
+    
+    if (currentHost?.joinedDate) {
+      return new Date(currentHost.joinedDate).getFullYear();
+    }
+    
+    return currentYear;
+  };
+  
+  const displayData: any = currentHost ? {
     ...config,
-    hostName: roomData.host.fullName || roomData.host.firstName || config.hostName,
-    hostImage: roomData.host.profilePicture || config.hostImage,
-    isVerified: roomData.host.isVerified ?? config.isVerified,
-    isSuperhost: roomData.host.isSuperhost ?? config.isSuperhost,
-    bio: roomData.host.bio || config.bio,
-    location: roomData.host.city || config.location,
-    hostSince: roomData.host.joinedDate ? 
-      new Date(roomData.host.joinedDate).getFullYear().toString() : 
-      config.hostSince
+    hostName: currentHost.fullName || currentHost.firstName || config.hostName,
+    hostImage: currentHost.profilePicture || config.hostImage,
+    isVerified: currentHost.isVerified ?? config.isVerified,
+    isSuperhost: currentHost.isSuperhost ?? config.isSuperhost,
+    bio: currentHost.bio || config.bio,
+    aboutMe: currentHost.aboutMe || '',
+    location: currentHost.location || currentHost.city || config.location,
+    work: currentHost.work || config.work,
+    languages: currentHost.languages || config.languages || [],
+    attributes: currentHost.attributes || [],
+    hobbies: currentHost.hobbies || [],
+    hostSince: getHostingYears().toString(),
+    responseTime: currentHost.responseTimeMinutes || config.responseTime,
+    acceptanceRate: currentHost.acceptanceRate || config.responseRate,
+    reviewCount: currentHost.totalReviews || config.reviewCount,
+    rating: currentHost.overallRating || config.rating
   } : config;
 
   return (
@@ -176,6 +220,14 @@ export default function PreviewRoomHostCard({
             </div>
           )}
 
+          {/* About Me - Extended Bio */}
+          {displayData.aboutMe && (
+            <div>
+              <h3 className="font-semibold mb-2">More about me</h3>
+              <p className="text-gray-700">{displayData.aboutMe}</p>
+            </div>
+          )}
+
           {/* Details */}
           <div className="space-y-2">
             {displayData.location && (
@@ -190,16 +242,59 @@ export default function PreviewRoomHostCard({
             )}
             {displayData.languages && displayData.languages.length > 0 && (
               <p className="text-gray-700">
-                <span className="font-medium">Speaks:</span> {displayData.languages.join(', ')}
+                <span className="font-medium">Speaks:</span> {
+                  Array.isArray(displayData.languages) 
+                    ? displayData.languages.join(', ')
+                    : displayData.languages
+                }
               </p>
             )}
           </div>
 
+          {/* Attributes */}
+          {displayData.attributes && displayData.attributes.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-2">My attributes</h3>
+              <div className="flex flex-wrap gap-2">
+                {displayData.attributes.map((attr: string, index: number) => (
+                  <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                    {attr}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Hobbies */}
+          {displayData.hobbies && displayData.hobbies.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-2">My hobbies</h3>
+              <div className="flex flex-wrap gap-2">
+                {displayData.hobbies.map((hobby: string, index: number) => (
+                  <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                    {hobby}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Response info */}
           <div className="space-y-2">
             <h3 className="font-semibold mb-2">Host details</h3>
-            <p className="text-gray-700">Response rate: {config.responseRate}%</p>
-            <p className="text-gray-700">Response time: {config.responseTime}</p>
+            {displayData.acceptanceRate > 0 && (
+              <p className="text-gray-700">Response rate: {displayData.acceptanceRate}%</p>
+            )}
+            {displayData.responseTime && (
+              <p className="text-gray-700">Response time: {
+                typeof displayData.responseTime === 'number' 
+                  ? `${displayData.responseTime} minutes`
+                  : displayData.responseTime
+              }</p>
+            )}
+            {displayData.hostSince && (
+              <p className="text-gray-700">Hosting since: {displayData.hostSince}</p>
+            )}
           </div>
 
           {/* Message button */}

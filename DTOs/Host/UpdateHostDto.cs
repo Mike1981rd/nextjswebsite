@@ -26,6 +26,20 @@ namespace WebsiteBuilderAPI.DTOs.Host
         
         public DateTime? DateOfBirth { get; set; }
         
+        // Extended Information
+        public int? YearStartedHosting { get; set; }
+        
+        [StringLength(1000)]
+        public string AboutMe { get; set; }
+        
+        [StringLength(200)]
+        public string Location { get; set; }
+        
+        [StringLength(100)]
+        public string Work { get; set; }
+        
+        public List<string> Attributes { get; set; }
+        public List<string> Hobbies { get; set; }
         public List<string> Languages { get; set; }
         
         public bool? IsPhoneVerified { get; set; }

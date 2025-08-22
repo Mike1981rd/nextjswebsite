@@ -18,6 +18,8 @@ interface RoomGalleryConfig {
   buttonText: string;
   showCaptions: boolean;
   showShareSave: boolean; // Show Share/Save buttons
+  cardSize: number; // Card size percentage (50-200), default 100
+  containerWidth: number; // Container width percentage (50-100), default 100
   paddingTop: number; // Internal top padding (0-120)
   paddingBottom: number; // Internal bottom padding (0-120)
   containerPaddingTop: number; // External top margin (0-120)
@@ -41,6 +43,8 @@ const getDefaultConfig = (): RoomGalleryConfig => ({
   buttonText: 'Show all photos',
   showCaptions: false,
   showShareSave: true, // Default to show
+  cardSize: 100, // Default 100% size
+  containerWidth: 100, // Default 100% width
   paddingTop: 0,
   paddingBottom: 0,
   containerPaddingTop: 0,
@@ -179,6 +183,50 @@ export default function RoomGalleryEditor({ sectionId }: RoomGalleryEditorProps)
               <option value="medium">Medium (8px)</option>
               <option value="large">Large (16px)</option>
             </select>
+          </div>
+
+          {/* Card Size Control */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Image Card Size</label>
+              <span className="text-xs text-gray-500">{localConfig.cardSize ?? 100}%</span>
+            </div>
+            <input
+              type="range"
+              min={50}
+              max={200}
+              step={5}
+              value={localConfig.cardSize ?? 100}
+              onChange={(e) => handleChange('cardSize', Number(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>Small (50%)</span>
+              <span>Normal (100%)</span>
+              <span>Large (200%)</span>
+            </div>
+          </div>
+
+          {/* Container Width Control */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Container Width</label>
+              <span className="text-xs text-gray-500">{localConfig.containerWidth ?? 100}%</span>
+            </div>
+            <input
+              type="range"
+              min={50}
+              max={100}
+              step={5}
+              value={localConfig.containerWidth ?? 100}
+              onChange={(e) => handleChange('containerWidth', Number(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>Narrow (50%)</span>
+              <span>Medium (75%)</span>
+              <span>Full (100%)</span>
+            </div>
           </div>
 
           {/* Font Size Configuration */}

@@ -43,6 +43,24 @@ namespace WebsiteBuilderAPI.Models
         
         public DateTime DateOfBirth { get; set; }
         
+        // Información adicional del anfitrión
+        public int? YearStartedHosting { get; set; } // Año en que comenzó como anfitrión
+        
+        [StringLength(1000)]
+        public string AboutMe { get; set; } // Bio extendida/Acerca de mí
+        
+        [StringLength(200)]
+        public string Location { get; set; } // Dónde vive (ej: "Madrid, España")
+        
+        [StringLength(100)]
+        public string Work { get; set; } // A qué se dedica
+        
+        [Column(TypeName = "jsonb")]
+        public string Attributes { get; set; } // JSON array de virtudes/características (ej: ["Amigable", "Puntual", "Comunicativo"])
+        
+        [Column(TypeName = "jsonb")]
+        public string Hobbies { get; set; } // JSON array de hobbies/intereses
+        
         // Verificación
         public bool IsVerified { get; set; }
         public bool IsPhoneVerified { get; set; }
@@ -96,11 +114,14 @@ namespace WebsiteBuilderAPI.Models
             JoinedDate = DateTime.UtcNow;
             CreatedAt = DateTime.UtcNow;
             Languages = "[]"; // Empty JSON array
+            Attributes = "[]"; // Empty JSON array
+            Hobbies = "[]"; // Empty JSON array
             OverallRating = 0;
             TotalReviews = 0;
             ResponseTimeMinutes = 0;
             AcceptanceRate = 0;
             IsActive = true;
+            YearStartedHosting = DateTime.UtcNow.Year; // Default to current year
         }
     }
 }

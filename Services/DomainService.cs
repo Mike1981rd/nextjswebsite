@@ -285,7 +285,17 @@ namespace WebsiteBuilderAPI.Services
                 int dnsRecordsCreated = 0, dnsRecordsUpdated = 0, dnsRecordsDeleted = 0;
                 if (dto.DnsRecords != null)
                 {
-                    var validationErrors = ValidateDnsRecords(dto.DnsRecords.Cast<CreateDnsRecordDto>().ToList());
+                    // Convertir UpdateDnsRecordDto a CreateDnsRecordDto para validación
+                    var recordsToValidate = dto.DnsRecords.Select(r => new CreateDnsRecordDto
+                    {
+                        Type = r.Type,
+                        Host = r.Host,
+                        Value = r.Value,
+                        Priority = r.Priority,
+                        TTL = r.TTL
+                    }).ToList();
+                    
+                    var validationErrors = ValidateDnsRecords(recordsToValidate);
                     if (validationErrors.Any())
                     {
                         result.Success = false;

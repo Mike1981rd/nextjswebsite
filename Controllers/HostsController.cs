@@ -69,6 +69,28 @@ namespace WebsiteBuilderAPI.Controllers
             return Ok(host);
         }
         
+        // GET: api/hosts/by-room/5
+        [HttpGet("by-room/{roomId}")]
+        [AllowAnonymous] // Allow anonymous for public room pages
+        public async Task<ActionResult<HostDetailDto>> GetHostByRoomId(int roomId)
+        {
+            // Get room with host information
+            var room = await _context.Rooms
+                .Include(r => r.Host)
+                .Where(r => r.Id == roomId && r.IsActive)
+                .FirstOrDefaultAsync();
+                
+            if (room == null || room.Host == null || !room.HostId.HasValue)
+                return NotFound();
+                
+            var hostDto = await _hostService.GetHostByIdAsync(room.HostId.Value, room.CompanyId);
+            
+            if (hostDto == null)
+                return NotFound();
+                
+            return Ok(hostDto);
+        }
+        
         // POST: api/hosts
         [HttpPost]
         public async Task<ActionResult<WebsiteBuilderAPI.Models.Host>> CreateHost(CreateHostDto dto)

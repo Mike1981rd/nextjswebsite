@@ -44,7 +44,39 @@ namespace WebsiteBuilderAPI.Services
                 .ToListAsync();
         }
         
-        public async Task<HostDetailDto> GetHostByIdAsync(int id, int companyId)
+        private List<string> DeserializeJsonList(string? jsonString)
+        {
+            if (string.IsNullOrWhiteSpace(jsonString))
+                return new List<string>();
+                
+            try
+            {
+                // Try to deserialize as a JSON array
+                var result = JsonSerializer.Deserialize<List<string>>(jsonString);
+                return result ?? new List<string>();
+            }
+            catch (JsonException)
+            {
+                // If it fails, check if it's a plain string and wrap it in an array
+                try
+                {
+                    // If it's not valid JSON, treat it as a single string value
+                    if (!jsonString.StartsWith("[") && !jsonString.StartsWith("{"))
+                    {
+                        return new List<string> { jsonString };
+                    }
+                    
+                    // Otherwise return empty list
+                    return new List<string>();
+                }
+                catch
+                {
+                    return new List<string>();
+                }
+            }
+        }
+        
+        public async Task<HostDetailDto?> GetHostByIdAsync(int id, int companyId)
         {
             var host = await _context.Hosts
                 .Include(h => h.Rooms)
@@ -67,11 +99,17 @@ namespace WebsiteBuilderAPI.Services
                 Bio = host.Bio,
                 JoinedDate = host.JoinedDate,
                 DateOfBirth = host.DateOfBirth,
+                YearStartedHosting = host.YearStartedHosting,
+                AboutMe = host.AboutMe,
+                Location = host.Location,
+                Work = host.Work,
+                Attributes = DeserializeJsonList(host.Attributes),
+                Hobbies = DeserializeJsonList(host.Hobbies),
                 IsVerified = host.IsVerified,
                 IsPhoneVerified = host.IsPhoneVerified,
                 IsEmailVerified = host.IsEmailVerified,
                 IsIdentityVerified = host.IsIdentityVerified,
-                Languages = string.IsNullOrEmpty(host.Languages) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(host.Languages),
+                Languages = DeserializeJsonList(host.Languages),
                 OverallRating = host.OverallRating,
                 TotalReviews = host.TotalReviews,
                 ResponseTimeMinutes = host.ResponseTimeMinutes,
@@ -150,6 +188,24 @@ namespace WebsiteBuilderAPI.Services
                 
             if (dto.DateOfBirth.HasValue)
                 host.DateOfBirth = dto.DateOfBirth.Value;
+                
+            if (dto.YearStartedHosting.HasValue)
+                host.YearStartedHosting = dto.YearStartedHosting.Value;
+                
+            if (!string.IsNullOrEmpty(dto.AboutMe))
+                host.AboutMe = dto.AboutMe;
+                
+            if (!string.IsNullOrEmpty(dto.Location))
+                host.Location = dto.Location;
+                
+            if (!string.IsNullOrEmpty(dto.Work))
+                host.Work = dto.Work;
+                
+            if (dto.Attributes != null)
+                host.Attributes = JsonSerializer.Serialize(dto.Attributes);
+                
+            if (dto.Hobbies != null)
+                host.Hobbies = JsonSerializer.Serialize(dto.Hobbies);
                 
             if (dto.Languages != null)
                 host.Languages = JsonSerializer.Serialize(dto.Languages);

@@ -17,6 +17,8 @@ interface RoomGalleryConfig {
   buttonText?: string;
   showCaptions?: boolean;
   showShareSave?: boolean; // Add option for share/save buttons
+  cardSize?: number; // Card size percentage (50-200), default 100
+  containerWidth?: number; // Container width percentage (50-100), default 100
   paddingTop?: number;
   paddingBottom?: number;
   containerPaddingTop?: number;
@@ -48,6 +50,11 @@ export default function PreviewRoomGallery({
     const schemeIndex = (config.colorScheme || 1) - 1;
     return themeConfig.colorSchemes.schemes[schemeIndex] || themeConfig.colorSchemes.schemes[0];
   }, [themeConfig, config.colorScheme]);
+  
+  // Calculate card size scale
+  const cardScale = (config.cardSize || 100) / 100;
+  const baseHeight = 400; // Base height in pixels
+  const scaledHeight = Math.round(baseHeight * cardScale);
   
   // Mobile detection
   const [isMobile, setIsMobile] = useState<boolean>(() => {
@@ -158,12 +165,17 @@ export default function PreviewRoomGallery({
       marginTop: `${containerTopPadding}px`,
       marginBottom: `${containerBottomPadding}px`
     }}>
-      {/* Main content with background and internal padding */}
+      {/* Width-constrained container */}
       <div style={{
-        backgroundColor: colorScheme?.background || 'transparent',
-        paddingTop: `${config.paddingTop || 0}px`,
-        paddingBottom: `${config.paddingBottom || 0}px`
+        maxWidth: `${config.containerWidth || 100}%`,
+        margin: '0 auto'
       }}>
+        {/* Main content with background and internal padding */}
+        <div style={{
+          backgroundColor: colorScheme?.background || 'transparent',
+          paddingTop: `${config.paddingTop || 0}px`,
+          paddingBottom: `${config.paddingBottom || 0}px`
+        }}>
         {/* Debug indicator for editor mode */}
         {isEditor && (
           <div className="container mx-auto px-6 mb-2">
@@ -216,7 +228,7 @@ export default function PreviewRoomGallery({
               </div>
             )}
             
-            <div className="flex gap-2 h-[400px]">
+            <div className="flex gap-2" style={{ height: `${scaledHeight}px` }}>
               {/* Main large image - takes half width */}
               <div className="flex-1">
                 <img
@@ -268,7 +280,15 @@ export default function PreviewRoomGallery({
         {config.layoutStyle === 'grid' && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {images.map((image, index) => (
-              <div key={index} className="relative aspect-[4/3]">
+              <div 
+                key={index} 
+                className="relative aspect-[4/3]"
+                style={{ 
+                  transform: `scale(${cardScale})`,
+                  transformOrigin: 'center',
+                  margin: cardScale < 1 ? `${(1 - cardScale) * -15}%` : undefined
+                }}
+              >
                 <img
                   src={image}
                   alt={`Room ${index + 1}`}
@@ -287,7 +307,8 @@ export default function PreviewRoomGallery({
               <img
                 src={images[currentImageIndex]}
                 alt={`Room ${currentImageIndex + 1}`}
-                className="w-full h-[400px] object-cover"
+                className="w-full object-cover"
+                style={{ height: `${scaledHeight}px` }}
               />
             </div>
             
@@ -344,8 +365,11 @@ export default function PreviewRoomGallery({
               <img
                 src={images[currentImageIndex]}
                 alt={`Room ${currentImageIndex + 1}`}
-                className="w-full h-[300px] object-cover"
-                style={{ borderRadius: cornerRadius }}
+                className="w-full object-cover"
+                style={{ 
+                  borderRadius: cornerRadius,
+                  height: `${Math.round(300 * cardScale)}px`
+                }}
               />
             </div>
             
@@ -392,6 +416,7 @@ export default function PreviewRoomGallery({
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
