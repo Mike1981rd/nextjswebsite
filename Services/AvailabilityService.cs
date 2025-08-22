@@ -360,6 +360,26 @@ namespace WebsiteBuilderAPI.Services
                 .Include(ra => ra.Reservation)
                     .ThenInclude(r => r!.Customer)
                 .ToListAsync();
+            
+            Console.WriteLine($"[AVAILABILITY DEBUG] Found {availabilities.Count} availability records for room {roomId} between {startDate:yyyy-MM-dd} and {endDate:yyyy-MM-dd}");
+            
+            // Also check for reservations directly
+            var reservations = await _context.Reservations
+                .Where(r => r.RoomId == roomId && 
+                           r.CheckInDate <= endDate && 
+                           r.CheckOutDate >= startDate &&
+                           r.Status != "cancelled")
+                .ToListAsync();
+            
+            Console.WriteLine($"[AVAILABILITY DEBUG] Found {reservations.Count} reservations for room {roomId} in date range");
+            if (reservations.Any())
+            {
+                foreach (var res in reservations.Take(3))
+                {
+                    Console.WriteLine($"  - Reservation {res.Id}: CheckIn={res.CheckInDate:yyyy-MM-dd}, CheckOut={res.CheckOutDate:yyyy-MM-dd}, Status={res.Status}");
+                    Console.WriteLine($"    Note: CheckOut date {res.CheckOutDate:yyyy-MM-dd} is AVAILABLE for new reservations");
+                }
+            }
 
             var result = new List<RoomAvailabilityDto>();
 
@@ -367,22 +387,44 @@ namespace WebsiteBuilderAPI.Services
             {
                 var availability = availabilities.FirstOrDefault(a => a.Date.Date == date.Date);
                 
+                // Check if this date has a reservation
+                // Note: CheckOut date is available for new reservations (guest leaves in the morning)
+                var hasReservation = reservations.Any(r => 
+                    date >= r.CheckInDate.Date && 
+                    date < r.CheckOutDate.Date &&  // Changed from <= to < (checkout day is available)
+                    r.Status != "cancelled");
+                
+                var reservation = reservations.FirstOrDefault(r => 
+                    date >= r.CheckInDate.Date && 
+                    date < r.CheckOutDate.Date &&  // Changed from <= to < (checkout day is available)
+                    r.Status != "cancelled");
+                
+                // Determine if the date is available
+                var isAvailable = availability?.IsAvailable ?? true;
+                var isBlocked = availability?.IsBlocked ?? false;
+                
+                // If there's a reservation, the date is not available
+                if (hasReservation)
+                {
+                    isAvailable = false;
+                }
+                
                 result.Add(new RoomAvailabilityDto
                 {
                     RoomId = roomId,
                     RoomName = room.Name,
                     RoomCode = room.RoomCode ?? "",
                     Date = date,
-                    IsAvailable = availability?.IsAvailable ?? true,
-                    IsBlocked = availability?.IsBlocked ?? false,
-                    HasReservation = availability?.ReservationId != null,
+                    IsAvailable = isAvailable && !isBlocked && !hasReservation,
+                    IsBlocked = isBlocked,
+                    HasReservation = hasReservation || availability?.ReservationId != null,
                     BlockReason = availability?.BlockReason,
                     Price = availability?.CustomPrice ?? room.BasePrice,
-                    ReservationId = availability?.ReservationId,
-                    GuestName = availability?.Reservation?.Customer?.FullName,
-                    ReservationStatus = availability?.Reservation?.Status,
-                    IsCheckIn = availability?.Reservation?.CheckInDate.Date == date.Date,
-                    IsCheckOut = availability?.Reservation?.CheckOutDate.Date == date.Date
+                    ReservationId = reservation?.Id ?? availability?.ReservationId,
+                    GuestName = reservation?.Customer?.FullName ?? availability?.Reservation?.Customer?.FullName,
+                    ReservationStatus = reservation?.Status ?? availability?.Reservation?.Status,
+                    IsCheckIn = reservations.Any(r => r.CheckInDate.Date == date.Date && r.Status != "cancelled"),
+                    IsCheckOut = reservations.Any(r => r.CheckOutDate.Date == date.Date && r.Status != "cancelled")
                 });
             }
 

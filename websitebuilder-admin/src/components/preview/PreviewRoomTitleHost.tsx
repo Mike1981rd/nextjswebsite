@@ -4,6 +4,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Star, Share, Heart, Medal, Shield, Calendar, ChevronDown, Sparkles } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import ReservationCalendar from './ReservationCalendar';
+import { format, addDays, differenceInDays } from 'date-fns';
+import { formatPrice } from '@/utils/formatPrice';
 
 interface Highlight {
   id: string;
@@ -73,9 +76,12 @@ export default function PreviewRoomTitleHost({
   const [roomData, setRoomData] = useState<any>(null);
   const [hostData, setHostData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [checkInDate, setCheckInDate] = useState<string>('');
-  const [checkOutDate, setCheckOutDate] = useState<string>('');
+  const [checkInDate, setCheckInDate] = useState<Date | null>(null);
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
   const [guests, setGuests] = useState(1);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
+  const [companyCurrency, setCompanyCurrency] = useState<string>('USD');
 
   useEffect(() => {
     if (deviceView !== undefined) {
@@ -88,6 +94,24 @@ export default function PreviewRoomTitleHost({
     return () => window.removeEventListener('resize', onResize);
   }, [deviceView]);
 
+  // Close guests dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.guests-dropdown-container')) {
+        setShowGuestsDropdown(false);
+      }
+    };
+
+    if (showGuestsDropdown) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showGuestsDropdown]);
+
   // Auto-fetch room data for both editor and preview
   useEffect(() => {
     const fetchRoomData = async () => {
@@ -95,16 +119,28 @@ export default function PreviewRoomTitleHost({
       
       setLoading(true);
       try {
-        // First fetch room data
+        // First fetch company data to get currency
+        const companyResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/company/current`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            }
+          }
+        );
+        if (companyResponse.ok) {
+          const companyData = await companyResponse.json();
+          setCompanyCurrency(companyData.currency || 'USD');
+        }
+        
+        // Then fetch room data
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
         );
         if (response.ok) {
           const data = await response.json();
           console.log('Room data fetched:', data); // Debug log
-          console.log('SleepingArrangements:', data.sleepingArrangements); // Debug log
-          console.log('Host data:', data.host); // Debug log
-          console.log('Room highlights:', data.highlights); // Debug log for highlights
+          console.log('Base Price:', data.basePrice); // Debug log for price
           setRoomData(data);
           
           // If room has hostId, fetch complete host data
@@ -262,13 +298,32 @@ export default function PreviewRoomTitleHost({
   const containerTopPadding = config.containerPaddingTop !== undefined ? config.containerPaddingTop : 0;
   const containerBottomPadding = config.containerPaddingBottom !== undefined ? config.containerPaddingBottom : 0;
   
-  // Calculate price per night (sample data)
-  const pricePerNight = roomData?.pricePerNight || 43;
-  const totalNights = 2;
-  const cleaningFee = 15;
-  const serviceFee = 8;
-  const totalBeforeTaxes = (pricePerNight * totalNights) + cleaningFee + serviceFee;
+  // Calculate price per night and total
+  const pricePerNight = roomData?.basePrice || 137;
+  const totalNights = checkInDate && checkOutDate 
+    ? differenceInDays(checkOutDate, checkInDate)
+    : 0;
+  const cleaningFee = 15; // TODO: Get from room or company settings
+  const serviceFee = Math.round(pricePerNight * totalNights * 0.14); // 14% service fee
+  const totalBeforeTaxes = totalNights > 0 
+    ? (pricePerNight * totalNights) + cleaningFee + serviceFee
+    : 0;
   const [showPriceDetails, setShowPriceDetails] = useState(false);
+
+  // Handle date selection from calendar
+  const handleDatesSelect = (checkIn: Date, checkOut: Date) => {
+    setCheckInDate(checkIn);
+    setCheckOutDate(checkOut);
+    setShowCalendar(false);
+  };
+
+  // Handle guest selection
+  const handleGuestChange = (newGuestCount: number) => {
+    const maxGuests = roomData?.maxOccupancy || 4;
+    if (newGuestCount >= 1 && newGuestCount <= maxGuests) {
+      setGuests(newGuestCount);
+    }
+  };
 
   return (
     <div style={{ 
@@ -521,10 +576,10 @@ export default function PreviewRoomTitleHost({
                   <div className="mb-4">
                     <div className="flex items-baseline gap-1">
                       <span className="text-xl font-semibold" style={{ color: colorScheme?.text || '#000000' }}>
-                        ${totalBeforeTaxes} USD
+                        {formatPrice(totalNights > 0 ? totalBeforeTaxes : pricePerNight, companyCurrency)}
                       </span>
                       <span className="text-sm" style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>
-                        for {totalNights} nights
+                        {totalNights > 0 ? `for ${totalNights} night${totalNights > 1 ? 's' : ''}` : 'per night'}
                       </span>
                     </div>
                   </div>
@@ -532,51 +587,100 @@ export default function PreviewRoomTitleHost({
                   {/* Date inputs */}
                   <div className="grid grid-cols-2 gap-0">
                     <div 
-                      className="p-3 border rounded-tl-lg"
+                      className="p-3 border rounded-tl-lg cursor-pointer hover:bg-gray-50 transition"
                       style={{ borderColor: colorScheme?.border || '#b0b0b0' }}
+                      onClick={() => {
+                        if (roomData?.id) {
+                          setShowCalendar(true);
+                        } else {
+                          console.warn('Cannot open calendar: Room data not loaded yet');
+                        }
+                      }}
                     >
                       <label className="text-[10px] font-semibold uppercase block" style={{ color: colorScheme?.text || '#000000' }}>
                         CHECK-IN
                       </label>
-                      <input 
-                        type="text"
-                        value="9/26/2025"
-                        readOnly
-                        className="w-full text-sm bg-transparent outline-none mt-1"
-                        style={{ color: colorScheme?.text || '#000000' }}
-                      />
+                      <div className="text-sm mt-1" style={{ color: colorScheme?.text || '#000000' }}>
+                        {checkInDate ? format(checkInDate, 'M/d/yyyy') : 'Add date'}
+                      </div>
                     </div>
                     <div 
-                      className="p-3 border border-l-0 rounded-tr-lg"
+                      className="p-3 border border-l-0 rounded-tr-lg cursor-pointer hover:bg-gray-50 transition"
                       style={{ borderColor: colorScheme?.border || '#b0b0b0' }}
+                      onClick={() => {
+                        if (roomData?.id) {
+                          setShowCalendar(true);
+                        } else {
+                          console.warn('Cannot open calendar: Room data not loaded yet');
+                        }
+                      }}
                     >
                       <label className="text-[10px] font-semibold uppercase block" style={{ color: colorScheme?.text || '#000000' }}>
                         CHECKOUT
                       </label>
-                      <input 
-                        type="text"
-                        value="9/28/2025"
-                        readOnly
-                        className="w-full text-sm bg-transparent outline-none mt-1"
-                        style={{ color: colorScheme?.text || '#000000' }}
-                      />
+                      <div className="text-sm mt-1" style={{ color: colorScheme?.text || '#000000' }}>
+                        {checkOutDate ? format(checkOutDate, 'M/d/yyyy') : 'Add date'}
+                      </div>
                     </div>
                   </div>
 
                   {/* Guests selector */}
-                  <div 
-                    className="p-3 border border-t-0 rounded-b-lg mb-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition"
-                    style={{ borderColor: colorScheme?.border || '#b0b0b0' }}
-                  >
-                    <div>
-                      <label className="text-[10px] font-semibold uppercase block" style={{ color: colorScheme?.text || '#000000' }}>
-                        GUESTS
-                      </label>
-                      <span className="text-sm mt-1 block" style={{ color: colorScheme?.text || '#000000' }}>
-                        {guests} guest{guests > 1 ? 's' : ''}
-                      </span>
+                  <div className="relative guests-dropdown-container">
+                    <div 
+                      className="p-3 border border-t-0 rounded-b-lg mb-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition"
+                      style={{ borderColor: colorScheme?.border || '#b0b0b0' }}
+                      onClick={() => setShowGuestsDropdown(!showGuestsDropdown)}
+                    >
+                      <div>
+                        <label className="text-[10px] font-semibold uppercase block" style={{ color: colorScheme?.text || '#000000' }}>
+                          GUESTS
+                        </label>
+                        <span className="text-sm mt-1 block" style={{ color: colorScheme?.text || '#000000' }}>
+                          {guests} guest{guests > 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <ChevronDown className="w-5 h-5" style={{ color: colorScheme?.text || '#000000' }} />
                     </div>
-                    <ChevronDown className="w-5 h-5" style={{ color: colorScheme?.text || '#000000' }} />
+
+                    {/* Guests dropdown */}
+                    {showGuestsDropdown && (
+                      <div 
+                        className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border p-4 z-10"
+                        style={{ borderColor: colorScheme?.border || '#e5e7eb' }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Guests</span>
+                          <div className="flex items-center gap-3">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleGuestChange(guests - 1);
+                              }}
+                              disabled={guests <= 1}
+                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              style={{ borderColor: colorScheme?.border || '#e5e7eb' }}
+                            >
+                              -
+                            </button>
+                            <span className="w-8 text-center">{guests}</span>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleGuestChange(guests + 1);
+                              }}
+                              disabled={guests >= (roomData?.maxOccupancy || 4)}
+                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                              style={{ borderColor: colorScheme?.border || '#e5e7eb' }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                        <div className="mt-3 text-xs text-gray-500">
+                          Maximum {roomData?.maxOccupancy || 4} guests
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Reserve button */}
@@ -603,34 +707,94 @@ export default function PreviewRoomTitleHost({
                       className="w-full flex items-center justify-between text-sm hover:underline"
                       style={{ color: colorScheme?.text || '#000000' }}
                     >
-                      <span>${pricePerNight} x {totalNights} nights</span>
-                      <span>${pricePerNight * totalNights}</span>
+                      <span>{formatPrice(pricePerNight, companyCurrency)} x {totalNights} nights</span>
+                      <span>{formatPrice(pricePerNight * totalNights, companyCurrency)}</span>
                     </button>
                     
                     {showPriceDetails && (
                       <>
                         <div className="flex items-center justify-between text-sm" style={{ color: colorScheme?.text || '#000000' }}>
                           <span className="underline cursor-pointer">Cleaning fee</span>
-                          <span>${cleaningFee}</span>
+                          <span>{formatPrice(cleaningFee, companyCurrency)}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm" style={{ color: colorScheme?.text || '#000000' }}>
                           <span className="underline cursor-pointer">Service fee</span>
-                          <span>${serviceFee}</span>
+                          <span>{formatPrice(serviceFee, companyCurrency)}</span>
                         </div>
                       </>
                     )}
                     
                     <div className="pt-3 border-t flex items-center justify-between font-semibold" style={{ borderColor: colorScheme?.border || '#e5e7eb' }}>
                       <span style={{ color: colorScheme?.text || '#000000' }}>Total before taxes</span>
-                      <span style={{ color: colorScheme?.text || '#000000' }}>${totalBeforeTaxes}</span>
+                      <span style={{ color: colorScheme?.text || '#000000' }}>{formatPrice(totalBeforeTaxes, companyCurrency)}</span>
                     </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
+
+          {/* Mobile Reservation Widget */}
+          {config.showReservationWidget !== false && isMobile && (
+            <div 
+              className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-2xl p-4 z-40"
+              style={{
+                backgroundColor: colorScheme?.cardBackground || '#ffffff',
+                borderColor: colorScheme?.border || '#e5e7eb'
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-semibold" style={{ color: colorScheme?.text || '#000000' }}>
+                      {formatPrice(totalNights > 0 ? totalBeforeTaxes : pricePerNight, companyCurrency)}
+                    </span>
+                    <span className="text-sm" style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>
+                      {totalNights > 0 ? `/ ${totalNights} nights` : '/ night'}
+                    </span>
+                  </div>
+                  {checkInDate && checkOutDate && (
+                    <div className="text-xs mt-1" style={{ color: colorScheme?.text || '#000000', opacity: 0.6 }}>
+                      {format(checkInDate, 'MMM d')} - {format(checkOutDate, 'MMM d')}
+                    </div>
+                  )}
+                </div>
+                <button 
+                  onClick={() => {
+                    if (roomData?.id) {
+                      setShowCalendar(true);
+                    } else {
+                      console.warn('Cannot open calendar: Room data not loaded yet');
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-lg font-semibold transition-all hover:opacity-90"
+                  style={{
+                    backgroundColor: colorScheme?.solidButton || '#FF385C',
+                    color: colorScheme?.solidButtonText || '#ffffff'
+                  }}
+                >
+                  {checkInDate && checkOutDate ? 'Reserve' : 'Check availability'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Reservation Calendar Modal */}
+      <ReservationCalendar
+        isOpen={showCalendar}
+        onClose={() => setShowCalendar(false)}
+        checkInDate={checkInDate}
+        checkOutDate={checkOutDate}
+        onDatesSelect={handleDatesSelect}
+        roomId={roomData?.id}
+        pricePerNight={pricePerNight}
+        minStay={roomData?.minStay || 1}  // Changed default from 2 to 1
+        maxStay={roomData?.maxStay || 30}
+        colorScheme={colorScheme}
+        currency={companyCurrency}
+      />
     </div>
   );
 }

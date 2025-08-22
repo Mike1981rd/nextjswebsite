@@ -42,48 +42,64 @@ namespace WebsiteBuilderAPI.Services
                 await _context.SaveChangesAsync();
             }
 
+            return MapToResponseDto(currentCompany);
+        }
+
+        public async Task<CompanyResponseDto?> GetCompanyByIdAsync(int companyId)
+        {
+            var company = await _context.Companies.FindAsync(companyId);
+            if (company == null)
+            {
+                return null;
+            }
+
+            return MapToResponseDto(company);
+        }
+
+        private CompanyResponseDto MapToResponseDto(Company company)
+        {
             return new CompanyResponseDto
             {
-                Id = currentCompany.Id,
-                Name = currentCompany.Name,
-                Domain = currentCompany.Domain,
-                CustomDomain = currentCompany.CustomDomain,
-                Subdomain = currentCompany.Subdomain,
-                Logo = currentCompany.Logo,
-                LogoSize = currentCompany.LogoSize,
-                PrimaryColor = currentCompany.PrimaryColor,
-                SecondaryColor = currentCompany.SecondaryColor,
-                IsActive = currentCompany.IsActive,
+                Id = company.Id,
+                Name = company.Name,
+                Domain = company.Domain,
+                CustomDomain = company.CustomDomain,
+                Subdomain = company.Subdomain,
+                Logo = company.Logo,
+                LogoSize = company.LogoSize,
+                PrimaryColor = company.PrimaryColor,
+                SecondaryColor = company.SecondaryColor,
+                IsActive = company.IsActive,
                 
                 // Profile Section
-                PhoneNumber = currentCompany.PhoneNumber,
-                ContactEmail = currentCompany.ContactEmail,
-                SenderEmail = currentCompany.SenderEmail,
+                PhoneNumber = company.PhoneNumber,
+                ContactEmail = company.ContactEmail,
+                SenderEmail = company.SenderEmail,
                 
                 // Billing Information
-                LegalBusinessName = currentCompany.LegalBusinessName,
-                Country = currentCompany.Country,
-                Region = currentCompany.Region,
-                Address = currentCompany.Address,
-                Apartment = currentCompany.Apartment,
-                City = currentCompany.City,
-                State = currentCompany.State,
-                PostalCode = currentCompany.PostalCode,
+                LegalBusinessName = company.LegalBusinessName,
+                Country = company.Country,
+                Region = company.Region,
+                Address = company.Address,
+                Apartment = company.Apartment,
+                City = company.City,
+                State = company.State,
+                PostalCode = company.PostalCode,
                 
                 // Time Zone & Units
-                TimeZone = currentCompany.TimeZone,
-                MetricSystem = currentCompany.MetricSystem,
-                WeightUnit = currentCompany.WeightUnit,
+                TimeZone = company.TimeZone,
+                MetricSystem = company.MetricSystem,
+                WeightUnit = company.WeightUnit,
                 
                 // Store Currency
-                Currency = currentCompany.Currency,
+                Currency = company.Currency,
                 
                 // Order ID Format
-                OrderIdPrefix = currentCompany.OrderIdPrefix,
-                OrderIdSuffix = currentCompany.OrderIdSuffix,
+                OrderIdPrefix = company.OrderIdPrefix,
+                OrderIdSuffix = company.OrderIdSuffix,
                 
-                CreatedAt = currentCompany.CreatedAt,
-                UpdatedAt = currentCompany.UpdatedAt
+                CreatedAt = company.CreatedAt,
+                UpdatedAt = company.UpdatedAt
             };
         }
 

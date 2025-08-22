@@ -46,6 +46,39 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         /// <summary>
+        /// Obtiene información básica de la empresa (público para preview)
+        /// </summary>
+        [HttpGet("{companyId}/public")]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetPublicCompanyInfo(int companyId)
+        {
+            try
+            {
+                var company = await _companyService.GetCompanyByIdAsync(companyId);
+                if (company == null)
+                {
+                    return NotFound(new { message = "Company not found" });
+                }
+
+                // Return only basic public info
+                return Ok(new
+                {
+                    id = company.Id,
+                    name = company.Name,
+                    currency = company.Currency ?? "USD",
+                    logo = company.Logo,
+                    primaryColor = company.PrimaryColor,
+                    secondaryColor = company.SecondaryColor
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting public company info");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        /// <summary>
         /// Actualiza la información del company actual
         /// </summary>
         [HttpPut("current")]

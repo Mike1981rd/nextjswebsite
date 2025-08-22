@@ -100,6 +100,61 @@ namespace WebsiteBuilderAPI.Controllers
             }
         }
 
+        [HttpGet("public/room/{roomId}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetPublicRoomAvailability(
+            int roomId,
+            [FromQuery] DateTime startDate,
+            [FromQuery] DateTime endDate,
+            [FromQuery] int? companyId = null)
+        {
+            try
+            {
+                Console.WriteLine($"[AVAILABILITY PUBLIC DEBUG] roomId: {roomId}, startDate: {startDate} (Kind: {startDate.Kind}), endDate: {endDate} (Kind: {endDate.Kind}), companyId: {companyId}");
+                
+                // Convert dates to UTC to avoid PostgreSQL timezone issues
+                var startDateUtc = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
+                var endDateUtc = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Utc);
+                
+                Console.WriteLine($"[AVAILABILITY PUBLIC DEBUG] Converted to UTC - startDate: {startDateUtc} (Kind: {startDateUtc.Kind}), endDate: {endDateUtc} (Kind: {endDateUtc.Kind})");
+                
+                // Use provided companyId or default to 1
+                var company = companyId ?? 1;
+                Console.WriteLine($"[AVAILABILITY PUBLIC DEBUG] Using companyId: {company}");
+                
+                var result = await _availabilityService.GetRoomAvailabilityAsync(company, roomId, startDateUtc, endDateUtc);
+                
+                Console.WriteLine($"[AVAILABILITY PUBLIC DEBUG] Result retrieved successfully with {result?.Count ?? 0} dates");
+                
+                // Log some sample data for debugging
+                if (result != null && result.Any())
+                {
+                    var unavailableDates = result.Where(r => !r.IsAvailable || r.HasReservation || r.IsBlocked).Take(5);
+                    if (unavailableDates.Any())
+                    {
+                        Console.WriteLine($"[AVAILABILITY PUBLIC DEBUG] Found {unavailableDates.Count()} unavailable dates (showing first 5):");
+                        foreach (var date in unavailableDates)
+                        {
+                            Console.WriteLine($"  - {date.Date:yyyy-MM-dd}: Available={date.IsAvailable}, HasReservation={date.HasReservation}, IsBlocked={date.IsBlocked}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("[AVAILABILITY PUBLIC DEBUG] All dates are available - no reservations or blocks found");
+                    }
+                }
+                
+                // Return the array directly as the frontend expects
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AVAILABILITY PUBLIC ERROR] Exception: {ex.Message}");
+                Console.WriteLine($"[AVAILABILITY PUBLIC ERROR] Stack: {ex.StackTrace}");
+                return StatusCode(500, new { message = "Error al obtener disponibilidad de la habitación", error = ex.Message, details = ex.ToString() });
+            }
+        }
+
         [HttpPut("room/{roomId}/date/{date}")]
         public async Task<ActionResult> UpdateRoomAvailability(
             int roomId,
