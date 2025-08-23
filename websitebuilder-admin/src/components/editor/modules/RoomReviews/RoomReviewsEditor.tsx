@@ -2,24 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useEditorStore } from '@/stores/useEditorStore';
-import { ChevronDown, ChevronUp, Star, Plus, X } from 'lucide-react';
-
-interface Review {
-  id: string;
-  author: string;
-  avatar: string;
-  date: string;
-  rating: number;
-  comment: string;
-}
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { ChevronDown, ChevronUp, Star, Heart, Smile, ThumbsUp } from 'lucide-react';
+import type { ColorScheme } from '@/types/theme/colorSchemes';
 
 interface RoomReviewsConfig {
   enabled: boolean;
-  title: string;
-  averageRating: number;
-  totalReviews: number;
-  reviews: Review[];
-  showAllButton: boolean;
+  colorSchemeId: string; // ID of the selected color scheme (scheme-1 to scheme-5)
+  ratingIcon: 'star' | 'heart' | 'smile' | 'like';
+  ratingIconColor: string;
+  bodyType: 'standard' | 'rounded-grid' | 'list-grid' | 'square-grid';
+  headerSize: number;
+  topPadding: number;
+  bottomPadding: number;
 }
 
 interface RoomReviewsEditorProps {
@@ -28,32 +23,18 @@ interface RoomReviewsEditorProps {
 
 const getDefaultConfig = (): RoomReviewsConfig => ({
   enabled: true,
-  title: 'Guest reviews',
-  averageRating: 4.92,
-  totalReviews: 124,
-  reviews: [
-    {
-      id: '1',
-      author: 'Sarah',
-      avatar: '',
-      date: 'December 2023',
-      rating: 5,
-      comment: 'Great place to stay! The location was perfect and the host was very responsive.'
-    },
-    {
-      id: '2',
-      author: 'John',
-      avatar: '',
-      date: 'November 2023',
-      rating: 5,
-      comment: 'Beautiful apartment with all the amenities needed. Would definitely stay again!'
-    }
-  ],
-  showAllButton: true
+  colorSchemeId: 'scheme-1',
+  ratingIcon: 'star',
+  ratingIconColor: '#FFB800',
+  bodyType: 'standard',
+  headerSize: 32,
+  topPadding: 40,
+  bottomPadding: 40
 });
 
 export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps) {
   const { sections, updateSectionSettings } = useEditorStore();
+  const { config: themeConfig } = useThemeConfigStore();
   const [isExpanded, setIsExpanded] = useState(true);
   const [localConfig, setLocalConfig] = useState<RoomReviewsConfig>(getDefaultConfig());
 
@@ -85,33 +66,32 @@ export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps)
     }
   };
 
-  const handleReviewChange = (index: number, field: keyof Review, value: any) => {
-    const newReviews = [...localConfig.reviews];
-    newReviews[index] = { ...newReviews[index], [field]: value };
-    handleChange('reviews', newReviews);
-  };
-
-  const addReview = () => {
-    const newReview: Review = {
-      id: Date.now().toString(),
-      author: 'Guest',
-      avatar: '',
-      date: 'December 2023',
-      rating: 5,
-      comment: 'Great stay!'
+  const RatingIconPreview = () => {
+    const iconProps = { 
+      className: "w-4 h-4", 
+      style: { color: localConfig.ratingIconColor },
+      fill: localConfig.ratingIconColor
     };
-    handleChange('reviews', [...localConfig.reviews, newReview]);
+    
+    switch(localConfig.ratingIcon) {
+      case 'heart': return <Heart {...iconProps} />;
+      case 'smile': return <Smile {...iconProps} />;
+      case 'like': return <ThumbsUp {...iconProps} />;
+      default: return <Star {...iconProps} />;
+    }
   };
 
-  const removeReview = (index: number) => {
-    const newReviews = localConfig.reviews.filter((_, i) => i !== index);
-    handleChange('reviews', newReviews);
-  };
+  // Get color schemes from theme config or use defaults
+  const colorSchemes = themeConfig?.colorSchemes?.schemes || [];
+  const hasColorSchemes = colorSchemes.length > 0;
+
+  // Get selected color scheme details
+  const selectedScheme = colorSchemes.find(s => s.id === localConfig.colorSchemeId);
 
   return (
     <div className="bg-white dark:bg-gray-900">
       <div 
-        className="flex items-center justify-between p-3 border-b cursor-pointer hover:bg-gray-50"
+        className="flex items-center justify-between p-3 border-b cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">
@@ -123,8 +103,9 @@ export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps)
 
       {isExpanded && (
         <div className="p-4 space-y-4 border-b max-h-[600px] overflow-y-auto">
+          {/* Enable/Disable */}
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">Show reviews</label>
+            <label className="text-sm font-medium">Enable Reviews</label>
             <input
               type="checkbox"
               checked={localConfig.enabled}
@@ -133,102 +114,196 @@ export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps)
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs text-gray-600">Average rating</label>
-              <input
-                type="number"
-                value={localConfig.averageRating}
-                onChange={(e) => handleChange('averageRating', parseFloat(e.target.value))}
-                step="0.01"
-                min="0"
-                max="5"
-                className="w-full px-2 py-1 text-sm border rounded"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-gray-600">Total reviews</label>
-              <input
-                type="number"
-                value={localConfig.totalReviews}
-                onChange={(e) => handleChange('totalReviews', parseInt(e.target.value))}
-                className="w-full px-2 py-1 text-sm border rounded"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <label className="text-sm">Show all button</label>
-            <input
-              type="checkbox"
-              checked={localConfig.showAllButton}
-              onChange={(e) => handleChange('showAllButton', e.target.checked)}
-              className="rounded"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-gray-600 uppercase">Reviews</h3>
-              <button
-                onClick={addReview}
-                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                Add
-              </button>
-            </div>
-
-            {localConfig.reviews.map((review, index) => (
-              <div key={review.id} className="border rounded-lg p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium">Review {index + 1}</span>
-                  <button
-                    onClick={() => removeReview(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <input
-                  type="text"
-                  value={review.author}
-                  onChange={(e) => handleReviewChange(index, 'author', e.target.value)}
-                  placeholder="Author name"
-                  className="w-full px-2 py-1 text-sm border rounded"
-                />
-
-                <input
-                  type="text"
-                  value={review.date}
-                  onChange={(e) => handleReviewChange(index, 'date', e.target.value)}
-                  placeholder="Date"
-                  className="w-full px-2 py-1 text-sm border rounded"
-                />
-
-                <div>
-                  <label className="text-xs text-gray-600">Rating</label>
-                  <select
-                    value={review.rating}
-                    onChange={(e) => handleReviewChange(index, 'rating', parseInt(e.target.value))}
-                    className="w-full px-2 py-1 text-sm border rounded"
-                  >
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <option key={n} value={n}>{n} stars</option>
-                    ))}
-                  </select>
-                </div>
-
-                <textarea
-                  value={review.comment}
-                  onChange={(e) => handleReviewChange(index, 'comment', e.target.value)}
-                  placeholder="Review comment"
-                  rows={2}
-                  className="w-full px-2 py-1 text-sm border rounded resize-none"
-                />
+          {/* Color Scheme */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Color Scheme
+            </label>
+            {hasColorSchemes ? (
+              <div className="space-y-2">
+                <select
+                  value={localConfig.colorSchemeId}
+                  onChange={(e) => handleChange('colorSchemeId', e.target.value)}
+                  className="w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                >
+                  {colorSchemes.map((scheme, index) => (
+                    <option key={scheme.id} value={scheme.id}>
+                      {scheme.name || `Scheme ${index + 1}`}
+                    </option>
+                  ))}
+                </select>
+                
+                {/* Color Scheme Preview */}
+                {selectedScheme && (
+                  <div className="p-3 border rounded-md bg-gray-50 dark:bg-gray-800">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                      Color Preview
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      <div className="text-center">
+                        <div 
+                          className="w-full h-8 rounded border"
+                          style={{ backgroundColor: selectedScheme.background }}
+                        />
+                        <span className="text-xs">Background</span>
+                      </div>
+                      <div className="text-center">
+                        <div 
+                          className="w-full h-8 rounded border"
+                          style={{ backgroundColor: selectedScheme.text }}
+                        />
+                        <span className="text-xs">Text</span>
+                      </div>
+                      <div className="text-center">
+                        <div 
+                          className="w-full h-8 rounded border"
+                          style={{ backgroundColor: selectedScheme.solidButton }}
+                        />
+                        <span className="text-xs">Button</span>
+                      </div>
+                      <div className="text-center">
+                        <div 
+                          className="w-full h-8 rounded border"
+                          style={{ backgroundColor: selectedScheme.link }}
+                        />
+                        <span className="text-xs">Link</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            ))}
+            ) : (
+              <div className="text-sm text-gray-500 dark:text-gray-400 p-3 border rounded-md bg-gray-50 dark:bg-gray-800">
+                No color schemes configured. Please configure color schemes in Global Settings first.
+              </div>
+            )}
+          </div>
+
+          {/* Rating Icon */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Rating Icon
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { value: 'star', icon: Star, label: 'Star' },
+                { value: 'heart', icon: Heart, label: 'Heart' },
+                { value: 'smile', icon: Smile, label: 'Smile' },
+                { value: 'like', icon: ThumbsUp, label: 'Like' }
+              ].map(item => (
+                <button
+                  key={item.value}
+                  onClick={() => handleChange('ratingIcon', item.value)}
+                  className={`p-2 border rounded-md flex flex-col items-center gap-1 transition-colors ${
+                    localConfig.ratingIcon === item.value
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-300 dark:border-gray-700 hover:border-gray-400'
+                  }`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span className="text-xs">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Rating Icon Color */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Rating Icon Color
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={localConfig.ratingIconColor}
+                onChange={(e) => handleChange('ratingIconColor', e.target.value)}
+                className="w-10 h-10 border rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={localConfig.ratingIconColor}
+                onChange={(e) => handleChange('ratingIconColor', e.target.value)}
+                className="flex-1 px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                placeholder="#FFB800"
+              />
+              <div className="w-10 h-10 flex items-center justify-center border rounded">
+                <RatingIconPreview />
+              </div>
+            </div>
+          </div>
+
+          {/* Body Type */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Body Type
+            </label>
+            <select
+              value={localConfig.bodyType}
+              onChange={(e) => handleChange('bodyType', e.target.value)}
+              className="w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
+            >
+              <option value="standard">Standard</option>
+              <option value="rounded-grid">Rounded Grid</option>
+              <option value="list-grid">List Grid</option>
+              <option value="square-grid">Square Grid</option>
+            </select>
+          </div>
+
+          {/* Header Size */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Header Size: {localConfig.headerSize}px
+            </label>
+            <input
+              type="range"
+              min="20"
+              max="48"
+              value={localConfig.headerSize}
+              onChange={(e) => handleChange('headerSize', parseInt(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>20px</span>
+              <span>48px</span>
+            </div>
+          </div>
+
+          {/* Top Padding */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Top Padding: {localConfig.topPadding}px
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={localConfig.topPadding}
+              onChange={(e) => handleChange('topPadding', parseInt(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>0px</span>
+              <span>100px</span>
+            </div>
+          </div>
+
+          {/* Bottom Padding */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Bottom Padding: {localConfig.bottomPadding}px
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={localConfig.bottomPadding}
+              onChange={(e) => handleChange('bottomPadding', parseInt(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>0px</span>
+              <span>100px</span>
+            </div>
           </div>
         </div>
       )}

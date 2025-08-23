@@ -51,6 +51,11 @@ namespace WebsiteBuilderAPI.Models
         public JsonDocument? CommonSpaces { get; set; } // Espacios comunes
         public JsonDocument? Highlights { get; set; } // Puntos destacados de la habitación (location, check-in, wifi, parking, etc.)
         
+        // Órdenes de visualización para secciones de políticas (persistentes)
+        public List<string>? HouseRulesOrder { get; set; }
+        public List<string>? CancellationPolicyOrder { get; set; }
+        public List<string>? SafetyAndPropertyOrder { get; set; }
+
         // Organización y búsqueda
         public List<string>? Tags { get; set; } // JSONB para búsquedas
         public List<string>? Amenities { get; set; } // JSONB ["WiFi", "Minibar", "Jacuzzi", etc.]

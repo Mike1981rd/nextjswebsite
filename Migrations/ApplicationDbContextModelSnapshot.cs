@@ -3339,6 +3339,9 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<JsonDocument>("CancellationPolicy")
                         .HasColumnType("jsonb");
 
+                    b.Property<List<string>>("CancellationPolicyOrder")
+                        .HasColumnType("text[]");
+
                     b.Property<JsonDocument>("CheckInInstructions")
                         .HasColumnType("jsonb");
 
@@ -3382,6 +3385,9 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.Property<JsonDocument>("HouseRules")
                         .HasColumnType("jsonb");
+
+                    b.Property<List<string>>("HouseRulesOrder")
+                        .HasColumnType("text[]");
 
                     b.Property<List<string>>("Images")
                         .HasColumnType("jsonb");
@@ -3432,6 +3438,9 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.Property<JsonDocument>("SafetyAndProperty")
                         .HasColumnType("jsonb");
+
+                    b.Property<List<string>>("SafetyAndPropertyOrder")
+                        .HasColumnType("text[]");
 
                     b.Property<JsonDocument>("SafetyFeatures")
                         .HasColumnType("jsonb");

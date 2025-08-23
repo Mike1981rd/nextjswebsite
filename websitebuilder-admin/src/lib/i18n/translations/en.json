@@ -2593,5 +2593,47 @@
       "addCustom": "Add Custom Icon",
       "supportedFormats": "Supported formats: SVG, PNG, JPG"
     }
+  },
+  "roomReviews": {
+    "title": "Room Reviews",
+    "enable": "Enable Reviews",
+    "colorScheme": "Color Scheme",
+    "ratingIcon": "Rating Icon",
+    "ratingIconColor": "Icon Color",
+    "bodyType": "Body Type",
+    "headerSize": "Header Size",
+    "topPadding": "Top Padding",
+    "bottomPadding": "Bottom Padding",
+    "writeReview": "Write a review",
+    "showAll": "Show all {{count}} reviews",
+    "showLess": "Show less",
+    "modal": {
+      "title": "Write a review",
+      "yourRating": "Your rating",
+      "yourName": "Your name",
+      "yourEmail": "Your email",
+      "yourComments": "Enter your comments here",
+      "addPhoto": "Add photo",
+      "submit": "Submit review"
+    },
+    "colorSchemes": {
+      "default": "Default",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "sunset": "Sunset",
+      "midnight": "Midnight"
+    },
+    "bodyTypes": {
+      "standard": "Standard",
+      "roundedGrid": "Rounded Grid",
+      "listGrid": "List Grid",
+      "squareGrid": "Square Grid"
+    },
+    "icons": {
+      "star": "Star",
+      "heart": "Heart",
+      "smile": "Smile",
+      "like": "Like"
+    }
   }
 }

@@ -88,6 +88,10 @@ namespace WebsiteBuilderAPI.Services
                 RoomDetails = dto.RoomDetails != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.RoomDetails)) : null,
                 CommonSpaces = dto.CommonSpaces != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.CommonSpaces)) : null,
                 Highlights = dto.Highlights != null ? JsonDocument.Parse(JsonSerializer.Serialize(dto.Highlights)) : null, // NUEVO - Campo Highlights agregado
+                // Órdenes de visualización
+                HouseRulesOrder = dto.HouseRulesOrder,
+                CancellationPolicyOrder = dto.CancellationPolicyOrder,
+                SafetyAndPropertyOrder = dto.SafetyAndPropertyOrder,
                 // Campos SEO
                 Slug = dto.Slug,
                 MetaTitle = dto.MetaTitle,
@@ -281,6 +285,14 @@ namespace WebsiteBuilderAPI.Services
             if (dto.IsActive.HasValue) 
                 room.IsActive = dto.IsActive.Value;
 
+            // Órdenes de visualización
+            if (dto.HouseRulesOrder != null)
+                room.HouseRulesOrder = dto.HouseRulesOrder;
+            if (dto.CancellationPolicyOrder != null)
+                room.CancellationPolicyOrder = dto.CancellationPolicyOrder;
+            if (dto.SafetyAndPropertyOrder != null)
+                room.SafetyAndPropertyOrder = dto.SafetyAndPropertyOrder;
+
             room.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -363,6 +375,10 @@ namespace WebsiteBuilderAPI.Services
                 RoomDetails = room.RoomDetails,
                 CommonSpaces = room.CommonSpaces,
                 Highlights = room.Highlights, // NUEVO - Campo Highlights agregado
+                // Órdenes de visualización
+                HouseRulesOrder = room.HouseRulesOrder,
+                CancellationPolicyOrder = room.CancellationPolicyOrder,
+                SafetyAndPropertyOrder = room.SafetyAndPropertyOrder,
                 // Campos SEO
                 Slug = room.Slug,
                 MetaTitle = room.MetaTitle,

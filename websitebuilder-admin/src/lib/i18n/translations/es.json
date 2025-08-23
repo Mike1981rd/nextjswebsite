@@ -2607,5 +2607,47 @@
       "addCustom": "Agregar Icono Personalizado",
       "supportedFormats": "Formatos soportados: SVG, PNG, JPG"
     }
+  },
+  "roomReviews": {
+    "title": "Reseñas de Habitación",
+    "enable": "Habilitar Reseñas",
+    "colorScheme": "Esquema de Color",
+    "ratingIcon": "Icono de Calificación",
+    "ratingIconColor": "Color del Icono",
+    "bodyType": "Tipo de Diseño",
+    "headerSize": "Tamaño del Título",
+    "topPadding": "Espaciado Superior",
+    "bottomPadding": "Espaciado Inferior",
+    "writeReview": "Escribir una reseña",
+    "showAll": "Mostrar todas las {{count}} reseñas",
+    "showLess": "Mostrar menos",
+    "modal": {
+      "title": "Escribe una reseña",
+      "yourRating": "Tu clasificación",
+      "yourName": "Su nombre",
+      "yourEmail": "Tu correo electrónico",
+      "yourComments": "Ingrese sus comentarios aquí",
+      "addPhoto": "Añadir foto",
+      "submit": "Enviar opinión"
+    },
+    "colorSchemes": {
+      "default": "Predeterminado",
+      "ocean": "Océano",
+      "forest": "Bosque",
+      "sunset": "Atardecer",
+      "midnight": "Medianoche"
+    },
+    "bodyTypes": {
+      "standard": "Estándar",
+      "roundedGrid": "Cuadrícula Redondeada",
+      "listGrid": "Cuadrícula de Lista",
+      "squareGrid": "Cuadrícula Cuadrada"
+    },
+    "icons": {
+      "star": "Estrella",
+      "heart": "Corazón",
+      "smile": "Sonrisa",
+      "like": "Me gusta"
+    }
   }
 }

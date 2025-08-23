@@ -620,10 +620,20 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
                 return <p className="text-sm text-gray-500">{t('rooms.enableMoreRulesToSort', 'Activa 2 o más reglas para ordenar')}</p>;
               }
               return (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => {
-                  onDragEnd(e);
-                  try { localStorage.setItem('room_cancellationPolicyOrder', JSON.stringify(items)); } catch {}
-                }}>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(e) => {
+                    const { active, over } = e as any;
+                    if (!over || active.id === over.id) return;
+                    const oldIndex = items.indexOf(active.id);
+                    const newIndex = items.indexOf(over.id);
+                    if (oldIndex === -1 || newIndex === -1) return;
+                    const newList = arrayMove(items, oldIndex, newIndex);
+                    setFormData({ ...formData, houseRulesOrder: newList });
+                    try { localStorage.setItem('room_houseRulesOrder', JSON.stringify(newList)); } catch {}
+                  }}
+                >
                   <SortableContext items={items} strategy={verticalListSortingStrategy}>
                     <ul className="space-y-2">
                       {items.map((id) => (
@@ -886,16 +896,20 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
                     setFormData({ ...formData, safetyAndPropertyOrder: newList });
                   };
               return (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event) => {
-                  const { active, over } = event as any;
-                  if (!over || active.id === over.id) return;
-                  const oldIndex = items.indexOf(active.id);
-                  const newIndex = items.indexOf(over.id);
-                  if (oldIndex === -1 || newIndex === -1) return;
-                  const newList = arrayMove(items, oldIndex, newIndex);
-                  setFormData({ ...formData, houseRulesOrder: newList });
-                  try { localStorage.setItem('room_houseRulesOrder', JSON.stringify(newList)); } catch {}
-                }}>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event) => {
+                    const { active, over } = event as any;
+                    if (!over || active.id === over.id) return;
+                    const oldIndex = items.indexOf(active.id);
+                    const newIndex = items.indexOf(over.id);
+                    if (oldIndex === -1 || newIndex === -1) return;
+                    const newList = arrayMove(items, oldIndex, newIndex);
+                    setFormData({ ...formData, safetyAndPropertyOrder: newList });
+                    try { localStorage.setItem('room_safetyAndPropertyOrder', JSON.stringify(newList)); } catch {}
+                  }}
+                >
                   <SortableContext items={items} strategy={verticalListSortingStrategy}>
                     <ul className="space-y-2">
                       {items.map((id) => (

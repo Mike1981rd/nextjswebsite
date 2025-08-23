@@ -50,6 +50,11 @@ namespace WebsiteBuilderAPI.DTOs.Rooms
         public object? CommonSpaces { get; set; }
         public object? Highlights { get; set; } // Puntos destacados de la habitación
 
+        // Órdenes de visualización para secciones de políticas
+        public List<string>? HouseRulesOrder { get; set; }
+        public List<string>? CancellationPolicyOrder { get; set; }
+        public List<string>? SafetyAndPropertyOrder { get; set; }
+
         // Organización
         public List<string>? Tags { get; set; }
         public List<string>? Amenities { get; set; }
