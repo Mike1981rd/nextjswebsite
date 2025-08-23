@@ -17,6 +17,9 @@ import {
   MagnifyingGlassIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ExtendedFieldsProps {
   formData: any;
@@ -31,6 +34,11 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
   
   // Load common spaces from catalog
   const { options: commonSpacesOptions, loading: loadingCommonSpaces } = useConfigOptions('common_spaces');
+  
+  // Load policy-related options from catalog
+  const { options: houseRulesOptions, loading: loadingHouseRules } = useConfigOptions('house_rules');
+  const { options: safetyPropertyOptions, loading: loadingSafetyProperty } = useConfigOptions('safety_property');
+  const { options: cancellationOptions, loading: loadingCancellation } = useConfigOptions('cancellation_policies');
   
   // Debug log
   useEffect(() => {
@@ -173,6 +181,53 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
       }
     });
   };
+
+  // Rehydrate local order overrides on mount if backend has none
+  useEffect(() => {
+    const applyOrderFromLocalStorage = (storageKey: string, fieldKey: 'houseRulesOrder' | 'safetyAndPropertyOrder' | 'cancellationPolicyOrder') => {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return;
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr) && (!Array.isArray((formData as any)[fieldKey]) || ((formData as any)[fieldKey] as any[]).length === 0)) {
+          setFormData({ ...formData, [fieldKey]: arr } as any);
+        }
+      } catch {}
+    };
+    applyOrderFromLocalStorage('room_houseRulesOrder', 'houseRulesOrder');
+    applyOrderFromLocalStorage('room_safetyAndPropertyOrder', 'safetyAndPropertyOrder');
+    applyOrderFromLocalStorage('room_cancellationPolicyOrder', 'cancellationPolicyOrder');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Maintain order arrays when toggles change
+  const ensureInOrder = (current: string[] | undefined, key: string, enabled: boolean) => {
+    const list = Array.isArray(current) ? [...current] : [];
+    const idx = list.indexOf(key);
+    if (enabled && idx === -1) list.push(key);
+    if (!enabled && idx !== -1) list.splice(idx, 1);
+    return list;
+  };
+
+  // dnd-kit sensors
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  // Sortable item component
+  function SortableItem({ id, label }: { id: string; label: string }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.7 : 1,
+      boxShadow: isDragging ? '0 4px 10px rgba(0,0,0,0.1)' : undefined,
+    } as React.CSSProperties;
+    return (
+      <li ref={setNodeRef} style={style} {...attributes} {...listeners}
+          className="px-3 py-2 bg-white dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 cursor-grab">
+        {label}
+      </li>
+    );
+  }
 
   return (
     <div className="mt-6">
@@ -435,101 +490,263 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="font-medium text-lg mb-4">{t('rooms.houseRules', 'Reglas de la Casa')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('rooms.checkInTime', 'Hora de Check-in')}
-                  </label>
-                  <input
-                    type="time"
-                    value={formData.houseRules?.checkInTime || '15:00'}
-                    onChange={(e) => updateNestedField('houseRules', 'checkInTime', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+                {false && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('rooms.checkInTime', 'Hora de Check-in')}
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.houseRules?.checkInTime || '15:00'}
+                      onChange={(e) => updateNestedField('houseRules', 'checkInTime', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('rooms.checkOutTime', 'Hora de Check-out')}
-                  </label>
-                  <input
-                    type="time"
-                    value={formData.houseRules?.checkOutTime || '11:00'}
-                    onChange={(e) => updateNestedField('houseRules', 'checkOutTime', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+                {false && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('rooms.checkOutTime', 'Hora de Check-out')}
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.houseRules?.checkOutTime || '11:00'}
+                      onChange={(e) => updateNestedField('houseRules', 'checkOutTime', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                )}
 
-                <div className="col-span-2">
-                  <Toggle
-                    checked={formData.houseRules?.smokingAllowed || false}
-                    onChange={(checked) => updateNestedField('houseRules', 'smokingAllowed', checked)}
-                    label={t('rooms.smokingAllowed', 'Se permite fumar')}
-                    size="medium"
-                  />
-                </div>
+                {/* Deprecated: Quiet hours select/input (remove from UI as requested) */}
+                {false && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('rooms.quietHours', 'Horas de silencio')}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.houseRules?.quietHours || '22:00 - 08:00'}
+                      onChange={(e) => updateNestedField('houseRules', 'quietHours', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                )}
 
-                <div className="col-span-2">
-                  <Toggle
-                    checked={formData.houseRules?.petsAllowed || false}
-                    onChange={(checked) => updateNestedField('houseRules', 'petsAllowed', checked)}
-                    label={t('rooms.petsAllowed', 'Se permiten mascotas')}
-                    size="medium"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <Toggle
-                    checked={formData.houseRules?.eventsAllowed || false}
-                    onChange={(checked) => updateNestedField('houseRules', 'eventsAllowed', checked)}
-                    label={t('rooms.eventsAllowed', 'Se permiten eventos')}
-                    size="medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('rooms.quietHours', 'Horas de silencio')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.houseRules?.quietHours || '22:00 - 08:00'}
-                    onChange={(e) => updateNestedField('houseRules', 'quietHours', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+                {/* Dynamic house rules toggles from catalog */}
+                {loadingHouseRules ? (
+                  <div className="col-span-2 text-center py-4">
+                    <span className="text-gray-500">{t('common.loading', 'Cargando...')}</span>
+                  </div>
+                ) : (
+                  <>
+                    {houseRulesOptions.length > 0 ? (
+                      (() => {
+                        const order = Array.isArray(formData.houseRulesOrder) ? formData.houseRulesOrder : [];
+                        const values = houseRulesOptions.map(o => o.value);
+                        const ordered = [...order.filter(v => values.includes(v)), ...values.filter(v => !order.includes(v))];
+                        return ordered.map((valueKey) => {
+                          const opt = houseRulesOptions.find(o => o.value === valueKey);
+                          if (!opt) return null;
+                          return (
+                            <div key={opt.value} className="col-span-2">
+                              <Toggle
+                                checked={formData.houseRules?.[opt.value] || false}
+                                onChange={(checked) => {
+                                  updateNestedField('houseRules', opt.value, checked);
+                                  const newOrder = ensureInOrder(formData.houseRulesOrder, opt.value, checked);
+                                  setFormData({ ...formData, houseRulesOrder: newOrder });
+                                  try { localStorage.setItem('room_houseRulesOrder', JSON.stringify(newOrder)); } catch {}
+                                }}
+                                label={opt.label || opt.value}
+                                size="medium"
+                              />
+                            </div>
+                          );
+                        });
+                      })()
+                    ) : (
+                      // Fallback to hardcoded toggles if no options from catalog
+                      <>
+                        <div className="col-span-2">
+                          <Toggle
+                            checked={formData.houseRules?.smokingAllowed || false}
+                            onChange={(checked) => updateNestedField('houseRules', 'smokingAllowed', checked)}
+                            label={t('rooms.smokingAllowed', 'Se permite fumar')}
+                            size="medium"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Toggle
+                            checked={formData.houseRules?.petsAllowed || false}
+                            onChange={(checked) => updateNestedField('houseRules', 'petsAllowed', checked)}
+                            label={t('rooms.petsAllowed', 'Se permiten mascotas')}
+                            size="medium"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Toggle
+                            checked={formData.houseRules?.eventsAllowed || false}
+                            onChange={(checked) => updateNestedField('houseRules', 'eventsAllowed', checked)}
+                            label={t('rooms.eventsAllowed', 'Se permiten eventos')}
+                            size="medium"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             </div>
+
+          {/* Order: House Rules (drag to sort) */}
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <h3 className="font-medium text-lg mb-4">{t('rooms.orderHouseRules', 'Orden de Reglas de la Casa')}</h3>
+            {(() => {
+              const enabled = (houseRulesOptions || []).map(o => o.value).filter(v => formData.houseRules?.[v]);
+              const order = Array.isArray(formData.houseRulesOrder) ? formData.houseRulesOrder : [];
+              const items = [...order.filter(v => enabled.includes(v)), ...enabled.filter(v => !order.includes(v))];
+              const labelOf = (key: string) => (houseRulesOptions.find(o => o.value === key)?.label || key);
+              const onDragEnd = (event: any) => {
+                const { active, over } = event;
+                if (!over || active.id === over.id) return;
+                const oldIndex = items.indexOf(active.id);
+                const newIndex = items.indexOf(over.id);
+                if (oldIndex === -1 || newIndex === -1) return;
+                const newList = arrayMove(items, oldIndex, newIndex);
+                setFormData({ ...formData, houseRulesOrder: newList });
+              };
+              if (items.length <= 1) {
+                return <p className="text-sm text-gray-500">{t('rooms.enableMoreRulesToSort', 'Activa 2 o más reglas para ordenar')}</p>;
+              }
+              return (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => {
+                  onDragEnd(e);
+                  try { localStorage.setItem('room_cancellationPolicyOrder', JSON.stringify(items)); } catch {}
+                }}>
+                  <SortableContext items={items} strategy={verticalListSortingStrategy}>
+                    <ul className="space-y-2">
+                      {items.map((id) => (
+                        <SortableItem key={id} id={id} label={labelOf(id)} />
+                      ))}
+                    </ul>
+                  </SortableContext>
+                </DndContext>
+              );
+            })()}
+          </div>
 
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="font-medium text-lg mb-4">{t('rooms.cancellationPolicy', 'Política de Cancelación')}</h3>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('rooms.policyType', 'Tipo de Política')}
-                  </label>
-                  <select
-                    value={formData.cancellationPolicy?.type || 'flexible'}
-                    onChange={(e) => updateNestedField('cancellationPolicy', 'type', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="flexible">Flexible</option>
-                    <option value="moderate">Moderada</option>
-                    <option value="strict">Estricta</option>
-                    <option value="super_strict">Súper Estricta</option>
-                  </select>
-                </div>
+                {/* Deprecated: select for policy type (we now use catalog toggles only) */}
+                {false && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('rooms.policyType', 'Tipo de Política')}
+                    </label>
+                    <select
+                      value={formData.cancellationPolicy?.type || 'flexible'}
+                      onChange={(e) => updateNestedField('cancellationPolicy', 'type', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="flexible">Flexible</option>
+                      <option value="moderate">Moderada</option>
+                      <option value="strict">Estricta</option>
+                      <option value="super_strict">Súper Estricta</option>
+                    </select>
+                  </div>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('rooms.policyDescription', 'Descripción')}
-                  </label>
-                  <textarea
-                    value={formData.cancellationPolicy?.description || ''}
-                    onChange={(e) => updateNestedField('cancellationPolicy', 'description', e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+
+                {/* Dynamic cancellation policy toggles from catalog */}
+                {loadingCancellation ? (
+                  <div className="text-center py-4">
+                    <span className="text-gray-500">{t('common.loading', 'Cargando...')}</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {cancellationOptions.length > 0 ? (
+                      (() => {
+                        const order = Array.isArray(formData.cancellationPolicyOrder) ? formData.cancellationPolicyOrder : [];
+                        const values = cancellationOptions.map(o => o.value);
+                        const ordered = [...order.filter(v => values.includes(v)), ...values.filter(v => !order.includes(v))];
+                        return ordered.map((valueKey) => {
+                          const opt = cancellationOptions.find(o => o.value === valueKey);
+                          if (!opt) return null;
+                          return (
+                            <div key={opt.value}>
+                              <Toggle
+                                checked={formData.cancellationPolicy?.[opt.value] || false}
+                                onChange={(checked) => {
+                                  updateNestedField('cancellationPolicy', opt.value, checked);
+                                  const newOrder = ensureInOrder(formData.cancellationPolicyOrder, opt.value, checked);
+                                  setFormData({ ...formData, cancellationPolicyOrder: newOrder });
+                                  try { localStorage.setItem('room_cancellationPolicyOrder', JSON.stringify(newOrder)); } catch {}
+                                }}
+                                label={opt.label || opt.value}
+                                size="medium"
+                              />
+                            </div>
+                          );
+                        });
+                      })()
+                    ) : (
+                      // Fallback toggles if no options from catalog
+                      <>
+                        <div>
+                          <Toggle
+                            checked={formData.cancellationPolicy?.freeCancel24h || false}
+                            onChange={(checked) => updateNestedField('cancellationPolicy', 'freeCancel24h', checked)}
+                            label={t('rooms.freeCancel24h', 'Cancelación gratuita 24h antes')}
+                            size="medium"
+                          />
+                        </div>
+                        <div>
+                          <Toggle
+                            checked={formData.cancellationPolicy?.partialRefund || false}
+                            onChange={(checked) => updateNestedField('cancellationPolicy', 'partialRefund', checked)}
+                            label={t('rooms.partialRefund', 'Reembolso parcial disponible')}
+                            size="medium"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* Order: Cancellation Policy (drag to sort) */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('rooms.orderCancellation', 'Orden de Políticas de Cancelación')}
+                </label>
+                {(() => {
+                  const enabled = (cancellationOptions || []).map(o => o.value).filter(v => formData.cancellationPolicy?.[v]);
+                  const order = Array.isArray(formData.cancellationPolicyOrder) ? formData.cancellationPolicyOrder : [];
+                  const items = [...order.filter(v => enabled.includes(v)), ...enabled.filter(v => !order.includes(v))];
+                  const labelOf = (key: string) => (cancellationOptions.find(o => o.value === key)?.label || key);
+                  const onDragEnd = (event: any) => {
+                    const { active, over } = event;
+                    if (!over || active.id === over.id) return;
+                    const oldIndex = items.indexOf(active.id);
+                    const newIndex = items.indexOf(over.id);
+                    if (oldIndex === -1 || newIndex === -1) return;
+                    const newList = arrayMove(items, oldIndex, newIndex);
+                    setFormData({ ...formData, cancellationPolicyOrder: newList });
+                    try { localStorage.setItem('room_cancellationPolicyOrder', JSON.stringify(newList)); } catch {}
+                  };
+                  return (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                      <SortableContext items={items} strategy={verticalListSortingStrategy}>
+                        <ul className="space-y-2">
+                          {items.map((id) => (
+                            <SortableItem key={id} id={id} label={labelOf(id)} />
+                          ))}
+                        </ul>
+                      </SortableContext>
+                    </DndContext>
+                  );
+                })()}
               </div>
             </div>
 
@@ -538,88 +755,157 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
               <h3 className="font-medium text-lg mb-4">{t('rooms.safetyAndProperty', 'Seguridad y Propiedad')}</h3>
               
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('rooms.safetyInformation', 'Información de Seguridad')}
-                  </label>
-                  <textarea
-                    value={formData.safetyAndProperty?.content || ''}
-                    onChange={(e) => {
-                      setFormData({
-                        ...formData,
-                        safetyAndProperty: {
-                          ...formData.safetyAndProperty,
-                          content: e.target.value
-                        }
-                      });
-                    }}
-                    rows={5}
-                    placeholder={t('rooms.safetyPlaceholder', 'Describe las medidas de seguridad, detectores de humo, extintores, salidas de emergencia, etc.')}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+                {/* Dynamic safety property toggles from catalog */}
+                {loadingSafetyProperty ? (
+                  <div className="text-center py-4">
+                    <span className="text-gray-500">{t('common.loading', 'Cargando...')}</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {safetyPropertyOptions.length > 0 ? (
+                      (() => {
+                        const order = Array.isArray(formData.safetyAndPropertyOrder) ? formData.safetyAndPropertyOrder : [];
+                        const values = safetyPropertyOptions.map(o => o.value);
+                        const ordered = [...order.filter(v => values.includes(v)), ...values.filter(v => !order.includes(v))];
+                        return ordered.map((valueKey) => {
+                          const opt = safetyPropertyOptions.find(o => o.value === valueKey);
+                          if (!opt) return null;
+                          return (
+                            <div key={opt.value}>
+                              <Toggle
+                                checked={formData.safetyAndProperty?.[opt.value] || false}
+                                onChange={(checked) => {
+                                  setFormData({
+                                    ...formData,
+                                    safetyAndProperty: {
+                                      ...formData.safetyAndProperty,
+                                      [opt.value]: checked
+                                    }
+                                  });
+                                  const newOrder = ensureInOrder(formData.safetyAndPropertyOrder, opt.value, checked);
+                                  setFormData({ ...formData, safetyAndPropertyOrder: newOrder });
+                                  try { localStorage.setItem('room_safetyAndPropertyOrder', JSON.stringify(newOrder)); } catch {}
+                                }}
+                                label={opt.label || opt.value}
+                                size="medium"
+                              />
+                            </div>
+                          );
+                        });
+                      })()
+                    ) : (
+                      // Fallback toggles if no options from catalog
+                      <>
+                        <div>
+                          <Toggle
+                            checked={formData.safetyAndProperty?.smokeDetector || false}
+                            onChange={(checked) => {
+                              setFormData({
+                                ...formData,
+                                safetyAndProperty: {
+                                  ...formData.safetyAndProperty,
+                                  smokeDetector: checked
+                                }
+                              });
+                            }}
+                            label={t('rooms.smokeDetector', 'Detector de humo')}
+                            size="medium"
+                          />
+                        </div>
+                        <div>
+                          <Toggle
+                            checked={formData.safetyAndProperty?.carbonMonoxideDetector || false}
+                            onChange={(checked) => {
+                              setFormData({
+                                ...formData,
+                                safetyAndProperty: {
+                                  ...formData.safetyAndProperty,
+                                  carbonMonoxideDetector: checked
+                                }
+                              });
+                            }}
+                            label={t('rooms.carbonMonoxideDetector', 'Detector de monóxido')}
+                            size="medium"
+                          />
+                        </div>
+                        <div>
+                          <Toggle
+                            checked={formData.safetyAndProperty?.fireExtinguisher || false}
+                            onChange={(checked) => {
+                              setFormData({
+                                ...formData,
+                                safetyAndProperty: {
+                                  ...formData.safetyAndProperty,
+                                  fireExtinguisher: checked
+                                }
+                              });
+                            }}
+                            label={t('rooms.fireExtinguisher', 'Extintor')}
+                            size="medium"
+                          />
+                        </div>
+                        <div>
+                          <Toggle
+                            checked={formData.safetyAndProperty?.firstAidKit || false}
+                            onChange={(checked) => {
+                              setFormData({
+                                ...formData,
+                                safetyAndProperty: {
+                                  ...formData.safetyAndProperty,
+                                  firstAidKit: checked
+                                }
+                              });
+                            }}
+                            label={t('rooms.firstAidKit', 'Botiquín')}
+                            size="medium"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Toggle
-                    checked={formData.safetyAndProperty?.smokeDetector || false}
-                    onChange={(checked) => {
-                      setFormData({
-                        ...formData,
-                        safetyAndProperty: {
-                          ...formData.safetyAndProperty,
-                          smokeDetector: checked
-                        }
-                      });
-                    }}
-                    label={t('rooms.smokeDetector', 'Detector de humo')}
-                    size="small"
-                  />
-
-                  <Toggle
-                    checked={formData.safetyAndProperty?.carbonMonoxideDetector || false}
-                    onChange={(checked) => {
-                      setFormData({
-                        ...formData,
-                        safetyAndProperty: {
-                          ...formData.safetyAndProperty,
-                          carbonMonoxideDetector: checked
-                        }
-                      });
-                    }}
-                    label={t('rooms.carbonMonoxideDetector', 'Detector de monóxido')}
-                    size="small"
-                  />
-
-                  <Toggle
-                    checked={formData.safetyAndProperty?.fireExtinguisher || false}
-                    onChange={(checked) => {
-                      setFormData({
-                        ...formData,
-                        safetyAndProperty: {
-                          ...formData.safetyAndProperty,
-                          fireExtinguisher: checked
-                        }
-                      });
-                    }}
-                    label={t('rooms.fireExtinguisher', 'Extintor')}
-                    size="small"
-                  />
-
-                  <Toggle
-                    checked={formData.safetyAndProperty?.firstAidKit || false}
-                    onChange={(checked) => {
-                      setFormData({
-                        ...formData,
-                        safetyAndProperty: {
-                          ...formData.safetyAndProperty,
-                          firstAidKit: checked
-                        }
-                      });
-                    }}
-                    label={t('rooms.firstAidKit', 'Botiquín')}
-                    size="small"
-                  />
-                </div>
+              {/* Order: Safety & Property (drag to sort) */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('rooms.orderSafety', 'Orden de Seguridad y Propiedad')}
+                </label>
+                {(() => {
+                  const enabled = (safetyPropertyOptions || []).map(o => o.value).filter(v => formData.safetyAndProperty?.[v]);
+                  const order = Array.isArray(formData.safetyAndPropertyOrder) ? formData.safetyAndPropertyOrder : [];
+                  const items = [...order.filter(v => enabled.includes(v)), ...enabled.filter(v => !order.includes(v))];
+                  const labelOf = (key: string) => (safetyPropertyOptions.find(o => o.value === key)?.label || key);
+                  const onDragEnd = (event: any) => {
+                    const { active, over } = event;
+                    if (!over || active.id === over.id) return;
+                    const oldIndex = items.indexOf(active.id);
+                    const newIndex = items.indexOf(over.id);
+                    if (oldIndex === -1 || newIndex === -1) return;
+                    const newList = arrayMove(items, oldIndex, newIndex);
+                    setFormData({ ...formData, safetyAndPropertyOrder: newList });
+                  };
+              return (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event) => {
+                  const { active, over } = event as any;
+                  if (!over || active.id === over.id) return;
+                  const oldIndex = items.indexOf(active.id);
+                  const newIndex = items.indexOf(over.id);
+                  if (oldIndex === -1 || newIndex === -1) return;
+                  const newList = arrayMove(items, oldIndex, newIndex);
+                  setFormData({ ...formData, houseRulesOrder: newList });
+                  try { localStorage.setItem('room_houseRulesOrder', JSON.stringify(newList)); } catch {}
+                }}>
+                  <SortableContext items={items} strategy={verticalListSortingStrategy}>
+                    <ul className="space-y-2">
+                      {items.map((id) => (
+                        <SortableItem key={id} id={id} label={labelOf(id)} />
+                      ))}
+                    </ul>
+                  </SortableContext>
+                </DndContext>
+              );
+                })()}
               </div>
             </div>
 

@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useEditorStore } from '@/stores/useEditorStore';
-import { ChevronDown, ChevronUp, Info, Plus, X } from 'lucide-react';
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { useI18n } from '@/contexts/I18nContext';
 
 interface RoomThingsConfig {
   enabled: boolean;
@@ -11,40 +13,31 @@ interface RoomThingsConfig {
   safetyProperty: string[];
   cancellationPolicy: string[];
   showMoreButton: boolean;
+  colorScheme: string;
+  syncWithRoom: boolean; // New field to control sync
 }
 
 interface RoomThingsEditorProps {
   sectionId: string;
 }
 
+
 const getDefaultConfig = (): RoomThingsConfig => ({
   enabled: true,
   title: 'Things to know',
-  houseRules: [
-    'Check-in: 3:00 PM - 10:00 PM',
-    'Checkout before 11:00 AM',
-    'No smoking',
-    'No pets',
-    'No parties or events',
-    'Maximum 4 guests'
-  ],
-  safetyProperty: [
-    'Carbon monoxide alarm',
-    'Smoke alarm',
-    'First aid kit',
-    'Fire extinguisher',
-    'Lock on bedroom door'
-  ],
-  cancellationPolicy: [
-    'Free cancellation before Feb 14',
-    'After that, cancel up to 7 days before check-in and get a 50% refund',
-    'No refund for cancellations within 7 days'
-  ],
-  showMoreButton: true
+  houseRules: [],
+  safetyProperty: [],
+  cancellationPolicy: [],
+  showMoreButton: true,
+  colorScheme: '1',
+  syncWithRoom: true // Default to sync with room data
 });
+
 
 export default function RoomThingsEditor({ sectionId }: RoomThingsEditorProps) {
   const { sections, updateSectionSettings } = useEditorStore();
+  const { config: themeConfig } = useThemeConfigStore();
+  const { t, language } = useI18n();
   const [isExpanded, setIsExpanded] = useState(true);
   const [localConfig, setLocalConfig] = useState<RoomThingsConfig>(getDefaultConfig());
 
@@ -55,6 +48,8 @@ export default function RoomThingsEditor({ sectionId }: RoomThingsEditorProps) {
   useEffect(() => {
     if (section?.settings) {
       const newConfig = { ...getDefaultConfig(), ...section.settings };
+      console.log('RoomThingsEditor - Loading settings:', section.settings);
+      console.log('RoomThingsEditor - New config:', newConfig);
       setLocalConfig(newConfig);
     }
   }, [section?.settings]);
@@ -74,21 +69,6 @@ export default function RoomThingsEditor({ sectionId }: RoomThingsEditorProps) {
       
       updateSectionSettings(groupId as any, section.id, updatedConfig);
     }
-  };
-
-  const handleListChange = (listName: 'houseRules' | 'safetyProperty' | 'cancellationPolicy', index: number, value: string) => {
-    const newList = [...localConfig[listName]];
-    newList[index] = value;
-    handleChange(listName, newList);
-  };
-
-  const addItem = (listName: 'houseRules' | 'safetyProperty' | 'cancellationPolicy') => {
-    handleChange(listName, [...localConfig[listName], '']);
-  };
-
-  const removeItem = (listName: 'houseRules' | 'safetyProperty' | 'cancellationPolicy', index: number) => {
-    const newList = localConfig[listName].filter((_, i) => i !== index);
-    handleChange(listName, newList);
   };
 
   return (
@@ -134,98 +114,54 @@ export default function RoomThingsEditor({ sectionId }: RoomThingsEditorProps) {
             />
           </div>
 
-          {/* House Rules */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-gray-600 uppercase">House Rules</h3>
-              <button
-                onClick={() => addItem('houseRules')}
-                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                Add
-              </button>
-            </div>
-            {localConfig.houseRules.map((rule, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={rule}
-                  onChange={(e) => handleListChange('houseRules', index, e.target.value)}
-                  placeholder="Enter rule"
-                  className="flex-1 px-2 py-1 text-sm border rounded"
-                />
-                <button
-                  onClick={() => removeItem('houseRules', index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+          {/* Sync with Room Data Toggle */}
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">
+              {t('editor.syncWithRoomData', 'Sync with room data')}
+            </label>
+            <input
+              type="checkbox"
+              checked={localConfig.syncWithRoom}
+              onChange={(e) => handleChange('syncWithRoom', e.target.checked)}
+              className="rounded"
+            />
           </div>
 
-          {/* Safety & Property */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-gray-600 uppercase">Safety & Property</h3>
-              <button
-                onClick={() => addItem('safetyProperty')}
-                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                Add
-              </button>
-            </div>
-            {localConfig.safetyProperty.map((item, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) => handleListChange('safetyProperty', index, e.target.value)}
-                  placeholder="Enter safety item"
-                  className="flex-1 px-2 py-1 text-sm border rounded"
-                />
-                <button
-                  onClick={() => removeItem('safetyProperty', index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+          {/* Information about data source */}
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+            <p className="text-xs text-blue-600 dark:text-blue-400">
+              {localConfig.syncWithRoom 
+                ? t('editor.roomThingsInfo', 'Data will be automatically loaded from the selected room\'s policies and settings')
+                : t('editor.roomThingsManual', 'Using manual configuration (not synced with room data)')
+              }
+            </p>
           </div>
 
-          {/* Cancellation Policy */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-gray-600 uppercase">Cancellation Policy</h3>
-              <button
-                onClick={() => addItem('cancellationPolicy')}
-                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                Add
-              </button>
-            </div>
-            {localConfig.cancellationPolicy.map((item, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) => handleListChange('cancellationPolicy', index, e.target.value)}
-                  placeholder="Enter policy"
-                  className="flex-1 px-2 py-1 text-sm border rounded"
-                />
-                <button
-                  onClick={() => removeItem('cancellationPolicy', index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+          {/* Color Scheme Selector */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Color scheme
+            </label>
+            <select 
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md 
+                         focus:outline-none focus:ring-1 focus:ring-blue-500 
+                         dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={localConfig.colorScheme}
+              onChange={(e) => handleChange('colorScheme', e.target.value)}
+            >
+              {themeConfig?.colorSchemes?.schemes?.map((scheme, index) => (
+                <option key={scheme.id} value={String(index + 1)}>
+                  {scheme.name}
+                </option>
+              )) || [1, 2, 3, 4, 5].map(num => (
+                <option key={num} value={String(num)}>Scheme {num}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Uses the color scheme from global settings
+            </p>
           </div>
+
         </div>
       )}
     </div>

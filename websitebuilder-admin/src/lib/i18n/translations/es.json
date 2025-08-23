@@ -2584,6 +2584,7 @@
   "config": {
     "title": "Gestión de Catálogos",
     "description": "Personaliza las opciones disponibles en tu sistema",
+    "selectType": "Tipo de Catálogo",
     "addOption": "Agregar Opción",
     "initializeDefaults": "Inicializar Catálogo Base",
     "defaultsInitialized": "Opciones por defecto inicializadas",
@@ -2592,6 +2593,9 @@
       "roomType": "Tipos de Habitación",
       "viewType": "Tipos de Vista",
       "commonSpaces": "Espacios Comunes",
+      "houseRules": "Reglas de la Casa",
+      "safetyProperty": "Seguridad y Propiedad",
+      "cancellationPolicies": "Políticas de Cancelación",
       "icons": "Iconos",
       "policyType": "Tipos de Política"
     },

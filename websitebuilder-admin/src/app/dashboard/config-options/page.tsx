@@ -63,6 +63,9 @@ export default function ConfigOptionsPage() {
     { value: 'room_type', label: t('config.types.roomType', 'Tipos de Habitación'), icon: HomeIcon },
     { value: 'view_type', label: t('config.types.viewType', 'Tipos de Vista'), icon: EyeIcon },
     { value: 'common_spaces', label: t('config.types.commonSpaces', 'Espacios Comunes'), icon: HomeIcon },
+    { value: 'house_rules', label: t('config.types.houseRules', 'Reglas de la Casa'), icon: Cog6ToothIcon },
+    { value: 'safety_property', label: t('config.types.safetyProperty', 'Seguridad y Propiedad'), icon: Cog6ToothIcon },
+    { value: 'cancellation_policies', label: t('config.types.cancellationPolicies', 'Políticas de Cancelación'), icon: Cog6ToothIcon },
     { value: 'icons', label: t('config.types.icons', 'Iconos'), icon: SparklesIcon },
     { value: 'policy_type', label: t('config.types.policyType', 'Tipos de Política'), icon: Cog6ToothIcon }
   ];
@@ -72,6 +75,9 @@ export default function ConfigOptionsPage() {
     room_type: ['estándar', 'premium', 'lujo'],
     view_type: ['natural', 'urbana', 'interior'],
     common_spaces: ['interior', 'exterior', 'servicios', 'recreación'],
+    house_rules: ['permisos', 'restricciones', 'horarios'],
+    safety_property: ['detectores', 'seguridad', 'emergencia', 'equipamiento'],
+    cancellation_policies: ['flexible', 'moderada', 'estricta', 'reembolso'],
     policy_type: ['flexible', 'moderada', 'estricta']
   };
 
@@ -366,50 +372,23 @@ export default function ConfigOptionsPage() {
         </p>
       </div>
 
-      {/* Tabs - Pills verticales en móvil, horizontal en desktop */}
+      {/* Select dropdown para tipo de catálogo */}
       <div className="mb-4 sm:mb-6">
-        {/* Mobile Pills */}
-        <div className="sm:hidden flex flex-col items-center space-y-2 mb-4">
-          {optionTypes.map(type => {
-            const Icon = type.icon;
-            return (
-              <button
-                key={type.value}
-                onClick={() => setActiveTab(type.value)}
-                className={`w-full max-w-[220px] py-3 px-4 rounded-full font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-                  activeTab === type.value
-                    ? 'bg-primary-600 text-white shadow-lg transform scale-105 ring-2 ring-primary-400 ring-offset-2 dark:ring-offset-gray-800'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:scale-102'
-                }`}
-              >
-                <Icon className={`h-4 w-4 transition-transform duration-300 ${activeTab === type.value ? 'scale-110' : ''}`} />
-                <span>{type.label.split(' ')[0]}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Desktop Tabs */}
-        <div className="hidden sm:block border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8">
-            {optionTypes.map(type => {
-              const Icon = type.icon;
-              return (
-                <button
-                  key={type.value}
-                  onClick={() => setActiveTab(type.value)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
-                    activeTab === type.value
-                      ? 'border-primary-600 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  {type.label}
-                </button>
-              );
-            })}
-          </nav>
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {t('config.selectType', 'Tipo de Catálogo')}:
+          </label>
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
+            className="flex-1 sm:flex-none sm:w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+          >
+            {optionTypes.map(type => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

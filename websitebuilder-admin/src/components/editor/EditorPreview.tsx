@@ -35,7 +35,7 @@ import PreviewRoomReviews from '@/components/preview/PreviewRoomReviews';
 import PreviewRoomMap from '@/components/preview/PreviewRoomMap';
 import PreviewRoomCalendar from '@/components/preview/PreviewRoomCalendar';
 import PreviewRoomHostCard from '@/components/preview/PreviewRoomHostCard';
-import PreviewRoomThings from '@/components/preview/PreviewRoomThings';
+import PreviewRoomThings from '@/components/preview/modules/RoomThingsPreview';
 
 type DeviceView = 'desktop' | 'tablet' | 'mobile';
 

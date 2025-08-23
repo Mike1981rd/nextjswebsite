@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Info, ChevronRight } from 'lucide-react';
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { useConfigOptions } from '@/hooks/useConfigOptions';
+import { useI18n } from '@/contexts/I18nContext';
 
 interface RoomThingsConfig {
   enabled: boolean;
@@ -10,6 +13,8 @@ interface RoomThingsConfig {
   safetyProperty: string[];
   cancellationPolicy: string[];
   showMoreButton: boolean;
+  colorScheme?: string;
+  syncWithRoom?: boolean;
 }
 
 interface PreviewRoomThingsProps {
@@ -27,6 +32,18 @@ export default function PreviewRoomThings({
 }: PreviewRoomThingsProps) {
   
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [roomData, setRoomData] = useState<any>(null);
+  const { language } = useI18n();
+  
+  // Load config options from catalog
+  const { options: houseRulesOptions } = useConfigOptions('house_rules');
+  const { options: safetyOptions } = useConfigOptions('safety_property');
+  const { options: cancellationOptions } = useConfigOptions('cancellation_policies');
+  
+  // Get theme config from store if not passed as prop
+  const { config: themeConfigFromStore } = useThemeConfigStore();
+  const themeConfig = theme || themeConfigFromStore;
+  
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (deviceView !== undefined) return deviceView === 'mobile';
     if (typeof window !== 'undefined') return window.innerWidth < 768;
@@ -44,6 +61,61 @@ export default function PreviewRoomThings({
     return () => window.removeEventListener('resize', onResize);
   }, [deviceView]);
 
+  // Fetch room data
+  useEffect(() => {
+    const fetchRoomData = async () => {
+      try {
+        // Get the selected room ID from localStorage (set by room selection in editor)
+        const selectedRoomId = localStorage.getItem('selectedRoomId') || '2'; // Default to room 2
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://172.25.64.1:5266/api';
+        
+        const response = await fetch(`${API_URL}/rooms/${selectedRoomId}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Room data fetched for Things to Know:', data);
+          console.log('HouseRules type:', typeof data.houseRules);
+          console.log('HouseRules value:', data.houseRules);
+          console.log('SafetyAndProperty type:', typeof data.safetyAndProperty);
+          console.log('SafetyAndProperty value:', data.safetyAndProperty);
+          console.log('CancellationPolicy type:', typeof data.cancellationPolicy);
+          console.log('CancellationPolicy value:', data.cancellationPolicy);
+          setRoomData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching room data:', error);
+      }
+    };
+
+    // Fetch in both editor and preview modes
+    if (config.enabled) {
+      fetchRoomData();
+    }
+  }, [config.enabled]);
+
+  // Get the selected color scheme
+  const colorScheme = useMemo(() => {
+    if (!themeConfig?.colorSchemes?.schemes) {
+      // Fallback colors if no theme config
+      return {
+        text: '#000000',
+        background: '#FFFFFF',
+        solidButton: '#000000',
+        solidButtonText: '#FFFFFF',
+        outlineButton: '#000000',
+        outlineButtonText: '#000000',
+        link: '#0066CC',
+        border: '#E5E5E5',
+        foreground: '#F5F5F5'
+      };
+    }
+    
+    // config.colorScheme is "1", "2", etc. - convert to index
+    const schemeIndex = parseInt(config.colorScheme || '1') - 1;
+    const selectedScheme = themeConfig.colorSchemes.schemes[schemeIndex];
+    
+    return selectedScheme || themeConfig.colorSchemes.schemes[0];
+  }, [themeConfig, config.colorScheme]);
+
   if (!config.enabled) {
     return null;
   }
@@ -56,71 +128,217 @@ export default function PreviewRoomThings({
     );
   };
 
+  // Transform room data to display arrays
+  const transformedHouseRules = useMemo(() => {
+    const rules: string[] = [];
+    
+    if (roomData?.houseRules) {
+      // If houseRules is a string (text from DB), split it
+      if (typeof roomData.houseRules === 'string') {
+        const items = roomData.houseRules.split(',').map((s: string) => s.trim()).filter(s => s);
+        rules.push(...items);
+      } 
+      // If houseRules is an object (JSONB), process it
+      else if (typeof roomData.houseRules === 'object') {
+        // Add check-in/check-out times if available
+        if (roomData.houseRules.checkInTime) {
+          rules.push(`Check-in: ${roomData.houseRules.checkInTime}`);
+        }
+        if (roomData.houseRules.checkOutTime) {
+          rules.push(`Check-out: ${roomData.houseRules.checkOutTime}`);
+        }
+        if (roomData.houseRules.quietHours) {
+          rules.push(`Quiet hours: ${roomData.houseRules.quietHours}`);
+        }
+        
+        // Add toggle rules based on catalog options
+        houseRulesOptions.forEach(option => {
+          const value = roomData.houseRules[option.value];
+          if (value !== undefined && value !== null) {
+            if (value === true) {
+              rules.push(option.label || option.value);
+            } else if (value === false && option.value.includes('Allowed')) {
+              // For "allowed" rules, show "No" version when false
+              const noLabel = option.label?.replace('Se permite', 'No se permite')
+                .replace('Se permiten', 'No se permiten')
+                .replace('allowed', 'not allowed')
+                .replace('Allowed', 'not allowed');
+              rules.push(noLabel || `No ${option.label}`);
+            }
+          }
+        });
+      }
+    }
+    
+    // If no room data, use config as fallback
+    return rules.length > 0 ? rules : config.houseRules;
+  }, [roomData, houseRulesOptions, config.houseRules]);
+
+  const transformedSafetyProperty = useMemo(() => {
+    const safety: string[] = [];
+    
+    if (roomData?.safetyAndProperty) {
+      // If it's a string (rich text), try to parse it as a list
+      if (typeof roomData.safetyAndProperty === 'string') {
+        const items = roomData.safetyAndProperty.split(',').map((s: string) => s.trim());
+        safety.push(...items);
+      } else if (typeof roomData.safetyAndProperty === 'object') {
+        // If it's an object with boolean flags
+        safetyOptions.forEach(option => {
+          const value = roomData.safetyAndProperty[option.value];
+          if (value === true) {
+            safety.push(option.label || option.value);
+          }
+        });
+      }
+    }
+    
+    // Also check for custom safety text
+    if (roomData?.safetyFeatures) {
+      if (typeof roomData.safetyFeatures === 'string') {
+        safety.push(roomData.safetyFeatures);
+      } else if (Array.isArray(roomData.safetyFeatures)) {
+        safety.push(...roomData.safetyFeatures);
+      }
+    }
+    
+    // If no room data, use config as fallback
+    return safety.length > 0 ? safety : config.safetyProperty;
+  }, [roomData, safetyOptions, config.safetyProperty]);
+
+  const transformedCancellationPolicy = useMemo(() => {
+    const policies: string[] = [];
+    
+    if (roomData?.cancellationPolicy) {
+      // Add policy type if available
+      if (roomData.cancellationPolicy.type) {
+        const typeMap: { [key: string]: string } = {
+          'flexible': language === 'es' ? 'Política flexible' : 'Flexible policy',
+          'moderate': language === 'es' ? 'Política moderada' : 'Moderate policy',
+          'strict': language === 'es' ? 'Política estricta' : 'Strict policy',
+          'super_strict': language === 'es' ? 'Política súper estricta' : 'Super strict policy'
+        };
+        policies.push(typeMap[roomData.cancellationPolicy.type] || roomData.cancellationPolicy.type);
+      }
+      
+      // Add policy description if available
+      if (roomData.cancellationPolicy.description) {
+        policies.push(roomData.cancellationPolicy.description);
+      }
+      
+      // Add policy options based on catalog
+      cancellationOptions.forEach(option => {
+        const value = roomData.cancellationPolicy[option.value];
+        if (value === true) {
+          policies.push(option.label || option.value);
+        }
+      });
+    }
+    
+    // If no room data, use config as fallback
+    return policies.length > 0 ? policies : config.cancellationPolicy;
+  }, [roomData, cancellationOptions, config.cancellationPolicy, language]);
+
   const sections = [
     {
       id: 'house-rules',
-      title: 'House rules',
-      items: config.houseRules,
-      preview: config.houseRules.slice(0, 3)
+      title: language === 'es' ? 'Reglas de la casa' : 'House rules',
+      items: transformedHouseRules,
+      preview: transformedHouseRules.slice(0, 3)
     },
     {
       id: 'safety',
-      title: 'Safety & property',
-      items: config.safetyProperty,
-      preview: config.safetyProperty.slice(0, 3)
+      title: language === 'es' ? 'Seguridad y propiedad' : 'Safety & property',
+      items: transformedSafetyProperty,
+      preview: transformedSafetyProperty.slice(0, 3)
     },
     {
       id: 'cancellation',
-      title: 'Cancellation policy',
-      items: config.cancellationPolicy,
-      preview: config.cancellationPolicy.slice(0, 3)
+      title: language === 'es' ? 'Política de cancelación' : 'Cancellation policy',
+      items: transformedCancellationPolicy,
+      preview: transformedCancellationPolicy.slice(0, 3)
     }
   ];
 
   return (
-    <div className="container mx-auto px-6 py-8 border-t">
-      <h2 className="text-xl font-semibold mb-6">
+    <div 
+      className="container mx-auto px-6 py-8"
+      style={{
+        borderTop: `1px solid ${colorScheme.border || '#E5E5E5'}`,
+        backgroundColor: colorScheme.background || '#FFFFFF'
+      }}
+    >
+      <h2 
+        className="text-xl font-semibold mb-6"
+        style={{ color: colorScheme.text || '#000000' }}
+      >
         {config.title || 'Things to know'}
       </h2>
 
       <div className={`grid ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'} gap-6`}>
-        {sections.map((section) => (
-          <div key={section.id} className="space-y-3">
-            <h3 className="font-semibold">{section.title}</h3>
-            
-            <ul className="space-y-2">
-              {(expandedSections.includes(section.id) ? section.items : section.preview).map((item, index) => (
-                <li key={index} className="text-sm text-gray-700">
-                  {item}
-                </li>
-              ))}
-            </ul>
-
-            {config.showMoreButton && section.items.length > 3 && (
-              <button
-                onClick={() => toggleSection(section.id)}
-                className="flex items-center gap-1 text-sm font-semibold underline hover:no-underline"
+        {sections.map((section) => {
+          // Only render sections that have items
+          if (!section.items || section.items.length === 0) return null;
+          
+          return (
+            <div key={section.id} className="space-y-3">
+              <h3 
+                className="font-semibold"
+                style={{ color: colorScheme.text || '#000000' }}
               >
-                {expandedSections.includes(section.id) ? 'Show less' : 'Show more'}
-                <ChevronRight className={`w-4 h-4 transition-transform ${
-                  expandedSections.includes(section.id) ? 'rotate-90' : ''
-                }`} />
-              </button>
-            )}
-          </div>
-        ))}
+                {section.title}
+              </h3>
+              
+              <ul className="space-y-2">
+                {(expandedSections.includes(section.id) ? section.items : section.preview).map((item, index) => (
+                  <li 
+                    key={index} 
+                    className="text-sm"
+                    style={{ color: colorScheme.textSecondary || colorScheme.text || '#666666' }}
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {config.showMoreButton && section.items.length > 3 && (
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className="flex items-center gap-1 text-sm font-semibold underline hover:no-underline"
+                  style={{ color: colorScheme.link || '#0066CC' }}
+                >
+                  {expandedSections.includes(section.id) ? 'Show less' : 'Show more'}
+                  <ChevronRight className={`w-4 h-4 transition-transform ${
+                    expandedSections.includes(section.id) ? 'rotate-90' : ''
+                  }`} />
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Additional info */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-        <div className="flex items-start gap-2">
-          <Info className="w-5 h-5 text-gray-500 mt-0.5" />
-          <p className="text-sm text-gray-600">
-            Our community is committed to reliability. Hosts are required to disclose known cameras, 
-            and are never permitted in private spaces like bathrooms or sleeping areas.
-          </p>
+      {/* Additional info - only show if there are sections */}
+      {sections.some(s => s.items && s.items.length > 0) && (
+        <div 
+          className="mt-8 p-4 rounded-lg"
+          style={{ backgroundColor: colorScheme.foreground || '#F5F5F5' }}
+        >
+          <div className="flex items-start gap-2">
+            <Info 
+              className="w-5 h-5 mt-0.5"
+              style={{ color: colorScheme.textSecondary || '#666666' }}
+            />
+            <p 
+              className="text-sm"
+              style={{ color: colorScheme.textSecondary || '#666666' }}
+            >
+              Our community is committed to reliability. Hosts are required to disclose known cameras, 
+              and are never permitted in private spaces like bathrooms or sleeping areas.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

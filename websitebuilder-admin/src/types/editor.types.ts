@@ -702,24 +702,11 @@ export const SECTION_CONFIGS: Record<SectionType, SectionConfig> = {
     defaultSettings: {
       enabled: true,
       title: 'Things to know',
-      houseRules: [
-        'Check-in: 3:00 PM - 10:00 PM',
-        'Checkout before 11:00 AM',
-        'No smoking',
-        'No pets',
-        'No parties or events'
-      ],
-      safetyProperty: [
-        'Carbon monoxide alarm',
-        'Smoke alarm',
-        'First aid kit',
-        'Fire extinguisher'
-      ],
-      cancellationPolicy: [
-        'Free cancellation before Feb 14',
-        'After that, cancel up to 7 days before check-in and get a 50% refund'
-      ],
-      showMoreButton: true
+      houseRules: [],
+      safetyProperty: [],
+      cancellationPolicy: [],
+      showMoreButton: true,
+      colorScheme: '1'
     }
   }
 };

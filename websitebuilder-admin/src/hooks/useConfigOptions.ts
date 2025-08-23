@@ -72,6 +72,41 @@ export function useConfigOptions(type: string) {
           { value: 'spa', label: language === 'es' ? 'Spa' : 'Spa', icon: '💆' },
           { value: 'parking', label: language === 'es' ? 'Estacionamiento' : 'Parking', icon: '🚗' }
         ];
+      case 'house_rules':
+        return [
+          { value: 'smokingAllowed', label: language === 'es' ? 'Se permite fumar' : 'Smoking allowed', icon: '🚬' },
+          { value: 'petsAllowed', label: language === 'es' ? 'Se permiten mascotas' : 'Pets allowed', icon: '🐕' },
+          { value: 'eventsAllowed', label: language === 'es' ? 'Se permiten eventos' : 'Events allowed', icon: '🎉' },
+          { value: 'partiesAllowed', label: language === 'es' ? 'Se permiten fiestas' : 'Parties allowed', icon: '🎊' },
+          { value: 'childrenAllowed', label: language === 'es' ? 'Se permiten niños' : 'Children allowed', icon: '👶' },
+          { value: 'visitorsAllowed', label: language === 'es' ? 'Se permiten visitantes' : 'Visitors allowed', icon: '👥' },
+          { value: 'loudMusicAllowed', label: language === 'es' ? 'Se permite música alta' : 'Loud music allowed', icon: '🎵' },
+          { value: 'commercialPhotoAllowed', label: language === 'es' ? 'Se permiten fotos comerciales' : 'Commercial photos allowed', icon: '📸' }
+        ];
+      case 'safety_property':
+        return [
+          { value: 'smokeDetector', label: language === 'es' ? 'Detector de humo' : 'Smoke detector', icon: '🚨' },
+          { value: 'carbonMonoxideDetector', label: language === 'es' ? 'Detector de monóxido de carbono' : 'Carbon monoxide detector', icon: '⚠️' },
+          { value: 'fireExtinguisher', label: language === 'es' ? 'Extintor' : 'Fire extinguisher', icon: '🧯' },
+          { value: 'firstAidKit', label: language === 'es' ? 'Botiquín de primeros auxilios' : 'First aid kit', icon: '🏥' },
+          { value: 'securityCameras', label: language === 'es' ? 'Cámaras de seguridad' : 'Security cameras', icon: '📹' },
+          { value: 'alarmSystem', label: language === 'es' ? 'Sistema de alarma' : 'Alarm system', icon: '🔔' },
+          { value: 'safe', label: language === 'es' ? 'Caja fuerte' : 'Safe', icon: '🔒' },
+          { value: 'lockOnBedroom', label: language === 'es' ? 'Cerradura en habitación' : 'Lock on bedroom', icon: '🔐' },
+          { value: 'emergencyExit', label: language === 'es' ? 'Salida de emergencia' : 'Emergency exit', icon: '🚪' },
+          { value: 'emergencyPhone', label: language === 'es' ? 'Teléfono de emergencia' : 'Emergency phone', icon: '📞' }
+        ];
+      case 'cancellation_policies':
+        return [
+          { value: 'freeCancel24h', label: language === 'es' ? 'Cancelación gratuita 24h antes' : 'Free cancellation 24h before', icon: '✅' },
+          { value: 'freeCancel48h', label: language === 'es' ? 'Cancelación gratuita 48h antes' : 'Free cancellation 48h before', icon: '✅' },
+          { value: 'freeCancel7days', label: language === 'es' ? 'Cancelación gratuita 7 días antes' : 'Free cancellation 7 days before', icon: '✅' },
+          { value: 'partialRefund', label: language === 'es' ? 'Reembolso parcial disponible' : 'Partial refund available', icon: '💰' },
+          { value: 'noRefund', label: language === 'es' ? 'Sin reembolso' : 'No refund', icon: '❌' },
+          { value: 'creditFuture', label: language === 'es' ? 'Crédito para futuras reservas' : 'Credit for future bookings', icon: '🎫' },
+          { value: 'modificationAllowed', label: language === 'es' ? 'Se permite modificación de fechas' : 'Date modification allowed', icon: '📅' },
+          { value: 'transferable', label: language === 'es' ? 'Reserva transferible' : 'Transferable booking', icon: '🔄' }
+        ];
       default:
         return [];
     }

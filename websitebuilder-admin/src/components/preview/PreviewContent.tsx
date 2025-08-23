@@ -23,7 +23,7 @@ import PreviewRoomReviews from './PreviewRoomReviews';
 import PreviewRoomMap from './PreviewRoomMap';
 import PreviewRoomCalendar from './PreviewRoomCalendar';
 import PreviewRoomHostCard from './PreviewRoomHostCard';
-import PreviewRoomThings from './PreviewRoomThings';
+import PreviewRoomThings from './modules/RoomThingsPreview';
 
 interface PreviewContentProps {
   pageType: PageType;

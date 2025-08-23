@@ -2570,6 +2570,7 @@
   "config": {
     "title": "Catalog Management",
     "description": "Customize the available options in your system",
+    "selectType": "Catalog Type",
     "addOption": "Add Option",
     "initializeDefaults": "Initialize Base Catalog",
     "defaultsInitialized": "Default options initialized",
@@ -2578,6 +2579,9 @@
       "roomType": "Room Types",
       "viewType": "View Types",
       "commonSpaces": "Common Spaces",
+      "houseRules": "House Rules",
+      "safetyProperty": "Safety & Property",
+      "cancellationPolicies": "Cancellation Policies",
       "icons": "Icons",
       "policyType": "Policy Types"
     },

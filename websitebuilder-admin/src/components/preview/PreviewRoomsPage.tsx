@@ -882,44 +882,7 @@ export default function PreviewRoomsPage({ companyId = 1, deviceView, isEditor =
           </div>
         )}
 
-        {/* Things to Know */}
-        <div className="py-8 border-t border-gray-200">
-          <h2 className="text-[22px] font-medium mb-6 text-[#222222]">Things to know</h2>
-          <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-3 gap-12'}`}>
-            <div>
-              <h3 className="font-medium text-[16px] mb-3 text-[#222222]">House rules</h3>
-              <div className="space-y-2 text-[14px] text-[#222222]">
-                <p>Check-in: 3:00 PM - 10:00 PM</p>
-                <p>Checkout before 11:00 AM</p>
-                <p>4 guests maximum</p>
-                <p>No pets</p>
-                <p>No parties or events</p>
-                <p>No smoking</p>
-              </div>
-              <button className="mt-3 font-semibold underline text-[14px]">Show more</button>
-            </div>
-
-            <div>
-              <h3 className="font-medium text-[16px] mb-3 text-[#222222]">Safety & property</h3>
-              <div className="space-y-2 text-[14px] text-[#222222]">
-                <p>Carbon monoxide alarm</p>
-                <p>Smoke alarm</p>
-                <p>Pool/hot tub without a gate or lock</p>
-                <p className="text-[#717171] line-through">Carbon monoxide alarm not reported</p>
-              </div>
-              <button className="mt-3 font-semibold underline text-[14px]">Show more</button>
-            </div>
-
-            <div>
-              <h3 className="font-medium text-[16px] mb-3 text-[#222222]">Cancellation policy</h3>
-              <div className="space-y-2 text-[14px] text-[#222222]">
-                <p className="font-medium">Free cancellation for 48 hours</p>
-                <p>Review the full cancellation policy which applies even if you cancel for illness or disruptions caused by COVID-19.</p>
-              </div>
-              <button className="mt-3 font-semibold underline text-[14px]">Show more</button>
-            </div>
-          </div>
-        </div>
+        {/* Things to Know - Removed hardcoded section, should be handled by room_things module */}
       </div>
 
       {/* Mobile Sticky Footer */}
