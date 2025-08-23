@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import Toggle from '@/components/ui/Toggle';
 import RoomHighlightsTab from './RoomHighlightsTab';
+import LocationMap from './LocationMap';
+import { geocodeAddress } from '@/lib/geocoding';
+import { useCompany } from '@/contexts/CompanyContext';
+import { useConfigOptions } from '@/hooks/useConfigOptions';
 import { 
   MapPinIcon,
   HomeIcon,
@@ -21,8 +25,18 @@ interface ExtendedFieldsProps {
 }
 
 export default function RoomFormExtended({ formData, setFormData, primaryColor }: ExtendedFieldsProps) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [activeTab, setActiveTab] = useState<'location' | 'policies' | 'sleeping' | 'fees' | 'seo' | 'highlights'>('location');
+  const { company } = useCompany() as any;
+  
+  // Load common spaces from catalog
+  const { options: commonSpacesOptions, loading: loadingCommonSpaces } = useConfigOptions('common_spaces');
+  
+  // Debug log
+  useEffect(() => {
+    console.log('🏠 Common Spaces Options:', commonSpacesOptions);
+    console.log('⏳ Loading Common Spaces:', loadingCommonSpaces);
+  }, [commonSpacesOptions, loadingCommonSpaces]);
 
   // Initialize complex JSON fields if they don't exist
   useEffect(() => {
@@ -67,6 +81,88 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
       });
     }
   }, []);
+
+  // Track address changes to avoid overwriting saved coordinates on initial load
+  const initialLoadDoneRef = useRef(false);
+  const lastAddressSignatureRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Mark initial signature after first formData hydration
+    const sig = [
+      formData.streetAddress,
+      formData.neighborhood,
+      formData.city,
+      formData.state,
+      formData.postalCode,
+      formData.country,
+    ]
+      .filter(Boolean)
+      .join(', ');
+    lastAddressSignatureRef.current = sig;
+    initialLoadDoneRef.current = true;
+    // Run only once on mount after initial form state is set
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-geocode when address fields change (debounced) - ONLY set coords, never override address text
+  useEffect(() => {
+    const addressParts = [
+      formData.streetAddress,
+      formData.neighborhood,
+      formData.city,
+      formData.state,
+      formData.postalCode,
+      formData.country,
+    ].filter(Boolean).join(', ');
+
+    if (!addressParts) return;
+
+    // If we already have saved coordinates, avoid auto-overwriting them on initial load
+    // Only auto-geocode when the user has actually changed the address after initial hydration
+    if (!initialLoadDoneRef.current) return;
+
+    const currentSig = addressParts;
+    if (lastAddressSignatureRef.current === currentSig) {
+      // No effective change in address; do not geocode
+      return;
+    }
+
+    // If coords already present, skip auto-geocoding and let the user press "Buscar en mapa" explicitly
+    if (
+      typeof formData.latitude === 'number' && !Number.isNaN(formData.latitude) &&
+      typeof formData.longitude === 'number' && !Number.isNaN(formData.longitude)
+    ) {
+      // Update signature to current to prevent repeated checks
+      lastAddressSignatureRef.current = currentSig;
+      return;
+    }
+
+    const handle = setTimeout(async () => {
+      const provider = company?.geolocationProvider || 'mapbox';
+      const token = company?.geolocationToken || undefined;
+      const countryCode = (company?.country || '').toString().toLowerCase() || undefined;
+      const geo = await geocodeAddress(addressParts, countryCode, provider === 'mapbox' ? token : undefined);
+      if (geo) {
+        // IMPORTANT: only update coordinates so the display always reflects the user's typed address
+        setFormData(prev => ({ ...prev, latitude: geo.latitude, longitude: geo.longitude }));
+      }
+      // Update signature after processing
+      lastAddressSignatureRef.current = currentSig;
+    }, 700);
+
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    formData.streetAddress,
+    formData.neighborhood,
+    formData.city,
+    formData.state,
+    formData.postalCode,
+    formData.country,
+    company?.geolocationProvider,
+    company?.geolocationToken,
+    company?.country,
+  ]);
 
   const updateNestedField = (field: string, key: string, value: any) => {
     setFormData({
@@ -277,6 +373,57 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
                 value={formData.longitude || ''}
                 onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            {/* Acciones de geocoding */}
+            <div className="md:col-span-2 flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  const parts = [
+                    formData.streetAddress,
+                    formData.neighborhood,
+                    formData.city,
+                    formData.state,
+                    formData.postalCode,
+                    formData.country,
+                  ].filter(Boolean).join(', ');
+                  if (!parts) return;
+                  const provider = company?.geolocationProvider || 'mapbox';
+                  const token = company?.geolocationToken || undefined;
+                  const geo = await geocodeAddress(parts, undefined, provider === 'mapbox' ? token : undefined);
+                  if (geo) {
+                    setFormData({ ...formData, latitude: geo.latitude, longitude: geo.longitude });
+                  }
+                }}
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                {t('rooms.searchOnMap', 'Buscar en mapa')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((pos) => {
+                      setFormData({ ...formData, latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+                    });
+                  }
+                }}
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                {t('rooms.useMyLocation', 'Usar mi ubicación')}
+              </button>
+            </div>
+
+            {/* Mapa */}
+            <div className="md:col-span-2">
+              <LocationMap
+                latitude={typeof formData.latitude === 'number' ? formData.latitude : undefined}
+                longitude={typeof formData.longitude === 'number' ? formData.longitude : undefined}
+                onChange={({ latitude, longitude }) => setFormData({ ...formData, latitude, longitude })}
+                accessTokenOverride={company?.geolocationProvider === 'mapbox' ? (company?.geolocationToken || undefined) : undefined}
+                height="360px"
               />
             </div>
           </div>
@@ -783,124 +930,45 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
                   </div>
                 </div>
 
-                {/* Espacios Comunes */}
+                {/* Espacios Comunes - Dynamic from Catalog */}
                 <div className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
                   <h5 className="font-medium mb-3">{t('rooms.commonSpaces', 'Espacios Comunes')}</h5>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <Toggle
-                      checked={formData.sleepingArrangements?.commonSpaces?.livingRoom || false}
-                      onChange={(checked) => {
-                        const current = formData.sleepingArrangements?.commonSpaces || {};
-                        setFormData({
-                          ...formData,
-                          sleepingArrangements: {
-                            ...formData.sleepingArrangements,
-                            commonSpaces: {
-                              ...current,
-                              livingRoom: checked
-                            }
-                          }
-                        });
-                      }}
-                      label={t('rooms.livingRoom', 'Sala de Estar')}
-                      size="small"
-                    />
-
-                    <Toggle
-                      checked={formData.sleepingArrangements?.commonSpaces?.kitchen || false}
-                      onChange={(checked) => {
-                        const current = formData.sleepingArrangements?.commonSpaces || {};
-                        setFormData({
-                          ...formData,
-                          sleepingArrangements: {
-                            ...formData.sleepingArrangements,
-                            commonSpaces: {
-                              ...current,
-                              kitchen: checked
-                            }
-                          }
-                        });
-                      }}
-                      label={t('rooms.kitchen', 'Cocina')}
-                      size="small"
-                    />
-
-                    <Toggle
-                      checked={formData.sleepingArrangements?.commonSpaces?.diningRoom || false}
-                      onChange={(checked) => {
-                        const current = formData.sleepingArrangements?.commonSpaces || {};
-                        setFormData({
-                          ...formData,
-                          sleepingArrangements: {
-                            ...formData.sleepingArrangements,
-                            commonSpaces: {
-                              ...current,
-                              diningRoom: checked
-                            }
-                          }
-                        });
-                      }}
-                      label={t('rooms.diningRoom', 'Comedor')}
-                      size="small"
-                    />
-
-                    <Toggle
-                      checked={formData.sleepingArrangements?.commonSpaces?.balcony || false}
-                      onChange={(checked) => {
-                        const current = formData.sleepingArrangements?.commonSpaces || {};
-                        setFormData({
-                          ...formData,
-                          sleepingArrangements: {
-                            ...formData.sleepingArrangements,
-                            commonSpaces: {
-                              ...current,
-                              balcony: checked
-                            }
-                          }
-                        });
-                      }}
-                      label={t('rooms.balcony', 'Balcón')}
-                      size="small"
-                    />
-
-                    <Toggle
-                      checked={formData.sleepingArrangements?.commonSpaces?.terrace || false}
-                      onChange={(checked) => {
-                        const current = formData.sleepingArrangements?.commonSpaces || {};
-                        setFormData({
-                          ...formData,
-                          sleepingArrangements: {
-                            ...formData.sleepingArrangements,
-                            commonSpaces: {
-                              ...current,
-                              terrace: checked
-                            }
-                          }
-                        });
-                      }}
-                      label={t('rooms.terrace', 'Terraza')}
-                      size="small"
-                    />
-
-                    <Toggle
-                      checked={formData.sleepingArrangements?.commonSpaces?.garden || false}
-                      onChange={(checked) => {
-                        const current = formData.sleepingArrangements?.commonSpaces || {};
-                        setFormData({
-                          ...formData,
-                          sleepingArrangements: {
-                            ...formData.sleepingArrangements,
-                            commonSpaces: {
-                              ...current,
-                              garden: checked
-                            }
-                          }
-                        });
-                      }}
-                      label={t('rooms.garden', 'Jardín')}
-                      size="small"
-                    />
-                  </div>
+                  {loadingCommonSpaces ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                    </div>
+                  ) : commonSpacesOptions && commonSpacesOptions.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {commonSpacesOptions
+                        .filter((space: any) => space.isActive)
+                        .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+                        .map((space: any) => (
+                          <Toggle
+                            key={space.value}
+                            checked={formData.sleepingArrangements?.commonSpaces?.[space.value] || false}
+                            onChange={(checked) => {
+                              const current = formData.sleepingArrangements?.commonSpaces || {};
+                              setFormData({
+                                ...formData,
+                                sleepingArrangements: {
+                                  ...formData.sleepingArrangements,
+                                  commonSpaces: {
+                                    ...current,
+                                    [space.value]: checked
+                                  }
+                                }
+                              });
+                            }}
+                            label={language === 'es' ? space.labelEs : space.labelEn}
+                            size="small"
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
+                      {t('rooms.noCommonSpaces', 'No hay espacios comunes configurados. Ve a Gestión de Catálogos para agregar opciones.')}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -303,6 +303,14 @@
       "notePayments": "Los métodos de pago deben soportar esta moneda",
       "noteReports": "Los reportes y estadísticas se generarán en esta moneda"
     },
+    "maps": {
+      "title": "Mapas y Geolocalización",
+      "description": "Configura el proveedor y el token usados para mapas y geocodificación.",
+      "provider": "Proveedor",
+      "token": "Token de API",
+      "tokenPlaceholder": "Introduce el token del proveedor",
+      "tokenHint": "Para Mapbox usa un token público (pk.*). Para Google usa una API key restringida al navegador."
+    },
     "tabs": {
       "storeDetails": "Detalles de la Tienda",
       "payments": "Pagos",
@@ -2583,6 +2591,7 @@
       "amenity": "Amenidades",
       "roomType": "Tipos de Habitación",
       "viewType": "Tipos de Vista",
+      "commonSpaces": "Espacios Comunes",
       "icons": "Iconos",
       "policyType": "Tipos de Política"
     },

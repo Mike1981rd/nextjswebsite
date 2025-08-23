@@ -62,6 +62,7 @@ export default function ConfigOptionsPage() {
     { value: 'amenity', label: t('config.types.amenity', 'Amenidades'), icon: SparklesIcon },
     { value: 'room_type', label: t('config.types.roomType', 'Tipos de Habitación'), icon: HomeIcon },
     { value: 'view_type', label: t('config.types.viewType', 'Tipos de Vista'), icon: EyeIcon },
+    { value: 'common_spaces', label: t('config.types.commonSpaces', 'Espacios Comunes'), icon: HomeIcon },
     { value: 'icons', label: t('config.types.icons', 'Iconos'), icon: SparklesIcon },
     { value: 'policy_type', label: t('config.types.policyType', 'Tipos de Política'), icon: Cog6ToothIcon }
   ];
@@ -70,6 +71,7 @@ export default function ConfigOptionsPage() {
     amenity: ['básicas', 'premium', 'exterior', 'tecnología', 'servicios'],
     room_type: ['estándar', 'premium', 'lujo'],
     view_type: ['natural', 'urbana', 'interior'],
+    common_spaces: ['interior', 'exterior', 'servicios', 'recreación'],
     policy_type: ['flexible', 'moderada', 'estricta']
   };
 

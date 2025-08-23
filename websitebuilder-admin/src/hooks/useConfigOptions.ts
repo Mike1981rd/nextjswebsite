@@ -59,6 +59,19 @@ export function useConfigOptions(type: string) {
           { value: 'mountain', label: language === 'es' ? 'Vista a la Montaña' : 'Mountain View', icon: '⛰️' },
           { value: 'interior', label: language === 'es' ? 'Vista Interior' : 'Interior View', icon: '🏠' }
         ];
+      case 'common_spaces':
+        return [
+          { value: 'kitchen', label: language === 'es' ? 'Cocina' : 'Kitchen', icon: '🍳' },
+          { value: 'livingRoom', label: language === 'es' ? 'Sala de Estar' : 'Living Room', icon: '🛋️' },
+          { value: 'diningRoom', label: language === 'es' ? 'Comedor' : 'Dining Room', icon: '🍽️' },
+          { value: 'balcony', label: language === 'es' ? 'Balcón' : 'Balcony', icon: '🏠' },
+          { value: 'terrace', label: language === 'es' ? 'Terraza' : 'Terrace', icon: '☀️' },
+          { value: 'garden', label: language === 'es' ? 'Jardín' : 'Garden', icon: '🌳' },
+          { value: 'pool', label: language === 'es' ? 'Piscina' : 'Pool', icon: '🏊' },
+          { value: 'gym', label: language === 'es' ? 'Gimnasio' : 'Gym', icon: '🏋️' },
+          { value: 'spa', label: language === 'es' ? 'Spa' : 'Spa', icon: '💆' },
+          { value: 'parking', label: language === 'es' ? 'Estacionamiento' : 'Parking', icon: '🚗' }
+        ];
       default:
         return [];
     }
@@ -97,14 +110,19 @@ export function useConfigOptions(type: string) {
       
       console.log(`📊 ConfigOptions received from API for type "${type}":`, data);
       
-      // Mapear las opciones con el idioma correcto
+      // Mapear las opciones con el idioma correcto y todos los campos necesarios
       const mappedOptions = data.map((opt: ConfigOption) => ({
+        ...opt, // Include all original fields
         value: opt.value,
         label: language === 'es' ? opt.labelEs : opt.labelEn,
+        labelEs: opt.labelEs,
+        labelEn: opt.labelEn,
         icon: opt.icon,
         iconType: opt.iconType,
         category: opt.category,
-        isCustom: opt.isCustom
+        isCustom: opt.isCustom,
+        isActive: opt.isActive,
+        sortOrder: opt.sortOrder
       }));
       
       console.log(`🔄 Mapped options for display:`, mappedOptions);
