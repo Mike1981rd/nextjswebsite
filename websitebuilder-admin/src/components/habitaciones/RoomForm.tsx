@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useConfigOptions } from '@/hooks/useConfigOptions';
@@ -88,7 +88,27 @@ export default function RoomForm({
   const [dragActive, setDragActive] = useState(false);
   const [hosts, setHosts] = useState<any[]>([]);
   const [loadingHosts, setLoadingHosts] = useState(false);
+  const initializedFromPropsRef = useRef(false);
   
+  // Normalize backend (PascalCase) to frontend (camelCase) keys for address/coords
+  const normalizedInitial = useMemo(() => {
+    const toNum = (v: any): number | undefined => {
+      if (v === null || v === undefined || v === '') return undefined;
+      const n = typeof v === 'number' ? v : parseFloat(v);
+      return isNaN(n) ? undefined : n;
+    };
+    return {
+      streetAddress: (initialData as any)?.streetAddress ?? (initialData as any)?.StreetAddress ?? '',
+      city: (initialData as any)?.city ?? (initialData as any)?.City ?? '',
+      state: (initialData as any)?.state ?? (initialData as any)?.State ?? '',
+      country: (initialData as any)?.country ?? (initialData as any)?.Country ?? '',
+      postalCode: (initialData as any)?.postalCode ?? (initialData as any)?.PostalCode ?? '',
+      neighborhood: (initialData as any)?.neighborhood ?? (initialData as any)?.Neighborhood ?? '',
+      latitude: toNum((initialData as any)?.latitude ?? (initialData as any)?.Latitude),
+      longitude: toNum((initialData as any)?.longitude ?? (initialData as any)?.Longitude),
+    };
+  }, [initialData]);
+
   const [formData, setFormData] = useState<RoomFormData>({
     name: '',
     description: '',
@@ -101,14 +121,14 @@ export default function RoomForm({
     viewType: '', // Ensure this is never null
     squareMeters: undefined,
     // NUEVOS campos inicializados
-    streetAddress: '',
-    city: '',
-    state: '',
-    country: '',
-    postalCode: '',
-    latitude: undefined,
-    longitude: undefined,
-    neighborhood: '',
+    streetAddress: normalizedInitial.streetAddress,
+    city: normalizedInitial.city,
+    state: normalizedInitial.state,
+    country: normalizedInitial.country,
+    postalCode: normalizedInitial.postalCode,
+    latitude: normalizedInitial.latitude,
+    longitude: normalizedInitial.longitude,
+    neighborhood: normalizedInitial.neighborhood,
     hostId: undefined,
     sleepingArrangements: {},
     houseRules: {
@@ -167,6 +187,40 @@ export default function RoomForm({
     roomType: initialData?.roomType || '',
     viewType: initialData?.viewType || ''
   });
+
+  // Sync once from initialData when it arrives (respecting normalized casing)
+  useEffect(() => {
+    if (!initialData || initializedFromPropsRef.current) return;
+    initializedFromPropsRef.current = true;
+    setFormData(prev => ({
+      ...prev,
+      streetAddress: normalizedInitial.streetAddress,
+      city: normalizedInitial.city,
+      state: normalizedInitial.state,
+      country: normalizedInitial.country,
+      postalCode: normalizedInitial.postalCode,
+      neighborhood: normalizedInitial.neighborhood,
+      latitude: normalizedInitial.latitude,
+      longitude: normalizedInitial.longitude,
+      name: (initialData as any)?.name ?? prev.name,
+      description: (initialData as any)?.description ?? prev.description,
+      basePrice: (initialData as any)?.basePrice ?? prev.basePrice,
+      comparePrice: (initialData as any)?.comparePrice ?? prev.comparePrice,
+      maxOccupancy: (initialData as any)?.maxOccupancy ?? prev.maxOccupancy,
+      roomCode: (initialData as any)?.roomCode ?? prev.roomCode,
+      roomType: (initialData as any)?.roomType ?? prev.roomType,
+      floorNumber: (initialData as any)?.floorNumber ?? prev.floorNumber,
+      viewType: (initialData as any)?.viewType ?? prev.viewType,
+      squareMeters: (initialData as any)?.squareMeters ?? prev.squareMeters,
+      slug: (initialData as any)?.slug ?? prev.slug,
+      metaTitle: (initialData as any)?.metaTitle ?? prev.metaTitle,
+      metaDescription: (initialData as any)?.metaDescription ?? prev.metaDescription,
+      tags: (initialData as any)?.tags ?? prev.tags,
+      amenities: (initialData as any)?.amenities ?? prev.amenities,
+      images: (initialData as any)?.images ?? prev.images,
+      isActive: (initialData as any)?.isActive ?? prev.isActive,
+    }));
+  }, [initialData, normalizedInitial]);
 
   const [newTag, setNewTag] = useState('');
   const [newAmenity, setNewAmenity] = useState('');

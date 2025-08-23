@@ -45,6 +45,10 @@ namespace WebsiteBuilderAPI.Models
         public string? OrderIdPrefix { get; set; }
         public string? OrderIdSuffix { get; set; }
 
+        // Maps & Geolocation
+        public string? GeolocationProvider { get; set; } // e.g., "mapbox", "google"
+        public string? GeolocationToken { get; set; }    // provider API token/key
+
         // Relaciones
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
         public ICollection<Product> Products { get; set; } = new List<Product>();

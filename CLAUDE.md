@@ -694,3 +694,14 @@ const TEST_CREDENTIALS = {
 3. **REINICIAR** servidores después de cambios en configuración
 4. La IP del host puede cambiar después de reiniciar WSL/Windows
 5. Las credenciales son para ambiente de desarrollo solamente
+
+---
+
+## 🧭 Notas de corrección: Room Map (Habitaciones)
+
+- Problema: El mapa y la dirección mostraban el texto “formateado” de Mapbox y no la dirección escrita por el usuario; además, al reingresar se perdía la vista correcta.
+- Solución aplicada (frontend):
+  - La geocodificación solo actualiza latitude/longitude y nunca sobreescribe los campos de texto de dirección.
+  - El mapa (Room Map) usa las coordenadas guardadas; si no existen, no fuerza un centro por defecto.
+  - El texto de dirección en editor/preview se arma exclusivamente con los campos guardados (streetAddress, neighborhood, city, state, postalCode, country), no con place_name de Mapbox.
+  - Se evita autogeocodificar al montar si no hubo cambios reales en la dirección (previene movimientos no deseados del mapa).

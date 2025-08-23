@@ -36,6 +36,7 @@
     "framer-motion": "^12.23.12",
     "immer": "^10.1.1",
     "lucide-react": "^0.536.0",
+    "mapbox-gl": "^3.14.0",
     "nanoid": "^5.1.5",
     "next": "14.2.31",
     "react": "^18",

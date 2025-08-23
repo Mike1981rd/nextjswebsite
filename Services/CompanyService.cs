@@ -97,6 +97,10 @@ namespace WebsiteBuilderAPI.Services
                 // Order ID Format
                 OrderIdPrefix = company.OrderIdPrefix,
                 OrderIdSuffix = company.OrderIdSuffix,
+
+                // Maps & Geolocation
+                GeolocationProvider = company.GeolocationProvider,
+                GeolocationToken = company.GeolocationToken,
                 
                 CreatedAt = company.CreatedAt,
                 UpdatedAt = company.UpdatedAt
@@ -216,6 +220,17 @@ namespace WebsiteBuilderAPI.Services
                 company.OrderIdSuffix = request.OrderIdSuffix;
             else if (request.OrderIdSuffix == "")
                 company.OrderIdSuffix = null;
+
+            // Maps & Geolocation
+            if (request.GeolocationProvider != null && request.GeolocationProvider != "")
+                company.GeolocationProvider = request.GeolocationProvider;
+            else if (request.GeolocationProvider == "")
+                company.GeolocationProvider = null;
+
+            if (request.GeolocationToken != null && request.GeolocationToken != "")
+                company.GeolocationToken = request.GeolocationToken;
+            else if (request.GeolocationToken == "")
+                company.GeolocationToken = null;
 
             company.UpdatedAt = DateTime.UtcNow;
 

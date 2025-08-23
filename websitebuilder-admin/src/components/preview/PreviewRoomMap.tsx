@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MapPin, Navigation } from 'lucide-react';
+import { geocodeAddress } from '@/lib/geocoding';
+import LocationMap from '@/components/habitaciones/LocationMap';
+import { useCompany } from '@/contexts/CompanyContext';
 
 interface RoomMapConfig {
   enabled: boolean;
@@ -34,6 +37,8 @@ export default function PreviewRoomMap({
     return false;
   });
   const [roomData, setRoomData] = useState<any>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const { company } = (useCompany?.() as any) || {};
 
   useEffect(() => {
     if (deviceView !== undefined) {
@@ -46,11 +51,10 @@ export default function PreviewRoomMap({
     return () => window.removeEventListener('resize', onResize);
   }, [deviceView]);
 
-  // Auto-fetch room data
+  // Fetch room data (both in editor and live preview) to obtain coordinates
   useEffect(() => {
     const fetchRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
-      
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
@@ -64,16 +68,62 @@ export default function PreviewRoomMap({
       }
     };
 
-    if (isEditor && config.enabled) {
+    if (config.enabled) {
       fetchRoomData();
     }
-  }, [isEditor, config.enabled]);
+  }, [config.enabled]);
+
+  // Resolve coordinates: prefer roomData lat/lng; otherwise geocode textual address from roomData, then config
+  useEffect(() => {
+    const resolveCoords = async () => {
+      // 1) Use coordinates from roomData if available (accept number or numeric string)
+      if (roomData) {
+        const latNum = typeof roomData.latitude === 'string' ? Number(roomData.latitude) : roomData.latitude;
+        const lngNum = typeof roomData.longitude === 'string' ? Number(roomData.longitude) : roomData.longitude;
+        if (typeof latNum === 'number' && !Number.isNaN(latNum) && typeof lngNum === 'number' && !Number.isNaN(lngNum)) {
+          setCoords({ lat: latNum, lng: lngNum });
+          return;
+        }
+      }
+      // 2) Geocode when we have a textual address and no coords yet (prefer roomData fields)
+      const roomAddress = [
+        roomData?.streetAddress,
+        roomData?.neighborhood,
+        roomData?.city,
+        roomData?.state,
+        roomData?.postalCode,
+        roomData?.country,
+      ].filter(Boolean).join(', ').trim();
+      const configAddress = [
+        config?.address,
+        config?.neighborhood,
+        config?.city,
+      ].filter(Boolean).join(', ').trim();
+      const addressParts = roomAddress || configAddress;
+      if (!addressParts) return;
+      try {
+        const provider = company?.geolocationProvider || 'mapbox';
+        const tokenOverride = provider === 'mapbox' ? (company?.geolocationToken || undefined) : undefined;
+        const countryCode = (company?.country || '').toString().toLowerCase() || undefined;
+        const geo = await geocodeAddress(addressParts, countryCode, tokenOverride);
+        if (geo) {
+          setCoords({ lat: geo.latitude, lng: geo.longitude });
+        }
+      } catch (e) {
+        // Best-effort geocoding; keep placeholder on failure
+      }
+    };
+
+    if (config.enabled) {
+      resolveCoords();
+    }
+  }, [config.enabled, config?.address, config?.neighborhood, config?.city, roomData, company?.geolocationProvider, company?.geolocationToken, company?.country]);
 
   if (!config.enabled) {
     return null;
   }
 
-  // Use room data if available, fallback to config
+  // Use room data if available, fallback to config (for text fields)
   const displayData = roomData ? {
     address: roomData.streetAddress || config.address,
     neighborhood: roomData.neighborhood || config.neighborhood,
@@ -83,19 +133,50 @@ export default function PreviewRoomMap({
     showExactLocation: config.showExactLocation
   } : config;
 
+  // Compose a human-friendly address string strictly from saved room/config fields
+  const fullAddressText = useMemo(() => {
+    const parts = roomData
+      ? [
+          roomData.streetAddress,
+          roomData.neighborhood,
+          roomData.city,
+          roomData.state,
+          roomData.postalCode,
+          roomData.country,
+        ]
+      : [config?.address, config?.neighborhood, config?.city];
+    return parts.filter(Boolean).join(', ');
+  }, [roomData, config?.address, config?.neighborhood, config?.city]);
+
+  // Resolve token override for Mapbox GL usage in LocationMap
+  const mapboxTokenOverride = useMemo(() => {
+    const provider = company?.geolocationProvider || 'mapbox';
+    const token = (company?.geolocationToken || '').trim();
+    if (provider === 'mapbox' && token) return token;
+    return undefined;
+  }, [company?.geolocationProvider, company?.geolocationToken]);
+
   return (
     <div className="container mx-auto px-6 py-8 border-t">
       <h2 className="text-xl font-semibold mb-6">
         {config.title || 'Where you\'ll be'}
       </h2>
 
-      {/* Map placeholder */}
+      {/* Map preview (custom image → interactive map → placeholder) */}
       <div className="relative h-[400px] bg-gray-100 rounded-xl overflow-hidden mb-6">
         {displayData.mapImage ? (
           <img
             src={displayData.mapImage}
             alt="Location map"
             className="w-full h-full object-cover"
+          />
+        ) : coords ? (
+          <LocationMap
+            latitude={coords.lat}
+            longitude={coords.lng}
+            accessTokenOverride={mapboxTokenOverride}
+            height="400px"
+            zoom={14}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -127,10 +208,10 @@ export default function PreviewRoomMap({
           </p>
         </div>
 
-        {displayData.showExactLocation && displayData.address && (
+        {(isEditor || displayData.showExactLocation) && fullAddressText && (
           <div className="flex items-start gap-2">
             <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
-            <p className="text-sm text-gray-600">{displayData.address}</p>
+            <p className="text-sm text-gray-600">{fullAddressText}</p>
           </div>
         )}
       </div>

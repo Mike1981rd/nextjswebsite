@@ -77,5 +77,12 @@ namespace WebsiteBuilderAPI.DTOs.Company
 
         [StringLength(10)]
         public string? OrderIdSuffix { get; set; }
+
+        // Maps & Geolocation
+        [StringLength(50)]
+        public string? GeolocationProvider { get; set; }
+
+        [StringLength(512)]
+        public string? GeolocationToken { get; set; }
     }
 }

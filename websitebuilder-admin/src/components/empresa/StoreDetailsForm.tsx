@@ -48,6 +48,10 @@ const storeDetailsSchema = z.object({
   // Order ID Format
   orderIdPrefix: z.string().max(10).optional().or(z.literal("")),
   orderIdSuffix: z.string().max(10).optional().or(z.literal("")),
+  
+  // Geolocation & Maps
+  geolocationProvider: z.enum(["mapbox", "google"]).optional().or(z.literal("")),
+  geolocationToken: z.string().max(512).optional().or(z.literal("")),
 });
 
 type StoreDetailsFormData = z.infer<typeof storeDetailsSchema>;
@@ -110,6 +114,8 @@ export function StoreDetailsForm() {
       currency: 'USD',
       orderIdPrefix: '#',
       orderIdSuffix: '',
+      geolocationProvider: 'mapbox',
+      geolocationToken: '',
     },
   });
 
@@ -160,6 +166,8 @@ export function StoreDetailsForm() {
         currency: (company.currency || 'USD').toUpperCase(),
         orderIdPrefix: company.orderIdPrefix || '#',
         orderIdSuffix: company.orderIdSuffix || '',
+        geolocationProvider: company.geolocationProvider || 'mapbox',
+        geolocationToken: company.geolocationToken || '',
       };
       
       console.log('Form data to reset:', formData); // Debug log
@@ -341,6 +349,45 @@ export function StoreDetailsForm() {
           <span className="text-sm text-yellow-800 dark:text-yellow-200">
             {t('empresa.profile.emailWarning', 'Confirm that you have access to johndoe@gmail.com in sender email settings.')}
           </span>
+        </div>
+      </motion.div>
+
+      {/* Geolocation / Maps Provider */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.35 }}
+        className="pl-4 pr-6 py-4 sm:p-6 border-b dark:border-gray-700">
+        <h2 className="text-base sm:text-lg font-semibold mb-4 dark:text-white">{t('empresa.maps.title', 'Map & Geolocation')}</h2>
+        <p className="w-[68%] sm:w-full text-sm text-gray-600 dark:text-gray-400 mb-4">
+          {t('empresa.maps.description', 'Configure the provider and token used for maps and geocoding.')}
+        </p>
+
+        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+          <div className="w-full">
+            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.maps.provider', 'Provider')}</label>
+            <select
+              {...register('geolocationProvider')}
+              className={inputClassName}
+              style={inputFocusStyle}
+            >
+              <option value="mapbox">Mapbox</option>
+              <option value="google">Google</option>
+            </select>
+          </div>
+
+          <div className="w-full">
+            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">{t('empresa.maps.token', 'API Token')}</label>
+            <input
+              {...register('geolocationToken')}
+              placeholder={t('empresa.maps.tokenPlaceholder', 'Enter provider API token')}
+              className={inputClassName}
+              style={inputFocusStyle}
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {t('empresa.maps.tokenHint', 'For Mapbox use a public token (pk.*). For Google use a restricted browser key.')}
+            </p>
+          </div>
         </div>
       </motion.div>
 

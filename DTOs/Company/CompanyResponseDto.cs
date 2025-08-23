@@ -40,6 +40,10 @@ namespace WebsiteBuilderAPI.DTOs.Company
         public string? OrderIdPrefix { get; set; }
         public string? OrderIdSuffix { get; set; }
 
+        // Maps & Geolocation
+        public string? GeolocationProvider { get; set; }
+        public string? GeolocationToken { get; set; }
+
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

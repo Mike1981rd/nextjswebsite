@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useEditorStore } from '@/stores/useEditorStore';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import RoomInfoDisplay from '../RoomInfoDisplay';
 
 interface RoomAmenitiesConfig {
   enabled: boolean;
@@ -12,6 +13,13 @@ interface RoomAmenitiesConfig {
   columns: number;
   showUnavailable: boolean;
   iconSize: number;
+  horizontalSpacing: number;
+  verticalSpacing: number;
+  titleSpacing: number;
+  headingSize?: number;
+  headingWeight?: string;
+  headingItalic?: boolean;
+  headingUnderline?: boolean;
 }
 
 interface RoomAmenitiesEditorProps {
@@ -24,7 +32,14 @@ const getDefaultConfig = (): RoomAmenitiesConfig => ({
   title: 'What this place offers',
   columns: 2,
   showUnavailable: true,
-  iconSize: 24
+  iconSize: 24,
+  horizontalSpacing: 16,
+  verticalSpacing: 16,
+  titleSpacing: 24,
+  headingSize: 20,
+  headingWeight: '600',
+  headingItalic: false,
+  headingUnderline: false
 });
 
 export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorProps) {
@@ -77,6 +92,9 @@ export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorPr
 
       {isExpanded && (
         <div className="p-4 space-y-4 border-b max-h-[600px] overflow-y-auto">
+          {/* Room Information Display */}
+          <RoomInfoDisplay />
+
           {/* Color Scheme Selector - PRIMERA OPCIÓN */}
           <div>
             <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
@@ -138,30 +156,182 @@ export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorPr
             className="w-full px-3 py-1.5 text-sm border rounded-md"
           />
 
-          {/* Columns and Show unavailable */}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs text-gray-600">Columns</label>
-              <select
-                value={localConfig.columns}
-                onChange={(e) => handleChange('columns', parseInt(e.target.value))}
-                className="w-full px-2 py-1 text-sm border rounded"
-              >
-                <option value={1}>1 Column</option>
-                <option value={2}>2 Columns</option>
-                <option value={3}>3 Columns</option>
-              </select>
+          {/* Heading Size Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Heading size
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="14"
+                max="36"
+                step="2"
+                value={localConfig.headingSize || 20}
+                onChange={(e) => handleChange('headingSize', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.headingSize || 20}px
+              </span>
             </div>
-            <div className="flex items-end">
-              <label className="flex items-center gap-2 text-xs">
-                <input
-                  type="checkbox"
-                  checked={localConfig.showUnavailable}
-                  onChange={(e) => handleChange('showUnavailable', e.target.checked)}
-                  className="rounded"
-                />
-                Show unavailable
-              </label>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Small</span>
+              <span>Medium</span>
+              <span>Large</span>
+            </div>
+          </div>
+
+          {/* Heading Weight */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Heading weight
+            </label>
+            <select 
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md 
+                         focus:outline-none focus:ring-1 focus:ring-blue-500 
+                         dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={localConfig.headingWeight || '600'}
+              onChange={(e) => handleChange('headingWeight', e.target.value)}
+            >
+              <option value="300">Light (300)</option>
+              <option value="400">Regular (400)</option>
+              <option value="500">Medium (500)</option>
+              <option value="600">Semi-Bold (600)</option>
+              <option value="700">Bold (700)</option>
+              <option value="800">Extra Bold (800)</option>
+              <option value="900">Black (900)</option>
+            </select>
+          </div>
+
+          {/* Heading Format Options */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Heading format
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleChange('headingItalic', !localConfig.headingItalic)}
+                className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                  localConfig.headingItalic 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <em>I</em>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('headingUnderline', !localConfig.headingUnderline)}
+                className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                  localConfig.headingUnderline 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <u>U</u>
+              </button>
+            </div>
+          </div>
+
+          {/* Columns selector */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Number of columns
+            </label>
+            <select
+              value={localConfig.columns}
+              onChange={(e) => handleChange('columns', parseInt(e.target.value))}
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md 
+                         focus:outline-none focus:ring-1 focus:ring-blue-500 
+                         dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            >
+              <option value={1}>1 Column</option>
+              <option value={2}>2 Columns</option>
+              <option value={3}>3 Columns</option>
+              <option value={4}>4 Columns</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Layout for amenities display
+            </p>
+          </div>
+
+          {/* Title Spacing Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Title spacing
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="8"
+                max="80"
+                step="4"
+                value={localConfig.titleSpacing}
+                onChange={(e) => handleChange('titleSpacing', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.titleSpacing}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Close</span>
+              <span>Normal</span>
+              <span>Far</span>
+            </div>
+          </div>
+
+          {/* Horizontal Spacing Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Horizontal spacing
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="8"
+                max="80"
+                step="4"
+                value={localConfig.horizontalSpacing}
+                onChange={(e) => handleChange('horizontalSpacing', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.horizontalSpacing}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Tight</span>
+              <span>Normal</span>
+              <span>Wide</span>
+            </div>
+          </div>
+
+          {/* Vertical Spacing Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Vertical spacing
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="8"
+                max="80"
+                step="4"
+                value={localConfig.verticalSpacing}
+                onChange={(e) => handleChange('verticalSpacing', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.verticalSpacing}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Compact</span>
+              <span>Normal</span>
+              <span>Spacious</span>
             </div>
           </div>
 

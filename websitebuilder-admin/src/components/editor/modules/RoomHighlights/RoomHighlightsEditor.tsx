@@ -2,18 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useEditorStore } from '@/stores/useEditorStore';
-import { ChevronDown, ChevronUp, Sparkles, Plus, X } from 'lucide-react';
-
-interface Highlight {
-  id: string;
-  icon: string;
-  title: string;
-  description: string;
-}
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import RoomInfoDisplay from '../RoomInfoDisplay';
 
 interface RoomHighlightsConfig {
   enabled: boolean;
-  highlights: Highlight[];
+  colorScheme: string;
+  title: string;
+  topPadding: number;
+  bottomPadding: number;
+  titleSpacing?: number;
+  headingSize?: number;
+  headingWeight?: string;
+  headingItalic?: boolean;
+  headingUnderline?: boolean;
 }
 
 interface RoomHighlightsEditorProps {
@@ -22,30 +25,20 @@ interface RoomHighlightsEditorProps {
 
 const getDefaultConfig = (): RoomHighlightsConfig => ({
   enabled: true,
-  highlights: [
-    {
-      id: '1',
-      icon: 'Sparkles',
-      title: 'Dedicated workspace',
-      description: 'A room with wifi that\'s well-suited for working.'
-    },
-    {
-      id: '2', 
-      icon: 'MapPin',
-      title: 'Great location',
-      description: '95% of recent guests gave the location a 5-star rating.'
-    },
-    {
-      id: '3',
-      icon: 'Calendar',
-      title: 'Free cancellation before Feb 14',
-      description: 'Get a full refund if you change your mind.'
-    }
-  ]
+  colorScheme: '1',
+  title: 'Shared spaces & amenities',
+  topPadding: 32,
+  bottomPadding: 32,
+  titleSpacing: 24,
+  headingSize: 20,
+  headingWeight: '600',
+  headingItalic: false,
+  headingUnderline: false
 });
 
 export default function RoomHighlightsEditor({ sectionId }: RoomHighlightsEditorProps) {
   const { sections, updateSectionSettings } = useEditorStore();
+  const { config: themeConfig } = useThemeConfigStore();
   const [isExpanded, setIsExpanded] = useState(true);
   const [localConfig, setLocalConfig] = useState<RoomHighlightsConfig>(getDefaultConfig());
 
@@ -77,35 +70,6 @@ export default function RoomHighlightsEditor({ sectionId }: RoomHighlightsEditor
     }
   };
 
-  const handleHighlightChange = (index: number, field: keyof Highlight, value: string) => {
-    const newHighlights = [...localConfig.highlights];
-    newHighlights[index] = { ...newHighlights[index], [field]: value };
-    handleChange('highlights', newHighlights);
-  };
-
-  const addHighlight = () => {
-    if (localConfig.highlights.length < 3) {
-      const newHighlight: Highlight = {
-        id: Date.now().toString(),
-        icon: 'Star',
-        title: 'New highlight',
-        description: 'Add a description'
-      };
-      handleChange('highlights', [...localConfig.highlights, newHighlight]);
-    }
-  };
-
-  const removeHighlight = (index: number) => {
-    const newHighlights = localConfig.highlights.filter((_, i) => i !== index);
-    handleChange('highlights', newHighlights);
-  };
-
-  const commonIcons = [
-    'Sparkles', 'MapPin', 'Calendar', 'DoorOpen', 'Wifi', 'Car', 
-    'Wind', 'Tv', 'Coffee', 'Home', 'Star', 'Shield', 'Award', 
-    'Clock', 'Heart', 'Key', 'Mountain', 'Trees', 'Sun', 'Moon'
-  ];
-
   return (
     <div className="bg-white dark:bg-gray-900">
       <div 
@@ -114,81 +78,223 @@ export default function RoomHighlightsEditor({ sectionId }: RoomHighlightsEditor
       >
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4" />
-          <span className="font-medium text-sm">Room Highlights</span>
+          <span className="font-medium text-sm">Common Spaces</span>
         </div>
         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
       </div>
 
       {isExpanded && (
         <div className="p-4 space-y-4 border-b max-h-[600px] overflow-y-auto">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">Show highlights</label>
-            <input
-              type="checkbox"
-              checked={localConfig.enabled}
-              onChange={(e) => handleChange('enabled', e.target.checked)}
-              className="rounded"
-            />
+          {/* Room Information Display */}
+          <RoomInfoDisplay />
+
+          {/* Color Scheme Selector - PRIMERA OPCIÓN */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Color scheme
+            </label>
+            <select 
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md 
+                         focus:outline-none focus:ring-1 focus:ring-blue-500 
+                         dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={localConfig.colorScheme}
+              onChange={(e) => handleChange('colorScheme', e.target.value)}
+            >
+              {themeConfig?.colorSchemes?.schemes?.map((scheme, index) => (
+                <option key={scheme.id} value={String(index + 1)}>
+                  {scheme.name}
+                </option>
+              )) || [1, 2, 3, 4, 5].map(num => (
+                <option key={num} value={String(num)}>Scheme {num}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Uses the color scheme from global settings
+            </p>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-gray-600 uppercase">Highlights (Max 3)</h3>
-              {localConfig.highlights.length < 3 && (
-                <button
-                  onClick={addHighlight}
-                  className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                >
-                  <Plus className="w-3 h-3" />
-                  Add
-                </button>
-              )}
+          {/* Header Title Input */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Section title
+            </label>
+            <input
+              type="text"
+              value={localConfig.title}
+              onChange={(e) => handleChange('title', e.target.value)}
+              placeholder="Enter section title"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md
+                         focus:outline-none focus:ring-1 focus:ring-blue-500
+                         dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Title displayed above the highlights
+            </p>
+          </div>
+
+          {/* Heading Size Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Heading size
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="14"
+                max="36"
+                step="2"
+                value={localConfig.headingSize || 20}
+                onChange={(e) => handleChange('headingSize', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.headingSize || 20}px
+              </span>
             </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Small</span>
+              <span>Medium</span>
+              <span>Large</span>
+            </div>
+          </div>
 
-            {localConfig.highlights.map((highlight, index) => (
-              <div key={highlight.id} className="border rounded-lg p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium">Highlight {index + 1}</span>
-                  {localConfig.highlights.length > 1 && (
-                    <button
-                      onClick={() => removeHighlight(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
+          {/* Heading Weight */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Heading weight
+            </label>
+            <select 
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md 
+                         focus:outline-none focus:ring-1 focus:ring-blue-500 
+                         dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={localConfig.headingWeight || '600'}
+              onChange={(e) => handleChange('headingWeight', e.target.value)}
+            >
+              <option value="300">Light (300)</option>
+              <option value="400">Regular (400)</option>
+              <option value="500">Medium (500)</option>
+              <option value="600">Semi-Bold (600)</option>
+              <option value="700">Bold (700)</option>
+              <option value="800">Extra Bold (800)</option>
+              <option value="900">Black (900)</option>
+            </select>
+          </div>
 
-                <div>
-                  <label className="text-xs text-gray-600">Icon</label>
-                  <select
-                    value={highlight.icon}
-                    onChange={(e) => handleHighlightChange(index, 'icon', e.target.value)}
-                    className="w-full px-2 py-1 text-sm border rounded"
-                  >
-                    {commonIcons.map(icon => (
-                      <option key={icon} value={icon}>{icon}</option>
-                    ))}
-                  </select>
-                </div>
+          {/* Heading Format Options */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Heading format
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleChange('headingItalic', !localConfig.headingItalic)}
+                className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                  localConfig.headingItalic 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <em>I</em>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('headingUnderline', !localConfig.headingUnderline)}
+                className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                  localConfig.headingUnderline 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <u>U</u>
+              </button>
+            </div>
+          </div>
 
-                <input
-                  type="text"
-                  value={highlight.title}
-                  onChange={(e) => handleHighlightChange(index, 'title', e.target.value)}
-                  placeholder="Title"
-                  className="w-full px-2 py-1 text-sm border rounded"
-                />
+          {/* Title Spacing Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Title spacing
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="8"
+                max="80"
+                step="4"
+                value={localConfig.titleSpacing || 24}
+                onChange={(e) => handleChange('titleSpacing', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.titleSpacing || 24}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Close</span>
+              <span>Normal</span>
+              <span>Far</span>
+            </div>
+          </div>
 
-                <textarea
-                  value={highlight.description}
-                  onChange={(e) => handleHighlightChange(index, 'description', e.target.value)}
-                  placeholder="Description"
-                  rows={2}
-                  className="w-full px-2 py-1 text-sm border rounded resize-none"
-                />
-              </div>
-            ))}
+          {/* Top Padding Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Top padding
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="0"
+                max="120"
+                step="8"
+                value={localConfig.topPadding}
+                onChange={(e) => handleChange('topPadding', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[45px]">
+                {localConfig.topPadding}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>None</span>
+              <span>Normal</span>
+              <span>Large</span>
+            </div>
+          </div>
+
+          {/* Bottom Padding Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Bottom padding
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="0"
+                max="120"
+                step="8"
+                value={localConfig.bottomPadding}
+                onChange={(e) => handleChange('bottomPadding', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[45px]">
+                {localConfig.bottomPadding}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>None</span>
+              <span>Normal</span>
+              <span>Large</span>
+            </div>
+          </div>
+
+          {/* Nota informativa sobre los espacios comunes */}
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p className="text-xs text-blue-800 dark:text-blue-300">
+              <strong>Note:</strong> This section displays the common spaces configured in the room's Sleeping Arrangements. 
+              To add or modify common spaces, edit the room and go to the "Sleeping Arrangements" section.
+            </p>
           </div>
         </div>
       )}

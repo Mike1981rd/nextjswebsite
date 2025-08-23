@@ -21,6 +21,13 @@ interface RoomAmenitiesConfig {
   columns: number;
   showUnavailable: boolean;
   iconSize?: number;
+  horizontalSpacing?: number;
+  verticalSpacing?: number;
+  titleSpacing?: number;
+  headingSize?: number;
+  headingWeight?: string;
+  headingItalic?: boolean;
+  headingUnderline?: boolean;
 }
 
 interface PreviewRoomAmenitiesProps {
@@ -144,6 +151,57 @@ export default function PreviewRoomAmenities({
     return selectedScheme || themeConfig.colorSchemes.schemes[0];
   }, [themeConfig, config.colorScheme]);
 
+  // Generate typography styles for headings
+  const headingTypographyStyles = useMemo(() => {
+    if (!themeConfig?.typography?.headings) return {};
+    
+    const heading = themeConfig.typography.headings;
+    return {
+      fontFamily: `'${heading.fontFamily}', sans-serif`,
+      fontWeight: heading.fontWeight || '600',
+      textTransform: heading.useUppercase ? 'uppercase' as const : 'none' as const,
+      fontSize: heading.fontSize ? 
+        (heading.fontSize <= 100 ? 
+          `${heading.fontSize}%` : 
+          `${heading.fontSize}px`) : '100%',
+      letterSpacing: `${heading.letterSpacing || 0}px`
+    };
+  }, [themeConfig?.typography?.headings]);
+
+  // Generate typography styles for body text
+  const bodyTypographyStyles = useMemo(() => {
+    if (!themeConfig?.typography?.body) return {};
+    
+    const body = themeConfig.typography.body;
+    return {
+      fontFamily: `'${body.fontFamily}', sans-serif`,
+      fontWeight: body.fontWeight || '400',
+      textTransform: body.useUppercase ? 'uppercase' as const : 'none' as const,
+      fontSize: body.fontSize ? 
+        (body.fontSize <= 100 ? 
+          `${body.fontSize}%` : 
+          `${body.fontSize}px`) : '100%',
+      letterSpacing: `${body.letterSpacing || 0}px`
+    };
+  }, [themeConfig?.typography?.body]);
+
+  // Generate typography styles for buttons
+  const buttonTypographyStyles = useMemo(() => {
+    if (!themeConfig?.typography?.buttons) return {};
+    
+    const buttons = themeConfig.typography.buttons;
+    return {
+      fontFamily: `'${buttons.fontFamily}', sans-serif`,
+      fontWeight: buttons.fontWeight || '500',
+      textTransform: buttons.useUppercase ? 'uppercase' as const : 'none' as const,
+      fontSize: buttons.fontSize ? 
+        (buttons.fontSize <= 100 ? 
+          `${buttons.fontSize}%` : 
+          `${buttons.fontSize}px`) : '100%',
+      letterSpacing: `${buttons.letterSpacing || 0}px`
+    };
+  }, [themeConfig?.typography?.buttons]);
+
   const getIcon = (iconName?: string, iconType?: 'heroicon' | 'emoji' | 'custom') => {
     const size = config.iconSize || 24;
     const sizeInRem = size / 16; // Convert px to rem for better scaling
@@ -209,23 +267,36 @@ export default function PreviewRoomAmenities({
       }}
     >
       <h2 
-        className="text-xl font-semibold mb-6"
-        style={{ color: colorScheme?.text || '#000000' }}
+        style={{ 
+          ...headingTypographyStyles,
+          color: colorScheme?.text || '#000000',
+          marginBottom: `${config.titleSpacing || 24}px`,
+          fontSize: config.headingSize ? `${config.headingSize}px` : (headingTypographyStyles.fontSize || '20px'),
+          fontWeight: config.headingWeight || headingTypographyStyles.fontWeight || '600',
+          fontStyle: config.headingItalic ? 'italic' : (headingTypographyStyles.fontStyle || 'normal'),
+          textDecoration: config.headingUnderline ? 'underline' : 'none'
+        }}
       >
         {config.title || 'What this place offers'}
       </h2>
       
-      <div className={`grid grid-cols-${columns} gap-4 mb-6`}>
+      <div 
+        className={`grid grid-cols-${columns} mb-6`}
+        style={{
+          gap: `${config.verticalSpacing || 16}px ${config.horizontalSpacing || 16}px`
+        }}
+      >
         {visibleAmenities.map((amenity) => (
           <div 
             key={amenity.id} 
-            className={`flex items-center gap-3 py-2 ${!amenity.available ? 'opacity-50 line-through' : ''}`}
+            className={`flex items-center ${!amenity.available ? 'opacity-50 line-through' : ''}`}
             style={{ 
-              color: !amenity.available ? colorScheme?.border : colorScheme?.text
+              color: !amenity.available ? colorScheme?.border : colorScheme?.text,
+              gap: '12px' // Fixed gap between icon and text
             }}
           >
             {getIcon((amenity as any).icon, (amenity as any).iconType)}
-            <span className="text-base">{amenity.name}</span>
+            <span className="text-base" style={bodyTypographyStyles}>{amenity.name}</span>
           </div>
         ))}
       </div>
@@ -235,7 +306,8 @@ export default function PreviewRoomAmenities({
           onClick={() => setShowAll(!showAll)}
           style={{
             color: colorScheme?.link || '#0066CC',
-            borderColor: colorScheme?.border || '#E5E5E5'
+            borderColor: colorScheme?.border || '#E5E5E5',
+            ...buttonTypographyStyles
           }}
           className="px-6 py-3 border border-gray-900 rounded-lg font-medium hover:bg-gray-50 transition"
         >
