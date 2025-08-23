@@ -114,3 +114,16 @@ lerna-debug.log*
 logs/
 *.log
 .git-ssh/
+
+# Visual Studio files
+.vs/
+obj/
+bin/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Test images and temporary files
+Test Images/
+*.cache.json
+
