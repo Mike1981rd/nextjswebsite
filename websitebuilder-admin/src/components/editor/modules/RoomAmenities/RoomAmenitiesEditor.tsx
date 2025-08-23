@@ -2,21 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useEditorStore } from '@/stores/useEditorStore';
-import { ChevronDown, ChevronUp, Sparkles, Plus, X } from 'lucide-react';
-
-interface Amenity {
-  id: string;
-  icon: string;
-  name: string;
-  available: boolean;
-}
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 
 interface RoomAmenitiesConfig {
   enabled: boolean;
+  colorScheme: string;
   title: string;
-  amenities: Amenity[];
   columns: number;
   showUnavailable: boolean;
+  iconSize: number;
 }
 
 interface RoomAmenitiesEditorProps {
@@ -25,25 +20,16 @@ interface RoomAmenitiesEditorProps {
 
 const getDefaultConfig = (): RoomAmenitiesConfig => ({
   enabled: true,
+  colorScheme: '1',
   title: 'What this place offers',
-  amenities: [
-    { id: '1', icon: 'Wifi', name: 'Wifi', available: true },
-    { id: '2', icon: 'Tv', name: 'TV', available: true },
-    { id: '3', icon: 'Utensils', name: 'Kitchen', available: true },
-    { id: '4', icon: 'Car', name: 'Free parking', available: true },
-    { id: '5', icon: 'Wind', name: 'Air conditioning', available: true },
-    { id: '6', icon: 'Dumbbell', name: 'Gym', available: false },
-    { id: '7', icon: 'Trees', name: 'Garden view', available: true },
-    { id: '8', icon: 'Coffee', name: 'Coffee maker', available: true },
-    { id: '9', icon: 'Bath', name: 'Bathtub', available: true },
-    { id: '10', icon: 'Flame', name: 'Heating', available: true }
-  ],
   columns: 2,
-  showUnavailable: true
+  showUnavailable: true,
+  iconSize: 24
 });
 
 export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorProps) {
   const { sections, updateSectionSettings } = useEditorStore();
+  const { config: themeConfig } = useThemeConfigStore();
   const [isExpanded, setIsExpanded] = useState(true);
   const [localConfig, setLocalConfig] = useState<RoomAmenitiesConfig>(getDefaultConfig());
 
@@ -75,32 +61,6 @@ export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorPr
     }
   };
 
-  const handleAmenityChange = (index: number, field: keyof Amenity, value: any) => {
-    const newAmenities = [...localConfig.amenities];
-    newAmenities[index] = { ...newAmenities[index], [field]: value };
-    handleChange('amenities', newAmenities);
-  };
-
-  const addAmenity = () => {
-    const newAmenity: Amenity = {
-      id: Date.now().toString(),
-      icon: 'Star',
-      name: 'New amenity',
-      available: true
-    };
-    handleChange('amenities', [...localConfig.amenities, newAmenity]);
-  };
-
-  const removeAmenity = (index: number) => {
-    const newAmenities = localConfig.amenities.filter((_, i) => i !== index);
-    handleChange('amenities', newAmenities);
-  };
-
-  const commonIcons = [
-    'Wifi', 'Tv', 'Car', 'Wind', 'Coffee', 'Utensils', 
-    'Dumbbell', 'Trees', 'Bath', 'Flame', 'Star', 'Shield',
-    'Home', 'Heart', 'Key', 'Mountain', 'Sun', 'Moon'
-  ];
 
   return (
     <div className="bg-white dark:bg-gray-900">
@@ -117,16 +77,59 @@ export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorPr
 
       {isExpanded && (
         <div className="p-4 space-y-4 border-b max-h-[600px] overflow-y-auto">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">Show amenities</label>
-            <input
-              type="checkbox"
-              checked={localConfig.enabled}
-              onChange={(e) => handleChange('enabled', e.target.checked)}
-              className="rounded"
-            />
+          {/* Color Scheme Selector - PRIMERA OPCIÓN */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Color scheme
+            </label>
+            <select 
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md 
+                         focus:outline-none focus:ring-1 focus:ring-blue-500 
+                         dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={localConfig.colorScheme}
+              onChange={(e) => handleChange('colorScheme', e.target.value)}
+            >
+              {themeConfig?.colorSchemes?.schemes?.map((scheme, index) => (
+                <option key={scheme.id} value={String(index + 1)}>
+                  {scheme.name}
+                </option>
+              )) || [1, 2, 3, 4, 5].map(num => (
+                <option key={num} value={String(num)}>Scheme {num}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Uses the color scheme from global settings
+            </p>
           </div>
 
+          {/* Icon Size Slider */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Icon size
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="16"
+                max="64"
+                step="4"
+                value={localConfig.iconSize}
+                onChange={(e) => handleChange('iconSize', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.iconSize}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Small</span>
+              <span>Medium</span>
+              <span>Large</span>
+              <span>Extra</span>
+            </div>
+          </div>
+
+          {/* Title */}
           <input
             type="text"
             value={localConfig.title}
@@ -135,6 +138,7 @@ export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorPr
             className="w-full px-3 py-1.5 text-sm border rounded-md"
           />
 
+          {/* Columns and Show unavailable */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs text-gray-600">Columns</label>
@@ -161,51 +165,12 @@ export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorPr
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-gray-600 uppercase">Amenities</h3>
-              <button
-                onClick={addAmenity}
-                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                Add
-              </button>
-            </div>
-
-            <div className="space-y-2 max-h-[300px] overflow-y-auto">
-              {localConfig.amenities.map((amenity, index) => (
-                <div key={amenity.id} className="flex gap-2 items-center p-2 border rounded">
-                  <select
-                    value={amenity.icon}
-                    onChange={(e) => handleAmenityChange(index, 'icon', e.target.value)}
-                    className="w-20 px-1 py-1 text-xs border rounded"
-                  >
-                    {commonIcons.map(icon => (
-                      <option key={icon} value={icon}>{icon}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    value={amenity.name}
-                    onChange={(e) => handleAmenityChange(index, 'name', e.target.value)}
-                    className="flex-1 px-2 py-1 text-xs border rounded"
-                  />
-                  <input
-                    type="checkbox"
-                    checked={amenity.available}
-                    onChange={(e) => handleAmenityChange(index, 'available', e.target.checked)}
-                    className="rounded"
-                  />
-                  <button
-                    onClick={() => removeAmenity(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
+          {/* Nota informativa sobre las amenidades */}
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p className="text-xs text-blue-800 dark:text-blue-300">
+              <strong>Note:</strong> Amenities are automatically loaded from the room data. 
+              You can manage amenities in the room configuration.
+            </p>
           </div>
         </div>
       )}

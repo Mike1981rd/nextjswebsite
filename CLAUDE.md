@@ -83,6 +83,49 @@ components/
 2. Decir: "⚠️ ALERTA: Esto violaría la regla de [X]. Propongo alternativa:"
 3. Ofrecer solución modular que cumpla las reglas
 
+## 🌐 ACCESO A SERVICIOS WINDOWS DESDE WSL - CRÍTICO
+
+### ⚠️ CONFIGURACIÓN DE RED WSL2 + WINDOWS
+
+**PROBLEMA**: WSL2 y Windows tienen interfaces de red SEPARADAS
+- `localhost` en WSL apunta a WSL mismo, NO a Windows
+- Los servicios corriendo en Windows NO son accesibles via localhost desde WSL
+
+**SOLUCIÓN OBLIGATORIA**:
+1. **Obtener IP del host Windows desde WSL**:
+   ```bash
+   ip route | grep default
+   # Resultado típico: default via 172.25.64.1 dev eth0
+   ```
+
+2. **Usar IP del host para acceder a servicios Windows**:
+   ```
+   ❌ INCORRECTO: http://localhost:3000
+   ✅ CORRECTO:   http://172.25.64.1:3000
+   ```
+
+### 📌 APLICACIÓN PRÁCTICA
+
+**Para Playwright/Browser automation desde WSL**:
+```javascript
+// ❌ NO FUNCIONARÁ
+await page.goto('http://localhost:3000/login');
+
+// ✅ FUNCIONARÁ
+await page.goto('http://172.25.64.1:3000/login');
+```
+
+**Para llamadas API desde WSL al backend en Windows**:
+```bash
+# ❌ NO FUNCIONARÁ
+curl http://localhost:5266/api/endpoint
+
+# ✅ FUNCIONARÁ  
+curl http://172.25.64.1:5266/api/endpoint
+```
+
+**NOTA**: La IP del host puede cambiar tras reiniciar WSL. Siempre verificar con `ip route`.
+
 ## 🎯 COMANDO /init-session - CONFIGURACIÓN FORZADA
 
 ### ⚠️ IMPORTANTE: EJECUCIÓN OBLIGATORIA DEL COMANDO
@@ -559,3 +602,95 @@ Beneficios:
   - Buscar `habitaciones`; si no existe, migrar `custom → habitaciones`; si no hay ninguna, crear `CUSTOM` con slug `habitaciones`.
 
 Con esto, el Preview Real queda consistente, resiliente a cambios de slug y sin fugas entre páginas.
+
+## 🔐 ACCESO AL SISTEMA CON PLAYWRIGHT - CONFIGURACIÓN Y CREDENCIALES
+
+### ⚠️ CONFIGURACIÓN CRÍTICA PARA PLAYWRIGHT
+
+**FECHA DE CONFIGURACIÓN**: 23 de agosto 2025
+**HERRAMIENTA**: MCP Playwright Browser Automation
+
+### 📋 PROBLEMAS ENCONTRADOS Y SOLUCIONES
+
+#### Problema 1: Connection Refused en localhost
+**Error**: `net::ERR_CONNECTION_REFUSED at http://localhost:3000`
+**Causa**: Playwright ejecutándose en WSL no puede acceder a `localhost` de Windows
+**Solución**: Usar IP del host Windows (`172.25.64.1`) en lugar de `localhost`
+
+#### Problema 2: CORS Policy Blocking
+**Error**: `Access to fetch at 'http://172.25.64.1:5266/api' from origin 'http://172.25.64.1:3000' has been blocked by CORS policy`
+**Causa**: Backend no permitía peticiones desde la IP del host WSL
+**Solución**: Actualizar `Program.cs` agregando las IPs del host WSL a CORS:
+```csharp
+builder.WithOrigins(
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://172.25.64.1:3000",  // WSL2 host IP
+    "http://172.25.64.1:3001")  // WSL2 host IP alternate port
+```
+
+#### Problema 3: API URL en Frontend
+**Error**: Frontend configurado para usar `localhost:5266`
+**Solución**: Actualizar `.env.local`:
+```bash
+# URL de la API de desarrollo
+# Usando IP del host de Windows desde WSL
+NEXT_PUBLIC_API_URL=http://172.25.64.1:5266/api
+```
+
+### 🔑 CREDENCIALES DE ACCESO
+
+**IMPORTANTE**: Usar estas credenciales para todas las pruebas con Playwright
+
+```javascript
+// Credenciales de prueba autorizadas
+const TEST_CREDENTIALS = {
+  email: "miguelnuez919@yahoo.com",
+  password: "123456",
+  role: "SuperAdmin",
+  userName: "Lily Nunez"
+};
+```
+
+### 📝 PROCEDIMIENTO ESTÁNDAR DE ACCESO
+
+1. **Obtener IP del host Windows** (puede cambiar al reiniciar WSL):
+   ```bash
+   ip route | grep default
+   # Típicamente: 172.25.64.1
+   ```
+
+2. **Navegar al login usando IP del host**:
+   ```javascript
+   await page.goto('http://172.25.64.1:3000/login');
+   ```
+
+3. **Ingresar credenciales**:
+   ```javascript
+   await page.fill('[name="email"]', 'miguelnuez919@yahoo.com');
+   await page.fill('[name="password"]', '123456');
+   await page.click('[type="submit"]');
+   ```
+
+4. **Verificar acceso exitoso**:
+   - URL debe cambiar a `/dashboard`
+   - Usuario visible: "Lily Nunez - SuperAdmin"
+
+### ⚙️ CHECKLIST DE VERIFICACIÓN ANTES DE USAR PLAYWRIGHT
+
+- [ ] Frontend corriendo en Windows (puerto 3000)
+- [ ] Backend corriendo en Windows (puerto 5266)
+- [ ] IP del host verificada con `ip route`
+- [ ] `.env.local` actualizado con IP correcta
+- [ ] CORS en `Program.cs` incluye IP del host
+- [ ] Reiniciados ambos servidores después de cambios
+
+### 🚨 NOTAS IMPORTANTES
+
+1. **NUNCA** usar `localhost` desde WSL para acceder a servicios Windows
+2. **SIEMPRE** verificar la IP del host antes de iniciar pruebas
+3. **REINICIAR** servidores después de cambios en configuración
+4. La IP del host puede cambiar después de reiniciar WSL/Windows
+5. Las credenciales son para ambiente de desarrollo solamente

@@ -104,7 +104,9 @@ try
                         "http://localhost:3000",
                         "http://localhost:3001",
                         "http://127.0.0.1:3000",
-                        "http://127.0.0.1:3001")
+                        "http://127.0.0.1:3001",
+                        "http://172.25.64.1:3000",  // WSL2 host IP
+                        "http://172.25.64.1:3001")  // WSL2 host IP alternate port
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();

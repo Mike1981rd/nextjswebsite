@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Wifi, Tv, Car, Wind, Coffee, Utensils, Dumbbell, Trees, Bath, Flame } from 'lucide-react';
-import * as Icons from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Check } from 'lucide-react';
+import IconRenderer from '@/components/ui/IconRenderer';
+import { useConfigOptions } from '@/hooks/useConfigOptions';
+import useThemeConfigStore from '@/stores/useThemeConfigStore';
 
 interface Amenity {
   id: string;
@@ -13,10 +15,12 @@ interface Amenity {
 
 interface RoomAmenitiesConfig {
   enabled: boolean;
+  colorScheme?: string;
   title: string;
-  amenities: Amenity[];
+  amenities?: Amenity[];
   columns: number;
   showUnavailable: boolean;
+  iconSize?: number;
 }
 
 interface PreviewRoomAmenitiesProps {
@@ -34,12 +38,19 @@ export default function PreviewRoomAmenities({
 }: PreviewRoomAmenitiesProps) {
   
   const [showAll, setShowAll] = useState(false);
+  
+  // Get theme config from store if not passed as prop
+  const { config: themeConfigFromStore } = useThemeConfigStore();
+  const themeConfig = theme || themeConfigFromStore;
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (deviceView !== undefined) return deviceView === 'mobile';
     if (typeof window !== 'undefined') return window.innerWidth < 768;
     return false;
   });
   const [roomData, setRoomData] = useState<any>(null);
+  
+  // Get amenity options from ConfigOptions for icon mapping
+  const { options: amenityOptions } = useConfigOptions('amenity');
 
   useEffect(() => {
     if (deviceView !== undefined) {
@@ -63,7 +74,12 @@ export default function PreviewRoomAmenities({
         );
         if (response.ok) {
           const data = await response.json();
-          console.log('Room amenities data:', data.amenities); // Debug log
+          console.log('=== Room Data Debug ===');
+          console.log('Full room data:', data);
+          console.log('Amenities type:', typeof data.amenities);
+          console.log('Amenities value:', data.amenities);
+          console.log('First amenity:', data.amenities?.[0]);
+          console.log('====================');
           setRoomData(data);
         }
       } catch (error) {
@@ -79,62 +95,101 @@ export default function PreviewRoomAmenities({
 
   if (!config.enabled) return null;
 
-  // Icon mapping for common amenities
-  const amenityIconMap: { [key: string]: string } = {
-    'wifi': 'Wifi',
-    'wi-fi': 'Wifi',
-    'internet': 'Wifi',
-    'tv': 'Tv',
-    'television': 'Tv',
-    'parking': 'Car',
-    'car': 'Car',
-    'air conditioning': 'Wind',
-    'ac': 'Wind',
-    'coffee': 'Coffee',
-    'kitchen': 'Utensils',
-    'gym': 'Dumbbell',
-    'garden': 'Trees',
-    'pool': 'Waves',
-    'bath': 'Bath',
-    'bathtub': 'Bath',
-    'heating': 'Flame',
-    'washer': 'Shirt',
-    'dryer': 'Wind',
-    'workspace': 'Monitor',
-    'desk': 'Monitor'
-  };
-
-  const getAmenityIcon = (amenityName: string): string => {
-    const lowerName = amenityName.toLowerCase();
-    for (const [key, icon] of Object.entries(amenityIconMap)) {
-      if (lowerName.includes(key)) {
-        return icon;
-      }
-    }
-    return 'Check'; // Default icon
-  };
-
   // Map room amenities to display format
   const roomAmenities = roomData?.amenities ? 
     roomData.amenities.map((amenity: any, index: number) => {
       // Handle both string array and object array formats
       const amenityName = typeof amenity === 'string' ? amenity : amenity.name;
-      const amenityIcon = typeof amenity === 'object' && amenity.icon ? 
-        amenity.icon : getAmenityIcon(amenityName);
-      
+
+      // Find the matching amenity option from ConfigOptions to get its icon and iconType
+      const matchingOption = amenityOptions?.find(opt => 
+        opt.label?.toLowerCase() === amenityName.toLowerCase()
+      );
+
+      const amenityIcon = matchingOption?.icon;
+      const amenityIconType = matchingOption?.iconType as 'heroicon' | 'emoji' | 'custom' | undefined;
+
       return {
         id: index.toString(),
         icon: amenityIcon,
+        iconType: amenityIconType,
         name: amenityName,
         available: true
       };
     }) : null;
 
-  const amenities = roomAmenities || config.amenities;
+  const amenities = roomAmenities || config.amenities || [];
+  
+  // Get the selected color scheme
+  const colorScheme = useMemo(() => {
+    if (!themeConfig?.colorSchemes?.schemes) {
+      // Fallback colors if no theme config
+      return {
+        text: '#000000',
+        background: '#FFFFFF',
+        solidButton: '#000000',
+        solidButtonText: '#FFFFFF',
+        outlineButton: '#000000',
+        outlineButtonText: '#000000',
+        link: '#0066CC',
+        border: '#E5E5E5',
+        foreground: '#F5F5F5'
+      };
+    }
+    
+    // config.colorScheme is "1", "2", etc. - convert to index
+    const schemeIndex = parseInt(config.colorScheme || '1') - 1;
+    const selectedScheme = themeConfig.colorSchemes.schemes[schemeIndex];
+    
+    return selectedScheme || themeConfig.colorSchemes.schemes[0];
+  }, [themeConfig, config.colorScheme]);
 
-  const getIcon = (iconName: string) => {
-    const IconComponent = Icons[iconName as keyof typeof Icons];
-    return IconComponent ? <IconComponent className="w-6 h-6" /> : <Wifi className="w-6 h-6" />;
+  const getIcon = (iconName?: string, iconType?: 'heroicon' | 'emoji' | 'custom') => {
+    const size = config.iconSize || 24;
+    const sizeInRem = size / 16; // Convert px to rem for better scaling
+    
+    if (!iconName) {
+      return (
+        <Check 
+          style={{ 
+            width: `${size}px`, 
+            height: `${size}px`,
+            minWidth: `${size}px`,
+            minHeight: `${size}px`
+          }} 
+        />
+      );
+    }
+    
+    // For emojis, use fontSize
+    if (iconType === 'emoji' || (!iconType && (iconName.length <= 3 || iconName.includes('️')))) {
+      return (
+        <span style={{ fontSize: `${size}px`, lineHeight: 1 }}>
+          {iconName}
+        </span>
+      );
+    }
+    
+    // For other icons, pass size in className
+    return (
+      <div 
+        style={{ 
+          width: `${size}px`, 
+          height: `${size}px`,
+          minWidth: `${size}px`,
+          minHeight: `${size}px`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <IconRenderer 
+          icon={iconName} 
+          iconType={iconType} 
+          className={`w-full h-full`}
+        />
+      </div>
+    );
   };
 
   const displayAmenities = config.showUnavailable 
@@ -145,8 +200,18 @@ export default function PreviewRoomAmenities({
   const columns = isMobile ? 1 : config.columns || 2;
 
   return (
-    <div className="container mx-auto px-6 py-8 border-t">
-      <h2 className="text-xl font-semibold mb-6">
+    <div 
+      className="container mx-auto px-6 py-8"
+      style={{
+        borderTop: `1px solid ${colorScheme?.border || '#E5E5E5'}`,
+        backgroundColor: colorScheme?.background || '#FFFFFF',
+        color: colorScheme?.text || '#000000'
+      }}
+    >
+      <h2 
+        className="text-xl font-semibold mb-6"
+        style={{ color: colorScheme?.text || '#000000' }}
+      >
         {config.title || 'What this place offers'}
       </h2>
       
@@ -155,8 +220,11 @@ export default function PreviewRoomAmenities({
           <div 
             key={amenity.id} 
             className={`flex items-center gap-3 py-2 ${!amenity.available ? 'opacity-50 line-through' : ''}`}
+            style={{ 
+              color: !amenity.available ? colorScheme?.border : colorScheme?.text
+            }}
           >
-            {getIcon(amenity.icon)}
+            {getIcon((amenity as any).icon, (amenity as any).iconType)}
             <span className="text-base">{amenity.name}</span>
           </div>
         ))}
@@ -165,6 +233,10 @@ export default function PreviewRoomAmenities({
       {displayAmenities.length > 10 && (
         <button
           onClick={() => setShowAll(!showAll)}
+          style={{
+            color: colorScheme?.link || '#0066CC',
+            borderColor: colorScheme?.border || '#E5E5E5'
+          }}
           className="px-6 py-3 border border-gray-900 rounded-lg font-medium hover:bg-gray-50 transition"
         >
           {showAll ? `Show less` : `Show all ${displayAmenities.length} amenities`}
