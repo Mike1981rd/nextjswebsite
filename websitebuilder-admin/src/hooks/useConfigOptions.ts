@@ -95,6 +95,8 @@ export function useConfigOptions(type: string) {
 
       const data = await response.json();
       
+      console.log(`📊 ConfigOptions received from API for type "${type}":`, data);
+      
       // Mapear las opciones con el idioma correcto
       const mappedOptions = data.map((opt: ConfigOption) => ({
         value: opt.value,
@@ -104,6 +106,8 @@ export function useConfigOptions(type: string) {
         category: opt.category,
         isCustom: opt.isCustom
       }));
+      
+      console.log(`🔄 Mapped options for display:`, mappedOptions);
 
       setOptions(mappedOptions);
     } catch (err) {

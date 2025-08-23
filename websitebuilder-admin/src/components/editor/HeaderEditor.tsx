@@ -522,6 +522,21 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
             </button>
           </div>
           
+          {/* Show cart icon */}
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-gray-700">Show cart icon</label>
+            <button
+              onClick={() => handleChange('showCartIcon', !getValue('showCartIcon'))}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                getValue('showCartIcon') !== false ? 'bg-blue-500' : 'bg-gray-300'
+              }`}
+            >
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                getValue('showCartIcon') !== false ? 'translate-x-5' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
+          
           {/* Show wishlist icon */}
           <div className="flex items-center justify-between">
             <label className="text-xs font-medium text-gray-700">Show wishlist icon</label>
@@ -613,6 +628,28 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
                 <option value="after-cart">After cart</option>
                 <option value="after-user">After user</option>
               </select>
+            </div>
+            
+            {/* Icon color */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Icon color
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={getValue('wishlist.iconColor') || '#000000'}
+                  onChange={(e) => handleChange('wishlist.iconColor', e.target.value)}
+                  className="w-8 h-8 border border-gray-300 rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={getValue('wishlist.iconColor') || '#000000'}
+                  onChange={(e) => handleChange('wishlist.iconColor', e.target.value)}
+                  className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded-md"
+                  placeholder="#000000"
+                />
+              </div>
             </div>
           </div>
         )}

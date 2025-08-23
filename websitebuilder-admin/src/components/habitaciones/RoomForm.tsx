@@ -7,6 +7,7 @@ import { useConfigOptions } from '@/hooks/useConfigOptions';
 import RoomFormExtended from './RoomFormExtended';
 import Toggle from '@/components/ui/Toggle';
 import QuickAddOffcanvas from '@/components/ui/QuickAddOffcanvas';
+import IconRenderer from '@/components/ui/IconRenderer';
 import { 
   XMarkIcon, 
   PlusIcon,
@@ -280,6 +281,8 @@ export default function RoomForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('💾 SAVING ROOM - Amenities to save:', formData.amenities);
 
     if (!validateForm()) {
       showToast(t('validation.fixErrors', 'Por favor corrija los errores en el formulario'), 'error');
@@ -912,7 +915,11 @@ export default function RoomForm({
                         }`}
                       >
                         {amenity.icon && (
-                          <span className="text-sm">{amenity.icon}</span>
+                          <IconRenderer
+                            icon={amenity.icon}
+                            iconType={amenity.iconType as 'heroicon' | 'emoji' | 'custom'}
+                            className="h-4 w-4"
+                          />
                         )}
                         {amenity.label}
                       </button>
@@ -1172,13 +1179,23 @@ export default function RoomForm({
           setQuickAddType(null);
         }}
         onAdd={(newOption) => {
+          console.log('🏨 RoomForm received newOption:', newOption);
+          console.log('🏨 quickAddType:', quickAddType);
+          
           // Actualizar el formulario con la nueva opción
           if (quickAddType === 'amenity') {
-            // Agregar la nueva amenidad al formulario
+            // Agregar la nueva amenidad al formulario - usar el LABEL, no el value
+            const labelToAdd = newOption.label || newOption.labelEs || newOption.labelEn || newOption.value;
+            
+            console.log('🏷️ Label to add to amenities:', labelToAdd);
+            console.log('📊 Current amenities:', formData.amenities);
+            
             setFormData(prev => ({
               ...prev,
-              amenities: [...prev.amenities, newOption.value]
+              amenities: [...prev.amenities, labelToAdd]
             }));
+            
+            console.log('✅ Amenity added to form');
           } else if (quickAddType === 'room_type') {
             // Seleccionar el nuevo tipo de habitación
             setFormData(prev => ({

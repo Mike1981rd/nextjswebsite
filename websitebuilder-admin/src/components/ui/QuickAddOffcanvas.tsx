@@ -75,20 +75,29 @@ export default function QuickAddOffcanvas({
   };
 
   const handleLabelChange = (lang: 'es' | 'en', value: string) => {
+    console.log(`🏷️ handleLabelChange - lang: ${lang}, value: ${value}`);
+    
     const updates: any = {
       [`label${lang.charAt(0).toUpperCase() + lang.slice(1)}`]: value
     };
     
-    // Auto-generar el valor si está vacío
-    if (!formData.value && lang === 'es') {
-      updates.value = generateValue(value);
+    // Auto-generar el valor si está vacío o si es un ID de icono personalizado
+    if ((!formData.value || formData.value.startsWith('custom-')) && lang === 'es') {
+      const generatedValue = generateValue(value);
+      updates.value = generatedValue;
+      console.log(`📝 Generated value: ${generatedValue} from label: ${value}`);
     }
+    
+    console.log('📦 Updates to apply:', updates);
+    console.log('📊 Current formData.value:', formData.value);
     
     setFormData(prev => ({ ...prev, ...updates }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('🚀 SUBMIT - Current formData:', formData);
     
     // Validaciones
     if (!formData.labelEs.trim()) {
@@ -101,8 +110,19 @@ export default function QuickAddOffcanvas({
       return;
     }
     
+    // Determinar el valor final que se guardará
+    const finalValue = (formData.value && !formData.value.startsWith('custom-')) 
+      ? formData.value 
+      : generateValue(formData.labelEs);
+    
+    console.log(`✅ Final value to save: ${finalValue}`);
+    console.log(`🏷️ LabelEs: ${formData.labelEs}`);
+    console.log(`🏷️ LabelEn: ${formData.labelEn}`);
+    console.log(`🎨 Icon: ${formData.icon}`);
+    console.log(`🎨 IconType: ${formData.iconType}`);
+    
     // Verificar si ya existe
-    if (existingOptions.includes(formData.value)) {
+    if (existingOptions.includes(finalValue)) {
       showError(t('config.alreadyExists', 'Esta opción ya existe'));
       return;
     }
@@ -111,23 +131,28 @@ export default function QuickAddOffcanvas({
     
     try {
       const token = localStorage.getItem('token');
+      
+      const payload = {
+        type,
+        value: finalValue,
+        labelEs: formData.labelEs,
+        labelEn: formData.labelEn,
+        icon: formData.icon,
+        iconType: formData.iconType,
+        category: formData.category,
+        sortOrder: 999,
+        isActive: true
+      };
+      
+      console.log('📤 Sending to API:', payload);
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ConfigOptions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          type,
-          value: formData.value || generateValue(formData.labelEs),
-          labelEs: formData.labelEs,
-          labelEn: formData.labelEn,
-          icon: formData.icon,
-          iconType: formData.iconType,
-          category: formData.category,
-          sortOrder: 999,
-          isActive: true
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -137,13 +162,21 @@ export default function QuickAddOffcanvas({
 
       const newOption = await response.json();
       
-      // Notificar al componente padre
-      onAdd({
+      console.log('📥 Response from API:', newOption);
+      
+      const optionToReturn = {
         value: newOption.value,
         label: language === 'es' ? newOption.labelEs : newOption.labelEn,
+        labelEs: newOption.labelEs,
+        labelEn: newOption.labelEn,
         icon: newOption.icon,
         iconType: newOption.iconType
-      });
+      };
+      
+      console.log('🔄 Returning to parent component:', optionToReturn);
+      
+      // Notificar al componente padre con toda la información necesaria
+      onAdd(optionToReturn);
       
       showSuccess(t('config.added', 'Opción agregada exitosamente'));
       onClose();
@@ -231,8 +264,20 @@ export default function QuickAddOffcanvas({
           </label>
           <IconPicker
             value={formData.icon}
-            onChange={(icon, type) => setFormData({ ...formData, icon, iconType: type })}
+            onChange={(icon, type) => {
+              console.log(`🎨 IconPicker onChange - icon: ${icon}, type: ${type}`);
+              console.log('📊 Current formData before icon change:', formData);
+              setFormData(prev => ({ ...prev, icon, iconType: type }));
+            }}
           />
+          
+          {/* Debug - mostrar el valor que se guardará */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-2 text-xs text-gray-500 p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p>Valor interno: <strong>{formData.value || generateValue(formData.labelEs)}</strong></p>
+              {formData.icon && <p>Icono ID: {formData.icon}</p>}
+            </div>
+          )}
         </div>
         
         {/* Categoría */}

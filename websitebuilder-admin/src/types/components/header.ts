@@ -90,6 +90,8 @@ export interface WishlistIconConfig {
   showCount: boolean;
   /** Badge color */
   badgeColor?: string;
+  /** Icon color */
+  iconColor?: string;
   /** Position relative to other icons */
   position?: 'before-cart' | 'after-cart' | 'after-user';
 }
@@ -144,6 +146,9 @@ export interface HeaderConfig {
   
   /** Show account icon */
   showAccount: boolean;
+  
+  /** Show cart icon */
+  showCartIcon?: boolean;
   
   /** Show language selector */
   showLanguageSelector: boolean;

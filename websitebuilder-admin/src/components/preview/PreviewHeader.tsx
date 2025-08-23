@@ -118,8 +118,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     hamburgerIconColor: config?.hamburgerIconColor || '', // custom hamburger color
     searchIconColor: config?.searchIconColor || '', // custom search icon color
     cartIconColor: config?.cartIconColor || '', // custom cart icon color
-    userIconColor: config?.userIconColor || '', // custom user icon color
-    wishlistIconColor: config?.wishlistIconColor || '' // custom wishlist icon color
+    userIconColor: config?.userIconColor || '' // custom user icon color
   };
 
   // Apply typography styles from theme (matching EditorPreview.tsx)
@@ -262,7 +261,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
   
   const renderWishlistIcon = () => {
     const iconClass = isMobile ? "w-4 h-4" : "w-5 h-5";
-    const iconColor = headerConfig.wishlistIconColor || colorScheme?.text?.default || '#000000';
+    const iconColor = headerConfig.wishlist?.iconColor || colorScheme?.text?.default || '#000000';
     const wishlistStyle = headerConfig.wishlist?.style || 'heart-outline';
     
     if (wishlistStyle === 'heart') {

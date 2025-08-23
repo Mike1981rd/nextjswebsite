@@ -46,6 +46,8 @@ export default function EditarHabitacionPage() {
       }
 
       const data = await response.json();
+      console.log('🏨 LOADED ROOM DATA:', data);
+      console.log('📋 Room amenities:', data.amenities);
       setRoom(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
