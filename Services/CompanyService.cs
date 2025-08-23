@@ -325,6 +325,55 @@ namespace WebsiteBuilderAPI.Services
             }
         }
 
+        public async Task<string> UploadCheckoutLogoAsync(IFormFile file)
+        {
+            var currentCompany = await _context.Companies.FirstOrDefaultAsync();
+            if (currentCompany == null)
+            {
+                throw new InvalidOperationException("No company found in the system");
+            }
+
+            // Ensure settings exist
+            var settings = await _context.CheckoutSettings.FirstOrDefaultAsync(cs => cs.CompanyId == currentCompany.Id);
+            if (settings == null)
+            {
+                settings = new CheckoutSettings
+                {
+                    CompanyId = currentCompany.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.CheckoutSettings.Add(settings);
+                await _context.SaveChangesAsync();
+            }
+
+            // Save file under wwwroot/uploads/checkout/
+            var webRoot = _environment.WebRootPath;
+            if (string.IsNullOrWhiteSpace(webRoot))
+            {
+                // Fallback for environments without WebRootPath set
+                webRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            }
+            var uploadsPath = Path.Combine(webRoot, "uploads", "checkout");
+            Directory.CreateDirectory(uploadsPath);
+            var fileExtension = Path.GetExtension(file.FileName);
+            var fileName = $"checkout_logo_{DateTime.UtcNow:yyyyMMddHHmmss}{fileExtension}";
+            var filePath = Path.Combine(uploadsPath, fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Update settings with the new logo URL
+            var logoUrl = $"/uploads/checkout/{fileName}";
+            settings.CheckoutLogoUrl = logoUrl;
+            settings.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Checkout logo uploaded: {LogoUrl}", logoUrl);
+            return logoUrl;
+        }
+
         #region Checkout Settings Methods
 
         public async Task<CheckoutSettingsDto?> GetCheckoutSettingsAsync()
@@ -377,6 +426,7 @@ namespace WebsiteBuilderAPI.Services
                 AllowGuestCheckout = true,
                 CollectMarketingConsent = false,
                 ShowTermsAndConditions = true,
+                CheckoutLogoAlignment = "center",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -422,6 +472,12 @@ namespace WebsiteBuilderAPI.Services
             settings.CollectMarketingConsent = request.CollectMarketingConsent;
             settings.ShowTermsAndConditions = request.ShowTermsAndConditions;
             settings.TermsAndConditionsUrl = request.TermsAndConditionsUrl;
+            // Branding
+            settings.CheckoutLogoUrl = string.IsNullOrWhiteSpace(request.CheckoutLogoUrl) ? settings.CheckoutLogoUrl : request.CheckoutLogoUrl;
+            settings.CheckoutLogoAlignment = string.IsNullOrWhiteSpace(request.CheckoutLogoAlignment) ? settings.CheckoutLogoAlignment : request.CheckoutLogoAlignment;
+            settings.CheckoutLogoWidthPx = request.CheckoutLogoWidthPx ?? settings.CheckoutLogoWidthPx;
+            if (!string.IsNullOrWhiteSpace(request.CheckoutPayButtonColor)) settings.CheckoutPayButtonColor = request.CheckoutPayButtonColor;
+            if (!string.IsNullOrWhiteSpace(request.CheckoutPayButtonTextColor)) settings.CheckoutPayButtonTextColor = request.CheckoutPayButtonTextColor;
             settings.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -485,6 +541,11 @@ namespace WebsiteBuilderAPI.Services
                 CollectMarketingConsent = settings.CollectMarketingConsent,
                 ShowTermsAndConditions = settings.ShowTermsAndConditions,
                 TermsAndConditionsUrl = settings.TermsAndConditionsUrl,
+                CheckoutLogoUrl = settings.CheckoutLogoUrl,
+                CheckoutLogoAlignment = settings.CheckoutLogoAlignment,
+                CheckoutLogoWidthPx = settings.CheckoutLogoWidthPx,
+                CheckoutPayButtonColor = settings.CheckoutPayButtonColor,
+                CheckoutPayButtonTextColor = settings.CheckoutPayButtonTextColor,
                 CreatedAt = settings.CreatedAt,
                 UpdatedAt = settings.UpdatedAt
             };

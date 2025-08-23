@@ -521,7 +521,101 @@ export function HeaderEditor({ value, onChange }: HeaderEditorProps) {
               }`} />
             </button>
           </div>
+          
+          {/* Show wishlist icon */}
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-gray-700">Show wishlist icon</label>
+            <button
+              onClick={() => handleChange('wishlist.show', !getValue('wishlist.show'))}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                getValue('wishlist.show') ? 'bg-blue-500' : 'bg-gray-300'
+              }`}
+            >
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                getValue('wishlist.show') ? 'translate-x-5' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
         </div>
+        
+        {/* Wishlist Options - Only show when wishlist is enabled */}
+        {getValue('wishlist.show') && (
+          <div className="space-y-3 p-3 bg-gray-50 rounded-md mt-3">
+            <h4 className="text-xs font-semibold text-gray-700">Wishlist Settings</h4>
+            
+            {/* Wishlist icon style */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Wishlist icon style
+              </label>
+              <select 
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={getValue('wishlist.style') || 'heart-outline'}
+                onChange={(e) => handleChange('wishlist.style', e.target.value)}
+              >
+                <option value="heart">Heart (filled)</option>
+                <option value="heart-outline">Heart (outline)</option>
+                <option value="star">Star (filled)</option>
+                <option value="star-outline">Star (outline)</option>
+              </select>
+            </div>
+            
+            {/* Show count badge */}
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-gray-700">Show count badge</label>
+              <button
+                onClick={() => handleChange('wishlist.showCount', !getValue('wishlist.showCount'))}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                  getValue('wishlist.showCount') !== false ? 'bg-blue-500' : 'bg-gray-300'
+                }`}
+              >
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  getValue('wishlist.showCount') !== false ? 'translate-x-5' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+            
+            {/* Badge color */}
+            {getValue('wishlist.showCount') !== false && (
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                  Badge color
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={getValue('wishlist.badgeColor') || '#FF385C'}
+                    onChange={(e) => handleChange('wishlist.badgeColor', e.target.value)}
+                    className="w-8 h-8 border border-gray-300 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={getValue('wishlist.badgeColor') || '#FF385C'}
+                    onChange={(e) => handleChange('wishlist.badgeColor', e.target.value)}
+                    className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded-md"
+                    placeholder="#FF385C"
+                  />
+                </div>
+              </div>
+            )}
+            
+            {/* Position */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Icon position
+              </label>
+              <select 
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={getValue('wishlist.position') || 'before-cart'}
+                onChange={(e) => handleChange('wishlist.position', e.target.value)}
+              >
+                <option value="before-cart">Before cart</option>
+                <option value="after-cart">After cart</option>
+                <option value="after-user">After user</option>
+              </select>
+            </div>
+          </div>
+        )}
         
         {/* Icon style */}
         <div className="space-y-3">

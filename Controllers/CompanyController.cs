@@ -288,6 +288,41 @@ namespace WebsiteBuilderAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Upload checkout-specific logo (used on checkout header)
+        /// </summary>
+        [HttpPost("checkout-settings/logo")]
+        [RequirePermission("company", "update")]
+        public async Task<ActionResult> UploadCheckoutLogo(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { message = "No file provided" });
+                }
+
+                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/svg+xml" };
+                if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                {
+                    return BadRequest(new { message = "Invalid file type. Only JPEG, PNG, GIF, SVG are allowed." });
+                }
+
+                if (file.Length > 5 * 1024 * 1024)
+                {
+                    return BadRequest(new { message = "File too large. Maximum size is 5MB." });
+                }
+
+                var logoUrl = await _companyService.UploadCheckoutLogoAsync(file);
+                return Ok(new { logoUrl });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading checkout logo");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
         #endregion
     }
 }

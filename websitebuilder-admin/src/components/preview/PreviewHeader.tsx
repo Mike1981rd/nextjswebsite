@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, ChevronDown, Search, ShoppingCart, ShoppingBag, User } from 'lucide-react';
+import { Menu, X, ChevronDown, Search, ShoppingCart, ShoppingBag, User, Heart, Star } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -21,6 +21,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDrawerSubmenu, setActiveDrawerSubmenu] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   // Detect mobile viewport or use deviceView prop
   useEffect(() => {
@@ -47,6 +48,34 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     
     return () => window.removeEventListener('resize', checkMobile);
   }, [deviceView]);
+  
+  // Track wishlist items count
+  useEffect(() => {
+    const getWishlistCount = () => {
+      const wishlistItems = localStorage.getItem('wishlistItems');
+      if (wishlistItems) {
+        try {
+          const items = JSON.parse(wishlistItems);
+          setWishlistCount(Array.isArray(items) ? items.length : 0);
+        } catch (e) {
+          setWishlistCount(0);
+        }
+      } else {
+        setWishlistCount(0);
+      }
+    };
+    
+    getWishlistCount();
+    // Listen for storage changes
+    window.addEventListener('storage', getWishlistCount);
+    // Also listen for custom wishlist update event
+    window.addEventListener('wishlistUpdated', getWishlistCount);
+    
+    return () => {
+      window.removeEventListener('storage', getWishlistCount);
+      window.removeEventListener('wishlistUpdated', getWishlistCount);
+    };
+  }, []);
 
   // Parse config properly matching HeaderEditor structure
   const headerConfig = {
@@ -79,10 +108,18 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     showSearchIcon: config?.showSearchIcon !== false, // default true
     showUserIcon: config?.showUserIcon !== false, // default true
     showCartIcon: config?.showCartIcon !== false, // default true
+    wishlist: config?.wishlist || {
+      show: false,
+      style: 'heart-outline',
+      showCount: true,
+      badgeColor: '#FF385C',
+      position: 'before-cart'
+    },
     hamburgerIconColor: config?.hamburgerIconColor || '', // custom hamburger color
     searchIconColor: config?.searchIconColor || '', // custom search icon color
     cartIconColor: config?.cartIconColor || '', // custom cart icon color
-    userIconColor: config?.userIconColor || '' // custom user icon color
+    userIconColor: config?.userIconColor || '', // custom user icon color
+    wishlistIconColor: config?.wishlistIconColor || '' // custom wishlist icon color
   };
 
   // Apply typography styles from theme (matching EditorPreview.tsx)
@@ -219,6 +256,82 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
           <path strokeLinecap="round" strokeLinejoin="round" 
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
+      );
+    }
+  };
+  
+  const renderWishlistIcon = () => {
+    const iconClass = isMobile ? "w-4 h-4" : "w-5 h-5";
+    const iconColor = headerConfig.wishlistIconColor || colorScheme?.text?.default || '#000000';
+    const wishlistStyle = headerConfig.wishlist?.style || 'heart-outline';
+    
+    if (wishlistStyle === 'heart') {
+      // Filled heart
+      return (
+        <div className="relative">
+          <svg className={iconClass} fill={iconColor} viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          {headerConfig.wishlist?.showCount && wishlistCount > 0 && (
+            <span 
+              className="absolute -top-1 -right-1 text-[10px] font-bold text-white rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
+              style={{ backgroundColor: headerConfig.wishlist?.badgeColor || '#FF385C' }}
+            >
+              {wishlistCount}
+            </span>
+          )}
+        </div>
+      );
+    } else if (wishlistStyle === 'heart-outline') {
+      // Outline heart
+      return (
+        <div className="relative">
+          <svg className={iconClass} fill="none" stroke={iconColor} strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          {headerConfig.wishlist?.showCount && wishlistCount > 0 && (
+            <span 
+              className="absolute -top-1 -right-1 text-[10px] font-bold text-white rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
+              style={{ backgroundColor: headerConfig.wishlist?.badgeColor || '#FF385C' }}
+            >
+              {wishlistCount}
+            </span>
+          )}
+        </div>
+      );
+    } else if (wishlistStyle === 'star') {
+      // Filled star
+      return (
+        <div className="relative">
+          <svg className={iconClass} fill={iconColor} viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          {headerConfig.wishlist?.showCount && wishlistCount > 0 && (
+            <span 
+              className="absolute -top-1 -right-1 text-[10px] font-bold text-white rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
+              style={{ backgroundColor: headerConfig.wishlist?.badgeColor || '#FF385C' }}
+            >
+              {wishlistCount}
+            </span>
+          )}
+        </div>
+      );
+    } else {
+      // Outline star
+      return (
+        <div className="relative">
+          <svg className={iconClass} fill="none" stroke={iconColor} strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          {headerConfig.wishlist?.showCount && wishlistCount > 0 && (
+            <span 
+              className="absolute -top-1 -right-1 text-[10px] font-bold text-white rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
+              style={{ backgroundColor: headerConfig.wishlist?.badgeColor || '#FF385C' }}
+            >
+              {wishlistCount}
+            </span>
+          )}
+        </div>
       );
     }
   };
@@ -404,9 +517,27 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                     {renderUserIcon()}
                   </button>
                 )}
+                {/* Wishlist icon - position based on config */}
+                {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'before-cart' && (
+                  <button className="hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                    {renderWishlistIcon()}
+                  </button>
+                )}
                 <button className="hover:opacity-70 transition-opacity">
                   {renderCartIcon()}
                 </button>
+                {/* Wishlist icon - after cart */}
+                {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'after-cart' && (
+                  <button className="hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                    {renderWishlistIcon()}
+                  </button>
+                )}
+                {/* Wishlist icon - after user (last position) */}
+                {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'after-user' && (
+                  <button className="hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                    {renderWishlistIcon()}
+                  </button>
+                )}
               </div>
             </div>
             
@@ -487,9 +618,30 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                       {renderUserIcon()}
                     </button>
                   )}
+                  {/* Wishlist icon - before cart */}
+                  {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'before-cart' && (
+                    <button className="inline-flex items-center justify-center p-0.5 hover:opacity-70 transition-opacity" 
+                            onClick={() => window.location.href = '/wishlist'}>
+                      {renderWishlistIcon()}
+                    </button>
+                  )}
                   {headerConfig.showCartIcon && (
                     <button className="inline-flex items-center justify-center p-0.5 hover:opacity-70 transition-opacity">
                       {renderCartIcon()}
+                    </button>
+                  )}
+                  {/* Wishlist icon - after cart */}
+                  {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'after-cart' && (
+                    <button className="inline-flex items-center justify-center p-0.5 hover:opacity-70 transition-opacity" 
+                            onClick={() => window.location.href = '/wishlist'}>
+                      {renderWishlistIcon()}
+                    </button>
+                  )}
+                  {/* Wishlist icon - after user */}
+                  {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'after-user' && (
+                    <button className="inline-flex items-center justify-center p-0.5 hover:opacity-70 transition-opacity" 
+                            onClick={() => window.location.href = '/wishlist'}>
+                      {renderWishlistIcon()}
                     </button>
                   )}
                 </div>
@@ -539,12 +691,30 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                       {renderUserIcon()}
                     </button>
                   )}
+                  {/* Wishlist icon - before cart */}
+                  {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'before-cart' && (
+                    <button className="p-2 hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                      {renderWishlistIcon()}
+                    </button>
+                  )}
                   {headerConfig.showCartIcon && (
                     <div className="relative">
                       <button className="p-2 hover:opacity-70 transition-opacity">
                         {renderCartIcon()}
                       </button>
                     </div>
+                  )}
+                  {/* Wishlist icon - after cart */}
+                  {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'after-cart' && (
+                    <button className="p-2 hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                      {renderWishlistIcon()}
+                    </button>
+                  )}
+                  {/* Wishlist icon - after user */}
+                  {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'after-user' && (
+                    <button className="p-2 hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                      {renderWishlistIcon()}
+                    </button>
                   )}
                 </div>
               </div>
@@ -783,9 +953,27 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                 {renderUserIcon()}
               </button>
             )}
+            {/* Wishlist icon - before cart */}
+            {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'before-cart' && (
+              <button className="hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                {renderWishlistIcon()}
+              </button>
+            )}
             <button className="hover:opacity-70 transition-opacity">
               {renderCartIcon()}
             </button>
+            {/* Wishlist icon - after cart */}
+            {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'after-cart' && (
+              <button className="hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                {renderWishlistIcon()}
+              </button>
+            )}
+            {/* Wishlist icon - after user */}
+            {headerConfig.wishlist?.show && headerConfig.wishlist?.position === 'after-user' && (
+              <button className="hover:opacity-70 transition-opacity" onClick={() => window.location.href = '/wishlist'}>
+                {renderWishlistIcon()}
+              </button>
+            )}
           </div>
         </div>
       </div>

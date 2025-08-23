@@ -31,6 +31,13 @@ export function CheckoutConfiguration() {
   const [addressLine2Field, setAddressLine2Field] = useState<'hidden' | 'optional' | 'required'>('optional');
   const [phoneNumberField, setPhoneNumberField] = useState<'hidden' | 'optional' | 'required'>('optional');
   const [initialSettings, setInitialSettings] = useState<any>(null);
+
+  // Branding state
+  const [checkoutLogoUrl, setCheckoutLogoUrl] = useState<string | null>(null);
+  const [logoAlignment, setLogoAlignment] = useState<'left' | 'center' | 'right'>('center');
+  const [logoWidthPx, setLogoWidthPx] = useState<number>(120);
+  const [payButtonColor, setPayButtonColor] = useState<string>('#22c55e');
+  const [payButtonTextColor, setPayButtonTextColor] = useState<string>('#ffffff');
   
   // Get primary color from localStorage
   useEffect(() => {
@@ -60,6 +67,13 @@ export function CheckoutConfiguration() {
       setCompanyNameField(settings.companyNameField || 'optional');
       setAddressLine2Field(settings.addressLine2Field || 'optional');
       setPhoneNumberField(settings.phoneNumberField || 'optional');
+
+      // Branding
+      setCheckoutLogoUrl(settings.checkoutLogoUrl || null);
+      setLogoAlignment((settings.checkoutLogoAlignment as any) || 'center');
+      setLogoWidthPx(settings.checkoutLogoWidthPx || 120);
+      if (settings.checkoutPayButtonColor) setPayButtonColor(settings.checkoutPayButtonColor);
+      if (settings.checkoutPayButtonTextColor) setPayButtonTextColor(settings.checkoutPayButtonTextColor);
       
       // Save initial settings for reset
       setInitialSettings(settings);
@@ -84,7 +98,13 @@ export function CheckoutConfiguration() {
         allowGuestCheckout: true,
         collectMarketingConsent: false,
         showTermsAndConditions: true,
-        termsAndConditionsUrl: null
+        termsAndConditionsUrl: null,
+        // Branding
+        checkoutLogoUrl: checkoutLogoUrl,
+        checkoutLogoAlignment: logoAlignment,
+        checkoutLogoWidthPx: logoWidthPx,
+        checkoutPayButtonColor: payButtonColor,
+        checkoutPayButtonTextColor: payButtonTextColor
       };
       
       await api.put('/company/checkout-settings', settings);
@@ -368,6 +388,109 @@ export function CheckoutConfiguration() {
                 }
               ]}
             />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Branding - Checkout Header & Button */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.25 }}
+        className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 pl-3 pr-3 py-4 sm:p-6"
+      >
+        <h3 className="text-sm sm:text-lg font-medium text-gray-900 dark:text-white mb-3">
+          {t('empresa.checkout.branding.title', 'Checkout branding')}
+        </h3>
+
+        {/* Logo upload and preview */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-3">
+            <label className="block text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              {t('empresa.checkout.branding.logo', 'Checkout logo')}
+            </label>
+            <div className="flex items-center gap-3">
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    setLoading(true);
+                    const form = new FormData();
+                    form.append('file', file);
+                    const res = await api.post('/company/checkout-settings/logo', form, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    const url = res.data?.logoUrl as string;
+                    setCheckoutLogoUrl(url);
+                    setHasChanges(true);
+                    toast.success(t('common.upload', 'Upload'));
+                  } catch (err) {
+                    toast.error(t('empresa.checkout.branding.logoUploadError', 'Logo upload failed'));
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="text-sm"
+              />
+              {checkoutLogoUrl && (
+                <img src={checkoutLogoUrl} alt="logo" className="h-10 object-contain border rounded p-1 bg-white" />
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  {t('empresa.checkout.branding.alignment', 'Logo alignment')}
+                </label>
+                <div className="flex gap-2">
+                  {(['left','center','right'] as const).map(val => (
+                    <button
+                      key={val}
+                      onClick={() => { setLogoAlignment(val); setHasChanges(true); }}
+                      className={cn('px-3 py-1.5 text-xs rounded border', logoAlignment === val ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300')}
+                    >
+                      {t(`empresa.checkout.branding.${val}`, val.charAt(0).toUpperCase()+val.slice(1))}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  {t('empresa.checkout.branding.logoWidth', 'Logo width (px)')}
+                </label>
+                <input 
+                  type="range" min={40} max={400} value={logoWidthPx}
+                  onChange={(e) => { setLogoWidthPx(parseInt(e.target.value)); setHasChanges(true); }}
+                  className="w-full"
+                />
+                <div className="text-xs text-gray-500 mt-1">{logoWidthPx}px</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Button colors and preview */}
+          <div className="space-y-3">
+            <label className="block text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              {t('empresa.checkout.branding.payButton', 'Pay button')}
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{t('empresa.checkout.branding.buttonBg', 'Button color')}</div>
+                <input type="color" value={payButtonColor} onChange={(e)=>{ setPayButtonColor(e.target.value); setHasChanges(true); }} />
+              </div>
+              <div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{t('empresa.checkout.branding.buttonText', 'Button text color')}</div>
+                <input type="color" value={payButtonTextColor} onChange={(e)=>{ setPayButtonTextColor(e.target.value); setHasChanges(true); }} />
+              </div>
+            </div>
+            <div className="mt-2">
+              <button className="px-4 py-2 rounded-lg font-medium" style={{ backgroundColor: payButtonColor, color: payButtonTextColor }}>
+                {t('empresa.checkout.branding.previewPay', 'Confirm and pay')}
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>

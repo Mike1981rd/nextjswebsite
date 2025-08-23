@@ -79,6 +79,22 @@ export interface CartIconConfig {
 }
 
 /**
+ * Wishlist/Favorites icon configuration
+ */
+export interface WishlistIconConfig {
+  /** Show wishlist icon in header */
+  show: boolean;
+  /** Icon style */
+  style: 'heart' | 'heart-outline' | 'star' | 'star-outline';
+  /** Show item count badge */
+  showCount: boolean;
+  /** Badge color */
+  badgeColor?: string;
+  /** Position relative to other icons */
+  position?: 'before-cart' | 'after-cart' | 'after-user';
+}
+
+/**
  * Search configuration in header
  */
 export interface HeaderSearchConfig {
@@ -119,6 +135,9 @@ export interface HeaderConfig {
   
   /** Cart icon configuration */
   cart: CartIconConfig;
+  
+  /** Wishlist icon configuration */
+  wishlist?: WishlistIconConfig;
   
   /** Search configuration */
   search: HeaderSearchConfig;
@@ -207,6 +226,13 @@ export const defaultHeaderConfig: HeaderConfig = {
     show: true,
     style: 'bag',
     showCount: true
+  },
+  wishlist: {
+    show: false,
+    style: 'heart-outline',
+    showCount: true,
+    badgeColor: '#FF385C',
+    position: 'before-cart'
   },
   search: {
     show: true,

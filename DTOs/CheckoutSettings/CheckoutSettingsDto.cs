@@ -26,6 +26,13 @@ namespace WebsiteBuilderAPI.DTOs.CheckoutSettings
         public bool ShowTermsAndConditions { get; set; } = true;
         public string? TermsAndConditionsUrl { get; set; }
         
+        // Branding
+        public string? CheckoutLogoUrl { get; set; }
+        public string? CheckoutLogoAlignment { get; set; }
+        public int? CheckoutLogoWidthPx { get; set; }
+        public string? CheckoutPayButtonColor { get; set; }
+        public string? CheckoutPayButtonTextColor { get; set; }
+        
         // Timestamps
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

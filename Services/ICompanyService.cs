@@ -18,5 +18,8 @@ namespace WebsiteBuilderAPI.Services
         Task<CheckoutSettingsDto> CreateDefaultCheckoutSettingsAsync();
         Task<CheckoutSettingsDto> UpdateCheckoutSettingsAsync(UpdateCheckoutSettingsDto request);
         Task<CheckoutSettingsDto> ResetCheckoutSettingsAsync();
+
+        // Checkout Branding
+        Task<string> UploadCheckoutLogoAsync(IFormFile file);
     }
 }

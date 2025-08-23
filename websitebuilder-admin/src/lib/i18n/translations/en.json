@@ -346,6 +346,20 @@
         "dontInclude": "Don't include field",
         "optional": "Optional",
         "required": "Required"
+      },
+      "branding": {
+        "title": "Checkout branding",
+        "logo": "Checkout logo",
+        "alignment": "Logo alignment",
+        "left": "Left",
+        "center": "Center",
+        "right": "Right",
+        "logoWidth": "Logo width (px)",
+        "payButton": "Pay button",
+        "buttonBg": "Button color",
+        "buttonText": "Button text color",
+        "previewPay": "Confirm and pay",
+        "logoUploadError": "Logo upload failed"
       }
     },
     "orderId": {

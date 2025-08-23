@@ -32,5 +32,21 @@ namespace WebsiteBuilderAPI.DTOs.CheckoutSettings
         
         [MaxLength(500)]
         public string? TermsAndConditionsUrl { get; set; }
+
+        // Branding
+        // Accept relative (e.g., /uploads/checkout/...) or absolute URLs
+        public string? CheckoutLogoUrl { get; set; }
+
+        [RegularExpression("^(left|center|right)$", ErrorMessage = "CheckoutLogoAlignment must be 'left', 'center' or 'right'")]
+        public string? CheckoutLogoAlignment { get; set; } = "center";
+
+        [Range(40, 400)]
+        public int? CheckoutLogoWidthPx { get; set; }
+
+        [RegularExpression("^#?[0-9A-Fa-f]{3,8}$", ErrorMessage = "Invalid hex color")]
+        public string? CheckoutPayButtonColor { get; set; }
+
+        [RegularExpression("^#?[0-9A-Fa-f]{3,8}$", ErrorMessage = "Invalid hex color")]
+        public string? CheckoutPayButtonTextColor { get; set; }
     }
 }

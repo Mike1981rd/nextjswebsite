@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Star, Share, Heart, Medal, Shield, Calendar, ChevronDown, Sparkles } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import ReservationCalendar from './ReservationCalendar';
 import { format, addDays, differenceInDays } from 'date-fns';
@@ -53,6 +54,7 @@ export default function PreviewRoomTitleHost({
   isEditor = false,
   theme 
 }: PreviewRoomTitleHostProps) {
+  const router = useRouter();
   
   // Get theme config from store or prop
   const storeThemeConfig = useThemeConfigStore(state => state.config);
@@ -303,8 +305,8 @@ export default function PreviewRoomTitleHost({
   const totalNights = checkInDate && checkOutDate 
     ? differenceInDays(checkOutDate, checkInDate)
     : 0;
-  const cleaningFee = 15; // TODO: Get from room or company settings
-  const serviceFee = Math.round(pricePerNight * totalNights * 0.14); // 14% service fee
+  const cleaningFee = 0; // TEMP: set to 0 until real values are implemented
+  const serviceFee = 0; // TEMP: set to 0 until real values are implemented
   const totalBeforeTaxes = totalNights > 0 
     ? (pricePerNight * totalNights) + cleaningFee + serviceFee
     : 0;
@@ -315,6 +317,64 @@ export default function PreviewRoomTitleHost({
     setCheckInDate(checkIn);
     setCheckOutDate(checkOut);
     setShowCalendar(false);
+  };
+
+  // Handle reservation
+  const handleReserve = () => {
+    if (checkInDate && checkOutDate) {
+      const nights = differenceInDays(checkOutDate, checkInDate);
+
+      // Try to pick a cover image from room data
+      const imageUrl = roomData?.coverImage 
+        || (Array.isArray(roomData?.images) && roomData.images.length > 0 ? roomData.images[0] : undefined)
+        || (Array.isArray(roomData?.gallery) && roomData.gallery.length > 0 ? (roomData.gallery[0]?.url || roomData.gallery[0]) : undefined);
+
+      // Store reservation data in sessionStorage (existing behavior)
+      const reservationData = {
+        roomId: roomData?.id,
+        roomName: roomData?.name,
+        checkInDate: checkInDate.toISOString(),
+        checkOutDate: checkOutDate.toISOString(),
+        guests: guests,
+        pricePerNight: pricePerNight,
+        totalNights: nights,
+        totalPrice: pricePerNight * nights + cleaningFee + serviceFee,
+        cleaningFee: cleaningFee,
+        serviceFee: serviceFee,
+        currency: companyCurrency,
+        imageUrl: imageUrl
+      };
+      sessionStorage.setItem('roomReservation', JSON.stringify(reservationData));
+
+      // Also store a checkout payload compatible with the checkout page (localStorage)
+      const checkoutPayload = {
+        roomId: roomData?.id,
+        roomName: roomData?.name || displayData.title,
+        checkIn: checkInDate.toISOString(),
+        checkOut: checkOutDate.toISOString(),
+        nights,
+        guests,
+        pricePerNight,
+        fees: [
+          { label: 'Cleaning fee', amount: cleaningFee },
+          { label: 'Service fee', amount: serviceFee }
+        ],
+        currency: companyCurrency,
+        imageUrl: imageUrl,
+        // Optional enrichments for checkout UI (Airbnb-like)
+        rating: displayData.rating,
+        reviewCount: displayData.reviewCount,
+        isSuperhost: displayData.hostSuperhost,
+        hostName: displayData.hostName,
+        location: displayData.location,
+        images: Array.isArray(roomData?.images) && roomData.images.length > 0
+          ? roomData.images
+          : (Array.isArray(roomData?.gallery) ? roomData.gallery.map((g: any) => g?.url || g).filter(Boolean) : [])
+      };
+      localStorage.setItem('room_checkout_payload', JSON.stringify(checkoutPayload));
+
+      router.push('/checkout-room');
+    }
   };
 
   // Handle guest selection
@@ -685,7 +745,9 @@ export default function PreviewRoomTitleHost({
 
                   {/* Reserve button */}
                   <button 
-                    className="w-full py-3 px-6 rounded-lg font-semibold transition-all hover:opacity-90"
+                    onClick={handleReserve}
+                    disabled={!checkInDate || !checkOutDate}
+                    className="w-full py-3 px-6 rounded-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                       backgroundColor: colorScheme?.solidButton || '#FF385C',
                       color: colorScheme?.solidButtonText || '#ffffff',
@@ -761,7 +823,9 @@ export default function PreviewRoomTitleHost({
                 </div>
                 <button 
                   onClick={() => {
-                    if (roomData?.id) {
+                    if (checkInDate && checkOutDate) {
+                      handleReserve();
+                    } else if (roomData?.id) {
                       setShowCalendar(true);
                     } else {
                       console.warn('Cannot open calendar: Room data not loaded yet');
