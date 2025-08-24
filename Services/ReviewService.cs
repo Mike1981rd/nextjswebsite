@@ -456,6 +456,37 @@ namespace WebsiteBuilderAPI.Services
 
             if (stats == null)
             {
+                // If still no stats, calculate them directly from approved reviews
+                var approvedReviews = await _context.Reviews
+                    .Where(r => r.CompanyId == companyId && 
+                           (r.ProductId == productId || productId == null) &&
+                           (r.RoomId == roomId || roomId == null) &&
+                           ((int)r.Status == 1 || r.Status == ReviewStatus.Approved))
+                    .ToListAsync();
+
+                if (approvedReviews.Any())
+                {
+                    var distribution = new Dictionary<int, int> { {5,0}, {4,0}, {3,0}, {2,0}, {1,0} };
+                    foreach (var review in approvedReviews)
+                    {
+                        if (distribution.ContainsKey(review.Rating))
+                            distribution[review.Rating]++;
+                    }
+
+                    var positiveCount = approvedReviews.Count(r => r.Rating >= 4);
+                    return new ReviewStatisticsDto
+                    {
+                        TotalReviews = approvedReviews.Count,
+                        AverageRating = (decimal)approvedReviews.Average(r => r.Rating),
+                        RatingDistribution = distribution,
+                        PositiveReviewsCount = positiveCount,
+                        PositivePercentage = approvedReviews.Count > 0 ? (positiveCount * 100m) / approvedReviews.Count : 0,
+                        NewReviewsThisWeek = approvedReviews.Count(r => r.CreatedAt >= DateTime.UtcNow.AddDays(-7)),
+                        WeeklyGrowthPercentage = 0,
+                        WeeklyTrend = new List<int> { 0, 0, 0, 0, 0, 0, 0 }
+                    };
+                }
+
                 return new ReviewStatisticsDto
                 {
                     TotalReviews = 0,
@@ -499,8 +530,9 @@ namespace WebsiteBuilderAPI.Services
 
         public async Task UpdateStatisticsAsync(int companyId, int? productId = null, int? roomId = null)
         {
+            // Accept both Approved enum value and numeric value 1
             var query = _context.Reviews
-                .Where(r => r.CompanyId == companyId && r.Status == ReviewStatus.Approved);
+                .Where(r => r.CompanyId == companyId && (r.Status == ReviewStatus.Approved || (int)r.Status == 1));
 
             if (productId.HasValue)
                 query = query.Where(r => r.ProductId == productId.Value);

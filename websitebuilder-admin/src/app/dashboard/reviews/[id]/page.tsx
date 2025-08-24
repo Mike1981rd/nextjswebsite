@@ -8,6 +8,7 @@ import { usePrimaryColor } from '@/contexts/PrimaryColorContext';
 import { ReviewEditForm } from '@/components/reviews/ReviewEditForm';
 import { ArrowLeftIcon } from '@/components/ui/Icons';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { toast } from 'react-hot-toast';
 
 interface Review {
   id: number;
@@ -71,7 +72,7 @@ export default function ReviewEditPage() {
   const fetchReview = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/${params.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/${params.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -92,7 +93,7 @@ export default function ReviewEditPage() {
   const handleSave = async (updatedReview: Partial<Review>) => {
     try {
       setSaving(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/${params.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/${params.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -115,7 +116,7 @@ export default function ReviewEditPage() {
   const handleReply = async (reply: string) => {
     try {
       setSaving(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/${params.id}/reply`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/${params.id}/reply`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -135,13 +136,21 @@ export default function ReviewEditPage() {
   };
 
   const handleStatusChange = async (status: string) => {
+    // Show confirmation dialog
+    const actionText = status === 'Approved' ? 'aprobar' : status === 'Rejected' ? 'rechazar' : 'actualizar';
+    const confirmed = window.confirm(`¿Estás seguro de que deseas ${actionText} esta reseña?`);
+    
+    if (!confirmed) return;
+
     try {
       setSaving(true);
+      toast.loading(`${actionText.charAt(0).toUpperCase() + actionText.slice(1)} reseña...`);
+      
       const endpoint = status === 'Approved' 
-        ? `/api/reviews/${params.id}/approve`
+        ? `/reviews/${params.id}/approve`
         : status === 'Rejected'
-        ? `/api/reviews/${params.id}/reject`
-        : `/api/reviews/${params.id}`;
+        ? `/reviews/${params.id}/reject`
+        : `/reviews/${params.id}`;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: status === 'Approved' || status === 'Rejected' ? 'POST' : 'PUT',
@@ -157,8 +166,20 @@ export default function ReviewEditPage() {
       if (!response.ok) throw new Error('Failed to update status');
 
       await fetchReview();
+      
+      // Show success message with emoji
+      toast.dismiss();
+      if (status === 'Approved') {
+        toast.success('✅ Reseña aprobada exitosamente');
+      } else if (status === 'Rejected') {
+        toast.success('❌ Reseña rechazada exitosamente');
+      } else {
+        toast.success('✔️ Estado actualizado exitosamente');
+      }
     } catch (error) {
       console.error('Error updating status:', error);
+      toast.dismiss();
+      toast.error('Error al actualizar el estado de la reseña');
     } finally {
       setSaving(false);
     }
@@ -167,7 +188,7 @@ export default function ReviewEditPage() {
   const handlePin = async (isPinned: boolean) => {
     try {
       setSaving(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/${params.id}/pin?isPinned=${isPinned}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/${params.id}/pin?isPinned=${isPinned}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

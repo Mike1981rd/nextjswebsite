@@ -78,23 +78,35 @@ export function ReviewEditForm({
   }, [review]);
 
   const handleSubmitReply = () => {
-    if (replyText.trim()) {
-      onReply(replyText);
-      setShowReplyForm(false);
+    if (formData.status === 'Approved' || formData.businessReply) {
+      if (replyText.trim()) {
+        onReply(replyText);
+        setShowReplyForm(false);
+      }
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Approved':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-300 dark:border-green-700';
       case 'Rejected':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-300 dark:border-red-700';
       case 'Pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-700';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border border-gray-300 dark:border-gray-700';
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels = {
+      Pending: '⏳ Pendiente',
+      Approved: '✅ Aprobado',
+      Rejected: '❌ Rechazado',
+      Hidden: '👁️‍🗨️ Oculto'
+    };
+    return labels[status] || status;
   };
 
   const renderStars = (rating: number) => {
@@ -121,8 +133,8 @@ export function ReviewEditForm({
               {t('reviews.reviewDetails', 'Review Details')}
             </h2>
             <div className="flex items-center gap-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(formData.status)}`}>
-                {formData.status}
+              <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(formData.status)}`}>
+                {getStatusLabel(formData.status)}
               </span>
               {formData.isVerifiedPurchase && (
                 <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
@@ -142,28 +154,58 @@ export function ReviewEditForm({
             <button
               onClick={() => onPin(!formData.isPinned)}
               disabled={saving}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
-              {formData.isPinned ? t('reviews.unpin', 'Unpin') : t('reviews.pin', 'Pin')}
+              {formData.isPinned ? '📌 Desfijar' : '📌 Fijar'}
             </button>
             
-            {formData.status !== 'Approved' && (
+            {formData.status === 'Pending' && (
+              <>
+                <button
+                  onClick={() => onStatusChange('Approved')}
+                  disabled={saving}
+                  className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 disabled:opacity-50 flex items-center gap-2 font-medium shadow-lg"
+                >
+                  ✅ Aprobar Reseña
+                </button>
+                
+                <button
+                  onClick={() => onStatusChange('Rejected')}
+                  disabled={saving}
+                  className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all transform hover:scale-105 disabled:opacity-50 flex items-center gap-2 font-medium shadow-lg"
+                >
+                  ❌ Rechazar Reseña
+                </button>
+              </>
+            )}
+            
+            {formData.status === 'Approved' && (
               <button
-                onClick={() => onStatusChange('Approved')}
+                onClick={() => onStatusChange('Hidden')}
                 disabled={saving}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
-                {t('reviews.approve', 'Approve')}
+                👁️‍🗨️ Ocultar
               </button>
             )}
             
-            {formData.status !== 'Rejected' && (
+            {formData.status === 'Rejected' && (
               <button
-                onClick={() => onStatusChange('Rejected')}
+                onClick={() => onStatusChange('Approved')}
                 disabled={saving}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
-                {t('reviews.reject', 'Reject')}
+                ✅ Aprobar
+              </button>
+            )}
+            
+            {formData.status === 'Hidden' && (
+              <button
+                onClick={() => onStatusChange('Approved')}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                👁️ Mostrar
               </button>
             )}
           </div>
@@ -395,9 +437,10 @@ export function ReviewEditForm({
             <div className="flex gap-3">
               <button
                 onClick={handleSubmitReply}
-                disabled={saving || !replyText.trim()}
+                disabled={saving || (formData.status !== 'Approved' && !formData.businessReply)}
                 className="px-6 py-2 text-white rounded-lg transition-colors disabled:opacity-50"
                 style={{ backgroundColor: primaryColor }}
+                title={formData.status !== 'Approved' && !formData.businessReply ? 'La reseña debe estar aprobada para publicar una respuesta' : ''}
               >
                 {formData.businessReply 
                   ? t('reviews.updateReply', 'Update Reply')

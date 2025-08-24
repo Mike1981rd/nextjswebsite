@@ -246,6 +246,21 @@ namespace WebsiteBuilderAPI.Controllers
             }
         }
 
+        [HttpPost("recalculate-statistics")]
+        public async Task<IActionResult> RecalculateStatistics()
+        {
+            try
+            {
+                var companyId = GetCompanyId();
+                await _reviewService.UpdateStatisticsAsync(companyId);
+                return Ok(new { success = true, message = "Statistics recalculated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while recalculating statistics", details = ex.Message });
+            }
+        }
+
         [HttpPost("{id}/interact")]
         [AllowAnonymous] // Allow public interaction
         public async Task<IActionResult> AddInteraction(int id, [FromBody] ReviewInteractionDto dto)

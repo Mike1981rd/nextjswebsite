@@ -59,8 +59,8 @@ export function ReviewRow({ review, isSelected, onSelect, onRefresh }: ReviewRow
     try {
       setIsUpdating(true);
       const endpoint = action === 'hide' 
-        ? `/api/reviews/${review.id}` 
-        : `/api/reviews/${review.id}/${action}`;
+        ? `/reviews/${review.id}` 
+        : `/reviews/${review.id}/${action}`;
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: action === 'hide' ? 'PUT' : 'POST',
@@ -90,9 +90,42 @@ export function ReviewRow({ review, isSelected, onSelect, onRefresh }: ReviewRow
       Hidden: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
     };
 
+    // Status labels in Spanish
+    const statusLabels = {
+      Pending: 'Pendiente',
+      Approved: 'Aprobado',
+      Rejected: 'Rechazado',
+      Hidden: 'Oculto',
+      Flagged: 'Marcado',
+      Archived: 'Archivado'
+    };
+
+    // Map numeric values to status strings (in case backend sends numbers)
+    const statusMap: { [key: number]: string } = {
+      0: 'Pending',
+      1: 'Approved', 
+      2: 'Rejected',
+      3: 'Hidden',
+      4: 'Flagged',
+      5: 'Archived'
+    };
+
+    // Get the status key - handle both string and numeric values
+    let statusKey: string;
+    if (typeof review.status === 'number') {
+      statusKey = statusMap[review.status] || 'Pending';
+    } else {
+      const statusStr = String(review.status);
+      statusKey = statusStr.charAt(0).toUpperCase() + statusStr.slice(1).toLowerCase();
+    }
+    
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[review.status]}`}>
-        {t(`reviews.status.${review.status.toLowerCase()}`, review.status)}
+      <span className={`px-3 py-1.5 text-xs font-medium rounded-full inline-flex items-center gap-1 ${colors[statusKey as keyof typeof colors] || colors.Pending}`}>
+        {statusKey === 'Pending' && '⏳'}
+        {statusKey === 'Approved' && '✅'}
+        {statusKey === 'Rejected' && '❌'}
+        {statusKey === 'Hidden' && '👁️‍🗨️'}
+        {statusLabels[statusKey as keyof typeof statusLabels] || statusKey}
       </span>
     );
   };
@@ -233,13 +266,6 @@ export function ReviewRow({ review, isSelected, onSelect, onRefresh }: ReviewRow
             </>
           )}
 
-          <button
-            onClick={() => router.push(`/dashboard/reviews/${review.id}/edit`)}
-            className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-            title={t('common.edit', 'Edit')}
-          >
-            <EditIcon size={16} />
-          </button>
         </div>
       </td>
     </tr>

@@ -1,34 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Star, Heart, Smile, ThumbsUp, X, ImagePlus } from 'lucide-react';
+import { Star, Heart, Smile, ThumbsUp, Loader2 } from 'lucide-react';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import WriteReviewModal from '@/components/reviews/WriteReviewModal';
+import { getRoomReviews, type ReviewDto, type ReviewStatisticsDto } from '@/lib/api/reviews';
 import type { ColorScheme } from '@/types/theme/colorSchemes';
-
-interface Review {
-  id: string;
-  author: string;
-  avatar: string;
-  date: string;
-  rating: number;
-  comment: string;
-}
 
 interface RoomReviewsConfig {
   enabled: boolean;
-  colorSchemeId?: string; // ID of the selected color scheme
+  colorSchemeId?: string;
   ratingIcon?: 'star' | 'heart' | 'smile' | 'like';
   ratingIconColor?: string;
   bodyType?: 'standard' | 'rounded-grid' | 'list-grid' | 'square-grid';
   headerSize?: number;
   topPadding?: number;
   bottomPadding?: number;
-  // Legacy fields for backward compatibility
-  title?: string;
-  averageRating?: number;
-  totalReviews?: number;
-  reviews?: Review[];
-  showAllButton?: boolean;
 }
 
 interface PreviewRoomReviewsProps {
@@ -36,218 +23,25 @@ interface PreviewRoomReviewsProps {
   deviceView?: 'desktop' | 'mobile';
   isEditor?: boolean;
   theme?: any;
-}
-
-interface WriteReviewModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  ratingIcon: 'star' | 'heart' | 'smile' | 'like';
-  ratingIconColor: string;
-  colorScheme: ColorScheme | null;
-}
-
-// Default sample reviews for display
-const defaultReviews: Review[] = [
-  {
-    id: '1',
-    author: 'Sarah Johnson',
-    avatar: '',
-    date: 'December 2023',
-    rating: 5,
-    comment: 'Amazing stay! The location was perfect and the host was incredibly responsive. The apartment had everything we needed and was spotlessly clean.'
-  },
-  {
-    id: '2',
-    author: 'Michael Chen',
-    avatar: '',
-    date: 'November 2023',
-    rating: 5,
-    comment: 'Beautiful apartment with stunning views. The amenities were top-notch and the check-in process was seamless. Would definitely stay again!'
-  },
-  {
-    id: '3',
-    author: 'Emma Davis',
-    avatar: '',
-    date: 'October 2023',
-    rating: 4,
-    comment: 'Great place for a weekend getaway. Very comfortable and well-equipped. The only minor issue was street noise at night, but earplugs were provided.'
-  },
-  {
-    id: '4',
-    author: 'James Wilson',
-    avatar: '',
-    date: 'September 2023',
-    rating: 5,
-    comment: 'Exceeded our expectations! The photos don\'t do it justice. The host went above and beyond to make our stay memorable.'
-  }
-];
-
-function WriteReviewModal({ isOpen, onClose, ratingIcon, ratingIconColor, colorScheme }: WriteReviewModalProps) {
-  const [rating, setRating] = useState(5);
-  const [hoveredRating, setHoveredRating] = useState(0);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [comment, setComment] = useState('');
-
-  if (!isOpen) return null;
-
-  const RatingIcon = ({ filled, hovered }: { filled: boolean; hovered: boolean }) => {
-    const iconProps = {
-      className: "w-8 h-8 cursor-pointer transition-all",
-      style: { 
-        color: filled || hovered ? ratingIconColor : '#E5E7EB',
-        fill: filled ? ratingIconColor : hovered ? `${ratingIconColor}50` : 'none'
-      }
-    };
-
-    switch(ratingIcon) {
-      case 'heart': return <Heart {...iconProps} />;
-      case 'smile': return <Smile {...iconProps} />;
-      case 'like': return <ThumbsUp {...iconProps} />;
-      default: return <Star {...iconProps} />;
-    }
-  };
-
-  const bgColor = colorScheme?.background || '#FFFFFF';
-  const textColor = colorScheme?.text || '#000000';
-  const borderColor = colorScheme?.border || '#E5E7EB';
-  const buttonBg = colorScheme?.solidButton || ratingIconColor;
-  const buttonText = colorScheme?.solidButtonText || '#FFFFFF';
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div 
-        className="rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        style={{ backgroundColor: bgColor }}
-      >
-        {/* Header */}
-        <div 
-          className="flex items-center justify-between p-6"
-          style={{ borderBottom: `1px solid ${borderColor}` }}
-        >
-          <h2 className="text-2xl font-semibold" style={{ color: textColor }}>
-            Escribe una reseña
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full transition hover:opacity-80"
-            style={{ backgroundColor: `${borderColor}20` }}
-          >
-            <X className="w-5 h-5" style={{ color: textColor }} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Rating */}
-          <div>
-            <label className="block text-sm font-medium mb-3" style={{ color: textColor }}>
-              Tu clasificación
-            </label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <button
-                  key={value}
-                  onMouseEnter={() => setHoveredRating(value)}
-                  onMouseLeave={() => setHoveredRating(0)}
-                  onClick={() => setRating(value)}
-                >
-                  <RatingIcon 
-                    filled={value <= rating} 
-                    hovered={value <= hoveredRating && value > rating}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Name and Email */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <input
-                type="text"
-                placeholder="Su nombre"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2"
-                style={{ 
-                  backgroundColor: `${borderColor}20`,
-                  border: `1px solid ${borderColor}`,
-                  color: textColor
-                }}
-              />
-            </div>
-            <div>
-              <input
-                type="email"
-                placeholder="Tu correo electrónico"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2"
-                style={{ 
-                  backgroundColor: `${borderColor}20`,
-                  border: `1px solid ${borderColor}`,
-                  color: textColor
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Comment */}
-          <div>
-            <textarea
-              placeholder="Ingrese sus comentarios aquí"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              rows={6}
-              className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 resize-none"
-              style={{ 
-                backgroundColor: `${borderColor}20`,
-                border: `1px solid ${borderColor}`,
-                color: textColor
-              }}
-            />
-          </div>
-
-          {/* Add Photo */}
-          <button 
-            className="flex items-center gap-2 transition hover:opacity-80"
-            style={{ color: colorScheme?.link || textColor }}
-          >
-            <ImagePlus className="w-5 h-5" />
-            <span className="text-sm">Añadir foto</span>
-          </button>
-
-          {/* Submit Button */}
-          <button
-            onClick={() => {
-              // Handle submission
-              console.log({ rating, name, email, comment });
-              onClose();
-            }}
-            className="w-full py-3 font-medium rounded-lg transition hover:opacity-90"
-            style={{ 
-              backgroundColor: buttonBg,
-              color: buttonText
-            }}
-          >
-            Enviar opinión
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  roomId?: number;
 }
 
 export default function PreviewRoomReviews({ 
   config, 
   deviceView, 
   isEditor = false,
-  theme 
+  theme,
+  roomId
 }: PreviewRoomReviewsProps) {
   
   const [showAll, setShowAll] = useState(false);
   const [showWriteReview, setShowWriteReview] = useState(false);
+  const [reviews, setReviews] = useState<ReviewDto[]>([]);
+  const [statistics, setStatistics] = useState<ReviewStatisticsDto | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [firstActiveRoomId, setFirstActiveRoomId] = useState<number | null>(null);
+  
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (deviceView !== undefined) return deviceView === 'mobile';
     if (typeof window !== 'undefined') return window.innerWidth < 768;
@@ -267,15 +61,73 @@ export default function PreviewRoomReviews({
     return () => window.removeEventListener('resize', onResize);
   }, [deviceView]);
 
+  // Fetch first active room ID when in editor mode
+  useEffect(() => {
+    const fetchFirstActiveRoom = async () => {
+      const companyId = localStorage.getItem('companyId') || '1';
+      
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.id) {
+            setFirstActiveRoomId(data.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching first active room:', error);
+      }
+    };
+
+    // Only fetch first active room in editor mode
+    if (isEditor && config.enabled) {
+      fetchFirstActiveRoom();
+    }
+  }, [isEditor, config.enabled]);
+
+  // Load reviews when roomId is available or when we have firstActiveRoomId in editor
+  useEffect(() => {
+    const effectiveRoomId = roomId || (isEditor ? firstActiveRoomId : null);
+    if (effectiveRoomId) {
+      loadReviews(effectiveRoomId);
+    }
+  }, [roomId, firstActiveRoomId, isEditor]);
+
+  const loadReviews = async (reviewRoomId: number) => {
+    if (!reviewRoomId) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const data = await getRoomReviews(reviewRoomId, 'Approved');
+      setReviews(data.reviews);
+      setStatistics(data.statistics);
+    } catch (err) {
+      console.error('Failed to load reviews:', err);
+      setError('Failed to load reviews');
+      // In case of error, show empty state
+      setReviews([]);
+      setStatistics(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReviewSubmitted = () => {
+    // Reload reviews after successful submission
+    const effectiveRoomId = roomId || firstActiveRoomId;
+    if (effectiveRoomId) {
+      loadReviews(effectiveRoomId);
+    }
+  };
+
   if (!config.enabled) {
     return null;
   }
 
-  // Use provided reviews or default ones
-  const reviews = config.reviews || defaultReviews;
-  const averageRating = config.averageRating || 4.73;
-  const totalReviews = config.totalReviews || reviews.length;
-  
   // Get configuration values with defaults
   const colorSchemeId = config.colorSchemeId || 'scheme-1';
   const ratingIcon = config.ratingIcon || 'star';
@@ -292,12 +144,12 @@ export default function PreviewRoomReviews({
   const bgColor = colorScheme?.background || '#FFFFFF';
   const textColor = colorScheme?.text || '#000000';
   const borderColor = colorScheme?.border || '#E5E7EB';
-  const linkColor = colorScheme?.link || '#0066CC';
-  const solidButtonBg = colorScheme?.solidButton || '#000000';
-  const solidButtonText = colorScheme?.solidButtonText || '#FFFFFF';
   const outlineButtonColor = colorScheme?.outlineButton || '#000000';
   const outlineButtonText = colorScheme?.outlineButtonText || '#000000';
 
+  // Calculate display values
+  const averageRating = statistics?.averageRating || 0;
+  const totalReviews = statistics?.totalReviews || 0;
   const reviewsPerPage = isMobile ? 2 : 4;
   const displayedReviews = showAll ? reviews : reviews.slice(0, reviewsPerPage);
 
@@ -343,6 +195,18 @@ export default function PreviewRoomReviews({
 
   const bodyClasses = getBodyClasses();
 
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  // Get initials for avatar
+  const getInitials = (name: string) => {
+    const parts = name.split(' ');
+    return parts.map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   return (
     <div 
       className="container mx-auto px-6"
@@ -355,7 +219,7 @@ export default function PreviewRoomReviews({
       {/* Header with average rating and Write Review button */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <RatingIcon filled={true} size="lg" />
+          {totalReviews > 0 && <RatingIcon filled={true} size="lg" />}
           <h2 
             className="font-semibold"
             style={{ 
@@ -363,9 +227,14 @@ export default function PreviewRoomReviews({
               color: textColor
             }}
           >
-            {averageRating} · {totalReviews} reviews
+            {totalReviews > 0 ? (
+              `${averageRating.toFixed(2)} · ${totalReviews} ${totalReviews === 1 ? 'review' : 'reviews'}`
+            ) : (
+              'No reviews yet'
+            )}
           </h2>
         </div>
+        {/* Show button in editor for preview purposes, functional on live site */}
         <button
           onClick={() => setShowWriteReview(true)}
           className="px-4 py-2 rounded-lg font-medium transition hover:opacity-90 text-sm"
@@ -379,66 +248,163 @@ export default function PreviewRoomReviews({
         </button>
       </div>
 
-      {/* Reviews grid */}
-      <div className={`grid ${isMobile ? 'grid-cols-1' : bodyType === 'list-grid' ? 'grid-cols-1' : 'grid-cols-2'} gap-x-12 gap-y-6 mb-6`}>
-        {displayedReviews.map((review) => (
-          <div 
-            key={review.id} 
-            className={`space-y-3 ${bodyClasses.wrapper}`}
-            style={bodyClasses.style}
-          >
-            <div className="flex items-center gap-3">
-              <img
-                src={review.avatar || 'https://a0.muscache.com/defaults/user_pic-50x50.png?v=3'}
-                alt={review.author}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div>
-                <p className="font-medium text-sm" style={{ color: textColor }}>
-                  {review.author}
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: borderColor }} />
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !isLoading && (
+        <div className="text-center py-8" style={{ color: textColor }}>
+          <p className="opacity-70">Unable to load reviews at this time.</p>
+        </div>
+      )}
+
+      {/* Reviews Grid */}
+      {!isLoading && !error && reviews.length > 0 && (
+        <>
+          <div className={`grid ${isMobile ? 'grid-cols-1' : bodyType === 'list-grid' ? 'grid-cols-1' : 'grid-cols-2'} gap-x-12 gap-y-6 mb-6`}>
+            {displayedReviews.map((review) => (
+              <div 
+                key={review.id} 
+                className={`space-y-3 ${bodyClasses.wrapper}`}
+                style={bodyClasses.style}
+              >
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm"
+                    style={{ 
+                      backgroundColor: ratingIconColor + '20',
+                      color: ratingIconColor
+                    }}
+                  >
+                    {getInitials(review.authorName)}
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm" style={{ color: textColor }}>
+                      {review.authorName}
+                    </p>
+                    <p className="text-xs opacity-70" style={{ color: textColor }}>
+                      {formatDate(review.createdAt)}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <RatingIcon key={i} filled={i < review.rating} />
+                  ))}
+                </div>
+
+                {review.title && (
+                  <p className="font-medium text-sm" style={{ color: textColor }}>
+                    {review.title}
+                  </p>
+                )}
+
+                <p className="text-sm line-clamp-3 opacity-90" style={{ color: textColor }}>
+                  {review.content}
                 </p>
-                <p className="text-xs opacity-70" style={{ color: textColor }}>
-                  {review.date}
-                </p>
+
+                {/* Display review images if any */}
+                {review.media && review.media.length > 0 && (
+                  <div className="flex gap-2 mt-2">
+                    {review.media.slice(0, 3).map((media) => (
+                      <img
+                        key={media.id}
+                        src={media.thumbnailUrl || media.mediaUrl}
+                        alt={media.caption || 'Review image'}
+                        className="w-16 h-16 object-cover rounded"
+                        style={{ border: `1px solid ${borderColor}` }}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Business Reply */}
+                {review.businessReply && (
+                  <div 
+                    className="mt-3 p-3 rounded-lg"
+                    style={{ backgroundColor: `${borderColor}10` }}
+                  >
+                    <p className="text-xs font-medium mb-1" style={{ color: textColor }}>
+                      Response from the owner
+                    </p>
+                    <p className="text-sm opacity-90" style={{ color: textColor }}>
+                      {review.businessReply}
+                    </p>
+                  </div>
+                )}
               </div>
-            </div>
-            
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <RatingIcon key={i} filled={i < review.rating} />
-              ))}
-            </div>
-
-            <p className="text-sm line-clamp-3 opacity-90" style={{ color: textColor }}>
-              {review.comment}
-            </p>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Show all button */}
-      {reviews.length > reviewsPerPage && (
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="px-6 py-3 rounded-lg font-medium transition hover:opacity-90"
-          style={{ 
-            border: `1px solid ${outlineButtonColor}`,
-            color: outlineButtonText,
-            backgroundColor: 'transparent'
-          }}
-        >
-          {showAll ? 'Show less' : `Show all ${totalReviews} reviews`}
-        </button>
+          {/* Show all button */}
+          {reviews.length > reviewsPerPage && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="px-6 py-3 rounded-lg font-medium transition hover:opacity-90"
+              style={{ 
+                border: `1px solid ${outlineButtonColor}`,
+                color: outlineButtonText,
+                backgroundColor: 'transparent'
+              }}
+            >
+              {showAll ? 'Show less' : `Show all ${totalReviews} reviews`}
+            </button>
+          )}
+        </>
+      )}
+
+      {/* Empty State for Editor - only show if there are no reviews */}
+      {isEditor && !isLoading && reviews.length === 0 && (
+        <div className="border-2 border-dashed rounded-lg p-8 text-center" style={{ borderColor }}>
+          <p className="text-sm opacity-70" style={{ color: textColor }}>
+            {firstActiveRoomId 
+              ? "No reviews yet for this room. Reviews will appear here when customers submit them."
+              : "No active room found. Please create and activate a room first."}
+          </p>
+          <p className="text-xs opacity-50 mt-2" style={{ color: textColor }}>
+            This is a preview showing data from the first active room.
+          </p>
+        </div>
+      )}
+
+      {/* Empty State for Live Site */}
+      {!isEditor && !isLoading && !error && reviews.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-sm opacity-70 mb-4" style={{ color: textColor }}>
+            Be the first to share your experience!
+          </p>
+          {roomId && (
+            <button
+              onClick={() => setShowWriteReview(true)}
+              className="px-6 py-3 rounded-lg font-medium transition hover:opacity-90"
+              style={{ 
+                backgroundColor: ratingIconColor,
+                color: '#FFFFFF'
+              }}
+            >
+              Write the first review
+            </button>
+          )}
+        </div>
       )}
 
       {/* Write Review Modal */}
-      <WriteReviewModal
-        isOpen={showWriteReview}
-        onClose={() => setShowWriteReview(false)}
-        ratingIcon={ratingIcon}
-        ratingIconColor={ratingIconColor}
-        colorScheme={colorScheme}
-      />
+      {(roomId || firstActiveRoomId) && (
+        <WriteReviewModal
+          isOpen={showWriteReview}
+          onClose={() => setShowWriteReview(false)}
+          onSuccess={handleReviewSubmitted}
+          roomId={roomId || firstActiveRoomId!}
+          ratingIcon={ratingIcon}
+          ratingIconColor={ratingIconColor}
+          colorScheme={colorScheme}
+        />
+      )}
     </div>
   );
 }

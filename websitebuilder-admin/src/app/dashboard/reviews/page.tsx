@@ -84,7 +84,7 @@ export default function ReviewsPage() {
         ...(selectedRating && { rating: selectedRating }),
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ export default function ReviewsPage() {
     if (selectedReviews.length === 0) return;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/bulk-action`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/bulk-action`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -138,7 +138,7 @@ export default function ReviewsPage() {
         ...(selectedRating && { rating: selectedRating }),
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews/export?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/export?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -180,12 +180,43 @@ export default function ReviewsPage() {
         </p>
       </div>
 
-      {/* Statistics Cards */}
-      {statistics && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <ReviewStatisticsCard statistics={statistics} />
+      {/* Statistics Cards - Always show, even with zero values */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <ReviewStatisticsCard statistics={statistics || {
+          totalReviews: 0,
+          averageRating: 0,
+          ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+          positiveReviewsCount: 0,
+          positivePercentage: 0,
+          newReviewsThisWeek: 0,
+          weeklyGrowthPercentage: 0,
+          weeklyTrend: [0, 0, 0, 0, 0, 0, 0]
+        }} />
+        {/* Button to recalculate statistics */}
+        <div className="lg:col-span-3 flex justify-end">
+          <button
+            onClick={async () => {
+              try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reviews/recalculate-statistics`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                });
+                if (response.ok) {
+                  fetchReviews(); // Refresh the page
+                }
+              } catch (error) {
+                console.error('Error recalculating statistics:', error);
+              }
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            🔄 Recalcular Estadísticas
+          </button>
         </div>
-      )}
+      </div>
 
       {/* Filters and Actions */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
