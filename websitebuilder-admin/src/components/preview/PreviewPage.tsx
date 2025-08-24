@@ -11,6 +11,7 @@ import PreviewImageBanner from './PreviewImageBanner';
 interface PreviewPageProps {
   pageType: PageType;
   handle: string;
+  roomSlug?: string; // Optional room slug for individual room pages
 }
 
 interface StructuralComponents {
@@ -21,7 +22,7 @@ interface StructuralComponents {
   cartDrawer?: any;
 }
 
-export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
+export default function PreviewPage({ pageType, handle, roomSlug }: PreviewPageProps) {
   const [structuralComponents, setStructuralComponents] = useState<StructuralComponents>({});
   const [globalTheme, setGlobalTheme] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -211,6 +212,7 @@ export default function PreviewPage({ pageType, handle }: PreviewPageProps) {
           theme={globalTheme}
           companyId={companyId || undefined}
           deviceView={editorDeviceView}
+          roomSlug={roomSlug}
         />
       </main>
 

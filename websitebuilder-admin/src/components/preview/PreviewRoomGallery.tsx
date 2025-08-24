@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Grid3x3, X, Share, Heart } from 'lucide-react';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface RoomGalleryConfig {
   enabled: boolean;
@@ -81,16 +82,14 @@ export default function PreviewRoomGallery({
 
   // Fetch room images
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
       setLoading(true);
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const roomData = await response.json();
+        // Use helper function that checks for slug
+        const roomData = await fetchRoomData(companyId);
+        if (roomData) {
           if (roomData?.images?.length > 0) {
             setImages(roomData.images.slice(0, 5));
           } else {
@@ -120,7 +119,7 @@ export default function PreviewRoomGallery({
     };
 
     if (config.enabled) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [config.enabled]);
 

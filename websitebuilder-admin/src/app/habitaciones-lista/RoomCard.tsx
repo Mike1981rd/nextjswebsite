@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Star, Users, Maximize, Home, Calendar, Eye } from 'lucide-react';
 import { ProductCardsConfig } from '@/types/theme/productCards';
+import Link from 'next/link';
 
 interface RoomCardProps {
   room: {
     id: number;
     name: string;
+    slug?: string;
     description?: string;
     basePrice: number;
     comparePrice?: number;
@@ -169,18 +171,34 @@ export default function RoomCard({
       >
         {/* Image */}
         <div className="w-48 h-32 flex-shrink-0">
-          <img
-            src={getImageUrl(room.images?.[0])}
-            alt={room.name}
-            className="w-full h-full object-cover rounded-lg"
-          />
+          {room.slug ? (
+            <Link href={`/habitaciones/${room.slug}`}>
+              <img
+                src={getImageUrl(room.images?.[0])}
+                alt={room.name}
+                className="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+              />
+            </Link>
+          ) : (
+            <img
+              src={getImageUrl(room.images?.[0])}
+              alt={room.name}
+              className="w-full h-full object-cover rounded-lg"
+            />
+          )}
         </div>
 
         {/* Content */}
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="text-lg font-semibold mb-1">{room.name}</h3>
+              {room.slug ? (
+                <Link href={`/habitaciones/${room.slug}`}>
+                  <h3 className="text-lg font-semibold mb-1 hover:text-blue-600 cursor-pointer transition-colors">{room.name}</h3>
+                </Link>
+              ) : (
+                <h3 className="text-lg font-semibold mb-1">{room.name}</h3>
+              )}
               {room.description && (
                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">{room.description}</p>
               )}
@@ -231,10 +249,13 @@ export default function RoomCard({
               <div className="text-sm text-gray-500">por noche</div>
               
               {/* Reserve Button */}
-              {productCardsConfig?.buttons?.showAddToCart && (
-                <button className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  Reservar
-                </button>
+              {productCardsConfig?.buttons?.showAddToCart && room.slug && (
+                <Link 
+                  href={`/habitaciones/${room.slug}`}
+                  className="inline-block mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Ver detalles
+                </Link>
               )}
             </div>
           </div>
@@ -257,16 +278,31 @@ export default function RoomCard({
     >
       {/* Image Container */}
       <div className={`relative overflow-hidden rounded-t-lg ${getAspectRatio()}`}>
-        <img
-          src={getImageUrl(room.images?.[currentImageIndex])}
-          alt={room.name}
-          className={`w-full h-full ${getObjectFit()} transition-transform duration-300 ${
-            productCardsConfig?.effects?.hoverEffect === 'zoom' && isHovered ? 'scale-110' : ''
-          }`}
-          style={{
-            filter: productCardsConfig?.visibility?.darkenImageBackground ? 'brightness(0.9)' : undefined
-          }}
-        />
+        {room.slug ? (
+          <Link href={`/habitaciones/${room.slug}`}>
+            <img
+              src={getImageUrl(room.images?.[currentImageIndex])}
+              alt={room.name}
+              className={`w-full h-full ${getObjectFit()} transition-transform duration-300 cursor-pointer ${
+                productCardsConfig?.effects?.hoverEffect === 'zoom' && isHovered ? 'scale-110' : ''
+              }`}
+              style={{
+                filter: productCardsConfig?.visibility?.darkenImageBackground ? 'brightness(0.9)' : undefined
+              }}
+            />
+          </Link>
+        ) : (
+          <img
+            src={getImageUrl(room.images?.[currentImageIndex])}
+            alt={room.name}
+            className={`w-full h-full ${getObjectFit()} transition-transform duration-300 ${
+              productCardsConfig?.effects?.hoverEffect === 'zoom' && isHovered ? 'scale-110' : ''
+            }`}
+            style={{
+              filter: productCardsConfig?.visibility?.darkenImageBackground ? 'brightness(0.9)' : undefined
+            }}
+          />
+        )}
         
         {/* Discount Badge */}
         {discountPercentage > 0 && (
@@ -295,7 +331,13 @@ export default function RoomCard({
       {/* Content */}
       <div className="p-4">
         {/* Name */}
-        <h3 className="font-semibold text-gray-900 mb-1">{room.name}</h3>
+        {room.slug ? (
+          <Link href={`/habitaciones/${room.slug}`}>
+            <h3 className="font-semibold text-gray-900 mb-1 hover:text-blue-600 cursor-pointer transition-colors">{room.name}</h3>
+          </Link>
+        ) : (
+          <h3 className="font-semibold text-gray-900 mb-1">{room.name}</h3>
+        )}
 
         {/* Features */}
         <div className="flex items-center gap-3 text-sm text-gray-500 mb-2">
@@ -337,10 +379,13 @@ export default function RoomCard({
         </div>
 
         {/* Action Buttons (always visible or on hover) */}
-        {(!productCardsConfig?.buttons?.showOnHover || isHovered) && productCardsConfig?.buttons?.showAddToCart && (
-          <button className="mt-3 w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-            Reservar Ahora
-          </button>
+        {(!productCardsConfig?.buttons?.showOnHover || isHovered) && productCardsConfig?.buttons?.showAddToCart && room.slug && (
+          <Link 
+            href={`/habitaciones/${room.slug}`}
+            className="block mt-3 w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium text-center"
+          >
+            Ver detalles
+          </Link>
         )}
       </div>
     </div>

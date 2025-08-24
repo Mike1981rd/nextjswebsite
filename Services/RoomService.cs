@@ -14,6 +14,7 @@ namespace WebsiteBuilderAPI.Services
     {
         Task<List<RoomResponseDto>> GetAllAsync(int companyId);
         Task<RoomResponseDto?> GetByIdAsync(int companyId, int id);
+        Task<RoomResponseDto?> GetBySlugAsync(int companyId, string slug);
         Task<RoomResponseDto> CreateAsync(int companyId, CreateRoomDto dto);
         Task<RoomResponseDto?> UpdateAsync(int companyId, int id, UpdateRoomDto dto);
         Task<bool> DeleteAsync(int companyId, int id);
@@ -45,6 +46,15 @@ namespace WebsiteBuilderAPI.Services
             var room = await _context.Rooms
                 .Include(r => r.Host) // Include Host data
                 .FirstOrDefaultAsync(r => r.Id == id && r.CompanyId == companyId);
+
+            return room != null ? MapToDto(room) : null;
+        }
+
+        public async Task<RoomResponseDto?> GetBySlugAsync(int companyId, string slug)
+        {
+            var room = await _context.Rooms
+                .Include(r => r.Host) // Include Host data
+                .FirstOrDefaultAsync(r => r.Slug == slug && r.CompanyId == companyId && r.IsActive);
 
             return room != null ? MapToDto(room) : null;
         }
@@ -93,7 +103,7 @@ namespace WebsiteBuilderAPI.Services
                 CancellationPolicyOrder = dto.CancellationPolicyOrder,
                 SafetyAndPropertyOrder = dto.SafetyAndPropertyOrder,
                 // Campos SEO
-                Slug = dto.Slug,
+                Slug = !string.IsNullOrEmpty(dto.Slug) ? dto.Slug : GenerateSlug(dto.Name),
                 MetaTitle = dto.MetaTitle,
                 MetaDescription = dto.MetaDescription,
                 // Estadísticas (valores iniciales por defecto)
@@ -264,7 +274,22 @@ namespace WebsiteBuilderAPI.Services
             
             // Campos SEO
             if (dto.Slug != null)
-                room.Slug = dto.Slug == "" ? null : dto.Slug;
+            {
+                // Si viene vacío y el room no tiene slug, generar uno basado en el nombre
+                if (string.IsNullOrEmpty(dto.Slug) && string.IsNullOrEmpty(room.Slug))
+                {
+                    room.Slug = GenerateSlug(room.Name);
+                }
+                else if (!string.IsNullOrEmpty(dto.Slug))
+                {
+                    room.Slug = dto.Slug;
+                }
+            }
+            else if (string.IsNullOrEmpty(room.Slug))
+            {
+                // Si no se envía slug y el room no tiene uno, generarlo
+                room.Slug = GenerateSlug(room.Name);
+            }
             
             if (dto.MetaTitle != null)
                 room.MetaTitle = dto.MetaTitle == "" ? null : dto.MetaTitle;
@@ -394,6 +419,34 @@ namespace WebsiteBuilderAPI.Services
                 CreatedAt = room.CreatedAt,
                 UpdatedAt = room.UpdatedAt
             };
+        }
+
+        private string GenerateSlug(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return "";
+            
+            // Convert to lowercase
+            var slug = name.ToLowerInvariant();
+            
+            // Replace accented characters with their non-accented equivalents
+            slug = slug.Replace("á", "a").Replace("é", "e").Replace("í", "i").Replace("ó", "o").Replace("ú", "u")
+                      .Replace("ñ", "n").Replace("ü", "u")
+                      .Replace("à", "a").Replace("è", "e").Replace("ì", "i").Replace("ò", "o").Replace("ù", "u");
+            
+            // Replace spaces with hyphens
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"\s+", "-");
+            
+            // Remove invalid characters
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\-]", "");
+            
+            // Replace multiple hyphens with single hyphen
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
+            
+            // Trim hyphens from start and end
+            slug = slug.Trim('-');
+            
+            return slug;
         }
     }
 }

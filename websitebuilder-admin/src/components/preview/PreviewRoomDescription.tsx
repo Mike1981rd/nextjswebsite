@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronRight } from 'lucide-react';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface RoomDescriptionConfig {
   enabled: boolean;
@@ -71,16 +72,14 @@ export default function PreviewRoomDescription({
 
   // Auto-fetch room data for both editor and preview
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
       setLoading(true);
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const data = await response.json();
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data) {
           setRoomData(data);
         }
       } catch (error) {
@@ -91,7 +90,7 @@ export default function PreviewRoomDescription({
     };
 
     if (config.enabled) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [config.enabled]);
 

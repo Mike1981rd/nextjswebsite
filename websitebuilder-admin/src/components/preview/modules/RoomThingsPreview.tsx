@@ -5,6 +5,7 @@ import { ChevronRight, Info } from 'lucide-react';
 import IconRenderer from '@/components/ui/IconRenderer';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import { useConfigOptions } from '@/hooks/useConfigOptions';
+import { fetchRoomData } from '@/lib/api/rooms';
 // import { useI18n } from '@/contexts/I18nContext';
 
 interface RoomThingsConfig {
@@ -84,37 +85,26 @@ export default function RoomThingsPreview({
 
   // Load real room data when syncing is enabled (default true in editor)
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
+      const companyId = localStorage.getItem('companyId') || '1';
+      const currentSlug = localStorage.getItem('currentRoomSlug');
+      
+      console.log('=== ROOM THINGS TO KNOW DEBUG ===');
+      console.log('Current room slug from localStorage:', currentSlug);
+      console.log('Company ID:', companyId);
+      
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
-        const token = localStorage.getItem('token');
-        const authHeaders = token ? { Authorization: `Bearer ${token}` } : undefined;
-
-        // Try to resolve a room id to load
-        let roomId = localStorage.getItem('selectedRoomId') || undefined;
-        if (!roomId) {
-          const companyId = parseInt(localStorage.getItem('companyId') || '1');
-          if (companyId) {
-            const resp = await fetch(`${API_URL}/rooms/company/${companyId}/public`, {
-              headers: authHeaders
-            });
-            if (resp.ok) {
-              const rooms = await resp.json();
-              if (Array.isArray(rooms) && rooms.length > 0 && rooms[0]?.id) {
-                roomId = String(rooms[0].id);
-                localStorage.setItem('selectedRoomId', roomId);
-              }
-            }
-          }
-        }
-
-        if (!roomId) return;
-
-        const response = await fetch(`${API_URL}/rooms/${roomId}`, {
-          headers: authHeaders
-        });
-        if (response.ok) {
-          const data = await response.json();
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data) {
+          console.log('Room data fetched for Things to Know:', data);
+          console.log('Room ID:', data.id);
+          console.log('Room Name:', data.name);
+          console.log('Room Slug:', data.slug);
+          console.log('HouseRules:', data.houseRules);
+          console.log('SafetyAndProperty:', data.safetyAndProperty);
+          console.log('CancellationPolicy:', data.cancellationPolicy);
+          console.log('=================================');
           setRoomData(data);
         }
       } catch (err) {
@@ -123,7 +113,7 @@ export default function RoomThingsPreview({
     };
 
     if (actualConfig.enabled && ((actualConfig as any).syncWithRoom ?? true)) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [actualConfig.enabled, (actualConfig as any).syncWithRoom]);
 

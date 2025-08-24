@@ -6,6 +6,7 @@ import * as Icons from 'lucide-react';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import { useConfigOptions } from '@/hooks/useConfigOptions';
 import { useI18n } from '@/contexts/I18nContext';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface Highlight {
   id: string;
@@ -359,11 +360,9 @@ export default function PreviewRoomHighlights({
     
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-      );
-      if (response.ok) {
-        const data = await response.json();
+      // Use helper function that checks for slug
+      const data = await fetchRoomData(companyId);
+      if (data) {
         console.log('Manual refresh - Room data:', data);
         setRoomData(data);
       }
@@ -388,16 +387,14 @@ export default function PreviewRoomHighlights({
 
   // Auto-fetch room data for both editor and preview
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
       setLoading(true);
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const data = await response.json();
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data) {
           console.log('=== Room Highlights Data Debug ===');
           console.log('Highlights field:', data.highlights);
           console.log('Number of highlights:', Array.isArray(data.highlights) ? data.highlights.length : 0);
@@ -417,7 +414,7 @@ export default function PreviewRoomHighlights({
 
     // Fetch in both editor and preview modes
     if (config.enabled) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [config.enabled]);
 

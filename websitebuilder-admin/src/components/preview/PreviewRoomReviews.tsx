@@ -6,6 +6,7 @@ import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import WriteReviewModal from '@/components/reviews/WriteReviewModal';
 import { getRoomReviews, type ReviewDto, type ReviewStatisticsDto } from '@/lib/api/reviews';
 import type { ColorScheme } from '@/types/theme/colorSchemes';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface RoomReviewsConfig {
   enabled: boolean;
@@ -66,18 +67,14 @@ export default function PreviewRoomReviews({
 
   // Fetch first active room ID when needed (editor or no roomId provided in live)
   useEffect(() => {
-    const fetchFirstActiveRoom = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.id) {
-            setFirstActiveRoomId(data.id);
-          }
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data?.id) {
+          setFirstActiveRoomId(data.id);
         }
       } catch (error) {
         console.error('Error fetching first active room:', error);
@@ -87,7 +84,7 @@ export default function PreviewRoomReviews({
     const configRoomId = (config as any)?.roomId as number | undefined;
     // Fetch when enabled and either in editor OR no room id is provided in live
     if (config.enabled && (isEditor || (!roomId && !configRoomId))) {
-      fetchFirstActiveRoom();
+      loadRoomData();
     }
   }, [isEditor, config.enabled, roomId, config]);
 

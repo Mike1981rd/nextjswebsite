@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bed, Users, Moon } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface SleepingArea {
   id: string;
@@ -54,16 +55,14 @@ export default function PreviewRoomSleeping({
 
   // Auto-fetch room data
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
       setLoading(true);
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const data = await response.json();
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data) {
           setRoomData(data);
         }
       } catch (error) {
@@ -73,10 +72,11 @@ export default function PreviewRoomSleeping({
       }
     };
 
-    if (isEditor && config.enabled) {
-      fetchRoomData();
+    // Fetch in both editor and preview modes
+    if (config.enabled) {
+      loadRoomData();
     }
-  }, [isEditor, config.enabled]);
+  }, [config.enabled]);
 
   if (!config.enabled) {
     return null;

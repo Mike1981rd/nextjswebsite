@@ -5,6 +5,7 @@ import { Check } from 'lucide-react';
 import IconRenderer from '@/components/ui/IconRenderer';
 import { useConfigOptions } from '@/hooks/useConfigOptions';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface Amenity {
   id: string;
@@ -72,17 +73,16 @@ export default function PreviewRoomAmenities({
 
   // Auto-fetch room data for both editor and preview
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          console.log('=== Room Data Debug ===');
-          console.log('Full room data:', data);
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data) {
+          console.log('=== Room Data Debug (with slug support) ===');
+          console.log('Room name:', data.name);
+          console.log('Room slug:', data.slug);
           console.log('Amenities type:', typeof data.amenities);
           console.log('Amenities value:', data.amenities);
           console.log('First amenity:', data.amenities?.[0]);
@@ -96,7 +96,7 @@ export default function PreviewRoomAmenities({
 
     // Fetch in both editor and preview modes
     if (config.enabled) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [config.enabled]);
 

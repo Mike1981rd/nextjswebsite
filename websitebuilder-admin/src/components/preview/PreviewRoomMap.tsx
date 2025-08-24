@@ -5,6 +5,7 @@ import { MapPin, Navigation } from 'lucide-react';
 import { geocodeAddress } from '@/lib/geocoding';
 import LocationMap from '@/components/habitaciones/LocationMap';
 import { useCompany } from '@/contexts/CompanyContext';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface RoomMapConfig {
   enabled: boolean;
@@ -53,14 +54,12 @@ export default function PreviewRoomMap({
 
   // Fetch room data (both in editor and live preview) to obtain coordinates
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const data = await response.json();
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data) {
           setRoomData(data);
         }
       } catch (error) {
@@ -69,7 +68,7 @@ export default function PreviewRoomMap({
     };
 
     if (config.enabled) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [config.enabled]);
 

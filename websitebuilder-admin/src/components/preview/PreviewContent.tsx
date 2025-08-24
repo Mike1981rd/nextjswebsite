@@ -31,9 +31,10 @@ interface PreviewContentProps {
   theme: any;
   companyId?: number;
   deviceView?: 'desktop' | 'mobile' | 'tablet';
+  roomSlug?: string; // Optional room slug for individual room pages
 }
 
-export default function PreviewContent({ pageType, handle, theme, companyId, deviceView }: PreviewContentProps) {
+export default function PreviewContent({ pageType, handle, theme, companyId, deviceView, roomSlug }: PreviewContentProps) {
   // DO NOT normalize or coalesce deviceView - pass it through as-is per documentation
   const [sections, setSections] = useState<Section[]>([]);
   const [pageData, setPageData] = useState<any>(null);
@@ -44,6 +45,14 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
       // Get company ID from localStorage if not provided
       const effectiveCompanyId = companyId || parseInt(localStorage.getItem('companyId') || '1');
       if (!effectiveCompanyId) return;
+
+      // If we have a roomSlug, store it in localStorage for room components to use
+      if (roomSlug) {
+        localStorage.setItem('currentRoomSlug', roomSlug);
+      } else {
+        // Clear if no specific room is selected
+        localStorage.removeItem('currentRoomSlug');
+      }
 
       // First, try to load from localStorage (for real-time preview sync) by page type
       const pageKey = `page_sections_${pageType.toLowerCase()}`;

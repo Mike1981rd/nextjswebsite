@@ -5,6 +5,7 @@ import { Info, ChevronRight } from 'lucide-react';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import { useConfigOptions } from '@/hooks/useConfigOptions';
 import { useI18n } from '@/contexts/I18nContext';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface RoomThingsConfig {
   enabled: boolean;
@@ -63,22 +64,29 @@ export default function PreviewRoomThings({
 
   // Fetch room data
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
+      const companyId = localStorage.getItem('companyId') || '1';
+      const currentSlug = localStorage.getItem('currentRoomSlug');
+      
+      console.log('=== ROOM THINGS TO KNOW DEBUG ===');
+      console.log('Current room slug from localStorage:', currentSlug);
+      console.log('Company ID:', companyId);
+      
       try {
-        // Get the selected room ID from localStorage (set by room selection in editor)
-        const selectedRoomId = localStorage.getItem('selectedRoomId') || '2'; // Default to room 2
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://172.25.64.1:5266/api';
-        
-        const response = await fetch(`${API_URL}/rooms/${selectedRoomId}`);
-        if (response.ok) {
-          const data = await response.json();
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data) {
           console.log('Room data fetched for Things to Know:', data);
+          console.log('Room ID:', data.id);
+          console.log('Room Name:', data.name);
+          console.log('Room Slug:', data.slug);
           console.log('HouseRules type:', typeof data.houseRules);
           console.log('HouseRules value:', data.houseRules);
           console.log('SafetyAndProperty type:', typeof data.safetyAndProperty);
           console.log('SafetyAndProperty value:', data.safetyAndProperty);
           console.log('CancellationPolicy type:', typeof data.cancellationPolicy);
           console.log('CancellationPolicy value:', data.cancellationPolicy);
+          console.log('=================================');
           setRoomData(data);
         }
       } catch (error) {
@@ -88,7 +96,7 @@ export default function PreviewRoomThings({
 
     // Fetch in both editor and preview modes
     if (config.enabled) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [config.enabled]);
 
@@ -132,6 +140,10 @@ export default function PreviewRoomThings({
   const transformedHouseRules = useMemo(() => {
     const rules: string[] = [];
     
+    console.log('=== DEBUGGING HOUSE RULES ===');
+    console.log('roomData?.houseRules:', roomData?.houseRules);
+    console.log('typeof roomData?.houseRules:', typeof roomData?.houseRules);
+    
     if (roomData?.houseRules) {
       // If houseRules is a string (text from DB), split it
       if (typeof roomData.houseRules === 'string') {
@@ -140,14 +152,19 @@ export default function PreviewRoomThings({
       } 
       // If houseRules is an object (JSONB), process it
       else if (typeof roomData.houseRules === 'object') {
+        console.log('houseRules is object:', JSON.stringify(roomData.houseRules));
+        
         // Add check-in/check-out times if available
         if (roomData.houseRules.checkInTime) {
+          console.log('Adding check-in time:', roomData.houseRules.checkInTime);
           rules.push(`Check-in: ${roomData.houseRules.checkInTime}`);
         }
         if (roomData.houseRules.checkOutTime) {
+          console.log('Adding check-out time:', roomData.houseRules.checkOutTime);
           rules.push(`Check-out: ${roomData.houseRules.checkOutTime}`);
         }
         if (roomData.houseRules.quietHours) {
+          console.log('Adding quiet hours:', roomData.houseRules.quietHours);
           rules.push(`Quiet hours: ${roomData.houseRules.quietHours}`);
         }
         
@@ -170,9 +187,12 @@ export default function PreviewRoomThings({
       }
     }
     
-    // If no room data, use config as fallback
-    return rules.length > 0 ? rules : config.houseRules;
-  }, [roomData, houseRulesOptions, config.houseRules]);
+    console.log('Final rules array:', rules);
+    console.log('=== END DEBUGGING HOUSE RULES ===');
+    
+    // Return only room data, no fallback to config
+    return rules;
+  }, [roomData, houseRulesOptions]);
 
   const transformedSafetyProperty = useMemo(() => {
     const safety: string[] = [];
@@ -202,9 +222,9 @@ export default function PreviewRoomThings({
       }
     }
     
-    // If no room data, use config as fallback
-    return safety.length > 0 ? safety : config.safetyProperty;
-  }, [roomData, safetyOptions, config.safetyProperty]);
+    // Return only room data, no fallback to config
+    return safety;
+  }, [roomData, safetyOptions]);
 
   const transformedCancellationPolicy = useMemo(() => {
     const policies: string[] = [];
@@ -235,9 +255,9 @@ export default function PreviewRoomThings({
       });
     }
     
-    // If no room data, use config as fallback
-    return policies.length > 0 ? policies : config.cancellationPolicy;
-  }, [roomData, cancellationOptions, config.cancellationPolicy, language]);
+    // Return only room data, no fallback to config
+    return policies;
+  }, [roomData, cancellationOptions, language]);
 
   const sections = [
     {
@@ -259,6 +279,14 @@ export default function PreviewRoomThings({
       preview: transformedCancellationPolicy.slice(0, 3)
     }
   ];
+
+  // Check if all sections are empty
+  const hasAnyContent = sections.some(s => s.items && s.items.length > 0);
+  
+  // If no content at all, don't render the component
+  if (!hasAnyContent) {
+    return null;
+  }
 
   return (
     <div 

@@ -44,7 +44,13 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
   useEffect(() => {
     console.log('🏠 Common Spaces Options:', commonSpacesOptions);
     console.log('⏳ Loading Common Spaces:', loadingCommonSpaces);
-  }, [commonSpacesOptions, loadingCommonSpaces]);
+    console.log('📋 House Rules Options:', houseRulesOptions);
+    console.log('⏳ Loading House Rules:', loadingHouseRules);
+    console.log('🛡️ Safety Property Options:', safetyPropertyOptions);
+    console.log('⏳ Loading Safety Property:', loadingSafetyProperty);
+    console.log('❌ Cancellation Options:', cancellationOptions);
+    console.log('⏳ Loading Cancellation:', loadingCancellation);
+  }, [commonSpacesOptions, loadingCommonSpaces, houseRulesOptions, loadingHouseRules, safetyPropertyOptions, loadingSafetyProperty, cancellationOptions, loadingCancellation]);
 
   // Initialize complex JSON fields if they don't exist
   useEffect(() => {
@@ -176,7 +182,7 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
     setFormData({
       ...formData,
       [field]: {
-        ...formData[field],
+        ...(formData[field] || {}),
         [key]: value
       }
     });
@@ -490,49 +496,6 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="font-medium text-lg mb-4">{t('rooms.houseRules', 'Reglas de la Casa')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {false && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('rooms.checkInTime', 'Hora de Check-in')}
-                    </label>
-                    <input
-                      type="time"
-                      value={formData.houseRules?.checkInTime || '15:00'}
-                      onChange={(e) => updateNestedField('houseRules', 'checkInTime', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                )}
-
-                {false && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('rooms.checkOutTime', 'Hora de Check-out')}
-                    </label>
-                    <input
-                      type="time"
-                      value={formData.houseRules?.checkOutTime || '11:00'}
-                      onChange={(e) => updateNestedField('houseRules', 'checkOutTime', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                )}
-
-                {/* Deprecated: Quiet hours select/input (remove from UI as requested) */}
-                {false && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('rooms.quietHours', 'Horas de silencio')}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.houseRules?.quietHours || '22:00 - 08:00'}
-                      onChange={(e) => updateNestedField('houseRules', 'quietHours', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                )}
-
                 {/* Dynamic house rules toggles from catalog */}
                 {loadingHouseRules ? (
                   <div className="col-span-2 text-center py-4">
@@ -553,9 +516,15 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
                               <Toggle
                                 checked={formData.houseRules?.[opt.value] || false}
                                 onChange={(checked) => {
-                                  updateNestedField('houseRules', opt.value, checked);
                                   const newOrder = ensureInOrder(formData.houseRulesOrder, opt.value, checked);
-                                  setFormData({ ...formData, houseRulesOrder: newOrder });
+                                  setFormData({
+                                    ...formData,
+                                    houseRules: {
+                                      ...(formData.houseRules || {}),
+                                      [opt.value]: checked
+                                    },
+                                    houseRulesOrder: newOrder
+                                  });
                                   try { localStorage.setItem('room_houseRulesOrder', JSON.stringify(newOrder)); } catch {}
                                 }}
                                 label={opt.label || opt.value}
@@ -689,9 +658,15 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
                               <Toggle
                                 checked={formData.cancellationPolicy?.[opt.value] || false}
                                 onChange={(checked) => {
-                                  updateNestedField('cancellationPolicy', opt.value, checked);
                                   const newOrder = ensureInOrder(formData.cancellationPolicyOrder, opt.value, checked);
-                                  setFormData({ ...formData, cancellationPolicyOrder: newOrder });
+                                  setFormData({
+                                    ...formData,
+                                    cancellationPolicy: {
+                                      ...(formData.cancellationPolicy || {}),
+                                      [opt.value]: checked
+                                    },
+                                    cancellationPolicyOrder: newOrder
+                                  });
                                   try { localStorage.setItem('room_cancellationPolicyOrder', JSON.stringify(newOrder)); } catch {}
                                 }}
                                 label={opt.label || opt.value}
@@ -785,15 +760,15 @@ export default function RoomFormExtended({ formData, setFormData, primaryColor }
                               <Toggle
                                 checked={formData.safetyAndProperty?.[opt.value] || false}
                                 onChange={(checked) => {
+                                  const newOrder = ensureInOrder(formData.safetyAndPropertyOrder, opt.value, checked);
                                   setFormData({
                                     ...formData,
                                     safetyAndProperty: {
-                                      ...formData.safetyAndProperty,
+                                      ...(formData.safetyAndProperty || {}),
                                       [opt.value]: checked
-                                    }
+                                    },
+                                    safetyAndPropertyOrder: newOrder
                                   });
-                                  const newOrder = ensureInOrder(formData.safetyAndPropertyOrder, opt.value, checked);
-                                  setFormData({ ...formData, safetyAndPropertyOrder: newOrder });
                                   try { localStorage.setItem('room_safetyAndPropertyOrder', JSON.stringify(newOrder)); } catch {}
                                 }}
                                 label={opt.label || opt.value}

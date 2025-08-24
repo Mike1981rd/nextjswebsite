@@ -8,6 +8,7 @@ import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import ReservationCalendar from './ReservationCalendar';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { formatPrice } from '@/utils/formatPrice';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface Highlight {
   id: string;
@@ -116,7 +117,7 @@ export default function PreviewRoomTitleHost({
 
   // Auto-fetch room data for both editor and preview
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
       setLoading(true);
@@ -135,12 +136,9 @@ export default function PreviewRoomTitleHost({
           setCompanyCurrency(companyData.currency || 'USD');
         }
         
-        // Then fetch room data
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const data = await response.json();
+        // Then fetch room data using the helper function
+        const data = await fetchRoomData(companyId);
+        if (data) {
           console.log('Room data fetched:', data); // Debug log
           console.log('Base Price:', data.basePrice); // Debug log for price
           setRoomData(data);
@@ -175,7 +173,7 @@ export default function PreviewRoomTitleHost({
 
     // Fetch in both editor and preview modes when enabled
     if (config.enabled) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [config.enabled]);
 

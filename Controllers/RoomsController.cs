@@ -104,6 +104,25 @@ namespace WebsiteBuilderAPI.Controllers
             }
         }
 
+        [HttpGet("company/{companyId}/slug/{slug}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetBySlug(int companyId, string slug)
+        {
+            try
+            {
+                var room = await _roomService.GetBySlugAsync(companyId, slug);
+                
+                if (room == null)
+                    return NotFound(new { error = "Habitación no encontrada", slug = slug });
+
+                return Ok(room);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Error al obtener la habitación por slug", details = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateRoomDto dto)
         {

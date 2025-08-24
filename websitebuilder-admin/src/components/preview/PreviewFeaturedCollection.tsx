@@ -22,6 +22,7 @@ interface PreviewFeaturedCollectionProps {
 interface Item {
   id: number;
   name: string;
+  slug?: string;
   price?: number;
   originalPrice?: number;
   imageUrl?: string;
@@ -269,9 +270,10 @@ export default function PreviewFeaturedCollection({
                     (item.ComparePrice && item.BasePrice ? 
                       Math.round(((item.ComparePrice - item.BasePrice) / item.ComparePrice) * 100) : 0));
                 
-                return {
+                const mappedRoom = {
                   id: item.id || item.Id,
                   name: item.name || item.Name || item.title || item.roomName || 'Unnamed Room',
+                  slug: item.slug || item.Slug, // Add slug for room navigation
                   price: item.basePrice || item.BasePrice || item.price || item.pricePerNight || item.nightlyRate,
                   originalPrice: item.comparePrice || item.ComparePrice || item.originalPrice || item.regularPrice,
                   imageUrl: getImageUrl(roomImage),
@@ -283,6 +285,8 @@ export default function PreviewFeaturedCollection({
                   soldOut: item.soldOut || item.SoldOut || false,
                   colorCount: item.colorCount || 0
                 };
+                console.log('[DEBUG] Mapped room:', mappedRoom.name, 'Slug:', mappedRoom.slug);
+                return mappedRoom;
               } else if (finalConfig.activeType === 'products') {
                 // Products may have images as an array
                 let productImage = null;
@@ -511,19 +515,36 @@ export default function PreviewFeaturedCollection({
   
   console.log('FeaturedCollection - Rendering with items:', itemsToShow.length, itemsToShow);
   
-  const renderCard = (item: Item) => (
-    <div 
-      className={cn(
-        "group relative",
-        isMobile && "bg-white shadow-sm"
-      )}
-      style={{
-        borderRadius: `${finalConfig.edgeRounding ?? 12}px`,
-        backgroundColor: isMobile ? colorScheme.background : undefined
-      }}
-    >
-      {/* Image Container */}
+  const renderCard = (item: Item) => {
+    // Determine if we should make the card clickable
+    const isClickable = !isEditor && (
+      (finalConfig.activeType === 'rooms' && item.slug) ||
+      (finalConfig.activeType === 'products' && item.slug) ||
+      (finalConfig.activeType === 'collections')
+    );
+    
+    console.log('[DEBUG] RenderCard:', {
+      itemName: item.name,
+      slug: item.slug,
+      isEditor,
+      activeType: finalConfig.activeType,
+      isClickable
+    });
+    
+    const cardContent = (
       <div 
+        className={cn(
+          "group relative",
+          isMobile && "bg-white shadow-sm",
+          isClickable && "cursor-pointer"
+        )}
+        style={{
+          borderRadius: `${finalConfig.edgeRounding ?? 12}px`,
+          backgroundColor: isMobile ? colorScheme.background : undefined
+        }}
+      >
+        {/* Image Container */}
+        <div 
         className={cn(
           getImageContainerClass(),
           isMobile && "aspect-[4/3]" // Force more square aspect for mobile
@@ -566,7 +587,8 @@ export default function PreviewFeaturedCollection({
           alt={item.name}
           className={cn(
             "w-full h-full group-hover:scale-105 transition-transform duration-300",
-            getObjectFit()
+            getObjectFit(),
+            isClickable && "cursor-pointer"
           )}
         />
         
@@ -782,35 +804,87 @@ export default function PreviewFeaturedCollection({
           )}
           
           {finalConfig.showReserveButton && (
-            <button
-              className={cn(
-                "w-full rounded-md font-medium transition-colors flex items-center justify-center gap-2",
-                isMobile ? "px-4 py-3 text-base" : "px-4 py-2.5 text-sm",
-                finalConfig.buttonStyle === 'solid' 
-                  ? "text-white hover:opacity-90"
-                  : "border-2 hover:bg-opacity-10"
-              )}
-              style={{
-                backgroundColor: finalConfig.buttonStyle === 'solid' ? 
-                  (colorScheme.solidButton || '#000000') : 
-                  'transparent',
-                borderColor: finalConfig.buttonStyle === 'outline' ? 
-                  (colorScheme.outlineButton || '#000000') : 
-                  'transparent',
-                color: finalConfig.buttonStyle === 'solid' ? 
-                  (colorScheme.solidButtonText || '#FFFFFF') : 
-                  (colorScheme.outlineButtonText || '#000000')
-              }}
-            >
-              <Calendar className="w-4 h-4" />
-              {finalConfig.reserveButtonText || 'Reservar'}
-            </button>
+            finalConfig.activeType === 'rooms' && item.slug && !isEditor ? (
+              <a 
+                href={`/habitaciones/${item.slug}`}
+                className={cn(
+                  "w-full rounded-md font-medium transition-colors flex items-center justify-center gap-2 inline-block",
+                  isMobile ? "px-4 py-3 text-base" : "px-4 py-2.5 text-sm",
+                  finalConfig.buttonStyle === 'solid' 
+                    ? "text-white hover:opacity-90"
+                    : "border-2 hover:bg-opacity-10"
+                )}
+                style={{
+                  backgroundColor: finalConfig.buttonStyle === 'solid' ? 
+                    (colorScheme.solidButton || '#000000') : 
+                    'transparent',
+                  borderColor: finalConfig.buttonStyle === 'outline' ? 
+                    (colorScheme.outlineButton || '#000000') : 
+                    'transparent',
+                  color: finalConfig.buttonStyle === 'solid' ? 
+                    (colorScheme.solidButtonText || '#FFFFFF') : 
+                    (colorScheme.outlineButtonText || '#000000')
+                }}
+              >
+                <Calendar className="w-4 h-4" />
+                {finalConfig.reserveButtonText || 'Reservar'}
+              </a>
+            ) : (
+              <button
+                className={cn(
+                  "w-full rounded-md font-medium transition-colors flex items-center justify-center gap-2",
+                  isMobile ? "px-4 py-3 text-base" : "px-4 py-2.5 text-sm",
+                  finalConfig.buttonStyle === 'solid' 
+                    ? "text-white hover:opacity-90"
+                    : "border-2 hover:bg-opacity-10"
+                )}
+                style={{
+                  backgroundColor: finalConfig.buttonStyle === 'solid' ? 
+                    (colorScheme.solidButton || '#000000') : 
+                    'transparent',
+                  borderColor: finalConfig.buttonStyle === 'outline' ? 
+                    (colorScheme.outlineButton || '#000000') : 
+                    'transparent',
+                  color: finalConfig.buttonStyle === 'solid' ? 
+                    (colorScheme.solidButtonText || '#FFFFFF') : 
+                    (colorScheme.outlineButtonText || '#000000')
+                }}
+              >
+                <Calendar className="w-4 h-4" />
+                {finalConfig.reserveButtonText || 'Reservar'}
+              </button>
+            )
           )}
           </div>
         )}
       </div>
     </div>
-  );
+    );
+    
+    // Wrap in link if clickable
+    if (isClickable) {
+      let href = '#';
+      
+      if (finalConfig.activeType === 'rooms' && item.slug) {
+        // Navigate to specific room page
+        href = `/habitaciones/${item.slug}`;
+      } else if (finalConfig.activeType === 'products' && item.slug) {
+        // Navigate to specific product page
+        href = `/product/${item.slug}`;
+      } else if (finalConfig.activeType === 'collections') {
+        // Navigate to collection page
+        href = `/collection/${item.slug || item.id}`;
+      }
+      
+      return (
+        <a href={href} className="block">
+          {cardContent}
+        </a>
+      );
+    }
+    
+    return cardContent;
+  };
   
   return (
     <section

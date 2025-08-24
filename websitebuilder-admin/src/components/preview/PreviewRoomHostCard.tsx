@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Shield, Star, Award, MessageSquare, Check } from 'lucide-react';
+import { fetchRoomData } from '@/lib/api/rooms';
 
 interface RoomHostCardConfig {
   enabled: boolean;
@@ -58,16 +59,14 @@ export default function PreviewRoomHostCard({
 
   // Auto-fetch room data for both editor and preview
   useEffect(() => {
-    const fetchRoomData = async () => {
+    const loadRoomData = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
       
       setLoading(true);
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/rooms/company/${companyId}/first-active`
-        );
-        if (response.ok) {
-          const data = await response.json();
+        // Use helper function that checks for slug
+        const data = await fetchRoomData(companyId);
+        if (data) {
           console.log('Room host data:', data.host); // Debug log
           setRoomData(data);
           
@@ -99,7 +98,7 @@ export default function PreviewRoomHostCard({
 
     // Fetch in both editor and preview modes
     if (config.enabled) {
-      fetchRoomData();
+      loadRoomData();
     }
   }, [config.enabled]);
 
