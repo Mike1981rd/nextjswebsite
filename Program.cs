@@ -185,6 +185,9 @@ try
     builder.Services.AddScoped<IReviewService, ReviewService>();
     builder.Services.AddScoped<HostService>();
     builder.Services.AddScoped<IConfigOptionService, ConfigOptionService>();
+    
+    // Registrar servicio de Email
+    builder.Services.AddScoped<IEmailService, EmailService>();
 
     // Add HttpContextAccessor
     builder.Services.AddHttpContextAccessor();
