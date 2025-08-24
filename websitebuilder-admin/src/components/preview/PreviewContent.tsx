@@ -110,6 +110,23 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
     loadPageSections();
   }, [companyId, handle, pageType]);
 
+  // Ensure default reviews section at the end for CUSTOM pages if missing
+  const finalSections = useMemo(() => {
+    const arr = [...sections];
+    if (pageType === PageType.CUSTOM) {
+      const hasRoomReviews = arr.some((s: any) => {
+        const rawType = s?.sectionType ?? s?.type;
+        if (!rawType) return false;
+        const t = String(rawType);
+        return t === 'room_reviews' || t === 'RoomReviews' || t.toLowerCase() === 'room_reviews';
+      });
+      if (!hasRoomReviews) {
+        arr.push({ sectionType: 'room_reviews', config: { enabled: true } } as any);
+      }
+    }
+    return arr;
+  }, [sections, pageType]);
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -189,7 +206,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
 
   return (
     <div className="min-h-[60vh]" style={containerStyle}>
-      {sections.length === 0 ? (
+      {finalSections.length === 0 ? (
         <div className="text-center py-20">
           <h2 className="text-2xl font-semibold text-gray-700 mb-2">
             Página {pageType}
@@ -203,13 +220,17 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
         </div>
       ) : (
         <div className="space-y-8 py-8">
-          {sections.map((section, index) => (
+          {finalSections.map((section, index) => (
             <div key={index} className="section">
               {(() => {
                 const t = getSectionType(section);
                 // Guard: do not render room_* sections on non-CUSTOM pages
                 if (t && t.startsWith('room_') && pageType !== PageType.CUSTOM) {
                   return null;
+                }
+                // If this is the auto-inserted room_reviews and we are CUSTOM, try to pass a roomId
+                if (t === 'room_reviews' && pageType === PageType.CUSTOM) {
+                  // best-effort: we do not have a global roomId here; PreviewRoomReviews will fallback to first-active
                 }
                 return undefined;
               })()}
@@ -409,7 +430,7 @@ export default function PreviewContent({ pageType, handle, theme, companyId, dev
               
               {getSectionType(section) === 'room_reviews' && (
                 <PreviewRoomReviews 
-                  config={getSectionConfig(section)}
+                  config={getSectionConfig(section) || { enabled: true }}
                   theme={theme}
                   deviceView={deviceView}
                   isEditor={false}

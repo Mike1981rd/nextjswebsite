@@ -18,7 +18,8 @@ import {
   ChevronDown,
   Edit2,
   ChevronRight,
-  X
+  X,
+  Bed
 } from 'lucide-react';
 
 interface MenuItem {
@@ -59,7 +60,9 @@ interface Product {
 interface Page {
   id: number;
   title: string;
-  slug?: string;
+  slug: string;
+  isVisible?: boolean;
+  publishStatus?: string;
 }
 
 interface Policy {
@@ -124,7 +127,8 @@ export default function NavigationMenuForm({ menuId }: Props) {
   const fetchCollections = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5266/api/Collections', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+      const response = await fetch(`${apiUrl}/Collections`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -142,7 +146,8 @@ export default function NavigationMenuForm({ menuId }: Props) {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5266/api/Products?pageSize=100', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+      const response = await fetch(`${apiUrl}/Products?pageSize=100`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -160,18 +165,40 @@ export default function NavigationMenuForm({ menuId }: Props) {
   const fetchPages = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5266/api/Pages', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+      // Usar el endpoint correcto: paginas (minúsculas)
+      const response = await fetch(`${apiUrl}/paginas?pageSize=100`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
+      
+      console.log('Fetching pages, response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        setPages(data.items || data || []);
-      } else if (response.status === 404) {
-        // La API de Pages no existe aún, no es un error crítico
-        console.log('Pages API not available yet');
+        console.log('Pages API response:', data);
+        
+        // Manejar diferentes estructuras de respuesta
+        let pagesList = [];
+        if (data.data && data.data.items) {
+          // Si viene envuelto en data con items
+          pagesList = data.data.items;
+        } else if (data.items) {
+          // Si viene directamente con items
+          pagesList = data.items;
+        } else if (Array.isArray(data)) {
+          // Si es un array directo
+          pagesList = data;
+        }
+        
+        console.log('Pages extracted:', pagesList);
+        setPages(pagesList);
+      } else {
+        console.log('Pages API error:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.log('Error details:', errorText);
         setPages([]);
       }
     } catch (error) {
@@ -183,7 +210,8 @@ export default function NavigationMenuForm({ menuId }: Props) {
   const fetchPolicies = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5266/api/Policies', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+      const response = await fetch(`${apiUrl}/Policies`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -542,6 +570,7 @@ export default function NavigationMenuForm({ menuId }: Props) {
     const options = [
       { icon: <Home className="w-4 h-4" />, label: t('menus.links.homePage'), value: '/' },
       { icon: <Search className="w-4 h-4" />, label: t('menus.links.search'), value: '/search' },
+      { icon: <Bed className="w-4 h-4" />, label: 'Lista de Habitaciones', value: '/habitaciones-lista' },
     ];
 
     // Agregar colecciones
@@ -576,11 +605,11 @@ export default function NavigationMenuForm({ menuId }: Props) {
     // Agregar páginas
     if (pages.length > 0) {
       pages.forEach(page => {
-        const pageSlug = page.slug || page.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || page.id.toString();
+        // Usar el slug directamente para que funcione con el router dinámico
         options.push({
           icon: <FileText className="w-4 h-4" />,
-          label: `${t('menus.links.page')}: ${page.title}`,
-          value: `/pages/${pageSlug}`
+          label: `${t('menus.links.page', 'Página')}: ${page.title}`,
+          value: `/${page.slug}` // Cambio: usar solo el slug
         });
       });
     }
@@ -592,7 +621,7 @@ export default function NavigationMenuForm({ menuId }: Props) {
         options.push({
           icon: <FileText className="w-4 h-4" />,
           label: `${t('menus.links.policy')}: ${policy.title}`,
-          value: `/policies/${policySlug}`
+          value: `/${policySlug}` // Cambio: usar solo el slug
         });
       });
     }

@@ -34,5 +34,8 @@ namespace WebsiteBuilderAPI.Services
         
         // Export
         Task<byte[]> ExportReviewsAsync(int companyId, ReviewFilterDto filter, string format);
+
+        // Media
+        Task<ReviewMediaDto> AddMediaAsync(int companyId, int reviewId, string mediaUrl, string? caption, string? thumbnailUrl = null);
     }
 }

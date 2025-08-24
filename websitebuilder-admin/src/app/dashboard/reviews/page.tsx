@@ -124,6 +124,10 @@ export default function ReviewsPage() {
 
       setSelectedReviews([]);
       fetchReviews();
+      try {
+        localStorage.setItem('reviews_updated', String(Date.now()));
+        window.dispatchEvent(new CustomEvent('reviews:updated'));
+      } catch {}
     } catch (error) {
       console.error('Error performing bulk action:', error);
     }
@@ -206,6 +210,10 @@ export default function ReviewsPage() {
                 });
                 if (response.ok) {
                   fetchReviews(); // Refresh the page
+                  try {
+                    localStorage.setItem('reviews_updated', String(Date.now()));
+                    window.dispatchEvent(new CustomEvent('reviews:updated'));
+                  } catch {}
                 }
               } catch (error) {
                 console.error('Error recalculating statistics:', error);

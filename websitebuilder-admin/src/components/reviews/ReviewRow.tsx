@@ -75,6 +75,11 @@ export function ReviewRow({ review, isSelected, onSelect, onRefresh }: ReviewRow
 
       if (!response.ok) throw new Error(`Failed to ${action} review`);
       onRefresh();
+      try {
+        // Notify other tabs/iframes (editor/preview) to refresh reviews
+        localStorage.setItem('reviews_updated', String(Date.now()));
+        window.dispatchEvent(new CustomEvent('reviews:updated'));
+      } catch {}
     } catch (error) {
       console.error(`Error ${action}ing review:`, error);
     } finally {

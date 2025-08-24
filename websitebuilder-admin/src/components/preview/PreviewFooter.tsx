@@ -8,6 +8,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { FooterConfig, FooterBlockType } from '@/components/editor/modules/Footer/FooterTypes';
 import { 
   Instagram, Facebook, Twitter, Youtube, 
@@ -612,18 +613,37 @@ export default function PreviewFooter({
             {/* Tercera línea: Enlaces de políticas */}
             {config?.policyLinks?.showLinks && (
               <div className="flex flex-wrap gap-4 justify-start">
-                <a href="#" className="text-gray-400 text-xs hover:text-gray-300 transition-colors" style={bodyTypographyStyles}>
-                  Política de reembolso
-                </a>
-                <a href="#" className="text-gray-400 text-xs hover:text-gray-300 transition-colors" style={bodyTypographyStyles}>
-                  Política de privacidad
-                </a>
-                <a href="#" className="text-gray-400 text-xs hover:text-gray-300 transition-colors" style={bodyTypographyStyles}>
-                  Términos del servicio
-                </a>
-                <a href="#" className="text-gray-400 text-xs hover:text-gray-300 transition-colors" style={bodyTypographyStyles}>
-                  Política de envío
-                </a>
+                {isEditor ? (
+                  <>
+                    <a href="#" className="text-gray-400 text-xs hover:text-gray-300 transition-colors cursor-pointer" style={bodyTypographyStyles} onClick={(e) => e.preventDefault()}>
+                      Política de reembolso
+                    </a>
+                    <a href="#" className="text-gray-400 text-xs hover:text-gray-300 transition-colors cursor-pointer" style={bodyTypographyStyles} onClick={(e) => e.preventDefault()}>
+                      Política de privacidad
+                    </a>
+                    <a href="#" className="text-gray-400 text-xs hover:text-gray-300 transition-colors cursor-pointer" style={bodyTypographyStyles} onClick={(e) => e.preventDefault()}>
+                      Términos del servicio
+                    </a>
+                    <a href="#" className="text-gray-400 text-xs hover:text-gray-300 transition-colors cursor-pointer" style={bodyTypographyStyles} onClick={(e) => e.preventDefault()}>
+                      Política de envío
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/returns" className="text-gray-400 text-xs hover:text-gray-300 transition-colors cursor-pointer" style={bodyTypographyStyles}>
+                      Política de reembolso
+                    </Link>
+                    <Link href="/privacy" className="text-gray-400 text-xs hover:text-gray-300 transition-colors cursor-pointer" style={bodyTypographyStyles}>
+                      Política de privacidad
+                    </Link>
+                    <Link href="/terms" className="text-gray-400 text-xs hover:text-gray-300 transition-colors cursor-pointer" style={bodyTypographyStyles}>
+                      Términos del servicio
+                    </Link>
+                    <Link href="/shipping" className="text-gray-400 text-xs hover:text-gray-300 transition-colors cursor-pointer" style={bodyTypographyStyles}>
+                      Política de envío
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>

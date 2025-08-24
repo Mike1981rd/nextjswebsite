@@ -13,6 +13,9 @@ interface RoomReviewsConfig {
   ratingIcon?: 'star' | 'heart' | 'smile' | 'like';
   ratingIconColor?: string;
   bodyType?: 'standard' | 'rounded-grid' | 'list-grid' | 'square-grid';
+  cardStyle?: 'modern' | 'loox' | 'lai' | 'bordered' | 'minimal';
+  cardBackgroundColor?: string;
+  cardBorderColor?: string;
   headerSize?: number;
   topPadding?: number;
   bottomPadding?: number;
@@ -61,7 +64,7 @@ export default function PreviewRoomReviews({
     return () => window.removeEventListener('resize', onResize);
   }, [deviceView]);
 
-  // Fetch first active room ID when in editor mode
+  // Fetch first active room ID when needed (editor or no roomId provided in live)
   useEffect(() => {
     const fetchFirstActiveRoom = async () => {
       const companyId = localStorage.getItem('companyId') || '1';
@@ -81,19 +84,39 @@ export default function PreviewRoomReviews({
       }
     };
 
-    // Only fetch first active room in editor mode
-    if (isEditor && config.enabled) {
+    const configRoomId = (config as any)?.roomId as number | undefined;
+    // Fetch when enabled and either in editor OR no room id is provided in live
+    if (config.enabled && (isEditor || (!roomId && !configRoomId))) {
       fetchFirstActiveRoom();
     }
-  }, [isEditor, config.enabled]);
+  }, [isEditor, config.enabled, roomId, config]);
 
-  // Load reviews when roomId is available or when we have firstActiveRoomId in editor
+  // Load reviews when roomId (prop or config) is available or when we have firstActiveRoomId
   useEffect(() => {
-    const effectiveRoomId = roomId || (isEditor ? firstActiveRoomId : null);
+    const roomIdFromConfig = (config as any)?.roomId as number | undefined;
+    const effectiveRoomId = roomId || roomIdFromConfig || firstActiveRoomId;
     if (effectiveRoomId) {
       loadReviews(effectiveRoomId);
     }
-  }, [roomId, firstActiveRoomId, isEditor]);
+  }, [roomId, firstActiveRoomId, isEditor, config]);
+
+  // Listen to cross-tab updates (from backoffice approvals) and reload
+  useEffect(() => {
+    const onUpdated = () => {
+      const roomIdFromConfig = (config as any)?.roomId as number | undefined;
+      const effectiveRoomId = roomId || roomIdFromConfig || firstActiveRoomId;
+      if (effectiveRoomId) loadReviews(effectiveRoomId);
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'reviews_updated') onUpdated();
+    };
+    window.addEventListener('reviews:updated', onUpdated as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('reviews:updated', onUpdated as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [roomId, firstActiveRoomId]);
 
   const loadReviews = async (reviewRoomId: number) => {
     if (!reviewRoomId) return;
@@ -116,9 +139,17 @@ export default function PreviewRoomReviews({
     }
   };
 
+  // Server-only guard: always ensure we end with some content in live preview
+  useEffect(() => {
+    if (!reviews.length && !isLoading && !error) {
+      console.log('[PreviewRoomReviews] No reviews loaded; check roomId source (prop/config/firstActive).');
+    }
+  }, [reviews, isLoading, error]);
+
   const handleReviewSubmitted = () => {
     // Reload reviews after successful submission
-    const effectiveRoomId = roomId || firstActiveRoomId;
+    const configRoomId = (config as any)?.roomId as number | undefined;
+    const effectiveRoomId = roomId || configRoomId || firstActiveRoomId;
     if (effectiveRoomId) {
       loadReviews(effectiveRoomId);
     }
@@ -133,6 +164,7 @@ export default function PreviewRoomReviews({
   const ratingIcon = config.ratingIcon || 'star';
   const ratingIconColor = config.ratingIconColor || '#FFB800';
   const bodyType = config.bodyType || 'standard';
+  const cardStyle = config.cardStyle || 'modern';
   const headerSize = config.headerSize || 32;
   const topPadding = config.topPadding || 40;
   const bottomPadding = config.bottomPadding || 40;
@@ -146,6 +178,10 @@ export default function PreviewRoomReviews({
   const borderColor = colorScheme?.border || '#E5E7EB';
   const outlineButtonColor = colorScheme?.outlineButton || '#000000';
   const outlineButtonText = colorScheme?.outlineButtonText || '#000000';
+
+  // Card colors (derive after borderColor is available)
+  const cardBg = config.cardBackgroundColor || bgColor;
+  const cardBorder = config.cardBorderColor || borderColor;
 
   // Calculate display values
   const averageRating = statistics?.averageRating || 0;
@@ -176,24 +212,31 @@ export default function PreviewRoomReviews({
       case 'rounded-grid':
         return { 
           wrapper: 'rounded-xl p-4',
-          style: { backgroundColor: `${borderColor}10` }
+          style: { backgroundColor: `${cardBg}`, border: `1px solid ${cardBorder}` }
         };
       case 'list-grid':
         return { 
           wrapper: 'pb-4',
-          style: { borderBottom: `1px solid ${borderColor}` }
+          style: { borderBottom: `1px solid ${cardBorder}` }
         };
       case 'square-grid':
         return { 
           wrapper: 'p-4',
-          style: { border: `1px solid ${borderColor}` }
+          style: { border: `1px solid ${cardBorder}`, backgroundColor: `${cardBg}` }
         };
       default:
-        return { wrapper: '', style: {} };
+        return { wrapper: '', style: { backgroundColor: `${cardBg}` } };
     }
   };
 
   const bodyClasses = getBodyClasses();
+  const styleClassesByPreset: Record<string, string> = {
+    modern: 'shadow-md hover:shadow-lg transition-shadow',
+    loox: 'rounded-2xl shadow-sm border',
+    lai: 'rounded-xl border',
+    bordered: 'border',
+    minimal: ''
+  };
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -205,6 +248,25 @@ export default function PreviewRoomReviews({
   const getInitials = (name: string) => {
     const parts = name.split(' ');
     return parts.map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const getApiOrigin = () => {
+    const api = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+    try {
+      return new URL(api).origin;
+    } catch {
+      return 'http://localhost:5266';
+    }
+  };
+
+  const resolveImageUrl = (url?: string | null) => {
+    if (!url) return '';
+    // If it's an absolute URL, return as is
+    if (/^https?:\/\//i.test(url)) return url;
+    // If it's a relative upload path, prefix with API origin
+    if (url.startsWith('/uploads/')) return `${getApiOrigin()}${url}`;
+    if (url.startsWith('uploads/')) return `${getApiOrigin()}/${url}`;
+    return url;
   };
 
   return (
@@ -269,19 +331,36 @@ export default function PreviewRoomReviews({
             {displayedReviews.map((review) => (
               <div 
                 key={review.id} 
-                className={`space-y-3 ${bodyClasses.wrapper}`}
+                className={`space-y-3 ${bodyClasses.wrapper} ${styleClassesByPreset[cardStyle]}`}
                 style={bodyClasses.style}
               >
                 <div className="flex items-center gap-3">
-                  <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm"
-                    style={{ 
-                      backgroundColor: ratingIconColor + '20',
-                      color: ratingIconColor
-                    }}
-                  >
-                    {getInitials(review.authorName)}
-                  </div>
+                  {review.customer?.avatarUrl ? (
+                    <img
+                      src={resolveImageUrl(review.customer.avatarUrl)}
+                      alt={review.authorName}
+                      className="w-10 h-10 rounded-full object-cover"
+                      style={{ border: `1px solid ${cardBorder}` }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  ) : review.media && review.media.length > 0 ? (
+                    <img
+                      src={resolveImageUrl(review.media[0].thumbnailUrl || review.media[0].mediaUrl)}
+                      alt={review.authorName}
+                      className="w-10 h-10 rounded-full object-cover"
+                      style={{ border: `1px solid ${cardBorder}` }}
+                    />
+                  ) : (
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm"
+                      style={{ 
+                        backgroundColor: ratingIconColor + '20',
+                        color: ratingIconColor
+                      }}
+                    >
+                      {getInitials(review.authorName)}
+                    </div>
+                  )}
                   <div>
                     <p className="font-medium text-sm" style={{ color: textColor }}>
                       {review.authorName}
@@ -314,7 +393,7 @@ export default function PreviewRoomReviews({
                     {review.media.slice(0, 3).map((media) => (
                       <img
                         key={media.id}
-                        src={media.thumbnailUrl || media.mediaUrl}
+                        src={resolveImageUrl(media.thumbnailUrl || media.mediaUrl)}
                         alt={media.caption || 'Review image'}
                         className="w-16 h-16 object-cover rounded"
                         style={{ border: `1px solid ${borderColor}` }}

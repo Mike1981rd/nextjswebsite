@@ -45,6 +45,12 @@ interface Review {
   translatedTitle?: string;
   translatedContent?: string;
   originalLanguage?: string;
+  customer?: {
+    id: number;
+    fullName: string;
+    email: string;
+    avatarUrl?: string | null;
+  };
   media: Array<{
     id: number;
     mediaType: string;
@@ -105,6 +111,10 @@ export default function ReviewEditPage() {
       if (!response.ok) throw new Error('Failed to update review');
 
       await fetchReview();
+      try {
+        localStorage.setItem('reviews_updated', String(Date.now()));
+        window.dispatchEvent(new CustomEvent('reviews:updated'));
+      } catch {}
       router.push('/dashboard/reviews');
     } catch (error) {
       console.error('Error updating review:', error);
@@ -128,6 +138,10 @@ export default function ReviewEditPage() {
       if (!response.ok) throw new Error('Failed to add reply');
 
       await fetchReview();
+      try {
+        localStorage.setItem('reviews_updated', String(Date.now()));
+        window.dispatchEvent(new CustomEvent('reviews:updated'));
+      } catch {}
     } catch (error) {
       console.error('Error adding reply:', error);
     } finally {
@@ -166,6 +180,10 @@ export default function ReviewEditPage() {
       if (!response.ok) throw new Error('Failed to update status');
 
       await fetchReview();
+      try {
+        localStorage.setItem('reviews_updated', String(Date.now()));
+        window.dispatchEvent(new CustomEvent('reviews:updated'));
+      } catch {}
       
       // Show success message with emoji
       toast.dismiss();

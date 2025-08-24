@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import PreviewPage from '@/components/preview/PreviewPage';
+import CustomPageView from '@/components/preview/CustomPageView';
 import { PageType } from '@/types/editor.types';
 
 // Valid page handles that map to PageType enum
@@ -27,13 +28,14 @@ interface PageProps {
 export default function Page({ params }: PageProps) {
   const { handle } = params;
   
-  // Check if handle is valid
+  // Check if handle is valid for Website Builder pages
   const pageType = validHandles[handle];
-  if (!pageType) {
-    notFound();
+  if (pageType) {
+    return <PreviewPage pageType={pageType} handle={handle} />;
   }
 
-  return <PreviewPage pageType={pageType} handle={handle} />;
+  // If not a Website Builder page, try to load as custom page/policy
+  return <CustomPageView slug={handle} />;
 }
 
 // Generate static params for known pages

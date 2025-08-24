@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using WebsiteBuilderAPI.Data;
 using WebsiteBuilderAPI.DTOs;
 using WebsiteBuilderAPI.Models;
@@ -14,10 +15,12 @@ namespace WebsiteBuilderAPI.Services
     public class ReviewService : IReviewService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebsiteBuilderCacheService _cacheService;
 
-        public ReviewService(ApplicationDbContext context)
+        public ReviewService(ApplicationDbContext context, IWebsiteBuilderCacheService cacheService)
         {
             _context = context;
+            _cacheService = cacheService;
         }
 
         public async Task<ReviewListResponseDto> GetReviewsAsync(int companyId, ReviewFilterDto filter)
@@ -152,6 +155,9 @@ namespace WebsiteBuilderAPI.Services
 
             // Update statistics
             await UpdateStatisticsAsync(companyId, dto.ProductId, dto.RoomId);
+            // Also update global company statistics
+            await UpdateStatisticsAsync(companyId, null, null);
+            await _cacheService.InvalidateCompanyCacheAsync(companyId);
 
             return await GetReviewByIdAsync(companyId, review.Id) ?? throw new InvalidOperationException("Failed to retrieve created review");
         }
@@ -197,7 +203,13 @@ namespace WebsiteBuilderAPI.Services
 
             // Update statistics if rating changed
             if (dto.Rating.HasValue)
+            {
                 await UpdateStatisticsAsync(companyId, review.ProductId, review.RoomId);
+                await UpdateStatisticsAsync(companyId, null, null);
+            }
+
+            // Any update might affect rendered content
+            await _cacheService.InvalidateCompanyCacheAsync(companyId);
 
             return await GetReviewByIdAsync(companyId, reviewId) ?? throw new InvalidOperationException("Failed to retrieve updated review");
         }
@@ -217,6 +229,8 @@ namespace WebsiteBuilderAPI.Services
 
             // Update statistics
             await UpdateStatisticsAsync(companyId, productId, roomId);
+            await UpdateStatisticsAsync(companyId, null, null);
+            await _cacheService.InvalidateCompanyCacheAsync(companyId);
 
             return true;
         }
@@ -238,6 +252,8 @@ namespace WebsiteBuilderAPI.Services
 
             // Update statistics
             await UpdateStatisticsAsync(companyId, review.ProductId, review.RoomId);
+            await UpdateStatisticsAsync(companyId, null, null);
+            await _cacheService.InvalidateCompanyCacheAsync(companyId);
 
             return await GetReviewByIdAsync(companyId, reviewId) ?? throw new InvalidOperationException("Failed to retrieve approved review");
         }
@@ -257,6 +273,8 @@ namespace WebsiteBuilderAPI.Services
 
             // Update statistics
             await UpdateStatisticsAsync(companyId, review.ProductId, review.RoomId);
+            await UpdateStatisticsAsync(companyId, null, null);
+            await _cacheService.InvalidateCompanyCacheAsync(companyId);
 
             return await GetReviewByIdAsync(companyId, reviewId) ?? throw new InvalidOperationException("Failed to retrieve rejected review");
         }
@@ -354,6 +372,9 @@ namespace WebsiteBuilderAPI.Services
             {
                 await UpdateStatisticsAsync(companyId, null, roomId);
             }
+
+            // Always update global company statistics
+            await UpdateStatisticsAsync(companyId, null, null);
 
             return reviews.Count;
         }
@@ -641,6 +662,40 @@ namespace WebsiteBuilderAPI.Services
             return Encoding.UTF8.GetBytes(html.ToString());
         }
 
+        public async Task<ReviewMediaDto> AddMediaAsync(int companyId, int reviewId, string mediaUrl, string? caption, string? thumbnailUrl = null)
+        {
+            var review = await _context.Reviews
+                .FirstOrDefaultAsync(r => r.Id == reviewId && r.CompanyId == companyId);
+            if (review == null)
+            {
+                throw new KeyNotFoundException($"Review with ID {reviewId} not found");
+            }
+
+            var media = new ReviewMedia
+            {
+                ReviewId = reviewId,
+                MediaType = "image",
+                MediaUrl = mediaUrl,
+                ThumbnailUrl = thumbnailUrl ?? mediaUrl,
+                Caption = caption,
+                SortOrder = 0,
+                UploadedAt = DateTime.UtcNow
+            };
+
+            _context.Add(media);
+            await _context.SaveChangesAsync();
+
+            return new ReviewMediaDto
+            {
+                Id = media.Id,
+                MediaType = media.MediaType,
+                MediaUrl = media.MediaUrl,
+                ThumbnailUrl = media.ThumbnailUrl,
+                Caption = media.Caption,
+                SortOrder = media.SortOrder
+            };
+        }
+
         private ReviewDto MapToDto(Review review)
         {
             return new ReviewDto
@@ -692,7 +747,7 @@ namespace WebsiteBuilderAPI.Services
                     Id = review.Customer.Id,
                     FullName = review.Customer.FullName,
                     Email = review.Customer.Email,
-                    AvatarUrl = null // Customer model doesn't have AvatarUrl property
+                    AvatarUrl = review.Customer.Avatar
                 } : null,
                 Media = review.Media.Select(m => new ReviewMediaDto
                 {

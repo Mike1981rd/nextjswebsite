@@ -26,7 +26,7 @@ export default function WriteReviewModal({
   colorScheme
 }: WriteReviewModalProps) {
   // Form state
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -247,27 +247,36 @@ export default function WriteReviewModal({
         <div className="p-6 space-y-6">
           {/* Rating */}
           <div>
-            <label className="block text-sm font-medium mb-3" style={{ color: textColor }}>
-              Your Rating *
+            <label className="block text-sm font-medium mb-1" style={{ color: textColor }}>
+              Califica
             </label>
-            <div className="flex gap-2">
+            <p className="text-xs mb-2" style={{ color: `${textColor}99` }}>
+              Selecciona de 1 a 5 estrellas
+            </p>
+            <div className="flex gap-2 items-center p-3 rounded-lg border" role="radiogroup" aria-label="Calificación"
+                 style={{ borderColor: borderColor }}>
               {[1, 2, 3, 4, 5].map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  disabled={isSubmitting}
-                  onMouseEnter={() => setHoveredRating(value)}
-                  onMouseLeave={() => setHoveredRating(0)}
-                  onClick={() => {
-                    setRating(value);
-                    setErrors({ ...errors, rating: '' });
-                  }}
-                >
-                  <RatingIcon 
-                    filled={value <= rating} 
-                    hovered={value <= hoveredRating && value > rating}
+                <label key={value} className="cursor-pointer select-none">
+                  <input
+                    type="radio"
+                    name="rating"
+                    value={value}
+                    checked={rating === value}
+                    onChange={() => {
+                      setRating(value);
+                      setErrors({ ...errors, rating: '' });
+                    }}
+                    disabled={isSubmitting}
+                    className="sr-only"
+                    aria-label={`${value} estrella${value > 1 ? 's' : ''}`}
                   />
-                </button>
+                  <span className="inline-flex pointer-events-none">
+                    <RatingIcon
+                      filled={value <= rating}
+                      hovered={false}
+                    />
+                  </span>
+                </label>
               ))}
             </div>
             {errors.rating && (

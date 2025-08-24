@@ -40,6 +40,12 @@ interface Review {
   translatedTitle?: string;
   translatedContent?: string;
   originalLanguage?: string;
+  customer?: {
+    id: number;
+    fullName: string;
+    email: string;
+    avatarUrl?: string | null;
+  };
   media: Array<{
     id: number;
     mediaType: string;
@@ -113,11 +119,18 @@ export function ReviewEditForm({
     return (
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
-          <StarIcon
+          <button
             key={star}
-            size={20}
-            className={star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300 dark:text-gray-600'}
-          />
+            type="button"
+            onClick={() => setFormData({ ...formData, rating: star })}
+            className="focus:outline-none"
+            title={`Calificar ${star} estrella${star > 1 ? 's' : ''}`}
+          >
+            <StarIcon
+              size={20}
+              className={star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300 dark:text-gray-600'}
+            />
+          </button>
         ))}
       </div>
     );
@@ -279,6 +292,20 @@ export function ReviewEditForm({
             <p className="text-gray-900 dark:text-white">{formData.country}</p>
           </div>
         </div>
+
+        {/* Reviewer Avatar */}
+        {formData.customer?.avatarUrl && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('reviews.reviewerPhoto', 'Reviewer Photo')}
+            </label>
+            <img
+              src={formData.customer.avatarUrl}
+              alt={formData.customer.fullName}
+              className="w-16 h-16 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+            />
+          </div>
+        )}
 
         {/* Rating and Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

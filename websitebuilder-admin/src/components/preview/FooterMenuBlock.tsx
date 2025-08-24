@@ -7,6 +7,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface MenuItem {
   id: number;
@@ -156,26 +157,57 @@ export function FooterMenuBlock({ settings, isEditor, colorScheme, headingTypogr
           </li>
         ) : settings.navigationMenuId ? (
           menuItems.length > 0 ? (
-            menuItems.map((item) => (
-              <li key={`menu-item-${item.id}`}>
-                <a 
-                  href={item.url} 
-                  className="text-sm opacity-75 hover:opacity-100 transition-opacity"
-                  style={{ 
-                    color: colorScheme?.text || '#cccccc',
-                    ...bodyTypographyStyles
-                  }}
-                  onClick={(e) => {
-                    // Prevent navigation in editor
-                    if (isEditor) {
-                      e.preventDefault();
-                    }
-                  }}
-                >
-                  {item.title}
-                </a>
-              </li>
-            ))
+            menuItems.map((item) => {
+              // Auto-detect policy pages and assign correct URLs
+              let finalUrl = item.url;
+              if (!finalUrl || finalUrl === '#' || finalUrl === '') {
+                const titleLower = item.title?.toLowerCase() || '';
+                if (titleLower.includes('reembolso') || titleLower.includes('devoluc') || titleLower.includes('return')) {
+                  finalUrl = '/returns';
+                } else if (titleLower.includes('privacidad') || titleLower.includes('privacy')) {
+                  finalUrl = '/privacy';
+                } else if (titleLower.includes('término') || titleLower.includes('servicio') || titleLower.includes('terms')) {
+                  finalUrl = '/terms';
+                } else if (titleLower.includes('envío') || titleLower.includes('shipping')) {
+                  finalUrl = '/shipping';
+                } else if (titleLower.includes('contacto') || titleLower.includes('contact')) {
+                  finalUrl = '/contact';
+                } else {
+                  finalUrl = '#';
+                }
+              }
+              
+              return (
+                <li key={`menu-item-${item.id}`}>
+                  {isEditor || finalUrl === '#' ? (
+                    <a 
+                      href={finalUrl} 
+                      className="text-sm opacity-75 hover:opacity-100 transition-opacity cursor-pointer"
+                      style={{ 
+                        color: colorScheme?.text || '#cccccc',
+                        ...bodyTypographyStyles
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                      }}
+                    >
+                      {item.title}
+                    </a>
+                  ) : (
+                    <Link 
+                      href={finalUrl}
+                      className="text-sm opacity-75 hover:opacity-100 transition-opacity cursor-pointer"
+                      style={{ 
+                        color: colorScheme?.text || '#cccccc',
+                        ...bodyTypographyStyles
+                      }}
+                    >
+                      {item.title}
+                    </Link>
+                  )}
+                </li>
+              );
+            })
           ) : (
             <li key="no-items">
               <span className="text-sm italic opacity-50" style={{ color: colorScheme?.text || '#999999' }}>

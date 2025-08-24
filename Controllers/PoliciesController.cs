@@ -42,16 +42,27 @@ namespace WebsiteBuilderAPI.Controllers
         }
 
         [HttpGet("{type}")]
+        [AllowAnonymous] // Allow public access for policies on website
         public async Task<IActionResult> GetByType(string type)
         {
             try
             {
-                // Get company ID from token
-                var companyIdClaim = User.FindFirst("companyId")?.Value;
-                int companyId;
-                if (string.IsNullOrEmpty(companyIdClaim) || !int.TryParse(companyIdClaim, out companyId))
+                // Get company ID from token or query parameter for public access
+                int companyId = 1; // Default company
+                
+                // Try to get from query parameter first (for public access)
+                if (Request.Query.ContainsKey("companyId"))
                 {
-                    companyId = 1; // Default company
+                    int.TryParse(Request.Query["companyId"], out companyId);
+                }
+                // Otherwise, get from authenticated user if available
+                else if (User.Identity?.IsAuthenticated == true)
+                {
+                    var companyIdClaim = User.FindFirst("companyId")?.Value;
+                    if (!string.IsNullOrEmpty(companyIdClaim))
+                    {
+                        int.TryParse(companyIdClaim, out companyId);
+                    }
                 }
 
                 var policy = await _policyService.GetByTypeAsync(companyId, type);
@@ -66,6 +77,13 @@ namespace WebsiteBuilderAPI.Controllers
             {
                 return StatusCode(500, new { error = "Error al obtener la política", details = ex.Message });
             }
+        }
+
+        [HttpGet("type/{type}")]
+        [AllowAnonymous] // Alternative endpoint for better clarity
+        public async Task<IActionResult> GetPolicyByType(string type)
+        {
+            return await GetByType(type);
         }
 
         [HttpPut("{type}")]

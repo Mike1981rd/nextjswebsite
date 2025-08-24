@@ -57,6 +57,12 @@ export interface ReviewDto {
   translatedTitle?: string;
   translatedContent?: string;
   media: ReviewMediaDto[];
+  customer?: {
+    id: number;
+    fullName: string;
+    email: string;
+    avatarUrl?: string | null;
+  };
   userHasInteracted: boolean;
   userInteractionType?: 'Like' | 'Dislike' | 'Helpful' | 'Report';
 }
@@ -179,6 +185,9 @@ export async function getReviews(filter: ReviewFilterDto = {}): Promise<{
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(typeof window !== 'undefined' && localStorage.getItem('token')
+            ? { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            : {}),
         },
       }
     );
@@ -206,38 +215,56 @@ export async function getRoomReviews(
   statistics: ReviewStatisticsDto;
 }> {
   try {
-    const filter: ReviewFilterDto = {
-      roomId,
-      sortBy: 'CreatedAt',
-      sortDescending: true,
-      pageSize: 100, // Get all reviews for now
-    };
+    // Use public endpoint to allow fetching from editor/preview without auth
+    const params = new URLSearchParams();
+    params.append('roomId', roomId.toString());
 
+    // Backend public endpoint always returns only Approved; keep param for future flexibility
     if (status === 'Approved') {
-      filter.status = 'Approved';
+      // no-op; server enforces approved
     }
 
-    const response = await getReviews(filter);
-    
+    const authHeaders =
+      typeof window !== 'undefined' && localStorage.getItem('token')
+        ? { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        : {};
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/reviews/public?${params.toString()}`,
+      { method: 'GET', headers: { 'Content-Type': 'application/json', ...authHeaders } }
+    );
+    let data: { reviews: ReviewDto[]; statistics?: ReviewStatisticsDto };
+    if (!response.ok) {
+      // Fallback: try authorized endpoint if public returns 401
+      if (response.status === 401) {
+        const fallback = await getReviews({ roomId, sortBy: 'CreatedAt', sortDescending: true, pageSize: 100, status: 'Approved' });
+        data = { reviews: fallback.reviews, statistics: fallback.statistics } as any;
+      } else {
+        const error = await response.text();
+        throw new Error(error || 'Failed to fetch public room reviews');
+      }
+    } else {
+      data = await response.json();
+    }
+
     return {
-      reviews: response.reviews,
-      statistics: response.statistics || {
-        totalReviews: response.reviews.length,
-        averageRating: calculateAverageRating(response.reviews),
-        fiveStarCount: response.reviews.filter(r => r.rating === 5).length,
-        fourStarCount: response.reviews.filter(r => r.rating === 4).length,
-        threeStarCount: response.reviews.filter(r => r.rating === 3).length,
-        twoStarCount: response.reviews.filter(r => r.rating === 2).length,
-        oneStarCount: response.reviews.filter(r => r.rating === 1).length,
-        positiveReviewsCount: response.reviews.filter(r => r.rating >= 4).length,
-        positivePercentage: calculatePositivePercentage(response.reviews),
-        newReviewsThisWeek: 0,
-        weeklyGrowthPercentage: 0,
-      },
+      reviews: data.reviews || [],
+      statistics:
+        data.statistics || {
+          totalReviews: data.reviews?.length || 0,
+          averageRating: calculateAverageRating(data.reviews || []),
+          fiveStarCount: (data.reviews || []).filter(r => r.rating === 5).length,
+          fourStarCount: (data.reviews || []).filter(r => r.rating === 4).length,
+          threeStarCount: (data.reviews || []).filter(r => r.rating === 3).length,
+          twoStarCount: (data.reviews || []).filter(r => r.rating === 2).length,
+          oneStarCount: (data.reviews || []).filter(r => r.rating === 1).length,
+          positiveReviewsCount: (data.reviews || []).filter(r => r.rating >= 4).length,
+          positivePercentage: calculatePositivePercentage(data.reviews || []),
+          newReviewsThisWeek: 0,
+          weeklyGrowthPercentage: 0,
+        },
     };
   } catch (error) {
     console.error('Error fetching room reviews:', error);
-    // Return empty data on error
     return {
       reviews: [],
       statistics: {

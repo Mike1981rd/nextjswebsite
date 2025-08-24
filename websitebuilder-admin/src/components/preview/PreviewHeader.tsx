@@ -22,6 +22,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
   const [activeDrawerSubmenu, setActiveDrawerSubmenu] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Detect mobile viewport or use deviceView prop
   useEffect(() => {
@@ -367,16 +368,24 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
     return (
       <div
         key={item.id}
-        className="relative"
+        className="relative group"
         ref={el => { dropdownRefs.current[item.id] = el; }}
         onMouseEnter={() => {
           if (headerConfig.menuOpenOn === 'hover' && hasChildren) {
+            // Clear any existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+              timeoutRef.current = null;
+            }
             setOpenDropdown(item.label);
           }
         }}
         onMouseLeave={() => {
           if (headerConfig.menuOpenOn === 'hover') {
-            setOpenDropdown(null);
+            // Add a delay before closing the dropdown
+            timeoutRef.current = setTimeout(() => {
+              setOpenDropdown(null);
+            }, 150); // 150ms delay
           }
         }}
       >
@@ -416,6 +425,21 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
           <div 
             className="absolute top-full left-0 mt-2 min-w-[200px] border shadow-lg rounded-md z-50"
             style={{ backgroundColor: colorScheme?.background || '#ffffff' }}
+            onMouseEnter={() => {
+              // Clear timeout when mouse enters dropdown
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+              }
+            }}
+            onMouseLeave={() => {
+              // Close dropdown when mouse leaves
+              if (headerConfig.menuOpenOn === 'hover') {
+                timeoutRef.current = setTimeout(() => {
+                  setOpenDropdown(null);
+                }, 150);
+              }
+            }}
           >
             <div className="py-2">
               {item.subItems.map((child: any) => (
@@ -465,7 +489,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                   {/* Empty spacer for balance */}
                   <div className="w-20"></div>
                   {/* Centered logo */}
-                  <div className="flex items-center justify-center flex-1">
+                  <Link href="/home" className="flex items-center justify-center flex-1 cursor-pointer">
                     {headerConfig?.logo?.desktopUrl ? (
                       <img
                         src={headerConfig.logo.desktopUrl}
@@ -481,11 +505,11 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                         Aurora
                       </div>
                     )}
-                  </div>
+                  </Link>
                 </>
               ) : (
                 // Logo left layout
-                <div className="flex items-center">
+                <Link href="/home" className="flex items-center cursor-pointer">
                   {headerConfig?.logo?.desktopUrl ? (
                     <img
                       src={headerConfig.logo.desktopUrl}
@@ -501,7 +525,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                       Aurora
                     </div>
                   )}
-                </div>
+                </Link>
               )}
               
               {/* Icons */}
@@ -579,7 +603,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                 </div>
 
                 {/* Center section - Logo */}
-                <div className="justify-self-center flex items-center justify-center">
+                <Link href="/home" className="justify-self-center flex items-center justify-center cursor-pointer">
                   {headerConfig?.logo?.mobileUrl ? (
                     <img
                       src={headerConfig.logo.mobileUrl}
@@ -603,7 +627,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                       Aurora
                     </div>
                   )}
-                </div>
+                </Link>
 
                 {/* Right section - Icons */}
                 <div className="justify-self-end flex items-center gap-2.5">
@@ -661,7 +685,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                 </div>
 
                 {/* Center section - Logo - keep absolute centering on non-mobile */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center">
+                <Link href="/home" className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center cursor-pointer">
                   {headerConfig?.logo?.desktopUrl ? (
                     <img
                       src={headerConfig.logo.desktopUrl}
@@ -676,7 +700,7 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                       Aurora
                     </div>
                   )}
-                </div>
+                </Link>
 
                 {/* Right section - Icons */}
                 <div className="flex items-center gap-4">
@@ -901,21 +925,23 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
           
           {/* Left section - Logo for most layouts */}
           <div className={`flex items-center ${isLogoCenterMenuLeft ? 'flex-1 justify-center' : (isLogoLeftMenuLeft ? 'gap-8' : '')}`}>
-            {headerConfig?.logo?.desktopUrl ? (
-              <img
-                src={headerConfig.logo.desktopUrl}
-                alt={headerConfig.logo.altText || 'Company Logo'}
-                className="self-center"
-                style={{ 
-                  height: isMobile ? (headerConfig.logo.mobileHeight || 30) : (headerConfig.logo.height || 40),
-                  objectFit: 'contain'
-                }}
-              />
-            ) : (
-              <div className="text-xl font-bold self-center" style={{ color: colorScheme?.text?.default || '#000000' }}>
-                Aurora
-              </div>
-            )}
+            <Link href="/home" className="cursor-pointer">
+              {headerConfig?.logo?.desktopUrl ? (
+                <img
+                  src={headerConfig.logo.desktopUrl}
+                  alt={headerConfig.logo.altText || 'Company Logo'}
+                  className="self-center"
+                  style={{ 
+                    height: isMobile ? (headerConfig.logo.mobileHeight || 30) : (headerConfig.logo.height || 40),
+                    objectFit: 'contain'
+                  }}
+                />
+              ) : (
+                <div className="text-xl font-bold self-center" style={{ color: colorScheme?.text?.default || '#000000' }}>
+                  Aurora
+                </div>
+              )}
+            </Link>
             
             {/* Menu for Logo Left Menu Left Inline */}
             {isLogoLeftMenuLeft && (

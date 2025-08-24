@@ -12,6 +12,10 @@ interface RoomReviewsConfig {
   ratingIcon: 'star' | 'heart' | 'smile' | 'like';
   ratingIconColor: string;
   bodyType: 'standard' | 'rounded-grid' | 'list-grid' | 'square-grid';
+  // New styling fields
+  cardStyle?: 'modern' | 'loox' | 'lai' | 'bordered' | 'minimal';
+  cardBackgroundColor?: string;
+  cardBorderColor?: string;
   headerSize: number;
   topPadding: number;
   bottomPadding: number;
@@ -27,6 +31,9 @@ const getDefaultConfig = (): RoomReviewsConfig => ({
   ratingIcon: 'star',
   ratingIconColor: '#FFB800',
   bodyType: 'standard',
+  cardStyle: 'modern',
+  cardBackgroundColor: '#FFFFFF',
+  cardBorderColor: '#E5E7EB',
   headerSize: 32,
   topPadding: 40,
   bottomPadding: 40
@@ -247,6 +254,68 @@ export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps)
               <option value="list-grid">List Grid</option>
               <option value="square-grid">Square Grid</option>
             </select>
+          </div>
+
+          {/* Card Style (Modern presets like Loox/LAI) */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Card Style
+            </label>
+            <select
+              value={localConfig.cardStyle}
+              onChange={(e) => handleChange('cardStyle', e.target.value)}
+              className="w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
+            >
+              <option value="modern">Modern (shadow)</option>
+              <option value="loox">Loox-like</option>
+              <option value="lai">LAI-like</option>
+              <option value="bordered">Bordered</option>
+              <option value="minimal">Minimal</option>
+            </select>
+          </div>
+
+          {/* Card Colors */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+                Card Background Color
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={localConfig.cardBackgroundColor || '#FFFFFF'}
+                  onChange={(e) => handleChange('cardBackgroundColor', e.target.value)}
+                  className="w-10 h-10 border rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={localConfig.cardBackgroundColor || '#FFFFFF'}
+                  onChange={(e) => handleChange('cardBackgroundColor', e.target.value)}
+                  className="flex-1 px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                  placeholder="#FFFFFF"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+                Card Border Color
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={localConfig.cardBorderColor || '#E5E7EB'}
+                  onChange={(e) => handleChange('cardBorderColor', e.target.value)}
+                  className="w-10 h-10 border rounded cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={localConfig.cardBorderColor || '#E5E7EB'}
+                  onChange={(e) => handleChange('cardBorderColor', e.target.value)}
+                  className="flex-1 px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                  placeholder="#E5E7EB"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Header Size */}

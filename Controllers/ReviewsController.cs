@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebsiteBuilderAPI.DTOs;
 using WebsiteBuilderAPI.Models;
 using WebsiteBuilderAPI.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace WebsiteBuilderAPI.Controllers
 {
@@ -16,10 +17,12 @@ namespace WebsiteBuilderAPI.Controllers
     public class ReviewsController : ControllerBase
     {
         private readonly IReviewService _reviewService;
+        private readonly IUploadService _uploadService;
 
-        public ReviewsController(IReviewService reviewService)
+        public ReviewsController(IReviewService reviewService, IUploadService uploadService)
         {
             _reviewService = reviewService;
+            _uploadService = uploadService;
         }
 
         private int GetCompanyId()
@@ -30,6 +33,45 @@ namespace WebsiteBuilderAPI.Controllers
                 return 1; // Fallback to default company
             }
             return companyId;
+        }
+
+        // Upload media for a review (public; tied to moderation via status)
+        [HttpPost("{id}/media")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UploadReviewMedia(int id, IFormFile file, [FromForm] string? caption = null)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return BadRequest(new { error = "No file provided" });
+
+                // Validate type and size similar to UploadController
+                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" };
+                if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                    return BadRequest(new { error = "File must be an image (JPEG, PNG, GIF or WebP)" });
+
+                if (file.Length > 5 * 1024 * 1024)
+                    return BadRequest(new { error = "File size must not exceed 5MB" });
+
+                // Save image and create media entity
+                var imageUrl = await _uploadService.UploadImageAsync(file);
+
+                // Persist ReviewMedia
+                // We need company id to validate ownership for authenticated calls; for public, fallback to 1
+                var companyId = User?.Identity?.IsAuthenticated == true ? GetCompanyId() : 1;
+
+                // Persist using service
+                var result = await _reviewService.AddMediaAsync(companyId, id, imageUrl, caption, imageUrl);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { error = "Review not found" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while uploading review media", details = ex.Message });
+            }
         }
 
         private int GetUserId()
@@ -54,6 +96,36 @@ namespace WebsiteBuilderAPI.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "An error occurred while fetching reviews", details = ex.Message });
+            }
+        }
+
+        // Public endpoint to retrieve approved reviews and statistics for preview/live site
+        [HttpGet("public")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPublicReviews([FromQuery] int? productId = null, [FromQuery] int? roomId = null)
+        {
+            try
+            {
+                // In production, resolve companyId from domain/host header
+                var companyId = 1;
+
+                var filter = new ReviewFilterDto
+                {
+                    ProductId = productId,
+                    RoomId = roomId,
+                    Status = ReviewStatus.Approved,
+                    SortBy = "CreatedAt",
+                    SortDescending = true,
+                    Page = 1,
+                    PageSize = 100
+                };
+
+                var result = await _reviewService.GetReviewsAsync(companyId, filter);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while fetching public reviews", details = ex.Message });
             }
         }
 
