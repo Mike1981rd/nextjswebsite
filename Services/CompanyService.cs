@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using WebsiteBuilderAPI.Data;
 using WebsiteBuilderAPI.DTOs.Company;
 using System.Text.Json;
@@ -303,24 +304,72 @@ namespace WebsiteBuilderAPI.Services
 
         public async Task<CompanyConfigDto?> GetCompanyConfigAsync()
         {
-            var currentCompany = await _context.Companies.FirstOrDefaultAsync();
-            if (currentCompany == null)
+            try
             {
-                return null;
-            }
+                var currentCompany = await _context.Companies.AsNoTracking().FirstOrDefaultAsync();
+                if (currentCompany == null)
+                {
+                    // Return safe defaults if no company exists yet
+                    return new CompanyConfigDto
+                    {
+                        Name = "WebsiteBuilder",
+                        Logo = null,
+                        LogoSize = 120,
+                        PrimaryColor = "#22c55e",
+                        SecondaryColor = "#64748b",
+                        Currency = "USD",
+                        TimeZone = null,
+                        OrderIdPrefix = "#",
+                        OrderIdSuffix = string.Empty
+                    };
+                }
 
-            return new CompanyConfigDto
+                return new CompanyConfigDto
+                {
+                    Name = currentCompany.Name,
+                    Logo = currentCompany.Logo,
+                    LogoSize = currentCompany.LogoSize,
+                    PrimaryColor = currentCompany.PrimaryColor ?? "#22c55e",
+                    SecondaryColor = currentCompany.SecondaryColor ?? "#64748b",
+                    Currency = currentCompany.Currency ?? "USD",
+                    TimeZone = currentCompany.TimeZone,
+                    OrderIdPrefix = currentCompany.OrderIdPrefix ?? "#",
+                    OrderIdSuffix = currentCompany.OrderIdSuffix ?? string.Empty
+                };
+            }
+            catch (PostgresException ex) when (ex.SqlState == "42703")
             {
-                Name = currentCompany.Name,
-                Logo = currentCompany.Logo,
-                LogoSize = currentCompany.LogoSize,
-                PrimaryColor = currentCompany.PrimaryColor ?? "#22c55e",
-                SecondaryColor = currentCompany.SecondaryColor ?? "#64748b",
-                Currency = currentCompany.Currency ?? "USD",
-                TimeZone = currentCompany.TimeZone,
-                OrderIdPrefix = currentCompany.OrderIdPrefix ?? "#",
-                OrderIdSuffix = currentCompany.OrderIdSuffix ?? ""
-            };
+                // Column not found (e.g., new columns not yet migrated). Return defaults so login page doesn't break.
+                _logger.LogError(ex, "Company config fallback: missing DB columns. Returning defaults.");
+                return new CompanyConfigDto
+                {
+                    Name = "WebsiteBuilder",
+                    Logo = null,
+                    LogoSize = 120,
+                    PrimaryColor = "#22c55e",
+                    SecondaryColor = "#64748b",
+                    Currency = "USD",
+                    TimeZone = null,
+                    OrderIdPrefix = "#",
+                    OrderIdSuffix = string.Empty
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting company config. Returning defaults to keep UI working.");
+                return new CompanyConfigDto
+                {
+                    Name = "WebsiteBuilder",
+                    Logo = null,
+                    LogoSize = 120,
+                    PrimaryColor = "#22c55e",
+                    SecondaryColor = "#64748b",
+                    Currency = "USD",
+                    TimeZone = null,
+                    OrderIdPrefix = "#",
+                    OrderIdSuffix = string.Empty
+                };
+            }
         }
 
         public async Task UpdateLogoSizeAsync(int size)

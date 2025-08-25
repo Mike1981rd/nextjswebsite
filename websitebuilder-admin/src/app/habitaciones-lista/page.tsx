@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Grid, List, Search, SlidersHorizontal, X } from 'lucide-react';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import { useCompany } from '@/contexts/CompanyContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import PreviewHeader from '@/components/preview/PreviewHeader';
 import PreviewFooter from '@/components/preview/PreviewFooter';
 import RoomCard from './RoomCard';
@@ -33,6 +34,7 @@ type ViewMode = 'grid' | 'list';
 export default function RoomsListPage() {
   const { config: themeConfig } = useThemeConfigStore();
   const { company } = useCompany();
+  const { selectedCurrency, baseCurrency } = useCurrency();
   const productCardsConfig = themeConfig?.productCards;
   
   // Debug logging
@@ -364,7 +366,7 @@ export default function RoomsListPage() {
                     productCardsConfig={productCardsConfig}
                     colorScheme={colorScheme}
                     viewMode={viewMode}
-                    currency={company?.currency || 'USD'}
+                    currency={selectedCurrency}
                   />
                 ))}
               </div>

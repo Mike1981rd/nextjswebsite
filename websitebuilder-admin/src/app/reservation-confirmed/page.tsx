@@ -61,7 +61,7 @@ export default function ReservationConfirmedPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://172.25.64.1:5266/api';
       
       // First get the full company data
-      const response = await fetch(`${apiUrl}/companies/${companyId}/public`);
+      const response = await fetch(`${apiUrl}/company/${companyId}/public`);
       
       if (response.ok) {
         const data = await response.json();

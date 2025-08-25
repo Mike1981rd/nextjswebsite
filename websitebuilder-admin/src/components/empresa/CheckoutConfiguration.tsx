@@ -58,8 +58,8 @@ export function CheckoutConfiguration() {
 
   const loadCheckoutSettings = async () => {
     try {
-      const response = await api.get('/company/checkout-settings');
-      const settings = response.data as any;
+    const response = await api.get('/company/checkout-settings');
+    const settings = response.data as any;
       
       // Apply loaded settings
       setContactMethod(settings.contactMethod || 'email');
@@ -68,8 +68,19 @@ export function CheckoutConfiguration() {
       setAddressLine2Field(settings.addressLine2Field || 'optional');
       setPhoneNumberField(settings.phoneNumberField || 'optional');
 
-      // Branding
-      setCheckoutLogoUrl(settings.checkoutLogoUrl || null);
+      // Branding (normalize logo URL to absolute so preview works from admin frontend)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+      let normalizedLogoUrl: string | null = settings.checkoutLogoUrl || null;
+      if (normalizedLogoUrl) {
+        if (normalizedLogoUrl.startsWith('http')) {
+          // keep as-is
+        } else if (normalizedLogoUrl.startsWith('/')) {
+          normalizedLogoUrl = `${(apiUrl as string).replace('/api','')}${normalizedLogoUrl}`;
+        } else {
+          normalizedLogoUrl = `${(apiUrl as string).replace('/api','')}/uploads/${normalizedLogoUrl}`;
+        }
+      }
+      setCheckoutLogoUrl(normalizedLogoUrl);
       setLogoAlignment((settings.checkoutLogoAlignment as any) || 'center');
       setLogoWidthPx(settings.checkoutLogoWidthPx || 120);
       if (settings.checkoutPayButtonColor) setPayButtonColor(settings.checkoutPayButtonColor);
@@ -423,7 +434,18 @@ export function CheckoutConfiguration() {
                     const res = await api.post('/company/checkout-settings/logo', form, {
                       headers: { 'Content-Type': 'multipart/form-data' }
                     });
-                    const url = (res.data as any)?.logoUrl as string;
+                    // Normalize returned URL for immediate preview
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+                    let url = (res.data as any)?.logoUrl as string;
+                    if (url) {
+                      if (url.startsWith('http')) {
+                        // keep as-is
+                      } else if (url.startsWith('/')) {
+                        url = `${(apiUrl as string).replace('/api','')}${url}`;
+                      } else {
+                        url = `${(apiUrl as string).replace('/api','')}/uploads/${url}`;
+                      }
+                    }
                     setCheckoutLogoUrl(url);
                     setHasChanges(true);
                     toast.success(t('common.upload', 'Upload'));

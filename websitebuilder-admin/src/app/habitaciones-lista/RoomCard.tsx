@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Star, Users, Maximize, Home, Calendar, Eye } from 'lucide-react';
 import { ProductCardsConfig } from '@/types/theme/productCards';
 import Link from 'next/link';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface RoomCardProps {
   room: {
@@ -35,6 +36,7 @@ export default function RoomCard({
 }: RoomCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { convertPrice, formatPrice: formatCurrencyPrice, baseCurrency } = useCurrency();
 
   // Get image URL with fallback
   const getImageUrl = (imageUrl?: string) => {
@@ -43,15 +45,11 @@ export default function RoomCard({
     return `http://localhost:5266${imageUrl}`;
   };
 
-  // Format price
+  // Format price with currency conversion
   const formatPrice = (price: number) => {
-    const formatter = new Intl.NumberFormat('es-DO', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-    return formatter.format(price);
+    // Price is stored in store currency (DOP), convert to selected currency
+    const convertedPrice = convertPrice(price, undefined, currency as any);
+    return formatCurrencyPrice(convertedPrice, currency as any);
   };
 
   // Calculate discount percentage

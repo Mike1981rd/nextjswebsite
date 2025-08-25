@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import ErrorModal from '@/components/ui/ErrorModal';
 import CountrySelect from './CountrySelect';
 import PhoneCountryCodeSelect, { getDialCodeForCountry } from './PhoneCountryCodeSelect';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface CompanyConfig {
   name?: string;
@@ -53,20 +54,20 @@ interface ReservationPayload {
 
 type TaxDocumentType = 'consumidor_final' | 'credito_fiscal' | 'regimen_especial' | 'gubernamental';
 
-function formatCurrency(value: number, currency: string | undefined) {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(value);
-  } catch {
-    return `${currency || 'USD'} ${value.toFixed(2)}`;
-  }
-}
-
 export default function RoomCheckoutPageV2() {
   const router = useRouter();
+  const { selectedCurrency, convertPrice, formatPrice: formatCurrencyPrice, baseCurrency } = useCurrency();
   const [company, setCompany] = useState<CompanyConfig | null>(null);
   const [reservation, setReservation] = useState<ReservationPayload | null>(null);
   const [checkoutSettings, setCheckoutSettings] = useState<CheckoutSettings | null>(null);
   const [loading, setLoading] = useState(false);
+  
+  // Helper function to format currency with conversion
+  const formatCurrency = (value: number, _currency?: string) => {
+    // Prices are stored in store currency, convert to selected currency
+    const convertedValue = convertPrice(value, undefined, selectedCurrency);
+    return formatCurrencyPrice(convertedValue, selectedCurrency);
+  };
   
   // Form States
   const [email, setEmail] = useState('');
@@ -141,9 +142,20 @@ export default function RoomCheckoutPageV2() {
       const companyRes = await fetch(`${apiUrl}/company/${companyId}/public`);
       if (companyRes.ok) {
         const data = await companyRes.json();
+        // Build absolute logo URL for checkout header preview
+        let logoUrl: string | undefined = data?.logo;
+        if (logoUrl) {
+          if (logoUrl.startsWith('http')) {
+            // keep as-is
+          } else if (logoUrl.startsWith('/')) {
+            logoUrl = `${(apiUrl as string).replace('/api','')}${logoUrl}`;
+          } else {
+            logoUrl = `${(apiUrl as string).replace('/api','')}/uploads/${logoUrl}`;
+          }
+        }
         setCompany({
           name: data?.name,
-          logo: data?.logo,
+          logo: logoUrl,
           logoSize: data?.logoSize,
           primaryColor: data?.primaryColor || '#22c55e',
           secondaryColor: data?.secondaryColor,
@@ -155,7 +167,18 @@ export default function RoomCheckoutPageV2() {
       const settingsRes = await fetch(`${apiUrl}/checkout/checkout-settings`);
       if (settingsRes.ok) {
         const settings = await settingsRes.json();
-        setCheckoutSettings(settings);
+        // Normalize checkout logo URL to absolute so it renders correctly in Next.js
+        let normalizedLogoUrl = settings.checkoutLogoUrl as string | null;
+        if (normalizedLogoUrl) {
+          if (normalizedLogoUrl.startsWith('http')) {
+            // keep as-is
+          } else if (normalizedLogoUrl.startsWith('/')) {
+            normalizedLogoUrl = `${(apiUrl as string).replace('/api','')}${normalizedLogoUrl}`;
+          } else {
+            normalizedLogoUrl = `${(apiUrl as string).replace('/api','')}/uploads/${normalizedLogoUrl}`;
+          }
+        }
+        setCheckoutSettings({ ...settings, checkoutLogoUrl: normalizedLogoUrl });
         
         // If guest checkout is not allowed, default to creating account
         if (!settings.allowGuestCheckout) {
@@ -459,7 +482,7 @@ export default function RoomCheckoutPageV2() {
     return calculateSubtotal() + calculateFeesTotal();
   };
 
-  const currency = reservation?.currency || company?.currency || 'USD';
+  const currency = selectedCurrency; // Use selected currency from context
   const primaryColor = checkoutSettings?.checkoutPayButtonColor || company?.primaryColor || '#22c55e';
   const payTextColor = checkoutSettings?.checkoutPayButtonTextColor || '#ffffff';
 
@@ -511,17 +534,19 @@ export default function RoomCheckoutPageV2() {
       />
       {/* Logo Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-        <div className={`flex items-center ${
+          <div className={`flex items-center ${
           checkoutSettings?.checkoutLogoAlignment === 'left' ? 'justify-start' : 
           checkoutSettings?.checkoutLogoAlignment === 'right' ? 'justify-end' : 
           'justify-center'
         }`}>
           {checkoutSettings?.checkoutLogoUrl && (
-            <img
-              src={checkoutSettings.checkoutLogoUrl}
-              alt={company?.name || 'Company'}
-              style={{ height: `${checkoutSettings.checkoutLogoWidthPx || 120}px`, objectFit: 'contain' }}
-            />
+            <a href="/home" aria-label="Go to home">
+              <img
+                src={checkoutSettings.checkoutLogoUrl}
+                alt={company?.name || 'Company'}
+                style={{ height: `${checkoutSettings.checkoutLogoWidthPx || 120}px`, objectFit: 'contain' }}
+              />
+            </a>
           )}
         </div>
       </div>
@@ -1205,19 +1230,19 @@ export default function RoomCheckoutPageV2() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">
-                      {formatCurrency(reservation?.pricePerNight || 0, currency)} x {reservation?.nights || 0} noches
+                      {formatCurrency(reservation?.pricePerNight || 0)} x {reservation?.nights || 0} noches
                     </span>
-                    <span className="text-gray-900">{formatCurrency(calculateSubtotal(), currency)}</span>
+                    <span className="text-gray-900">{formatCurrency(calculateSubtotal())}</span>
                   </div>
                   {reservation?.fees?.map((fee, idx) => (
                     <div key={idx} className="flex justify-between">
                       <span className="text-gray-600">{fee.label}</span>
-                      <span className="text-gray-900">{formatCurrency(fee.amount, currency)}</span>
+                      <span className="text-gray-900">{formatCurrency(fee.amount)}</span>
                     </div>
                   ))}
                   <div className="border-t border-gray-200 pt-3 flex justify-between font-medium">
                     <span className="text-gray-900">Total ({currency})</span>
-                    <span className="text-gray-900">{formatCurrency(calculateTotal(), currency)}</span>
+                    <span className="text-gray-900">{formatCurrency(calculateTotal())}</span>
                   </div>
                 </div>
               </div>

@@ -10,6 +10,7 @@ import { FeaturedCollectionConfig, getDefaultFeaturedCollectionConfig } from '@/
 import { GlobalThemeConfig } from '@/types/theme';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import { useCompany } from '@/contexts/CompanyContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { cn } from '@/lib/utils';
 
 interface PreviewFeaturedCollectionProps {
@@ -45,16 +46,13 @@ export default function PreviewFeaturedCollection({
   const storeThemeConfig = useThemeConfigStore(state => state.config);
   const themeConfig = theme || storeThemeConfig;
   const { company } = useCompany();
+  const { selectedCurrency, convertPrice, formatPrice: formatCurrencyPrice, baseCurrency } = useCurrency();
   
-  // Get currency from company settings, default to USD if not set
-  const currency = company?.currency || 'USD';
-  
-  // Format price with thousands separator
+  // Format price with currency conversion
   const formatPrice = (price: number): string => {
-    return price.toLocaleString('en-US', { 
-      minimumFractionDigits: 2, 
-      maximumFractionDigits: 2 
-    });
+    // Price is stored in store currency, convert to selected currency
+    const convertedPrice = convertPrice(price, undefined, selectedCurrency);
+    return formatCurrencyPrice(convertedPrice, selectedCurrency);
   };
   
   const finalConfig: FeaturedCollectionConfig = { ...getDefaultFeaturedCollectionConfig(), ...(config as any) };
@@ -717,14 +715,14 @@ export default function PreviewFeaturedCollection({
                   "font-bold whitespace-nowrap",
                   isMobile ? "text-xl" : "text-base font-semibold"
                 )} style={{ color: colorScheme.text }}>
-                  ${formatPrice(item.price)}{finalConfig.showCurrencyCode ? ` ${currency}` : ''}
+                  {formatPrice(item.price)}{finalConfig.showCurrencyCode ? ` ${selectedCurrency}` : ''}
                 </span>
                 {item.originalPrice && item.originalPrice > item.price && (
                   <span className={cn(
                     "line-through whitespace-nowrap",
                     isMobile ? "text-base" : "text-sm"
                   )} style={{ color: colorScheme.secondary ?? '#666', opacity: 0.7 }}>
-                    ${formatPrice(item.originalPrice)}{finalConfig.showCurrencyCode ? ` ${currency}` : ''}
+                    {formatPrice(item.originalPrice)}{finalConfig.showCurrencyCode ? ` ${selectedCurrency}` : ''}
                   </span>
                 )}
                 {item.originalPrice && item.originalPrice > item.price && item.discount && (

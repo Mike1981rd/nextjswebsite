@@ -5,6 +5,7 @@ import * as Icons from 'lucide-react';
 import { AnnouncementBarConfig } from '@/types/components/announcement-bar';
 import { GlobalThemeConfig } from '@/types/theme';
 import { PageType } from '@/types/editor.types';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface PreviewAnnouncementBarProps {
   config: AnnouncementBarConfig | null;
@@ -56,6 +57,7 @@ export default function PreviewAnnouncementBar({
 }: PreviewAnnouncementBarProps) {
   // Cast config to any to handle structure mismatches with the current implementation
   const configAny = config as any;
+  const { selectedCurrency, availableCurrencies, changeCurrency } = useCurrency();
   
   const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -431,10 +433,12 @@ export default function PreviewAnnouncementBar({
               <select 
                 className="bg-transparent text-base font-medium border-0 outline-none cursor-pointer px-1"
                 style={{ color: 'inherit' }}
-                defaultValue="USD"
+                value={selectedCurrency}
+                onChange={(e) => changeCurrency(e.target.value as any)}
               >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
+                {availableCurrencies.map(currency => (
+                  <option key={currency} value={currency}>{currency}</option>
+                ))}
               </select>
             )}
           </div>

@@ -66,7 +66,7 @@ export function StoreDetailsForm() {
   
   // Estados locales para los Select que tienen problemas de renderizado
   const [selectedCountry, setSelectedCountry] = useState<string>('');
-  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('DOP');
   
   // Get primary color from localStorage (set by ThemeCustomizer)
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
@@ -111,7 +111,7 @@ export function StoreDetailsForm() {
       timeZone: 'America/Santo_Domingo',
       metricSystem: 'Metric',
       weightUnit: 'Kilograms',
-      currency: 'USD',
+      currency: 'DOP',
       orderIdPrefix: '#',
       orderIdSuffix: '',
       geolocationProvider: 'mapbox',
@@ -134,7 +134,6 @@ export function StoreDetailsForm() {
   // Load company data
   useEffect(() => {
     if (company) {
-      console.log('Company data received:', company); // Debug log
       // Set logo with proper URL handling
       if (company.logo) {
         setLogo(company.logo);
@@ -143,7 +142,8 @@ export function StoreDetailsForm() {
       
       // Actualizar estados locales para los Select
       setSelectedCountry(company.country || '');
-      setSelectedCurrency(company.currency || 'USD');
+      const currencyValue = company.currency || 'DOP';
+      setSelectedCurrency(currencyValue);
       
       const formData = {
         name: company.name || '',
@@ -163,14 +163,13 @@ export function StoreDetailsForm() {
         timeZone: company.timeZone || 'America/Santo_Domingo',
         metricSystem: company.metricSystem || 'Metric',
         weightUnit: company.weightUnit || 'Kilograms',
-        currency: (company.currency || 'USD').toUpperCase(),
+        currency: (company.currency || 'DOP').toUpperCase(),
         orderIdPrefix: company.orderIdPrefix || '#',
         orderIdSuffix: company.orderIdSuffix || '',
         geolocationProvider: company.geolocationProvider || 'mapbox',
         geolocationToken: company.geolocationToken || '',
       };
       
-      console.log('Form data to reset:', formData); // Debug log
       reset(formData);
     }
   }, [company, reset]);
@@ -205,36 +204,37 @@ export function StoreDetailsForm() {
     try {
       setIsSaving(true);
       
-      // Enviar todos los datos, incluyendo strings vacíos
-      // El backend maneja correctamente los valores vacíos
-      console.log('Sending data:', data);
-      await updateCompany(data);
-      // Refrescar los datos del contexto para garantizar consistencia
-      await refetch();
-      // Tomar el valor más reciente del contexto a través de 'company' y resetear
-      if (company) {
+      // Normalizar currency a ISO
+      const payload: StoreDetailsFormData = { ...data, currency: (data.currency || '').toUpperCase() as any };
+      const updated = await updateCompany(payload as any);
+      if (updated) {
         reset({
-          name: company.name || '',
-          primaryColor: company.primaryColor || '#22c55e',
-          secondaryColor: company.secondaryColor || '#64748b',
-          phoneNumber: company.phoneNumber || '',
-          contactEmail: company.contactEmail || '',
-          senderEmail: company.senderEmail || '',
-          legalBusinessName: company.legalBusinessName || '',
-          country: (company.country || '').toUpperCase(),
-          region: company.region || '',
-          address: company.address || '',
-          apartment: company.apartment || '',
-          city: company.city || '',
-          state: company.state || '',
-          postalCode: company.postalCode || '',
-          timeZone: company.timeZone || 'America/Santo_Domingo',
-          metricSystem: company.metricSystem || 'Metric',
-          weightUnit: company.weightUnit || 'Kilograms',
-          currency: (company.currency || 'USD').toUpperCase(),
-          orderIdPrefix: company.orderIdPrefix || '#',
-          orderIdSuffix: company.orderIdSuffix || '',
+          name: updated.name || '',
+          primaryColor: updated.primaryColor || '#22c55e',
+          secondaryColor: updated.secondaryColor || '#64748b',
+          phoneNumber: updated.phoneNumber || '',
+          contactEmail: updated.contactEmail || '',
+          senderEmail: updated.senderEmail || '',
+          legalBusinessName: updated.legalBusinessName || '',
+          country: (updated.country || '').toUpperCase(),
+          region: updated.region || '',
+          address: updated.address || '',
+          apartment: updated.apartment || '',
+          city: updated.city || '',
+          state: updated.state || '',
+          postalCode: updated.postalCode || '',
+          timeZone: updated.timeZone || 'America/Santo_Domingo',
+          metricSystem: updated.metricSystem || 'Metric',
+          weightUnit: updated.weightUnit || 'Kilograms',
+          currency: (updated.currency || 'USD').toUpperCase(),
+          orderIdPrefix: updated.orderIdPrefix || '#',
+          orderIdSuffix: updated.orderIdSuffix || '',
+          geolocationProvider: updated.geolocationProvider || 'mapbox',
+          geolocationToken: updated.geolocationToken || '',
         });
+        setSelectedCurrency((updated.currency || 'USD').toUpperCase());
+      } else {
+        await refetch();
       }
     } catch (error: any) {
       console.error('Error saving company:', error);

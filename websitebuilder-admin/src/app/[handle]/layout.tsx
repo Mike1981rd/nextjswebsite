@@ -1,8 +1,21 @@
-export default function PreviewLayout({
+'use client';
+
+import { CompanyProvider } from '@/contexts/CompanyContext';
+import { CurrencyProvider } from '@/contexts/CurrencyContext';
+import { I18nProvider } from '@/contexts/I18nContext';
+
+export default function HandleLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Preview pages have their own layout without dashboard sidebar
-  return <>{children}</>;
+  return (
+    <I18nProvider>
+      <CompanyProvider>
+        <CurrencyProvider>
+          {children}
+        </CurrencyProvider>
+      </CompanyProvider>
+    </I18nProvider>
+  );
 }

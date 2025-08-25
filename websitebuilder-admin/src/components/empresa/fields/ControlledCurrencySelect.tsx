@@ -39,7 +39,7 @@ export function ControlledCurrencySelect<FormValues extends FieldValues = FieldV
         name={name as any}
         control={control as Control<FormValues>}
         render={({ field }) => {
-          const currentValue = (field.value as string) || 'USD';
+          const currentValue = (field.value as string) || '';
           const listedCodes = new Set<string>([
             ...['USD', 'CAD', 'MXN'],
             ...['DOP', 'CUP', 'JMD', 'HTG', 'TTD', 'BBD'],
@@ -51,7 +51,7 @@ export function ControlledCurrencySelect<FormValues extends FieldValues = FieldV
           const currentName = currencies[currentValue as keyof typeof currencies]?.name || currentValue;
 
           return (
-          <Select.Root key={`currency-${currentValue || 'empty'}`} value={currentValue} onValueChange={field.onChange}>
+          <Select.Root value={currentValue} onValueChange={field.onChange}>
             <Select.Trigger className={`${inputClassName} flex items-center justify-between`} style={inputFocusStyle}>
               <Select.Value>
                 {field.value && currencies[(field.value as string) as keyof typeof currencies] ? (

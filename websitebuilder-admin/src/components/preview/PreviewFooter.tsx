@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import { VisaIcon, MastercardIcon, AmexIcon, DiscoverIcon, ApplePayIcon, GooglePayIcon, AmazonPayIcon, DinersIcon } from '@/components/icons/PaymentIcons';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { getCurrencyDisplay } from '@/lib/utils/currency';
 
 interface PreviewFooterProps {
   config: FooterConfig;
@@ -32,10 +34,10 @@ export default function PreviewFooter({
   isEditor = false 
 }: PreviewFooterProps) {
   const { config: themeConfig } = useThemeConfigStore();
+  const { selectedCurrency, availableCurrencies, changeCurrency } = useCurrency();
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(config?.languageSelector?.defaultLanguage || 'Español');
-  const [selectedCurrency, setSelectedCurrency] = useState(config?.currencySelector?.defaultCurrency || 'USD');
   
   // Mobile detection with deviceView support (same as AnnouncementBar)
   const [isMobile, setIsMobile] = useState(() => {
@@ -504,33 +506,18 @@ export default function PreviewFooter({
                     </button>
                     {showCurrencyDropdown && (
                       <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50">
-                        <button
-                          className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                          onClick={() => {
-                            setSelectedCurrency('DOP');
-                            setShowCurrencyDropdown(false);
-                          }}
-                        >
-                          DOP - Peso Dominicano
-                        </button>
-                        <button
-                          className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                          onClick={() => {
-                            setSelectedCurrency('USD');
-                            setShowCurrencyDropdown(false);
-                          }}
-                        >
-                          USD - US Dollar
-                        </button>
-                        <button
-                          className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                          onClick={() => {
-                            setSelectedCurrency('EUR');
-                            setShowCurrencyDropdown(false);
-                          }}
-                        >
-                          EUR - Euro
-                        </button>
+                        {availableCurrencies.map((currency) => (
+                          <button
+                            key={currency}
+                            className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                            onClick={() => {
+                              changeCurrency(currency);
+                              setShowCurrencyDropdown(false);
+                            }}
+                          >
+                            {getCurrencyDisplay(currency)}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>

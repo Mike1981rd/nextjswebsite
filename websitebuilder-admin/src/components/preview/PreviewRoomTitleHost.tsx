@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import useThemeConfigStore from '@/stores/useThemeConfigStore';
 import ReservationCalendar from './ReservationCalendar';
 import { format, addDays, differenceInDays } from 'date-fns';
-import { formatPrice } from '@/utils/formatPrice';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { fetchRoomData } from '@/lib/api/rooms';
 
 interface Highlight {
@@ -90,6 +90,17 @@ export default function PreviewRoomTitleHost({
   const [showMobileCalendar, setShowMobileCalendar] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
 
+  // Currency: use global CurrencyContext so selector affects this page
+  const { selectedCurrency, baseCurrency, convertPrice, formatPrice: formatCurrency } = useCurrency();
+  const formatPriceDisplay = (amount: number) => {
+    try {
+      const converted = convertPrice(amount, baseCurrency, selectedCurrency);
+      return formatCurrency(converted, selectedCurrency);
+    } catch {
+      return `${selectedCurrency} ${amount.toFixed(2)}`;
+    }
+  };
+
   useEffect(() => {
     if (deviceView !== undefined) {
       setIsMobile(deviceView === 'mobile');
@@ -127,17 +138,12 @@ export default function PreviewRoomTitleHost({
       setLoading(true);
       try {
         // First fetch company data to get currency
-        const companyResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api'}/company/current`,
-          {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-            }
-          }
-        );
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5266/api';
+        const companyId = localStorage.getItem('companyId') || '1';
+        const companyResponse = await fetch(`${apiUrl}/company/${companyId}/public`);
         if (companyResponse.ok) {
           const companyData = await companyResponse.json();
-          setCompanyCurrency(companyData.currency || 'USD');
+          setCompanyCurrency((companyData.currency || 'USD').toUpperCase());
         }
         
         // Then fetch room data using the helper function
@@ -681,18 +687,18 @@ export default function PreviewRoomTitleHost({
                         {/* Price Breakdown */}
                         <div className="space-y-2 mb-4">
                           <div className="flex justify-between text-sm">
+                          <span style={{ color: colorScheme?.text || '#000000' }}>
+                            {formatPriceDisplay(pricePerNight)} x {totalNights} nights
+                          </span>
                             <span style={{ color: colorScheme?.text || '#000000' }}>
-                              {formatPrice(pricePerNight, companyCurrency)} x {totalNights} nights
-                            </span>
-                            <span style={{ color: colorScheme?.text || '#000000' }}>
-                              {formatPrice(pricePerNight * totalNights, companyCurrency)}
+                              {formatPriceDisplay(pricePerNight * totalNights)}
                             </span>
                           </div>
                           {cleaningFee > 0 && (
                             <div className="flex justify-between text-sm">
                               <span style={{ color: colorScheme?.text || '#000000' }}>Cleaning fee</span>
                               <span style={{ color: colorScheme?.text || '#000000' }}>
-                                {formatPrice(cleaningFee, companyCurrency)}
+                                {formatPriceDisplay(cleaningFee)}
                               </span>
                             </div>
                           )}
@@ -700,14 +706,14 @@ export default function PreviewRoomTitleHost({
                             <div className="flex justify-between text-sm">
                               <span style={{ color: colorScheme?.text || '#000000' }}>Service fee</span>
                               <span style={{ color: colorScheme?.text || '#000000' }}>
-                                {formatPrice(serviceFee, companyCurrency)}
+                                {formatPriceDisplay(serviceFee)}
                               </span>
                             </div>
                           )}
                           <div className="flex justify-between font-semibold pt-2 border-t" style={{ borderColor: colorScheme?.border || '#e5e7eb' }}>
                             <span style={{ color: colorScheme?.text || '#000000' }}>Total</span>
                             <span style={{ color: colorScheme?.text || '#000000' }}>
-                              {formatPrice(totalBeforeTaxes, companyCurrency)}
+                              {formatPriceDisplay(totalBeforeTaxes)}
                             </span>
                           </div>
                         </div>
@@ -962,7 +968,7 @@ export default function PreviewRoomTitleHost({
                   <div className="mb-4">
                     <div className="flex items-baseline gap-1">
                       <span className="text-xl font-semibold" style={{ color: colorScheme?.text || '#000000' }}>
-                        {formatPrice(totalNights > 0 ? totalBeforeTaxes : pricePerNight, companyCurrency)}
+                        {formatPriceDisplay(totalNights > 0 ? totalBeforeTaxes : pricePerNight)}
                       </span>
                       <span className="text-sm" style={{ color: colorScheme?.text || '#000000', opacity: 0.7 }}>
                         {totalNights > 0 ? `for ${totalNights} night${totalNights > 1 ? 's' : ''}` : 'per night'}
@@ -1095,26 +1101,26 @@ export default function PreviewRoomTitleHost({
                       className="w-full flex items-center justify-between text-sm hover:underline"
                       style={{ color: colorScheme?.text || '#000000' }}
                     >
-                      <span>{formatPrice(pricePerNight, companyCurrency)} x {totalNights} nights</span>
-                      <span>{formatPrice(pricePerNight * totalNights, companyCurrency)}</span>
+                      <span>{formatPriceDisplay(pricePerNight)} x {totalNights} nights</span>
+                      <span>{formatPriceDisplay(pricePerNight * totalNights)}</span>
                     </button>
                     
                     {showPriceDetails && (
                       <>
                         <div className="flex items-center justify-between text-sm" style={{ color: colorScheme?.text || '#000000' }}>
                           <span className="underline cursor-pointer">Cleaning fee</span>
-                          <span>{formatPrice(cleaningFee, companyCurrency)}</span>
+                          <span>{formatPriceDisplay(cleaningFee)}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm" style={{ color: colorScheme?.text || '#000000' }}>
                           <span className="underline cursor-pointer">Service fee</span>
-                          <span>{formatPrice(serviceFee, companyCurrency)}</span>
+                          <span>{formatPriceDisplay(serviceFee)}</span>
                         </div>
                       </>
                     )}
                     
                     <div className="pt-3 border-t flex items-center justify-between font-semibold" style={{ borderColor: colorScheme?.border || '#e5e7eb' }}>
                       <span style={{ color: colorScheme?.text || '#000000' }}>Total before taxes</span>
-                      <span style={{ color: colorScheme?.text || '#000000' }}>{formatPrice(totalBeforeTaxes, companyCurrency)}</span>
+                      <span style={{ color: colorScheme?.text || '#000000' }}>{formatPriceDisplay(totalBeforeTaxes)}</span>
                     </div>
                   </div>
                 </div>
