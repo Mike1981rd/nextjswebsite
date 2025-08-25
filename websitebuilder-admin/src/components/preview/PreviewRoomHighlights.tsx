@@ -351,7 +351,8 @@ export default function PreviewRoomHighlights({
     const mappedIconName = iconMap[iconName.toLowerCase()] || convertToPascalCase(iconName);
     const IconComponent = Icons[mappedIconName as keyof typeof Icons];
     
-    return IconComponent ? <IconComponent className="w-6 h-6" /> : <Sparkles className="w-6 h-6" />;
+    // Use consistent 24px size for both mobile and desktop
+    return IconComponent ? <IconComponent className="w-full h-full" /> : <Sparkles className="w-full h-full" />;
   };
 
   const handleManualRefresh = async () => {
@@ -489,12 +490,13 @@ export default function PreviewRoomHighlights({
 
   return (
     <div 
-      className="container mx-auto px-6"
+      className={`container mx-auto ${isMobile ? 'px-4' : 'px-6'}`}
       style={{
-        paddingTop: `${config.topPadding || 32}px`,
-        paddingBottom: `${config.bottomPadding || 32}px`,
+        paddingTop: isMobile ? '24px' : `${config.topPadding || 32}px`,
+        paddingBottom: isMobile ? '24px' : `${config.bottomPadding || 32}px`,
         backgroundColor: colorScheme?.background || '#FFFFFF',
-        color: colorScheme?.text || '#000000'
+        color: colorScheme?.text || '#000000',
+        borderTop: `1px solid ${colorScheme?.border || '#E5E5E5'}`
       }}
     >
 
@@ -504,48 +506,75 @@ export default function PreviewRoomHighlights({
           style={{ 
             ...headingTypographyStyles,
             color: colorScheme?.text || '#000000',
-            marginBottom: `${config.titleSpacing || 24}px`,
-            fontSize: config.headingSize ? `${config.headingSize}px` : (headingTypographyStyles.fontSize || '20px'),
+            marginBottom: isMobile ? '20px' : `${config.titleSpacing || 24}px`,
+            fontSize: isMobile ? '18px' : (config.headingSize ? `${config.headingSize}px` : (headingTypographyStyles.fontSize || '20px')),
             fontWeight: config.headingWeight || headingTypographyStyles.fontWeight || '600',
             fontStyle: config.headingItalic ? 'italic' : (headingTypographyStyles.fontStyle || 'normal'),
-            textDecoration: config.headingUnderline ? 'underline' : 'none'
+            textDecoration: config.headingUnderline ? 'underline' : 'none',
+            textAlign: isMobile ? 'center' : 'left'
           }}
         >
           {config.title}
         </h2>
       )}
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'}`}>
         {displayHighlights.map((highlight: Highlight) => (
-          <div key={highlight.id} className="flex gap-4">
+          <div 
+            key={highlight.id} 
+            className="flex"
+            style={{
+              gap: isMobile ? '14px' : '16px',
+              alignItems: isMobile ? 'flex-start' : 'flex-start',
+              minHeight: isMobile ? '28px' : 'auto'
+            }}
+          >
             <div 
-              className="flex-shrink-0 text-2xl"
-              style={{ color: colorScheme?.text || '#000000' }}
+              className="flex-shrink-0"
+              style={{ 
+                color: colorScheme?.text || '#000000',
+                fontSize: isMobile ? '24px' : '24px',
+                width: isMobile ? '24px' : '24px',
+                height: isMobile ? '24px' : '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start'
+              }}
             >
               {getIcon(highlight.icon) || (
-                <span>{highlight.icon}</span>
+                <span style={{ 
+                  fontSize: isMobile ? '20px' : '24px',
+                  lineHeight: 1
+                }}>{highlight.icon}</span>
               )}
             </div>
-            <div>
+            <div className="flex-1">
               <h3 
-                className="font-semibold text-base mb-1"
+                className="font-semibold mb-1"
                 style={{ 
                   ...headingTypographyStyles,
-                  color: colorScheme?.text || '#000000'
+                  color: colorScheme?.text || '#000000',
+                  fontSize: isMobile ? '16px' : '16px',
+                  fontWeight: '600',
+                  lineHeight: isMobile ? '1.5' : '1.6'
                 }}
               >
                 {highlight.title}
               </h3>
-              <p 
-                className="text-sm"
-                style={{ 
-                  ...bodyTypographyStyles,
-                  color: colorScheme?.text || '#666666',
-                  opacity: 0.8
-                }}
-              >
-                {highlight.description}
-              </p>
+              {!isMobile && (
+                <p 
+                  className="text-sm"
+                  style={{ 
+                    ...bodyTypographyStyles,
+                    color: colorScheme?.text || '#666666',
+                    opacity: 0.8,
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }}
+                >
+                  {highlight.description}
+                </p>
+              )}
             </div>
           </div>
         ))}

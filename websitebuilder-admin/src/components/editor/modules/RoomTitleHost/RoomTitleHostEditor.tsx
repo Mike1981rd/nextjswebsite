@@ -35,6 +35,8 @@ interface RoomTitleHostConfig {
   paddingBottom: number; // Internal bottom padding in pixels (0-120)
   containerPaddingTop: number; // External container top margin (0-120)
   containerPaddingBottom: number; // External container bottom margin (0-120)
+  mobileTopSpacing?: number; // Mobile-specific top spacing (-60 to 60)
+  mobileCardOffset?: number; // Mobile card vertical position offset (-40 to 40)
 }
 
 interface RoomTitleHostEditorProps {
@@ -82,7 +84,9 @@ const getDefaultConfig = (): RoomTitleHostConfig => ({
   paddingTop: 24, // Default 24px internal
   paddingBottom: 24, // Default 24px internal
   containerPaddingTop: 0, // Default 0px external top
-  containerPaddingBottom: 0 // Default 0px external bottom - sin espacio por defecto
+  containerPaddingBottom: 0, // Default 0px external bottom - sin espacio por defecto
+  mobileTopSpacing: 0, // Default 0px mobile top spacing
+  mobileCardOffset: 0 // Default 0px mobile card offset
 });
 
 export default function RoomTitleHostEditor({ sectionId }: RoomTitleHostEditorProps) {
@@ -307,6 +311,66 @@ export default function RoomTitleHostEditor({ sectionId }: RoomTitleHostEditorPr
                 <span>None</span>
                 <span>Normal</span>
                 <span>Large</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Top Spacing - Para acercar a Gallery */}
+          <div className="space-y-2 p-3 bg-blue-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-blue-900">Mobile Top Spacing</label>
+                <p className="text-xs text-blue-700 mt-0.5">Adjust spacing to Room Gallery on mobile</p>
+              </div>
+              <span className="text-xs font-medium text-blue-900">{localConfig.mobileTopSpacing || 0}px</span>
+            </div>
+            <div className="space-y-1">
+              <input
+                type="range"
+                min="-60"
+                max="60"
+                step="4"
+                value={localConfig.mobileTopSpacing || 0}
+                onChange={(e) => handleChange('mobileTopSpacing', parseInt(e.target.value))}
+                className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #1e40af 0%, #1e40af ${((localConfig.mobileTopSpacing || 0) + 60) / 120 * 100}%, #dbeafe ${((localConfig.mobileTopSpacing || 0) + 60) / 120 * 100}%, #dbeafe 100%)`
+                }}
+              />
+              <div className="flex justify-between text-xs text-blue-700">
+                <span>Closer</span>
+                <span>Normal</span>
+                <span>Further</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Card Position - Mover el card arriba o abajo */}
+          <div className="space-y-2 p-3 bg-purple-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-purple-900">Mobile Card Position</label>
+                <p className="text-xs text-purple-700 mt-0.5">Move the info card up or down</p>
+              </div>
+              <span className="text-xs font-medium text-purple-900">{localConfig.mobileCardOffset || 0}px</span>
+            </div>
+            <div className="space-y-1">
+              <input
+                type="range"
+                min="-80"
+                max="40"
+                step="4"
+                value={localConfig.mobileCardOffset || 0}
+                onChange={(e) => handleChange('mobileCardOffset', parseInt(e.target.value))}
+                className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #7c3aed 0%, #7c3aed ${((localConfig.mobileCardOffset || 0) + 80) / 120 * 100}%, #ede9fe ${((localConfig.mobileCardOffset || 0) + 80) / 120 * 100}%, #ede9fe 100%)`
+                }}
+              />
+              <div className="flex justify-between text-xs text-purple-700">
+                <span>Up</span>
+                <span>Center</span>
+                <span>Down</span>
               </div>
             </div>
           </div>

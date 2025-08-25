@@ -156,13 +156,34 @@ export default function PreviewRoomMap({
   }, [company?.geolocationProvider, company?.geolocationToken]);
 
   return (
-    <div className="container mx-auto px-6 py-8 border-t">
-      <h2 className="text-xl font-semibold mb-6">
+    <div className={`container mx-auto ${isMobile ? 'px-4 py-6' : 'px-6 py-8'} border-t`}>
+      <h2 className={`font-semibold mb-6 ${isMobile ? 'text-lg text-center' : 'text-xl'}`}>
         {config.title || 'Where you\'ll be'}
       </h2>
 
+      {/* Mobile: Show location details first */}
+      {isMobile && (
+        <div className="space-y-4 text-center mb-6">
+          <div>
+            <h3 className="font-semibold text-base mb-2">
+              {displayData.neighborhood || 'Downtown'}, {displayData.city || 'San Francisco'}
+            </h3>
+            <p className="text-sm text-gray-600 mx-auto max-w-sm">
+              {displayData.description || 'Great location with easy access to public transportation and local attractions.'}
+            </p>
+          </div>
+
+          {(isEditor || displayData.showExactLocation) && fullAddressText && (
+            <div className="flex flex-col items-center">
+              <MapPin className="w-5 h-5 text-gray-500 mb-2" />
+              <p className="text-sm text-gray-600">{fullAddressText}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Map preview (custom image → interactive map → placeholder) */}
-      <div className="relative h-[400px] bg-gray-100 rounded-xl overflow-hidden mb-6">
+      <div className={`relative ${isMobile ? 'h-[300px]' : 'h-[400px]'} bg-gray-100 rounded-xl overflow-hidden ${!isMobile ? 'mb-6' : ''}`}>
         {displayData.mapImage ? (
           <img
             src={displayData.mapImage}
@@ -174,7 +195,7 @@ export default function PreviewRoomMap({
             latitude={coords.lat}
             longitude={coords.lng}
             accessTokenOverride={mapboxTokenOverride}
-            height="400px"
+            height={isMobile ? "300px" : "400px"}
             zoom={14}
           />
         ) : (
@@ -196,24 +217,26 @@ export default function PreviewRoomMap({
         )}
       </div>
 
-      {/* Location details */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="font-semibold text-base mb-2">
-            {displayData.neighborhood || 'Downtown'}, {displayData.city || 'San Francisco'}
-          </h3>
-          <p className="text-sm text-gray-600">
-            {displayData.description || 'Great location with easy access to public transportation and local attractions.'}
-          </p>
-        </div>
-
-        {(isEditor || displayData.showExactLocation) && fullAddressText && (
-          <div className="flex items-start gap-2">
-            <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
-            <p className="text-sm text-gray-600">{fullAddressText}</p>
+      {/* Desktop: Show location details after map */}
+      {!isMobile && (
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-semibold text-base mb-2">
+              {displayData.neighborhood || 'Downtown'}, {displayData.city || 'San Francisco'}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {displayData.description || 'Great location with easy access to public transportation and local attractions.'}
+            </p>
           </div>
-        )}
-      </div>
+
+          {(isEditor || displayData.showExactLocation) && fullAddressText && (
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
+              <p className="text-sm text-gray-600">{fullAddressText}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

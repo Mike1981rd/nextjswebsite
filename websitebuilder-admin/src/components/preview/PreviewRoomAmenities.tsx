@@ -203,7 +203,8 @@ export default function PreviewRoomAmenities({
   }, [themeConfig?.typography?.buttons]);
 
   const getIcon = (iconName?: string, iconType?: 'heroicon' | 'emoji' | 'custom') => {
-    const size = config.iconSize || 24;
+    // Force 24px size on mobile for consistency with design
+    const size = isMobile ? 24 : (config.iconSize || 24);
     const sizeInRem = size / 16; // Convert px to rem for better scaling
     
     if (!iconName) {
@@ -222,7 +223,14 @@ export default function PreviewRoomAmenities({
     // For emojis, use fontSize
     if (iconType === 'emoji' || (!iconType && (iconName.length <= 3 || iconName.includes('️')))) {
       return (
-        <span style={{ fontSize: `${size}px`, lineHeight: 1 }}>
+        <span style={{ 
+          fontSize: `${size}px`, 
+          lineHeight: 1,
+          display: 'inline-block',
+          width: `${size}px`,
+          height: `${size}px`,
+          textAlign: 'center'
+        }}>
           {iconName}
         </span>
       );
@@ -254,12 +262,14 @@ export default function PreviewRoomAmenities({
     ? amenities 
     : amenities.filter((a: Amenity) => a.available);
 
-  const visibleAmenities = showAll ? displayAmenities : displayAmenities.slice(0, 10);
+  // En móvil mostrar menos amenidades inicialmente (6 en lugar de 10)
+  const initialDisplayCount = isMobile ? 6 : 10;
+  const visibleAmenities = showAll ? displayAmenities : displayAmenities.slice(0, initialDisplayCount);
   const columns = isMobile ? 1 : config.columns || 2;
 
   return (
     <div 
-      className="container mx-auto px-6 py-8"
+      className={`container mx-auto ${isMobile ? 'px-4 py-6' : 'px-6 py-8'}`}
       style={{
         borderTop: `1px solid ${colorScheme?.border || '#E5E5E5'}`,
         backgroundColor: colorScheme?.background || '#FFFFFF',
@@ -270,20 +280,21 @@ export default function PreviewRoomAmenities({
         style={{ 
           ...headingTypographyStyles,
           color: colorScheme?.text || '#000000',
-          marginBottom: `${config.titleSpacing || 24}px`,
-          fontSize: config.headingSize ? `${config.headingSize}px` : (headingTypographyStyles.fontSize || '20px'),
+          marginBottom: isMobile ? '20px' : `${config.titleSpacing || 24}px`,
+          fontSize: isMobile ? '18px' : (config.headingSize ? `${config.headingSize}px` : (headingTypographyStyles.fontSize || '20px')),
           fontWeight: config.headingWeight || headingTypographyStyles.fontWeight || '600',
           fontStyle: config.headingItalic ? 'italic' : (headingTypographyStyles.fontStyle || 'normal'),
-          textDecoration: config.headingUnderline ? 'underline' : 'none'
+          textDecoration: config.headingUnderline ? 'underline' : 'none',
+          textAlign: isMobile ? 'center' : 'left'
         }}
       >
         {config.title || 'What this place offers'}
       </h2>
       
       <div 
-        className={`grid grid-cols-${columns} mb-6`}
+        className={`grid ${isMobile ? 'grid-cols-1' : `grid-cols-${columns}`} ${isMobile ? 'mb-5' : 'mb-6'}`}
         style={{
-          gap: `${config.verticalSpacing || 16}px ${config.horizontalSpacing || 16}px`
+          gap: isMobile ? '16px 0' : `${config.verticalSpacing || 16}px ${config.horizontalSpacing || 16}px`
         }}
       >
         {visibleAmenities.map((amenity) => (
@@ -292,24 +303,48 @@ export default function PreviewRoomAmenities({
             className={`flex items-center ${!amenity.available ? 'opacity-50 line-through' : ''}`}
             style={{ 
               color: !amenity.available ? colorScheme?.border : colorScheme?.text,
-              gap: '12px' // Fixed gap between icon and text
+              gap: isMobile ? '14px' : '12px', // Slightly more gap on mobile for better readability
+              minHeight: isMobile ? '28px' : 'auto' // Consistent height on mobile
             }}
           >
-            {getIcon((amenity as any).icon, (amenity as any).iconType)}
-            <span className="text-base" style={bodyTypographyStyles}>{amenity.name}</span>
+            <div style={{
+              minWidth: isMobile ? '24px' : `${config.iconSize || 24}px`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start'
+            }}>
+              {getIcon((amenity as any).icon, (amenity as any).iconType)}
+            </div>
+            <span 
+              className={isMobile ? 'text-base' : 'text-base'} 
+              style={{
+                ...bodyTypographyStyles,
+                fontSize: isMobile ? '16px' : bodyTypographyStyles.fontSize,
+                lineHeight: isMobile ? '1.5' : '1.6'
+              }}
+            >
+              {amenity.name}
+            </span>
           </div>
         ))}
       </div>
 
-      {displayAmenities.length > 10 && (
+      {displayAmenities.length > initialDisplayCount && (
         <button
           onClick={() => setShowAll(!showAll)}
           style={{
-            color: colorScheme?.link || '#0066CC',
-            borderColor: colorScheme?.border || '#E5E5E5',
-            ...buttonTypographyStyles
+            color: isMobile ? colorScheme?.text : (colorScheme?.link || '#0066CC'),
+            borderColor: colorScheme?.text || '#000000',
+            backgroundColor: isMobile ? 'transparent' : colorScheme?.background,
+            ...buttonTypographyStyles,
+            fontSize: isMobile ? '16px' : buttonTypographyStyles.fontSize,
+            width: isMobile ? '100%' : 'auto'
           }}
-          className="px-6 py-3 border border-gray-900 rounded-lg font-medium hover:bg-gray-50 transition"
+          className={`${isMobile ? 'w-full px-4 py-3.5' : 'px-6 py-3'} border rounded-lg font-medium transition ${
+            isMobile 
+              ? 'border-black hover:bg-gray-100' 
+              : 'border-gray-900 hover:bg-gray-50'
+          }`}
         >
           {showAll ? `Show less` : `Show all ${displayAmenities.length} amenities`}
         </button>
