@@ -50,6 +50,25 @@ namespace WebsiteBuilderAPI.DTOs.Checkout
         [StringLength(100, ErrorMessage = "Apartment info cannot exceed 100 characters")]
         public string? Apartment { get; set; }
 
+        // Indicates whether user provided a different billing address than contact
+        public bool BillingDifferent { get; set; } = false;
+
+        // ========== Contact Address (Primary address used for contact/shipping) ==========
+        [StringLength(255, ErrorMessage = "Contact address cannot exceed 255 characters")]
+        public string? ContactAddress { get; set; }
+
+        [StringLength(100, ErrorMessage = "Contact city cannot exceed 100 characters")]
+        public string? ContactCity { get; set; }
+
+        [StringLength(100, ErrorMessage = "Contact state cannot exceed 100 characters")]
+        public string? ContactState { get; set; }
+
+        [StringLength(20, ErrorMessage = "Contact postal code cannot exceed 20 characters")]
+        public string? ContactPostalCode { get; set; }
+
+        [StringLength(100, ErrorMessage = "Contact apartment info cannot exceed 100 characters")]
+        public string? ContactApartment { get; set; }
+
         [StringLength(100, ErrorMessage = "Company name cannot exceed 100 characters")]
         public string? CompanyName { get; set; }
 

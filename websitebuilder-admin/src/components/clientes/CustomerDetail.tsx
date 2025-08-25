@@ -422,10 +422,59 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
   // Country mapping helpers
   const mapCountryNameToIso = (input: string): string => {
     if (!input) return '';
-    const isoFromDirect = Object.entries(countries).find(([iso, c]) => iso.toLowerCase() === input.toLowerCase());
-    if (isoFromDirect) return isoFromDirect[0];
-    const found = Object.entries(countries).find(([, c]) => c.name.toLowerCase() === input.toLowerCase());
-    return found ? found[0] : input; // return input if already ISO
+    const trimmed = input.trim();
+    // 1) If it's already an ISO like 'US'
+    const isoDirect = Object.keys(countries).find(
+      iso => iso.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (isoDirect) return isoDirect;
+
+    // 2) Try English names (from countries map)
+    const byEnglishName = Object.entries(countries).find(([, c]) => c.name.toLowerCase() === trimmed.toLowerCase());
+    if (byEnglishName) return byEnglishName[0];
+
+    // 3) Try common Spanish names → ISO
+    const spanishToIso: Record<string, string> = {
+      'republica dominicana': 'DO', 'república dominicana': 'DO',
+      'estados unidos': 'US', 'eeuu': 'US', 'ee.uu.': 'US',
+      'puerto rico': 'PR',
+      'el salvador': 'SV',
+      'guatemala': 'GT',
+      'honduras': 'HN',
+      'nicaragua': 'NI',
+      'costa rica': 'CR',
+      'panama': 'PA', 'panamá': 'PA',
+      'mexico': 'MX', 'méxico': 'MX',
+      'colombia': 'CO',
+      'peru': 'PE', 'perú': 'PE',
+      'chile': 'CL',
+      'argentina': 'AR',
+      'espana': 'ES', 'españa': 'ES',
+      'canada': 'CA', 'canadá': 'CA',
+      'belice': 'BZ',
+      'haiti': 'HT', 'haití': 'HT',
+      'trinidad y tobago': 'TT',
+      'barbados': 'BB',
+      'ecuador': 'EC',
+      'guyana': 'GY',
+      'paraguay': 'PY',
+      'surinam': 'SR', 'surinamés': 'SR',
+      'uruguay': 'UY',
+      'venezuela': 'VE',
+      'portugal': 'PT',
+      'francia': 'FR',
+      'italia': 'IT',
+      'alemania': 'DE',
+      'reino unido': 'GB'
+    };
+    const lower = trimmed.toLowerCase();
+    if (spanishToIso[lower]) return spanishToIso[lower];
+
+    // 4) If it looks like a two-letter code, uppercase it
+    if (/^[a-z]{2}$/i.test(trimmed)) return trimmed.toUpperCase();
+
+    // 5) Fallback: leave as-is (UI select will allow user to fix)
+    return trimmed;
   };
   const mapIsoToCountryName = (iso: string): string => {
     if (!iso) return '';

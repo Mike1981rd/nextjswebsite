@@ -265,6 +265,29 @@ namespace WebsiteBuilderAPI.Controllers
                         passwordEmailSent = true;
                     }
 
+                    // Resolve contact and billing address intent from DTO
+                    var contactStreet = string.IsNullOrWhiteSpace(dto.ContactAddress) 
+                        ? (dto.BillingDifferent ? null : dto.Address) 
+                        : dto.ContactAddress;
+                    var contactApartment = string.IsNullOrWhiteSpace(dto.ContactApartment) ? null : dto.ContactApartment;
+                    var contactCity = string.IsNullOrWhiteSpace(dto.ContactCity) 
+                        ? (dto.BillingDifferent ? null : dto.City) 
+                        : dto.ContactCity;
+                    var contactState = string.IsNullOrWhiteSpace(dto.ContactState) 
+                        ? (dto.BillingDifferent ? null : dto.State) 
+                        : dto.ContactState;
+                    var contactPostalCode = string.IsNullOrWhiteSpace(dto.ContactPostalCode) 
+                        ? (dto.BillingDifferent ? null : dto.PostalCode) 
+                        : dto.ContactPostalCode;
+                    var contactCountry = dto.Country; // Country already provided at top-level
+
+                    var billingStreet = dto.BillingDifferent ? dto.Address : null;
+                    var billingApartment = dto.BillingDifferent ? dto.Apartment : null;
+                    var billingCity = dto.BillingDifferent ? dto.City : null;
+                    var billingState = dto.BillingDifferent ? dto.State : null;
+                    var billingPostalCode = dto.BillingDifferent ? dto.PostalCode : null;
+                    var billingCountry = dto.BillingDifferent ? dto.Country : null;
+
                     customer = new Customer
                     {
                         Username = dto.Email, // Username IS the email for user-friendliness
@@ -280,13 +303,13 @@ namespace WebsiteBuilderAPI.Controllers
                         CompanyId = companyId,
                         CustomerId = GenerateCustomerId(),
                         PreferredCurrency = dto.Currency,
-                        // Persist billing fields if user provided an address
-                        BillingAddress = string.IsNullOrWhiteSpace(dto.Address) ? null : dto.Address,
-                        BillingApartment = string.IsNullOrWhiteSpace(dto.Apartment) ? null : dto.Apartment,
-                        BillingCity = string.IsNullOrWhiteSpace(dto.City) ? null : dto.City,
-                        BillingState = string.IsNullOrWhiteSpace(dto.State) ? null : dto.State,
-                        BillingPostalCode = string.IsNullOrWhiteSpace(dto.PostalCode) ? null : dto.PostalCode,
-                        BillingCountry = string.IsNullOrWhiteSpace(dto.Country) ? null : dto.Country,
+                        // Persist billing fields ONLY if different billing address provided
+                        BillingAddress = billingStreet,
+                        BillingApartment = billingApartment,
+                        BillingCity = billingCity,
+                        BillingState = billingState,
+                        BillingPostalCode = billingPostalCode,
+                        BillingCountry = billingCountry,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };
@@ -296,20 +319,41 @@ namespace WebsiteBuilderAPI.Controllers
                     
                     _logger.LogInformation("Customer created with ID: {CustomerId}", customer.Id);
 
-                    // Create default Billing address record if provided
-                    if (!string.IsNullOrWhiteSpace(dto.Address))
+                    // Create default CONTACT address record if provided
+                    if (!string.IsNullOrWhiteSpace(contactStreet))
+                    {
+                        var address = new CustomerAddress
+                        {
+                            CustomerId = customer.Id,
+                            Type = "Home",
+                            Label = $"{dto.FirstName} {dto.LastName} - Contact",
+                            Street = contactStreet,
+                            Apartment = contactApartment,
+                            City = contactCity ?? string.Empty,
+                            State = contactState,
+                            PostalCode = contactPostalCode ?? string.Empty,
+                            Country = contactCountry,
+                            IsDefault = true,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _context.CustomerAddresses.Add(address);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    // Create Billing address record if billingDifferent and provided
+                    if (!string.IsNullOrWhiteSpace(billingStreet))
                     {
                         var address = new CustomerAddress
                         {
                             CustomerId = customer.Id,
                             Type = "Billing",
                             Label = $"{dto.FirstName} {dto.LastName} - Billing",
-                            Street = dto.Address,
-                            Apartment = dto.Apartment,
-                            City = dto.City ?? "",
-                            State = dto.State,
-                            PostalCode = dto.PostalCode ?? "",
-                            Country = dto.Country,
+                            Street = billingStreet,
+                            Apartment = billingApartment,
+                            City = billingCity ?? "",
+                            State = billingState,
+                            PostalCode = billingPostalCode ?? "",
+                            Country = billingCountry,
                             IsDefault = true,
                             CreatedAt = DateTime.UtcNow
                         };
@@ -340,29 +384,88 @@ namespace WebsiteBuilderAPI.Controllers
                     customer.TaxId = dto.TaxId ?? customer.TaxId;
                     customer.UpdatedAt = DateTime.UtcNow;
                     
-                    // Update billing fields only if values provided (do not overwrite with empties)
-                    if (!string.IsNullOrWhiteSpace(dto.Address)) customer.BillingAddress = dto.Address;
-                    if (!string.IsNullOrWhiteSpace(dto.Apartment)) customer.BillingApartment = dto.Apartment;
-                    if (!string.IsNullOrWhiteSpace(dto.City)) customer.BillingCity = dto.City;
-                    if (!string.IsNullOrWhiteSpace(dto.State)) customer.BillingState = dto.State;
-                    if (!string.IsNullOrWhiteSpace(dto.PostalCode)) customer.BillingPostalCode = dto.PostalCode;
-                    if (!string.IsNullOrWhiteSpace(dto.Country)) customer.BillingCountry = dto.Country;
+                    // Resolve contact and billing addresses from DTO
+                    var updContactStreet = string.IsNullOrWhiteSpace(dto.ContactAddress) 
+                        ? (dto.BillingDifferent ? null : dto.Address) 
+                        : dto.ContactAddress;
+                    var updContactApartment = string.IsNullOrWhiteSpace(dto.ContactApartment) ? null : dto.ContactApartment;
+                    var updContactCity = string.IsNullOrWhiteSpace(dto.ContactCity) 
+                        ? (dto.BillingDifferent ? null : dto.City) 
+                        : dto.ContactCity;
+                    var updContactState = string.IsNullOrWhiteSpace(dto.ContactState) 
+                        ? (dto.BillingDifferent ? null : dto.State) 
+                        : dto.ContactState;
+                    var updContactPostalCode = string.IsNullOrWhiteSpace(dto.ContactPostalCode) 
+                        ? (dto.BillingDifferent ? null : dto.PostalCode) 
+                        : dto.ContactPostalCode;
+
+                    var updBillingStreet = dto.BillingDifferent ? dto.Address : null;
+                    var updBillingApartment = dto.BillingDifferent ? dto.Apartment : null;
+                    var updBillingCity = dto.BillingDifferent ? dto.City : null;
+                    var updBillingState = dto.BillingDifferent ? dto.State : null;
+                    var updBillingPostalCode = dto.BillingDifferent ? dto.PostalCode : null;
+
+                    // Update billing fields only if billingDifferent and values provided
+                    if (!string.IsNullOrWhiteSpace(updBillingStreet)) customer.BillingAddress = updBillingStreet;
+                    if (!string.IsNullOrWhiteSpace(updBillingApartment)) customer.BillingApartment = updBillingApartment;
+                    if (!string.IsNullOrWhiteSpace(updBillingCity)) customer.BillingCity = updBillingCity;
+                    if (!string.IsNullOrWhiteSpace(updBillingState)) customer.BillingState = updBillingState;
+                    if (!string.IsNullOrWhiteSpace(updBillingPostalCode)) customer.BillingPostalCode = updBillingPostalCode;
+                    if (!string.IsNullOrWhiteSpace(dto.Country) && dto.BillingDifferent) customer.BillingCountry = dto.Country;
 
                     await _context.SaveChangesAsync();
 
-                    // Upsert default Billing address record if user provided address
-                    if (!string.IsNullOrWhiteSpace(dto.Address))
+                    // Upsert CONTACT address record (Home)
+                    if (!string.IsNullOrWhiteSpace(updContactStreet))
+                    {
+                        var existingHome = await _context.CustomerAddresses
+                            .FirstOrDefaultAsync(a => a.CustomerId == customer.Id && a.Type == "Home" && a.IsDefault);
+
+                        if (existingHome != null)
+                        {
+                            existingHome.Street = updContactStreet;
+                            existingHome.Apartment = updContactApartment;
+                            existingHome.City = updContactCity ?? existingHome.City;
+                            existingHome.State = updContactState;
+                            existingHome.PostalCode = updContactPostalCode ?? existingHome.PostalCode;
+                            existingHome.Country = dto.Country;
+                            existingHome.UpdatedAt = DateTime.UtcNow;
+                            await _context.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            var address = new CustomerAddress
+                            {
+                                CustomerId = customer.Id,
+                                Type = "Home",
+                                Label = $"{customer.FirstName} {customer.LastName} - Contact",
+                                Street = updContactStreet,
+                                Apartment = updContactApartment,
+                                City = updContactCity ?? string.Empty,
+                                State = updContactState,
+                                PostalCode = updContactPostalCode ?? string.Empty,
+                                Country = dto.Country,
+                                IsDefault = true,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.CustomerAddresses.Add(address);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+                    // Upsert default Billing address record if user provided billing address
+                    if (!string.IsNullOrWhiteSpace(updBillingStreet))
                     {
                         var existingBilling = await _context.CustomerAddresses
                             .FirstOrDefaultAsync(a => a.CustomerId == customer.Id && a.Type == "Billing" && a.IsDefault);
 
                         if (existingBilling != null)
                         {
-                            existingBilling.Street = dto.Address;
-                            existingBilling.Apartment = dto.Apartment;
-                            existingBilling.City = dto.City ?? existingBilling.City;
-                            existingBilling.State = dto.State;
-                            existingBilling.PostalCode = dto.PostalCode ?? existingBilling.PostalCode;
+                            existingBilling.Street = updBillingStreet;
+                            existingBilling.Apartment = updBillingApartment;
+                            existingBilling.City = updBillingCity ?? existingBilling.City;
+                            existingBilling.State = updBillingState;
+                            existingBilling.PostalCode = updBillingPostalCode ?? existingBilling.PostalCode;
                             existingBilling.Country = dto.Country;
                             existingBilling.UpdatedAt = DateTime.UtcNow;
                             await _context.SaveChangesAsync();
@@ -374,11 +477,11 @@ namespace WebsiteBuilderAPI.Controllers
                                 CustomerId = customer.Id,
                                 Type = "Billing",
                                 Label = $"{customer.FirstName} {customer.LastName} - Billing",
-                                Street = dto.Address,
-                                Apartment = dto.Apartment,
-                                City = dto.City ?? "",
-                                State = dto.State,
-                                PostalCode = dto.PostalCode ?? "",
+                                Street = updBillingStreet,
+                                Apartment = updBillingApartment,
+                                City = updBillingCity ?? "",
+                                State = updBillingState,
+                                PostalCode = updBillingPostalCode ?? "",
                                 Country = dto.Country,
                                 IsDefault = true,
                                 CreatedAt = DateTime.UtcNow

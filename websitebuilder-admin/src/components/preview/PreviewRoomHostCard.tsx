@@ -7,19 +7,31 @@ import { fetchRoomData } from '@/lib/api/rooms';
 interface RoomHostCardConfig {
   enabled: boolean;
   title: string;
-  hostName: string;
-  hostImage: string;
-  hostSince: string;
-  reviewCount: number;
-  rating: number;
-  responseRate: number;
-  responseTime: string;
-  isSuperhost: boolean;
-  isVerified: boolean;
-  bio: string;
-  languages: string[];
-  work: string;
-  location: string;
+  hostName?: string;
+  hostImage?: string;
+  hostSince?: string;
+  reviewCount?: number;
+  rating?: number;
+  responseRate?: number;
+  responseTime?: string;
+  isSuperhost?: boolean;
+  isVerified?: boolean;
+  bio?: string;
+  languages?: string[];
+  work?: string;
+  location?: string;
+  // Style settings
+  buttonColor?: string;
+  buttonTextColor?: string;
+  cardColor?: string;
+  cardTextColor?: string;
+  cardBorderColor?: string;
+  borderRadius?: number;
+  typography?: string;
+  fontSize?: string;
+  fontWeight?: string;
+  topPadding?: number;
+  bottomPadding?: number;
 }
 
 interface PreviewRoomHostCardProps {
@@ -56,6 +68,17 @@ export default function PreviewRoomHostCard({
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [deviceView]);
+
+  // Load Google Font if specified
+  useEffect(() => {
+    if (config.typography && config.typography !== 'font-sans' && config.typography !== 'font-serif' && config.typography !== 'font-mono') {
+      const fontName = config.typography.replace(' ', '+');
+      const link = document.createElement('link');
+      link.href = `https://fonts.googleapis.com/css2?family=${fontName}:wght@300;400;500;600;700&display=swap`;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+  }, [config.typography]);
 
   // Auto-fetch room data for both editor and preview
   useEffect(() => {
@@ -144,170 +167,266 @@ export default function PreviewRoomHostCard({
     rating: currentHost.overallRating || config.rating
   } : config;
 
+  // Extract style settings with defaults
+  const styles = {
+    buttonColor: config.buttonColor || '#2563eb',
+    buttonTextColor: config.buttonTextColor || '#ffffff',
+    cardColor: config.cardColor || '#ffffff',
+    cardTextColor: config.cardTextColor || '#111827',
+    cardBorderColor: config.cardBorderColor || '#e5e7eb',
+    borderRadius: config.borderRadius || 12,
+    typography: config.typography || 'Roboto',
+    fontSize: config.fontSize || 'text-base',
+    fontWeight: config.fontWeight || 'font-normal',
+    topPadding: config.topPadding || 32,
+    bottomPadding: config.bottomPadding || 32
+  };
+  
+  // Build font family string
+  const fontFamily = styles.typography === 'font-sans' ? 'sans-serif' :
+                    styles.typography === 'font-serif' ? 'serif' :
+                    styles.typography === 'font-mono' ? 'monospace' :
+                    `'${styles.typography}', sans-serif`;
+
   return (
-    <div className="container mx-auto px-6 py-8 border-t">
+    <div 
+      className="container mx-auto px-6 border-t"
+      style={{ 
+        paddingTop: `${styles.topPadding}px`,
+        paddingBottom: `${styles.bottomPadding}px`,
+        fontFamily: fontFamily
+      }}
+    >
       <h2 className="text-xl font-semibold mb-6">
         {displayData.title || 'Meet your Host'}
       </h2>
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Host card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="flex flex-col items-center text-center">
-            <div className="relative mb-4">
-              <img
-                src={displayData.hostImage || 'https://a0.muscache.com/defaults/user_pic-225x225.png?v=3'}
-                alt={displayData.hostName}
-                className="w-32 h-32 rounded-full object-cover"
-              />
-              {displayData.isSuperhost && (
-                <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-lg">
-                  <Award className="w-8 h-8 text-red-500" />
+      <div className="space-y-8">
+        {/* Top section with host card and other info cards */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left column - Host cards stacked */}
+          <div className="space-y-4">
+            {/* Host ID card */}
+            <div 
+              className="shadow-xl overflow-hidden"
+              style={{ 
+                minHeight: '236px', 
+                maxHeight: '236px',
+                backgroundColor: styles.cardColor,
+                borderRadius: `${styles.borderRadius}px`,
+                border: `2px solid ${styles.cardBorderColor}`
+              }}>
+              <div className="flex h-full">
+                {/* Left side - Photo */}
+                <div className="w-44 bg-gradient-to-b from-gray-50 to-gray-100 p-4 flex flex-col items-center justify-center">
+                  <div className="relative">
+                    <img
+                      src={displayData.hostImage || 'https://a0.muscache.com/defaults/user_pic-225x225.png?v=3'}
+                      alt={displayData.hostName}
+                      className="w-[120px] h-[120px] rounded-lg object-cover shadow-md ring-2 ring-white/50"
+                      loading="eager"
+                      decoding="sync"
+                      fetchPriority="high"
+                      style={{ 
+                        imageRendering: '-webkit-optimize-contrast',
+                        WebkitBackfaceVisibility: 'hidden',
+                        transform: 'translateZ(0)'
+                      }}
+                    />
+                    {displayData.isSuperhost && (
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-rose-500 rounded-full p-1.5 shadow-lg">
+                        <Award className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs font-bold mt-3 text-gray-700 tracking-wide">HOST ID</p>
                 </div>
-              )}
+
+                {/* Right side - Info */}
+                <div className="flex-1 p-4 flex flex-col justify-between">
+                  {/* Header */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-xs font-medium" style={{ color: styles.cardTextColor, opacity: 0.7 }}>Certified Host</p>
+                      <h3 className={`text-base font-bold ${styles.fontSize} ${styles.fontWeight}`} style={{ color: styles.cardTextColor }}>{displayData.hostName || 'Host'}</h3>
+                    </div>
+                    {displayData.isSuperhost && (
+                      <span className="px-2 py-0.5 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs font-bold rounded-full">SUPERHOST</span>
+                    )}
+                  </div>
+
+                  {/* Details Grid - No dividers */}
+                  <div className="grid grid-cols-3 gap-x-4 gap-y-1 mt-2.5">
+                    <div>
+                      <p className="text-xs" style={{ color: styles.cardTextColor, opacity: 0.6 }}>Rating</p>
+                      <p className="font-bold text-sm" style={{ color: styles.cardTextColor }}>{displayData.rating || 'N/A'} ⭐</p>
+                    </div>
+                    <div>
+                      <p className="text-xs" style={{ color: styles.cardTextColor, opacity: 0.6 }}>Reviews</p>
+                      <p className="font-bold text-sm" style={{ color: styles.cardTextColor }}>{displayData.reviewCount || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs" style={{ color: styles.cardTextColor, opacity: 0.6 }}>Since</p>
+                      <p className="font-bold text-sm" style={{ color: styles.cardTextColor }}>{displayData.hostSince || 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  {/* Bottom section - No border */}
+                  <div className="flex justify-between items-center mt-2.5">
+                    <div className="flex items-center gap-2">
+                      {displayData.isVerified && (
+                        <div className="flex items-center gap-1">
+                          <Shield className="w-3 h-3 text-green-600" />
+                          <span className="text-xs font-semibold text-green-600">VERIFIED</span>
+                        </div>
+                      )}
+                      <span className="text-xs text-gray-400">ID: #{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <h3 className="text-2xl font-bold mb-1">{displayData.hostName || 'Host'}</h3>
-            {displayData.isSuperhost && (
-              <p className="text-sm font-medium mb-4">Superhost</p>
+            {/* Bio Card - Same dimensions as host card */}
+            {(displayData.bio || displayData.aboutMe) && (
+              <div 
+                className="shadow-xl overflow-hidden"
+                style={{ 
+                  minHeight: '236px', 
+                  maxHeight: '236px',
+                  backgroundColor: styles.cardColor,
+                  borderRadius: `${styles.borderRadius}px`,
+                  border: `2px solid ${styles.cardBorderColor}`
+                }}>
+                <div className="p-6 h-full flex flex-col">
+                  <h3 className={`font-bold mb-3 text-lg ${styles.fontWeight}`} style={{ color: styles.cardTextColor }}>About {displayData.hostName}</h3>
+                  <div className="flex-1 overflow-y-auto">
+                    {displayData.bio && (
+                      <p className={`mb-3 leading-relaxed text-sm ${styles.fontSize}`} style={{ color: styles.cardTextColor, opacity: 0.9 }}>{displayData.bio}</p>
+                    )}
+                    {displayData.aboutMe && (
+                      <p className={`text-sm leading-relaxed ${styles.fontSize}`} style={{ color: styles.cardTextColor, opacity: 0.8 }}>{displayData.aboutMe}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
-          <div className="space-y-3 mt-6 pt-6 border-t">
-            {displayData.reviewCount > 0 && (
-              <div className="flex items-start gap-3">
-                <Star className="w-5 h-5 mt-0.5" />
-                <div>
-                  <p className="font-semibold">{displayData.reviewCount} Reviews</p>
-                  {displayData.rating > 0 && (
-                    <p className="text-sm text-gray-600">{displayData.rating} rating</p>
-                  )}
-                </div>
-              </div>
-            )}
+          {/* Right column - Other info cards */}
+          <div className="space-y-4">
 
-            {displayData.isVerified && (
-              <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 mt-0.5" />
-                <div>
-                  <p className="font-semibold">Identity verified</p>
-                </div>
+          {/* Details & Stats Card */}
+          <div className="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-xl shadow-lg p-5">
+            <div className="grid grid-cols-2 gap-4">
+              {/* Left Column - Personal Info */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Personal</h4>
+                {displayData.location && (
+                  <div className="text-sm">
+                    <p className="text-gray-500 text-xs">Location</p>
+                    <p className="font-semibold text-gray-900">{displayData.location}</p>
+                  </div>
+                )}
+                {displayData.work && (
+                  <div className="text-sm">
+                    <p className="text-gray-500 text-xs">Work</p>
+                    <p className="font-semibold text-gray-900">{displayData.work}</p>
+                  </div>
+                )}
+                {displayData.languages && displayData.languages.length > 0 && (
+                  <div className="text-sm">
+                    <p className="text-gray-500 text-xs">Languages</p>
+                    <p className="font-semibold text-gray-900">
+                      {Array.isArray(displayData.languages) 
+                        ? displayData.languages.join(', ')
+                        : displayData.languages}
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
 
-            {displayData.isSuperhost && (
-              <div className="flex items-start gap-3">
-                <Award className="w-5 h-5 mt-0.5" />
-                <div>
-                  <p className="font-semibold">Superhost</p>
-                  <p className="text-sm text-gray-600">
-                    Superhosts are experienced, highly rated hosts.
-                  </p>
-                </div>
+              {/* Right Column - Host Stats */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Host Stats</h4>
+                {displayData.acceptanceRate > 0 && (
+                  <div className="text-sm">
+                    <p className="text-gray-500 text-xs">Response Rate</p>
+                    <p className="font-semibold text-gray-900">{displayData.acceptanceRate}%</p>
+                  </div>
+                )}
+                {displayData.responseTime && (
+                  <div className="text-sm">
+                    <p className="text-gray-500 text-xs">Response Time</p>
+                    <p className="font-semibold text-gray-900">
+                      {typeof displayData.responseTime === 'number' 
+                        ? `${displayData.responseTime} min`
+                        : displayData.responseTime}
+                    </p>
+                  </div>
+                )}
+                {displayData.hostSince && (
+                  <div className="text-sm">
+                    <p className="text-gray-500 text-xs">Hosting Since</p>
+                    <p className="font-semibold text-gray-900">{displayData.hostSince}</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Host details */}
-        <div className="space-y-6">
-          {/* Bio */}
-          {displayData.bio && (
-            <div>
-              <h3 className="font-semibold mb-2">About {displayData.hostName}</h3>
-              <p className="text-gray-700">{displayData.bio}</p>
             </div>
-          )}
-
-          {/* About Me - Extended Bio */}
-          {displayData.aboutMe && (
-            <div>
-              <h3 className="font-semibold mb-2">More about me</h3>
-              <p className="text-gray-700">{displayData.aboutMe}</p>
-            </div>
-          )}
-
-          {/* Details */}
-          <div className="space-y-2">
-            {displayData.location && (
-              <p className="text-gray-700">
-                <span className="font-medium">Lives in:</span> {displayData.location}
-              </p>
-            )}
-            {displayData.work && (
-              <p className="text-gray-700">
-                <span className="font-medium">My work:</span> {displayData.work}
-              </p>
-            )}
-            {displayData.languages && displayData.languages.length > 0 && (
-              <p className="text-gray-700">
-                <span className="font-medium">Speaks:</span> {
-                  Array.isArray(displayData.languages) 
-                    ? displayData.languages.join(', ')
-                    : displayData.languages
-                }
-              </p>
-            )}
           </div>
 
-          {/* Attributes */}
-          {displayData.attributes && displayData.attributes.length > 0 && (
-            <div>
-              <h3 className="font-semibold mb-2">My attributes</h3>
-              <div className="flex flex-wrap gap-2">
-                {displayData.attributes.map((attr: string, index: number) => (
-                  <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                    {attr}
-                  </span>
-                ))}
+            {/* Attributes & Hobbies Card */}
+            {((displayData.attributes && displayData.attributes.length > 0) || 
+              (displayData.hobbies && displayData.hobbies.length > 0)) && (
+              <div className="bg-gradient-to-br from-yellow-50 via-white to-orange-50 rounded-xl shadow-lg p-5">
+                {displayData.attributes && displayData.attributes.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">Attributes</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {displayData.attributes.map((attr: string, index: number) => (
+                        <span key={index} className="px-3 py-1 bg-white/80 backdrop-blur rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                          {attr}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {displayData.hobbies && displayData.hobbies.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">Hobbies</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {displayData.hobbies.map((hobby: string, index: number) => (
+                        <span key={index} className="px-3 py-1 bg-blue-100/80 backdrop-blur text-blue-700 rounded-full text-sm font-medium shadow-sm">
+                          {hobby}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons Card */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg p-5">
+              <button 
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 font-bold transition shadow-md"
+                style={{
+                  backgroundColor: styles.buttonColor,
+                  color: styles.buttonTextColor,
+                  borderRadius: `${Math.min(styles.borderRadius, 8)}px`
+                }}
+              >
+                <MessageSquare className="w-5 h-5" />
+                Message Host
+              </button>
+              
+              <div className="mt-4 p-3 bg-white/70 rounded-lg">
+                <p className="text-xs text-gray-600 flex items-start gap-1">
+                  <Shield className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                  <span>To protect your payment, never transfer money or communicate outside of the Airbnb website or app.</span>
+                </p>
               </div>
             </div>
-          )}
-
-          {/* Hobbies */}
-          {displayData.hobbies && displayData.hobbies.length > 0 && (
-            <div>
-              <h3 className="font-semibold mb-2">My hobbies</h3>
-              <div className="flex flex-wrap gap-2">
-                {displayData.hobbies.map((hobby: string, index: number) => (
-                  <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
-                    {hobby}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Response info */}
-          <div className="space-y-2">
-            <h3 className="font-semibold mb-2">Host details</h3>
-            {displayData.acceptanceRate > 0 && (
-              <p className="text-gray-700">Response rate: {displayData.acceptanceRate}%</p>
-            )}
-            {displayData.responseTime && (
-              <p className="text-gray-700">Response time: {
-                typeof displayData.responseTime === 'number' 
-                  ? `${displayData.responseTime} minutes`
-                  : displayData.responseTime
-              }</p>
-            )}
-            {displayData.hostSince && (
-              <p className="text-gray-700">Hosting since: {displayData.hostSince}</p>
-            )}
-          </div>
-
-          {/* Message button */}
-          <button className="flex items-center gap-2 px-6 py-3 border border-gray-900 rounded-lg font-medium hover:bg-gray-50 transition">
-            <MessageSquare className="w-5 h-5" />
-            Message Host
-          </button>
-
-          {/* Security note */}
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">
-              <Shield className="w-4 h-4 inline mr-1" />
-              To protect your payment, never transfer money or communicate outside of the Airbnb website or app.
-            </p>
           </div>
         </div>
       </div>

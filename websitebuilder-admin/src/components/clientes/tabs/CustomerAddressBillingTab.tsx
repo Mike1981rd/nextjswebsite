@@ -48,7 +48,7 @@ export default function CustomerAddressBillingTab({
       // Create new address with the field being changed
       onFormChange({ 
         addresses: [{
-          type: 'billing',
+          type: 'shipping',
           addressLine1: '',
           addressLine2: '',
           city: '',
@@ -98,7 +98,7 @@ export default function CustomerAddressBillingTab({
     if (formData.addresses.length === 0) {
       onFormChange({ 
         addresses: [{
-          type: 'billing',
+          type: 'shipping',
           addressLine1: '',
           addressLine2: '',
           city: '',
@@ -316,7 +316,7 @@ export default function CustomerAddressBillingTab({
                       {t('customers.addresses.type', 'Tipo')}
                     </label>
                     <select
-                      value={formData.addresses[0]?.type || 'billing'}
+                      value={formData.addresses[0]?.type || 'shipping'}
                       onChange={(e) => handleAddressChange('type', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
                       style={{ '--tw-ring-color': primaryColor } as any}

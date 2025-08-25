@@ -6,7 +6,7 @@ import {
   Home, Clock, Download, Check, Search, ChevronDown
 } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
-import ProfessionalCalendar from '@/components/availability/ProfessionalCalendar';
+import ProfessionalCalendarMinimal from '@/components/availability/ProfessionalCalendarMinimal';
 import BlockPeriodModal from '@/components/availability/BlockPeriodModal';
 import RulesManager from '@/components/availability/RulesManager';
 
@@ -328,7 +328,7 @@ export default function AvailabilityDashboard() {
                     Ingresos Proyectados
                   </p>
                   <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 mt-1">
-                    ${stats?.projectedRevenue?.toLocaleString() || 0}
+                    ${stats?.projectedRevenue?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
                   </p>
                 </div>
                 <DollarSign className="w-8 h-8 text-indigo-500 opacity-50" />
@@ -358,7 +358,7 @@ export default function AvailabilityDashboard() {
                   >
                     <span>
                       {selectedRoom 
-                        ? `${selectedRoom.name} - ${selectedRoom.roomCode} - $${selectedRoom.basePrice}/noche`
+                        ? `${selectedRoom.name} - ${selectedRoom.roomCode} - $${selectedRoom.basePrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/noche`
                         : 'Selecciona una habitación'}
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
@@ -423,7 +423,7 @@ export default function AvailabilityDashboard() {
                                   <span className="mx-2 text-gray-500">•</span>
                                   <span className="text-gray-600 dark:text-gray-400">{room.roomType}</span>
                                 </div>
-                                <span className="font-semibold">${room.basePrice}</span>
+                                <span className="font-semibold">${room.basePrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                               </div>
                             ))}
                           </>
@@ -452,7 +452,7 @@ export default function AvailabilityDashboard() {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-gray-900 dark:text-white">${room.basePrice}</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">${room.basePrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                             <p className="text-xs text-gray-600 dark:text-gray-400">/noche</p>
                           </div>
                         </div>
@@ -475,7 +475,7 @@ export default function AvailabilityDashboard() {
           {/* Calendar View */}
           <div className="flex-1">
             {selectedRoom ? (
-              <ProfessionalCalendar
+              <ProfessionalCalendarMinimal
                 roomId={selectedRoom.id}
                 roomName={selectedRoom.name}
                 basePrice={selectedRoom.basePrice}

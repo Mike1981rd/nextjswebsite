@@ -7,6 +7,7 @@ import { Plus, Settings, Check, X, AlertCircle, Loader2, Trash2 } from 'lucide-r
 import Image from 'next/image';
 import { useI18n } from '@/contexts/I18nContext';
 import { useCompany } from '@/contexts/CompanyContext';
+import { companyCurrencyApi, type CompanyCurrencySettings, type CurrencyCode } from '@/lib/api/companyCurrency';
 import { paymentService, PaymentProvider as PaymentProviderDto } from '@/lib/api/payment.service';
 // Modal removed - now using full page configuration
 import { toast } from 'react-hot-toast';
@@ -56,6 +57,8 @@ export default function PaymentsTab() {
   const router = useRouter();
   const { company } = useCompany();
   const [providers, setProviders] = useState<PaymentProviderUI[]>([]);
+  const [currencySettings, setCurrencySettings] = useState<CompanyCurrencySettings | null>(null);
+  const [savingCurrency, setSavingCurrency] = useState(false);
   // Remove modal states - now using navigation
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
   const [loading, setLoading] = useState(true);
@@ -117,6 +120,52 @@ export default function PaymentsTab() {
       toast.error(t('payments.error.loading'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Load currency settings for company
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!company?.id) return;
+        const settings = await companyCurrencyApi.get(company.id);
+        setCurrencySettings(settings);
+      } catch (e) {
+        // Silent for now
+      }
+    })();
+  }, [company?.id]);
+
+  const handleCurrencySettingChange = (updates: Partial<CompanyCurrencySettings>) => {
+    setCurrencySettings(prev => prev ? { ...prev, ...updates } : prev);
+  };
+
+  const handleManualRateChange = (code: CurrencyCode, value: string) => {
+    const num = Number(value.replace(',', '.'));
+    setCurrencySettings(prev => prev ? {
+      ...prev,
+      manualRates: { ...prev.manualRates, [code]: isNaN(num) ? 0 : num }
+    } : prev);
+  };
+
+  const handleSaveCurrency = async () => {
+    if (!company?.id || !currencySettings) return;
+    try {
+      setSavingCurrency(true);
+      // Basic validations
+      if (!currencySettings.currencyBase) throw new Error('Missing base currency');
+      const base = currencySettings.currencyBase;
+      const rates = currencySettings.manualRates || {} as Record<CurrencyCode, number>;
+      if (rates[base] !== 1) rates[base] = 1;
+      for (const c of currencySettings.enabledCurrencies) {
+        if (!rates[c] || rates[c] <= 0) throw new Error(`Rate for ${c} must be > 0`);
+      }
+      await companyCurrencyApi.update(company.id, { ...currencySettings, manualRates: rates });
+      toast.success(t('payments.currency.saved', 'Currency settings saved'));
+    } catch (e: any) {
+      toast.error(e?.message || t('payments.currency.error', 'Failed to save currency settings'));
+    } finally {
+      setSavingCurrency(false);
     }
   };
 
@@ -342,6 +391,124 @@ export default function PaymentsTab() {
             </div>
           </button>
         </motion.div>
+      </div>
+
+      {/* Currency Settings - Manual rates */}
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3">
+          {t('payments.currency.title', 'Moneda y Tasas (Manual)')}
+        </h3>
+
+        {currencySettings ? (
+          <div className="space-y-4">
+            {/* Base currency and enabled currencies */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t('payments.currency.base', 'Moneda base')}</label>
+                <select
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                  value={currencySettings.currencyBase}
+                  onChange={(e) => handleCurrencySettingChange({ currencyBase: e.target.value as CurrencyCode })}
+                >
+                  {(['DOP','USD','EUR'] as CurrencyCode[]).map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t('payments.currency.enabled', 'Monedas habilitadas')}</label>
+                <div className="flex gap-3">
+                  {(['DOP','USD','EUR'] as CurrencyCode[]).map(c => (
+                    <label key={c} className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <input
+                        type="checkbox"
+                        checked={currencySettings.enabledCurrencies.includes(c)}
+                        onChange={(e) => {
+                          const set = new Set(currencySettings.enabledCurrencies);
+                          e.target.checked ? set.add(c) : set.delete(c);
+                          handleCurrencySettingChange({ enabledCurrencies: Array.from(set) as CurrencyCode[] });
+                        }}
+                        className="h-4 w-4"
+                        style={{ accentColor: primaryColor }}
+                      />
+                      {c}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Manual rates table */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">{t('payments.currency.rates', 'Tasas relativas a la base')}</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {(['DOP','USD','EUR'] as CurrencyCode[]).map(code => (
+                  <div key={code} className="flex items-center gap-2">
+                    <span className="w-14 text-sm text-gray-700 dark:text-gray-300">{code}</span>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      min={0}
+                      value={currencySettings.manualRates?.[code] ?? (code === currencySettings.currencyBase ? 1 : 0)}
+                      onChange={(e) => handleManualRateChange(code, e.target.value)}
+                      className="flex-1 px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                    />
+                    {code === currencySettings.currencyBase && (
+                      <span className="text-xs text-gray-500">= 1</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                {t('payments.currency.help', 'Defina cuánto vale 1 (base) en cada moneda. La base debe ser 1.')}
+              </p>
+            </div>
+
+            {/* Lock and rounding */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t('payments.currency.lock', 'Bloquear hasta')}</label>
+                <input
+                  type="datetime-local"
+                  value={currencySettings.lockedUntil ? currencySettings.lockedUntil.substring(0,16) : ''}
+                  onChange={(e) => handleCurrencySettingChange({ lockedUntil: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{t('payments.currency.rounding', 'Decimales por moneda')}</label>
+                <div className="flex gap-3">
+                  {(['DOP','USD','EUR'] as CurrencyCode[]).map(code => (
+                    <div key={code} className="flex items-center gap-1 text-sm">
+                      <span className="w-10">{code}</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={4}
+                        value={currencySettings.roundingRule?.[code] ?? 2}
+                        onChange={(e) => handleCurrencySettingChange({ roundingRule: { ...(currencySettings.roundingRule || {}), [code]: Number(e.target.value) } })}
+                        className="w-16 px-2 py-1 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleSaveCurrency}
+                disabled={savingCurrency}
+                className="px-4 py-2 rounded-lg text-white"
+                style={{ backgroundColor: primaryColor, opacity: savingCurrency ? 0.7 : 1 }}
+              >
+                {savingCurrency ? t('common.saving', 'Guardando...') : t('common.save', 'Guardar')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500 dark:text-gray-400">{t('payments.currency.loading', 'Cargando configuración de moneda...')}</div>
+        )}
       </div>
 
       {/* Modals removed - now using full page configuration */}

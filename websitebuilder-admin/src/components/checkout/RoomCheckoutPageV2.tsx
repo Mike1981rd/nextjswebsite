@@ -314,12 +314,20 @@ export default function RoomCheckoutPageV2() {
         password: createAccount ? password : undefined,
         subscribeToNewsletter: subscribeNewsletter,
         
-        // Address in DTO: billing when billingDifferent, otherwise contact address
-        address: billingDifferent ? (address || undefined) : (contactAddress || undefined),
-        city: billingDifferent ? (city || undefined) : (contactCity || undefined),
-        state: billingDifferent ? (state || undefined) : (contactState || undefined),
-        postalCode: billingDifferent ? (postalCode || undefined) : (contactPostalCode || undefined),
-        apartment: billingDifferent ? (apartment || undefined) : (contactApartment || undefined),
+        // Address data
+        // Billing section (used only when different billing is selected)
+        address: billingDifferent ? (address || undefined) : undefined,
+        city: billingDifferent ? (city || undefined) : undefined,
+        state: billingDifferent ? (state || undefined) : undefined,
+        postalCode: billingDifferent ? (postalCode || undefined) : undefined,
+        apartment: billingDifferent ? (apartment || undefined) : undefined,
+        // Contact address always sent via dedicated fields
+        billingDifferent,
+        contactAddress: contactAddress || undefined,
+        contactApartment: contactApartment || undefined,
+        contactCity: contactCity || undefined,
+        contactState: contactState || undefined,
+        contactPostalCode: contactPostalCode || undefined,
         
         // Tax Document
         taxDocumentType,
