@@ -129,9 +129,26 @@ export default function PaymentsTab() {
       try {
         if (!company?.id) return;
         const settings = await companyCurrencyApi.get(company.id);
+        console.log('Currency settings received from backend:', settings);
+        console.log('Manual rates:', settings.manualRates);
+        
+        // Ensure manualRates is properly initialized
+        if (!settings.manualRates || Object.keys(settings.manualRates).length === 0) {
+          console.warn('Manual rates are empty, initializing with defaults');
+          settings.manualRates = {} as Record<CurrencyCode, number>;
+        }
+        
+        // Ensure all currencies have a rate value
+        const allCurrencies = ['DOP', 'USD', 'EUR'] as CurrencyCode[];
+        for (const currency of allCurrencies) {
+          if (settings.manualRates[currency] === undefined || settings.manualRates[currency] === null) {
+            console.log(`Rate for ${currency} is undefined/null, keeping as is for user to set`);
+          }
+        }
+        
         setCurrencySettings(settings);
       } catch (e) {
-        // Silent for now
+        console.error('Error loading currency settings:', e);
       }
     })();
   }, [company?.id]);
@@ -180,10 +197,21 @@ export default function PaymentsTab() {
   };
 
   const handleManualRateChange = (code: CurrencyCode, value: string) => {
-    // Do not coerce to 0 while editing, ignore empty
-    if (value === '' || value === '-') return;
+    // Allow empty value for editing
+    if (value === '') {
+      setCurrencySettings(prev => prev ? {
+        ...prev,
+        manualRates: { ...prev.manualRates, [code]: undefined as any }
+      } : prev);
+      return;
+    }
+    
+    // Allow minus sign for negative values temporarily
+    if (value === '-' || value === '.') return;
+    
     const num = Number(value.replace(',', '.'));
-    if (isNaN(num)) return;
+    if (isNaN(num) || num < 0) return;
+    
     setCurrencySettings(prev => prev ? {
       ...prev,
       manualRates: { ...prev.manualRates, [code]: num }
@@ -197,14 +225,35 @@ export default function PaymentsTab() {
       // Basic validations
       if (!currencySettings.currencyBase) throw new Error('Missing base currency');
       const base = currencySettings.currencyBase;
-      const rates = currencySettings.manualRates || {} as Record<CurrencyCode, number>;
-      if (rates[base] !== 1) rates[base] = 1;
-      for (const c of currencySettings.enabledCurrencies) {
-        if (!rates[c] || rates[c] <= 0) throw new Error(`Rate for ${c} must be > 0`);
+      const rates = { ...currencySettings.manualRates } as Record<CurrencyCode, number>;
+      
+      // Ensure base currency is always 1
+      rates[base] = 1;
+      
+      // Check that all currencies (except base) have valid rates
+      const allCurrencies = ['DOP', 'USD', 'EUR'] as CurrencyCode[];
+      for (const currency of allCurrencies) {
+        if (currency !== base) {
+          // If rate is undefined, null, or 0, throw error
+          if (!rates[currency] || rates[currency] <= 0) {
+            throw new Error(`La tasa para ${currency} debe ser mayor que 0`);
+          }
+        }
       }
+      
+      // Check enabled currencies specifically
+      for (const c of currencySettings.enabledCurrencies) {
+        if (c !== base && (!rates[c] || rates[c] <= 0)) {
+          throw new Error(`La tasa para ${c} debe ser mayor que 0`);
+        }
+      }
+      
+      console.log('Sending rates to backend:', rates);
       await companyCurrencyApi.update(company.id, { ...currencySettings, manualRates: rates });
       // Refetch to reflect persisted values
       const fresh = await companyCurrencyApi.get(company.id);
+      console.log('Fresh settings after save:', fresh);
+      console.log('Fresh manual rates:', fresh.manualRates);
       setCurrencySettings(fresh);
       toast.success(t('payments.currency.saved', 'Currency settings saved'));
     } catch (e: any) {
@@ -500,9 +549,10 @@ export default function PaymentsTab() {
                     <input
                       type="number"
                       step="0.0001"
-                      min={0}
-                      value={currencySettings.manualRates?.[code] ?? 0}
+                      min={0.0001}
+                      value={currencySettings.manualRates && currencySettings.manualRates[code] !== undefined && currencySettings.manualRates[code] !== null ? currencySettings.manualRates[code] : ''}
                       onChange={(e) => handleManualRateChange(code, e.target.value)}
+                      placeholder="0.00"
                       className="w-28 text-center px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">{code}</span>

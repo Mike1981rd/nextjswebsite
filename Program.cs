@@ -118,7 +118,8 @@ try
         {
             // Configure JSON serialization to use camelCase for property names
             options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
-            options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+            // Don't change dictionary keys - keep them as-is (important for currency codes like USD, EUR, DOP)
+            options.JsonSerializerOptions.DictionaryKeyPolicy = null;
             // Serialize enums as strings instead of numbers
             options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
         });

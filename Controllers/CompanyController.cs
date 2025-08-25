@@ -357,12 +357,14 @@ namespace WebsiteBuilderAPI.Controllers
         /// </summary>
         [HttpPut("{companyId}/currency-settings")]
         [RequirePermission("company", "update")]
-        public async Task<ActionResult> UpdateCurrencySettings([FromRoute] int companyId, [FromBody] CurrencySettingsDto request)
+        public async Task<ActionResult<CurrencySettingsDto>> UpdateCurrencySettings([FromRoute] int companyId, [FromBody] CurrencySettingsDto request)
         {
             try
             {
                 await _companyService.UpdateCurrencySettingsAsync(companyId, request);
-                return Ok(new { message = "Currency settings updated" });
+                // Return the updated settings
+                var updatedSettings = await _companyService.GetCurrencySettingsAsync(companyId);
+                return Ok(updatedSettings);
             }
             catch (ArgumentException ex)
             {

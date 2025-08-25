@@ -10,5 +10,12 @@ namespace WebsiteBuilderAPI.DTOs.Company
         public Dictionary<string, decimal> ManualRates { get; set; } = new Dictionary<string, decimal>(); // relative to base
         public DateTime? LockedUntil { get; set; }
         public Dictionary<string, int>? RoundingRule { get; set; }
+        
+        public CurrencySettingsDto()
+        {
+            EnabledCurrencies = new List<string>();
+            ManualRates = new Dictionary<string, decimal>();
+            RoundingRule = new Dictionary<string, int>();
+        }
     }
 }

@@ -408,17 +408,62 @@ namespace WebsiteBuilderAPI.Services
                 : new List<string> { baseCurrency };
             if (!enabled.Contains(baseCurrency)) enabled.Add(baseCurrency);
 
+            _logger.LogInformation("Loading currency settings - Base: {Base}, EnabledJson: {Json}", baseCurrency, company.EnabledCurrenciesJson);
+            _logger.LogInformation("ManualRatesJson from DB: {Rates}", company.ManualRatesJson);
+
             var manualRates = !string.IsNullOrWhiteSpace(company.ManualRatesJson)
                 ? JsonSerializer.Deserialize<Dictionary<string, decimal>>(company.ManualRatesJson!) ?? new Dictionary<string, decimal>()
                 : new Dictionary<string, decimal>();
-            if (!manualRates.ContainsKey(baseCurrency)) manualRates[baseCurrency] = 1m;
+            
+            // Ensure base currency is always 1
+            manualRates[baseCurrency] = 1m;
+            
+            // Initialize default rates for all supported currencies if not present
+            // Default rates (approximate as of 2025)
+            var defaultRates = new Dictionary<string, Dictionary<string, decimal>>
+            {
+                ["USD"] = new Dictionary<string, decimal> { ["USD"] = 1m, ["DOP"] = 61m, ["EUR"] = 0.95m },
+                ["DOP"] = new Dictionary<string, decimal> { ["USD"] = 0.0164m, ["DOP"] = 1m, ["EUR"] = 0.0156m },
+                ["EUR"] = new Dictionary<string, decimal> { ["USD"] = 1.05m, ["DOP"] = 64m, ["EUR"] = 1m }
+            };
+            
+            // Initialize missing rates with sensible defaults
+            var supportedCurrencies = new[] { "USD", "DOP", "EUR" };
+            foreach (var currency in supportedCurrencies)
+            {
+                if (currency != baseCurrency && !manualRates.ContainsKey(currency))
+                {
+                    // Try to get default rate for this currency relative to base
+                    if (defaultRates.ContainsKey(baseCurrency) && defaultRates[baseCurrency].ContainsKey(currency))
+                    {
+                        manualRates[currency] = defaultRates[baseCurrency][currency];
+                        _logger.LogInformation("Initialized default rate for {Currency}: {Rate}", currency, manualRates[currency]);
+                    }
+                    else
+                    {
+                        // Fallback to a reasonable default
+                        manualRates[currency] = 1m;
+                        _logger.LogInformation("Initialized fallback rate for {Currency}: 1", currency);
+                    }
+                }
+            }
+            
+            _logger.LogInformation("Final manual rates being returned: {Rates}", JsonSerializer.Serialize(manualRates));
 
             var rounding = !string.IsNullOrWhiteSpace(company.CurrencyRoundingRuleJson)
                 ? JsonSerializer.Deserialize<Dictionary<string, int>>(company.CurrencyRoundingRuleJson!) ?? new Dictionary<string, int>()
                 : new Dictionary<string, int>();
-            if (!rounding.ContainsKey(baseCurrency)) rounding[baseCurrency] = 2;
+            
+            // Initialize default rounding rules for all currencies
+            foreach (var currency in supportedCurrencies)
+            {
+                if (!rounding.ContainsKey(currency))
+                {
+                    rounding[currency] = 2; // Default to 2 decimal places
+                }
+            }
 
-            return new CurrencySettingsDto
+            var dto = new CurrencySettingsDto
             {
                 CurrencyBase = baseCurrency,
                 EnabledCurrencies = enabled,
@@ -426,6 +471,10 @@ namespace WebsiteBuilderAPI.Services
                 LockedUntil = company.CurrencyLockedUntil,
                 RoundingRule = rounding
             };
+            
+            _logger.LogInformation("DTO being returned: {DTO}", JsonSerializer.Serialize(dto));
+            
+            return dto;
         }
 
         public async Task UpdateCurrencySettingsAsync(int companyId, CurrencySettingsDto settings)
@@ -433,7 +482,21 @@ namespace WebsiteBuilderAPI.Services
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             if (string.IsNullOrWhiteSpace(settings.CurrencyBase)) throw new ArgumentException("CurrencyBase is required");
             if (!settings.EnabledCurrencies.Contains(settings.CurrencyBase)) settings.EnabledCurrencies.Add(settings.CurrencyBase);
-            if (!settings.ManualRates.ContainsKey(settings.CurrencyBase)) settings.ManualRates[settings.CurrencyBase] = 1m;
+            
+            // Ensure base currency is always 1
+            settings.ManualRates[settings.CurrencyBase] = 1m;
+            
+            // Validate that all enabled currencies have rates
+            foreach (var currency in settings.EnabledCurrencies)
+            {
+                if (!settings.ManualRates.ContainsKey(currency) || settings.ManualRates[currency] <= 0)
+                {
+                    if (currency != settings.CurrencyBase)
+                    {
+                        throw new ArgumentException($"Rate for {currency} must be greater than 0");
+                    }
+                }
+            }
 
             var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
             if (company == null) throw new InvalidOperationException("Company not found");
