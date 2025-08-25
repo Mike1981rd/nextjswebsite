@@ -16,6 +16,7 @@ interface RoomAmenitiesConfig {
   horizontalSpacing: number;
   verticalSpacing: number;
   titleSpacing: number;
+  mobileTitleSpacing?: number;
   headingSize?: number;
   headingWeight?: string;
   headingItalic?: boolean;
@@ -36,6 +37,7 @@ const getDefaultConfig = (): RoomAmenitiesConfig => ({
   horizontalSpacing: 16,
   verticalSpacing: 16,
   titleSpacing: 24,
+  mobileTitleSpacing: 16,
   headingSize: 20,
   headingWeight: '600',
   headingItalic: false,
@@ -257,10 +259,10 @@ export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorPr
             </p>
           </div>
 
-          {/* Title Spacing Slider */}
+          {/* Title Spacing Slider - Desktop */}
           <div>
             <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
-              Title spacing
+              Title spacing (Desktop)
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -281,6 +283,35 @@ export default function RoomAmenitiesEditor({ sectionId }: RoomAmenitiesEditorPr
               <span>Normal</span>
               <span>Far</span>
             </div>
+          </div>
+
+          {/* Title Spacing Slider - Mobile */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Title spacing (Mobile)
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="8"
+                max="60"
+                step="4"
+                value={localConfig.mobileTitleSpacing || 16}
+                onChange={(e) => handleChange('mobileTitleSpacing', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.mobileTitleSpacing || 16}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Close</span>
+              <span>Normal</span>
+              <span>Far</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Space between title and content on mobile devices
+            </p>
           </div>
 
           {/* Horizontal Spacing Slider */}

@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, User, Search } from 'lucide-react';
 interface RoomHostCardConfig {
   enabled: boolean;
   title: string;
+  showMessageButton?: boolean;
   // Style settings
   buttonColor: string;
   buttonTextColor: string;
@@ -28,6 +29,7 @@ interface RoomHostCardEditorProps {
 const getDefaultConfig = (): RoomHostCardConfig => ({
   enabled: true,
   title: 'Meet your Host',
+  showMessageButton: true,
   // Style defaults
   buttonColor: '#2563eb',
   buttonTextColor: '#ffffff',
@@ -149,6 +151,16 @@ export default function RoomHostCardEditor({ sectionId }: RoomHostCardEditorProp
             placeholder="Section title"
             className="w-full px-3 py-1.5 text-sm border rounded-md"
           />
+
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Show Message Host button</label>
+            <input
+              type="checkbox"
+              checked={localConfig.showMessageButton}
+              onChange={(e) => handleChange('showMessageButton', e.target.checked)}
+              className="rounded"
+            />
+          </div>
 
           {/* Color Settings */}
           <div className="space-y-3">

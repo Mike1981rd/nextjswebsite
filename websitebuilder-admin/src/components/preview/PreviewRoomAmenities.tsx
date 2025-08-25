@@ -25,6 +25,7 @@ interface RoomAmenitiesConfig {
   horizontalSpacing?: number;
   verticalSpacing?: number;
   titleSpacing?: number;
+  mobileTitleSpacing?: number;
   headingSize?: number;
   headingWeight?: string;
   headingItalic?: boolean;
@@ -280,7 +281,7 @@ export default function PreviewRoomAmenities({
         style={{ 
           ...headingTypographyStyles,
           color: colorScheme?.text || '#000000',
-          marginBottom: isMobile ? '20px' : `${config.titleSpacing || 24}px`,
+          marginBottom: isMobile ? `${config.mobileTitleSpacing || 16}px` : `${config.titleSpacing || 24}px`,
           fontSize: isMobile ? '18px' : (config.headingSize ? `${config.headingSize}px` : (headingTypographyStyles.fontSize || '20px')),
           fontWeight: config.headingWeight || headingTypographyStyles.fontWeight || '600',
           fontStyle: config.headingItalic ? 'italic' : (headingTypographyStyles.fontStyle || 'normal'),

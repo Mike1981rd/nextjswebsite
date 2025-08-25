@@ -703,17 +703,19 @@ export default function PreviewRoomReviews({
 
           {/* Show all button */}
           {reviews.length > reviewsPerPage && (
-            <button
-              onClick={() => setShowAll(!showAll)}
-              className="px-6 py-3 rounded-lg font-medium transition hover:opacity-90"
-              style={{ 
-                border: `1px solid ${outlineButtonColor}`,
-                color: outlineButtonText,
-                backgroundColor: 'transparent'
-              }}
-            >
-              {showAll ? 'Show less' : `Show all ${totalReviews} reviews`}
-            </button>
+            <div className={isMobile ? 'flex justify-center' : ''}>
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="px-6 py-3 rounded-lg font-medium transition hover:opacity-90"
+                style={{ 
+                  border: `1px solid ${outlineButtonColor}`,
+                  color: outlineButtonText,
+                  backgroundColor: 'transparent'
+                }}
+              >
+                {showAll ? 'Show less' : `Show all ${totalReviews} reviews`}
+              </button>
+            </div>
           )}
         </>
       )}

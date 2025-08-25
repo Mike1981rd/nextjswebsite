@@ -9,12 +9,16 @@ interface RoomDescriptionConfig {
   enabled: boolean;
   colorScheme?: 1 | 2 | 3 | 4 | 5;
   alignment?: 'left' | 'center' | 'right' | 'justify';
+  mobileAlignment?: 'left' | 'center' | 'right' | 'justify';
   fontSize?: {
     heading: number;
     body: number;
   };
   showHeading?: boolean;
   headingText?: string;
+  headingBold?: boolean;
+  headingItalic?: boolean;
+  headingUnderline?: boolean;
   showMore?: boolean;
   paddingTop?: number;
   paddingBottom?: number;
@@ -111,8 +115,37 @@ Whether you're here for business or pleasure, this apartment provides the perfec
     ? description.slice(0, 200) + '...'
     : description;
 
-  // Get alignment style
-  const getAlignment = () => {
+  // Get alignment style for header - always centered on mobile
+  const getHeaderAlignment = () => {
+    // Header is always centered on mobile for better readability
+    if (isMobile) {
+      return 'text-center';
+    }
+    
+    // Desktop alignment for header
+    switch(config.alignment) {
+      case 'center': return 'text-center';
+      case 'right': return 'text-right';
+      case 'justify': return 'text-justify';
+      default: return 'text-left';
+    }
+  };
+
+  // Get alignment style for body text - respects mobile alignment setting
+  const getBodyAlignment = () => {
+    // Use mobile alignment when on mobile if configured
+    if (isMobile) {
+      const mobileAlign = config.mobileAlignment || 'center'; // Default to center on mobile
+      switch(mobileAlign) {
+        case 'center': return 'text-center';
+        case 'right': return 'text-right';
+        case 'justify': return 'text-justify';
+        case 'left': return 'text-left';
+        default: return 'text-center';
+      }
+    }
+    
+    // Desktop alignment for body
     switch(config.alignment) {
       case 'center': return 'text-center';
       case 'right': return 'text-right';
@@ -154,20 +187,16 @@ Whether you're here for business or pleasure, this apartment provides the perfec
       >
         <div className="container mx-auto px-6">
           <div className="max-w-3xl">
-            {/* Debug indicator for editor mode */}
-            {isEditor && (
-              <div className="mb-2 text-xs" style={{ color: colorScheme?.text || '#6b7280', opacity: 0.6 }}>
-                {loading ? '⏳ Loading room data...' : roomData ? '✅ Using real room data' : '📝 Using default data'}
-              </div>
-            )}
-            
             {/* Heading */}
             {config.showHeading !== false && config.headingText && (
               <h2 
-                className={`text-2xl md:text-3xl font-semibold mb-4 ${getAlignment()}`}
+                className={`text-2xl md:text-3xl mb-4 ${getHeaderAlignment()}`}
                 style={{
                   ...headingTypography,
-                  color: colorScheme?.text || '#000000'
+                  color: colorScheme?.text || '#000000',
+                  fontWeight: config.headingBold !== false ? 'bold' : 'normal',
+                  fontStyle: config.headingItalic ? 'italic' : 'normal',
+                  textDecoration: config.headingUnderline ? 'underline' : 'none'
                 }}
               >
                 {config.headingText}
@@ -176,7 +205,7 @@ Whether you're here for business or pleasure, this apartment provides the perfec
             
             {/* Description */}
             <p 
-              className={`text-base whitespace-pre-wrap ${getAlignment()}`}
+              className={`text-base whitespace-pre-wrap ${getBodyAlignment()}`}
               style={{
                 ...bodyTypography,
                 color: colorScheme?.text || '#000000'

@@ -190,39 +190,39 @@ export default function PreviewRoomHostCard({
 
   return (
     <div 
-      className="container mx-auto px-6 border-t"
+      className={`container mx-auto ${isMobile ? 'px-4' : 'px-6'} border-t`}
       style={{ 
         paddingTop: `${styles.topPadding}px`,
         paddingBottom: `${styles.bottomPadding}px`,
         fontFamily: fontFamily
       }}
     >
-      <h2 className="text-xl font-semibold mb-6">
+      <h2 className={`${isMobile ? 'text-lg text-center' : 'text-xl'} font-semibold mb-6`}>
         {displayData.title || 'Meet your Host'}
       </h2>
 
       <div className="space-y-8">
         {/* Top section with host card and other info cards */}
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className={`${isMobile ? 'flex flex-col gap-6' : 'grid lg:grid-cols-2 gap-8'}`}>
           {/* Left column - Host cards stacked */}
-          <div className="flex flex-col gap-4">
+          <div className={`flex flex-col gap-4 ${isMobile ? 'w-full' : ''}`}>
             {/* Host ID card */}
             <div 
               className="shadow-xl overflow-hidden flex-1"
               style={{ 
-                minHeight: '240px',
+                minHeight: isMobile ? '200px' : '240px',
                 backgroundColor: styles.cardColor,
                 borderRadius: `${styles.borderRadius}px`,
                 border: `2px solid ${styles.cardBorderColor}`
               }}>
-              <div className="flex h-full">
+              <div className={`${isMobile ? 'flex flex-col' : 'flex'} h-full`}>
                 {/* Left side - Photo */}
-                <div className="w-44 bg-gradient-to-b from-gray-50 to-gray-100 p-4 flex flex-col items-center justify-center">
+                <div className={`${isMobile ? 'w-full' : 'w-44'} bg-gradient-to-b from-gray-50 to-gray-100 ${isMobile ? 'p-3' : 'p-4'} flex ${isMobile ? 'flex-row' : 'flex-col'} items-center justify-center`}>
                   <div className="relative">
                     <img
                       src={displayData.hostImage || 'https://a0.muscache.com/defaults/user_pic-225x225.png?v=3'}
                       alt={displayData.hostName}
-                      className="w-[120px] h-[120px] rounded-lg object-cover shadow-md ring-2 ring-white/50"
+                      className={`${isMobile ? 'w-[80px] h-[80px]' : 'w-[120px] h-[120px]'} rounded-lg object-cover shadow-md ring-2 ring-white/50`}
                       loading="eager"
                       decoding="sync"
                       fetchPriority="high"
@@ -233,53 +233,65 @@ export default function PreviewRoomHostCard({
                       }}
                     />
                     {displayData.isSuperhost && (
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-rose-500 rounded-full p-1.5 shadow-lg">
-                        <Award className="w-4 h-4 text-white" />
+                      <div className={`absolute ${isMobile ? '-top-1 -right-1' : '-top-2 -right-2'} bg-gradient-to-r from-red-500 to-rose-500 rounded-full ${isMobile ? 'p-1' : 'p-1.5'} shadow-lg`}>
+                        <Award className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-white`} />
                       </div>
                     )}
                   </div>
-                  <p className="text-xs font-bold mt-3 text-gray-700 tracking-wide">HOST ID</p>
+                  {isMobile ? (
+                    <div className="ml-4 flex-1">
+                      <p className="text-xs font-bold text-gray-700 tracking-wide">HOST ID</p>
+                      <h3 className="text-base font-bold mt-1" style={{ color: styles.cardTextColor }}>{displayData.hostName || 'Host'}</h3>
+                      {displayData.isSuperhost && (
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs font-bold rounded-full">SUPERHOST</span>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs font-bold mt-3 text-gray-700 tracking-wide">HOST ID</p>
+                  )}
                 </div>
 
                 {/* Right side - Info */}
-                <div className="flex-1 p-4 flex flex-col justify-between">
-                  {/* Header */}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-xs font-medium" style={{ color: styles.cardTextColor, opacity: 0.7 }}>Certified Host</p>
-                      <h3 className={`text-base font-bold ${styles.fontSize} ${styles.fontWeight}`} style={{ color: styles.cardTextColor }}>{displayData.hostName || 'Host'}</h3>
+                <div className={`flex-1 ${isMobile ? 'p-3' : 'p-4'} flex flex-col justify-between`}>
+                  {/* Header - Hide on mobile as it's shown above */}
+                  {!isMobile && (
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: styles.cardTextColor, opacity: 0.7 }}>Certified Host</p>
+                        <h3 className={`text-base font-bold ${styles.fontSize} ${styles.fontWeight}`} style={{ color: styles.cardTextColor }}>{displayData.hostName || 'Host'}</h3>
+                      </div>
+                      {displayData.isSuperhost && (
+                        <span className="px-2 py-0.5 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs font-bold rounded-full">SUPERHOST</span>
+                      )}
                     </div>
-                    {displayData.isSuperhost && (
-                      <span className="px-2 py-0.5 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs font-bold rounded-full">SUPERHOST</span>
-                    )}
-                  </div>
+                  )}
 
                   {/* Details Grid - No dividers */}
-                  <div className="grid grid-cols-3 gap-x-4 gap-y-1 mt-2.5">
-                    <div>
+                  <div className={`grid grid-cols-3 ${isMobile ? 'gap-x-3' : 'gap-x-4'} gap-y-1 ${isMobile ? 'mt-0' : 'mt-2.5'}`}>
+                    <div className={isMobile ? 'text-center' : ''}>
                       <p className="text-xs" style={{ color: styles.cardTextColor, opacity: 0.6 }}>Rating</p>
-                      <p className="font-bold text-sm" style={{ color: styles.cardTextColor }}>{displayData.rating || 'N/A'} ⭐</p>
+                      <p className={`font-bold ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: styles.cardTextColor }}>{displayData.rating || 'N/A'} ⭐</p>
                     </div>
-                    <div>
+                    <div className={isMobile ? 'text-center' : ''}>
                       <p className="text-xs" style={{ color: styles.cardTextColor, opacity: 0.6 }}>Reviews</p>
-                      <p className="font-bold text-sm" style={{ color: styles.cardTextColor }}>{displayData.reviewCount || 0}</p>
+                      <p className={`font-bold ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: styles.cardTextColor }}>{displayData.reviewCount || 0}</p>
                     </div>
-                    <div>
+                    <div className={isMobile ? 'text-center' : ''}>
                       <p className="text-xs" style={{ color: styles.cardTextColor, opacity: 0.6 }}>Since</p>
-                      <p className="font-bold text-sm" style={{ color: styles.cardTextColor }}>{displayData.hostSince || 'N/A'}</p>
+                      <p className={`font-bold ${isMobile ? 'text-xs' : 'text-sm'}`} style={{ color: styles.cardTextColor }}>{displayData.hostSince || 'N/A'}</p>
                     </div>
                   </div>
 
                   {/* Bottom section - No border */}
-                  <div className="flex justify-between items-center mt-2.5">
-                    <div className="flex items-center gap-2">
+                  <div className={`flex ${isMobile ? 'flex-col items-center gap-1' : 'justify-between items-center'} mt-2.5`}>
+                    <div className={`flex items-center ${isMobile ? 'flex-col' : 'gap-2'}`}>
                       {displayData.isVerified && (
                         <div className="flex items-center gap-1">
-                          <Shield className="w-3 h-3 text-green-600" />
-                          <span className="text-xs font-semibold text-green-600">VERIFIED</span>
+                          <Shield className={`${isMobile ? 'w-3 h-3' : 'w-3 h-3'} text-green-600`} />
+                          <span className={`${isMobile ? 'text-xs' : 'text-xs'} font-semibold text-green-600`}>VERIFIED</span>
                         </div>
                       )}
-                      <span className="text-xs text-gray-400">ID: #{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                      <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-400`}>ID: #{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
                     </div>
                   </div>
                 </div>
@@ -290,13 +302,13 @@ export default function PreviewRoomHostCard({
             <div 
               className="shadow-xl overflow-hidden flex-1"
               style={{ 
-                minHeight: '240px',
+                minHeight: isMobile ? '180px' : '240px',
                 backgroundColor: styles.cardColor,
                 borderRadius: `${styles.borderRadius}px`,
                 border: `2px solid ${styles.cardBorderColor}`
               }}>
-              <div className="p-6 h-full flex flex-col">
-                <h3 className={`font-bold mb-3 text-lg ${styles.fontWeight}`} style={{ color: styles.cardTextColor }}>About {displayData.hostName}</h3>
+              <div className={`${isMobile ? 'p-4' : 'p-6'} h-full flex flex-col`}>
+                <h3 className={`font-bold ${isMobile ? 'mb-2 text-base text-center' : 'mb-3 text-lg'} ${styles.fontWeight}`} style={{ color: styles.cardTextColor }}>About {displayData.hostName}</h3>
                 <div className="flex-1 overflow-y-auto">
                   {(displayData.bio || displayData.aboutMe) ? (
                     <>
@@ -318,28 +330,28 @@ export default function PreviewRoomHostCard({
           </div>
 
           {/* Right column - Other info cards */}
-          <div className="flex flex-col gap-4">
+          <div className={`flex flex-col gap-4 ${isMobile ? 'w-full' : ''}`}>
 
           {/* Details & Stats Card */}
-          <div className="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-xl shadow-xl p-5 flex-1" style={{ minHeight: '180px' }}>
-            <div className="grid grid-cols-2 gap-4">
+          <div className={`bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-xl shadow-xl ${isMobile ? 'p-4' : 'p-5'} flex-1`} style={{ minHeight: isMobile ? '150px' : '180px' }}>
+            <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-2 gap-4'}`}>
               {/* Left Column - Personal Info */}
-              <div className="space-y-3">
-                <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Personal</h4>
+              <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
+                <h4 className={`font-bold text-gray-900 ${isMobile ? 'text-sm text-center' : 'text-sm'} uppercase tracking-wide`}>Personal</h4>
                 {displayData.location && (
-                  <div className="text-sm">
+                  <div className={`text-sm ${isMobile ? 'text-center' : ''}`}>
                     <p className="text-gray-500 text-xs">Location</p>
                     <p className="font-semibold text-gray-900">{displayData.location}</p>
                   </div>
                 )}
                 {displayData.work && (
-                  <div className="text-sm">
+                  <div className={`text-sm ${isMobile ? 'text-center' : ''}`}>
                     <p className="text-gray-500 text-xs">Work</p>
                     <p className="font-semibold text-gray-900">{displayData.work}</p>
                   </div>
                 )}
                 {displayData.languages && displayData.languages.length > 0 && (
-                  <div className="text-sm">
+                  <div className={`text-sm ${isMobile ? 'text-center' : ''}`}>
                     <p className="text-gray-500 text-xs">Languages</p>
                     <p className="font-semibold text-gray-900">
                       {Array.isArray(displayData.languages) 
@@ -351,16 +363,16 @@ export default function PreviewRoomHostCard({
               </div>
 
               {/* Right Column - Host Stats */}
-              <div className="space-y-3">
-                <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Host Stats</h4>
+              <div className={`${isMobile ? 'space-y-2' : 'space-y-3'}`}>
+                <h4 className={`font-bold text-gray-900 ${isMobile ? 'text-sm text-center' : 'text-sm'} uppercase tracking-wide`}>Host Stats</h4>
                 {displayData.acceptanceRate > 0 && (
-                  <div className="text-sm">
+                  <div className={`text-sm ${isMobile ? 'text-center' : ''}`}>
                     <p className="text-gray-500 text-xs">Response Rate</p>
                     <p className="font-semibold text-gray-900">{displayData.acceptanceRate}%</p>
                   </div>
                 )}
                 {displayData.responseTime && (
-                  <div className="text-sm">
+                  <div className={`text-sm ${isMobile ? 'text-center' : ''}`}>
                     <p className="text-gray-500 text-xs">Response Time</p>
                     <p className="font-semibold text-gray-900">
                       {typeof displayData.responseTime === 'number' 
@@ -370,7 +382,7 @@ export default function PreviewRoomHostCard({
                   </div>
                 )}
                 {displayData.hostSince && (
-                  <div className="text-sm">
+                  <div className={`text-sm ${isMobile ? 'text-center' : ''}`}>
                     <p className="text-gray-500 text-xs">Hosting Since</p>
                     <p className="font-semibold text-gray-900">{displayData.hostSince}</p>
                   </div>
@@ -380,15 +392,15 @@ export default function PreviewRoomHostCard({
           </div>
 
             {/* Attributes & Hobbies Card */}
-            <div className="bg-gradient-to-br from-yellow-50 via-white to-orange-50 rounded-xl shadow-xl p-5 flex-1" style={{ minHeight: '180px' }}>
+            <div className={`bg-gradient-to-br from-yellow-50 via-white to-orange-50 rounded-xl shadow-xl ${isMobile ? 'p-4' : 'p-5'} flex-1`} style={{ minHeight: isMobile ? '150px' : '180px' }}>
                 {(displayData.attributes && displayData.attributes.length > 0) || (displayData.hobbies && displayData.hobbies.length > 0) ? (
                   <>
                     {displayData.attributes && displayData.attributes.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">Attributes</h4>
-                        <div className="flex flex-wrap gap-2">
+                      <div className={`${isMobile ? 'mb-3' : 'mb-4'}`}>
+                        <h4 className={`font-bold text-gray-900 ${isMobile ? 'text-sm text-center' : 'text-sm'} uppercase tracking-wide mb-2`}>Attributes</h4>
+                        <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
                           {displayData.attributes.map((attr: string, index: number) => (
-                            <span key={index} className="px-3 py-1 bg-white/80 backdrop-blur rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                            <span key={index} className={`${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1 text-sm'} bg-white/80 backdrop-blur rounded-full font-medium text-gray-700 shadow-sm`}>
                               {attr}
                             </span>
                           ))}
@@ -397,10 +409,10 @@ export default function PreviewRoomHostCard({
                     )}
                     {displayData.hobbies && displayData.hobbies.length > 0 && (
                       <div>
-                        <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">Hobbies</h4>
-                        <div className="flex flex-wrap gap-2">
+                        <h4 className={`font-bold text-gray-900 ${isMobile ? 'text-sm text-center' : 'text-sm'} uppercase tracking-wide mb-2`}>Hobbies</h4>
+                        <div className={`flex flex-wrap gap-2 ${isMobile ? 'justify-center' : ''}`}>
                           {displayData.hobbies.map((hobby: string, index: number) => (
-                            <span key={index} className="px-3 py-1 bg-blue-100/80 backdrop-blur text-blue-700 rounded-full text-sm font-medium shadow-sm">
+                            <span key={index} className={`${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1 text-sm'} bg-blue-100/80 backdrop-blur text-blue-700 rounded-full font-medium shadow-sm`}>
                               {hobby}
                             </span>
                           ))}
@@ -419,29 +431,31 @@ export default function PreviewRoomHostCard({
         </div>
 
         {/* Message Host Button - Centered at bottom */}
-        <div className="flex justify-center mt-8">
-          <div className="w-full max-w-md">
-            <button 
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              style={{
-                backgroundColor: styles.buttonColor,
-                color: styles.buttonTextColor,
-                borderRadius: `${Math.min(styles.borderRadius, 12)}px`,
-                fontSize: '16px'
-              }}
-            >
-              <MessageSquare className="w-5 h-5" />
-              Message Host
-            </button>
-            
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-600 flex items-start gap-1 text-center">
-                <Shield className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                <span>To protect your payment, never transfer money or communicate outside of the Airbnb website or app.</span>
-              </p>
+        {config.showMessageButton !== false && (
+          <div className={`flex justify-center ${isMobile ? 'mt-6' : 'mt-8'}`}>
+            <div className={`w-full ${isMobile ? 'max-w-full' : 'max-w-md'}`}>
+              <button 
+                className={`w-full flex items-center justify-center gap-2 ${isMobile ? 'px-4 py-3' : 'px-6 py-4'} font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5`}
+                style={{
+                  backgroundColor: styles.buttonColor,
+                  color: styles.buttonTextColor,
+                  borderRadius: `${Math.min(styles.borderRadius, 12)}px`,
+                  fontSize: isMobile ? '14px' : '16px'
+                }}
+              >
+                <MessageSquare className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                Message Host
+              </button>
+              
+              <div className={`${isMobile ? 'mt-3 p-2' : 'mt-4 p-3'} bg-gray-50 rounded-lg`}>
+                <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-600 flex items-start gap-1 text-center`}>
+                  <Shield className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                  <span>To protect your payment, never transfer money or communicate outside of the Airbnb website or app.</span>
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

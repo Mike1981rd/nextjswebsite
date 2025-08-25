@@ -23,10 +23,15 @@ interface RoomHighlightsConfig {
   bottomPadding?: number;
   highlights?: Highlight[];
   titleSpacing?: number;
+  mobileTitleSpacing?: number;
   headingSize?: number;
   headingWeight?: string;
   headingItalic?: boolean;
   headingUnderline?: boolean;
+  headingBold?: boolean;
+  contentBold?: boolean;
+  contentItalic?: boolean;
+  contentUnderline?: boolean;
 }
 
 interface PreviewRoomHighlightsProps {
@@ -506,10 +511,10 @@ export default function PreviewRoomHighlights({
           style={{ 
             ...headingTypographyStyles,
             color: colorScheme?.text || '#000000',
-            marginBottom: isMobile ? '20px' : `${config.titleSpacing || 24}px`,
+            marginBottom: isMobile ? `${config.mobileTitleSpacing || 16}px` : `${config.titleSpacing || 24}px`,
             fontSize: isMobile ? '18px' : (config.headingSize ? `${config.headingSize}px` : (headingTypographyStyles.fontSize || '20px')),
-            fontWeight: config.headingWeight || headingTypographyStyles.fontWeight || '600',
-            fontStyle: config.headingItalic ? 'italic' : (headingTypographyStyles.fontStyle || 'normal'),
+            fontWeight: config.headingBold ? 'bold' : (config.headingWeight || headingTypographyStyles.fontWeight || '600'),
+            fontStyle: config.headingItalic ? 'italic' : 'normal',
             textDecoration: config.headingUnderline ? 'underline' : 'none',
             textAlign: isMobile ? 'center' : 'left'
           }}
@@ -550,12 +555,14 @@ export default function PreviewRoomHighlights({
             </div>
             <div className="flex-1">
               <h3 
-                className="font-semibold mb-1"
+                className="mb-1"
                 style={{ 
                   ...headingTypographyStyles,
                   color: colorScheme?.text || '#000000',
                   fontSize: isMobile ? '16px' : '16px',
-                  fontWeight: '600',
+                  fontWeight: config.contentBold ? 'bold' : '600',
+                  fontStyle: config.contentItalic ? 'italic' : 'normal',
+                  textDecoration: config.contentUnderline ? 'underline' : 'none',
                   lineHeight: isMobile ? '1.5' : '1.6'
                 }}
               >
@@ -569,6 +576,9 @@ export default function PreviewRoomHighlights({
                     color: colorScheme?.text || '#666666',
                     opacity: 0.8,
                     fontSize: '14px',
+                    fontWeight: config.contentBold ? 'bold' : bodyTypographyStyles.fontWeight,
+                    fontStyle: config.contentItalic ? 'italic' : 'normal',
+                    textDecoration: config.contentUnderline ? 'underline' : 'none',
                     lineHeight: '1.5'
                   }}
                 >

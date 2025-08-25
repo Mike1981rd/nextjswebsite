@@ -13,10 +13,15 @@ interface RoomHighlightsConfig {
   topPadding: number;
   bottomPadding: number;
   titleSpacing?: number;
+  mobileTitleSpacing?: number;
   headingSize?: number;
   headingWeight?: string;
   headingItalic?: boolean;
   headingUnderline?: boolean;
+  headingBold?: boolean;
+  contentBold?: boolean;
+  contentItalic?: boolean;
+  contentUnderline?: boolean;
 }
 
 interface RoomHighlightsEditorProps {
@@ -30,10 +35,15 @@ const getDefaultConfig = (): RoomHighlightsConfig => ({
   topPadding: 32,
   bottomPadding: 32,
   titleSpacing: 24,
+  mobileTitleSpacing: 16,
   headingSize: 20,
   headingWeight: '600',
   headingItalic: false,
-  headingUnderline: false
+  headingUnderline: false,
+  headingBold: false,
+  contentBold: false,
+  contentItalic: false,
+  contentUnderline: false
 });
 
 export default function RoomHighlightsEditor({ sectionId }: RoomHighlightsEditorProps) {
@@ -188,6 +198,17 @@ export default function RoomHighlightsEditor({ sectionId }: RoomHighlightsEditor
             <div className="flex gap-2">
               <button
                 type="button"
+                onClick={() => handleChange('headingBold', !localConfig.headingBold)}
+                className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                  localConfig.headingBold 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <strong>B</strong>
+              </button>
+              <button
+                type="button"
                 onClick={() => handleChange('headingItalic', !localConfig.headingItalic)}
                 className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
                   localConfig.headingItalic 
@@ -211,10 +232,52 @@ export default function RoomHighlightsEditor({ sectionId }: RoomHighlightsEditor
             </div>
           </div>
 
-          {/* Title Spacing Slider */}
+          {/* Content Format Options */}
           <div>
             <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
-              Title spacing
+              Content format
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleChange('contentBold', !localConfig.contentBold)}
+                className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                  localConfig.contentBold 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <strong>B</strong>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('contentItalic', !localConfig.contentItalic)}
+                className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                  localConfig.contentItalic 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <em>I</em>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('contentUnderline', !localConfig.contentUnderline)}
+                className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                  localConfig.contentUnderline 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <u>U</u>
+              </button>
+            </div>
+          </div>
+
+          {/* Title Spacing Slider - Desktop */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Title spacing (Desktop)
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -235,6 +298,35 @@ export default function RoomHighlightsEditor({ sectionId }: RoomHighlightsEditor
               <span>Normal</span>
               <span>Far</span>
             </div>
+          </div>
+
+          {/* Title Spacing Slider - Mobile */}
+          <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+              Title spacing (Mobile)
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="8"
+                max="60"
+                step="4"
+                value={localConfig.mobileTitleSpacing || 16}
+                onChange={(e) => handleChange('mobileTitleSpacing', parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
+                {localConfig.mobileTitleSpacing || 16}px
+              </span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>Close</span>
+              <span>Normal</span>
+              <span>Far</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Space between title and content on mobile devices
+            </p>
           </div>
 
           {/* Top Padding Slider */}

@@ -9,12 +9,16 @@ interface RoomDescriptionConfig {
   enabled: boolean;
   colorScheme: 1 | 2 | 3 | 4 | 5;
   alignment: 'left' | 'center' | 'right' | 'justify';
+  mobileAlignment?: 'left' | 'center' | 'right' | 'justify';
   fontSize: {
     heading: number; // percentage (50-200)
     body: number; // percentage (50-200)
   };
   showHeading: boolean;
   headingText: string;
+  headingBold?: boolean;
+  headingItalic?: boolean;
+  headingUnderline?: boolean;
   showMore: boolean;
   paddingTop: number; // Internal top padding (0-120)
   paddingBottom: number; // Internal bottom padding (0-120)
@@ -30,12 +34,16 @@ const getDefaultConfig = (): RoomDescriptionConfig => ({
   enabled: true,
   colorScheme: 1,
   alignment: 'left',
+  mobileAlignment: 'center',
   fontSize: {
     heading: 100,
     body: 100
   },
   showHeading: true,
   headingText: 'About this space',
+  headingBold: true,
+  headingItalic: false,
+  headingUnderline: false,
   showMore: true,
   paddingTop: 24,
   paddingBottom: 24,
@@ -145,9 +153,9 @@ export default function RoomDescriptionEditor({ sectionId }: RoomDescriptionEdit
             </select>
           </div>
 
-          {/* Text Alignment */}
+          {/* Text Alignment - Desktop */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Text Alignment</label>
+            <label className="text-sm font-medium">Text Alignment (Desktop)</label>
             <div className="flex gap-1">
               <button
                 onClick={() => handleChange('alignment', 'left')}
@@ -190,6 +198,56 @@ export default function RoomDescriptionEditor({ sectionId }: RoomDescriptionEdit
                 <AlignJustify className="w-4 h-4 mx-auto" />
               </button>
             </div>
+          </div>
+
+          {/* Text Alignment - Mobile */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Body Text Alignment (Mobile)</label>
+            <div className="flex gap-1">
+              <button
+                onClick={() => handleChange('mobileAlignment', 'left')}
+                className={`flex-1 p-2 border rounded-l-md transition-colors ${
+                  localConfig.mobileAlignment === 'left' 
+                    ? 'bg-gray-900 text-white border-gray-900' 
+                    : 'bg-white hover:bg-gray-50 border-gray-300'
+                }`}
+              >
+                <AlignLeft className="w-4 h-4 mx-auto" />
+              </button>
+              <button
+                onClick={() => handleChange('mobileAlignment', 'center')}
+                className={`flex-1 p-2 border-t border-b transition-colors ${
+                  localConfig.mobileAlignment === 'center' 
+                    ? 'bg-gray-900 text-white border-gray-900' 
+                    : 'bg-white hover:bg-gray-50 border-gray-300'
+                }`}
+              >
+                <AlignCenter className="w-4 h-4 mx-auto" />
+              </button>
+              <button
+                onClick={() => handleChange('mobileAlignment', 'right')}
+                className={`flex-1 p-2 border-t border-b transition-colors ${
+                  localConfig.mobileAlignment === 'right' 
+                    ? 'bg-gray-900 text-white border-gray-900' 
+                    : 'bg-white hover:bg-gray-50 border-gray-300'
+                }`}
+              >
+                <AlignRight className="w-4 h-4 mx-auto" />
+              </button>
+              <button
+                onClick={() => handleChange('mobileAlignment', 'justify')}
+                className={`flex-1 p-2 border rounded-r-md transition-colors ${
+                  localConfig.mobileAlignment === 'justify' 
+                    ? 'bg-gray-900 text-white border-gray-900' 
+                    : 'bg-white hover:bg-gray-50 border-gray-300'
+                }`}
+              >
+                <AlignJustify className="w-4 h-4 mx-auto" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Body text alignment for mobile (header always centered)
+            </p>
           </div>
 
           {/* Font Size Configuration */}
@@ -239,16 +297,61 @@ export default function RoomDescriptionEditor({ sectionId }: RoomDescriptionEdit
             </div>
             
             {localConfig.showHeading && (
-              <div>
-                <label className="text-xs text-gray-600">Heading Text</label>
-                <input
-                  type="text"
-                  value={localConfig.headingText}
-                  onChange={(e) => handleChange('headingText', e.target.value)}
-                  className="w-full px-3 py-1.5 text-sm border rounded-md"
-                  placeholder="Section heading..."
-                />
-              </div>
+              <>
+                <div>
+                  <label className="text-xs text-gray-600">Heading Text</label>
+                  <input
+                    type="text"
+                    value={localConfig.headingText}
+                    onChange={(e) => handleChange('headingText', e.target.value)}
+                    className="w-full px-3 py-1.5 text-sm border rounded-md"
+                    placeholder="Section heading..."
+                  />
+                </div>
+                
+                {/* Heading Format Options */}
+                <div>
+                  <label className="text-xs text-gray-600 mb-1.5 block">Heading Format</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('headingBold', !localConfig.headingBold)}
+                      className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                        localConfig.headingBold 
+                          ? 'bg-gray-900 text-white border-gray-900' 
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <strong>B</strong>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('headingItalic', !localConfig.headingItalic)}
+                      className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                        localConfig.headingItalic 
+                          ? 'bg-gray-900 text-white border-gray-900' 
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <em>I</em>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('headingUnderline', !localConfig.headingUnderline)}
+                      className={`px-3 py-1.5 text-sm border rounded-md transition-colors ${
+                        localConfig.headingUnderline 
+                          ? 'bg-gray-900 text-white border-gray-900' 
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <u>U</u>
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Applies to both desktop and mobile views
+                  </p>
+                </div>
+              </>
             )}
           </div>
 
