@@ -194,7 +194,7 @@ export default function RoomsListPage() {
 
   // Get color scheme
   const colorSchemeId = 1; // Default color scheme
-  const colorScheme = themeConfig?.colorSchemes?.schemes?.[colorSchemeId - 1];
+  const colorScheme = themeConfig?.colorSchemes?.schemes?.[colorSchemeId - 1] as any;
   const backgroundColor = colorScheme?.background?.background || '#ffffff';
   const textColor = colorScheme?.text?.text || '#171717';
 

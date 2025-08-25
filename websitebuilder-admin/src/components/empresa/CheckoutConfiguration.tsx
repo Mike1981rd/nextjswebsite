@@ -423,7 +423,7 @@ export function CheckoutConfiguration() {
                     const res = await api.post('/company/checkout-settings/logo', form, {
                       headers: { 'Content-Type': 'multipart/form-data' }
                     });
-                    const url = res.data?.logoUrl as string;
+                    const url = (res.data as any)?.logoUrl as string;
                     setCheckoutLogoUrl(url);
                     setHasChanges(true);
                     toast.success(t('common.upload', 'Upload'));

@@ -44,7 +44,7 @@ export default function ProfessionalCalendarMinimal({
   viewMode: initialViewMode = 'availability'
 }: ProfessionalCalendarProps) {
   const { company } = useCompany();
-  const currency = company?.storeCurrency || '$';
+  const currency = (company as any)?.storeCurrency || company?.currency || '$';
   
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedStartDate, setSelectedStartDate] = useState<Date | null>(null);

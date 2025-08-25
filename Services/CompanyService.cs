@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebsiteBuilderAPI.Data;
 using WebsiteBuilderAPI.DTOs.Company;
+using System.Text.Json;
 using WebsiteBuilderAPI.DTOs.CheckoutSettings;
 using WebsiteBuilderAPI.Models;
 
@@ -54,6 +55,11 @@ namespace WebsiteBuilderAPI.Services
             }
 
             return MapToResponseDto(company);
+        }
+
+        public async Task<Company?> GetCompanyEntityByIdAsync(int companyId)
+        {
+            return await _context.Companies.FindAsync(companyId);
         }
 
         private CompanyResponseDto MapToResponseDto(Company company)
@@ -387,6 +393,60 @@ namespace WebsiteBuilderAPI.Services
 
             _logger.LogInformation("Checkout logo uploaded: {LogoUrl}", logoUrl);
             return logoUrl;
+        }
+
+        // ===================== CURRENCY SETTINGS (MANUAL) =====================
+        public async Task<CurrencySettingsDto> GetCurrencySettingsAsync(int companyId)
+        {
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+            if (company == null) throw new InvalidOperationException("Company not found");
+
+            // Prefer new fields; fallback to legacy Company.Currency
+            var baseCurrency = company.CurrencyBase ?? company.Currency ?? "USD";
+            var enabled = !string.IsNullOrWhiteSpace(company.EnabledCurrenciesJson)
+                ? JsonSerializer.Deserialize<List<string>>(company.EnabledCurrenciesJson!) ?? new List<string>()
+                : new List<string> { baseCurrency };
+            if (!enabled.Contains(baseCurrency)) enabled.Add(baseCurrency);
+
+            var manualRates = !string.IsNullOrWhiteSpace(company.ManualRatesJson)
+                ? JsonSerializer.Deserialize<Dictionary<string, decimal>>(company.ManualRatesJson!) ?? new Dictionary<string, decimal>()
+                : new Dictionary<string, decimal>();
+            if (!manualRates.ContainsKey(baseCurrency)) manualRates[baseCurrency] = 1m;
+
+            var rounding = !string.IsNullOrWhiteSpace(company.CurrencyRoundingRuleJson)
+                ? JsonSerializer.Deserialize<Dictionary<string, int>>(company.CurrencyRoundingRuleJson!) ?? new Dictionary<string, int>()
+                : new Dictionary<string, int>();
+            if (!rounding.ContainsKey(baseCurrency)) rounding[baseCurrency] = 2;
+
+            return new CurrencySettingsDto
+            {
+                CurrencyBase = baseCurrency,
+                EnabledCurrencies = enabled,
+                ManualRates = manualRates,
+                LockedUntil = company.CurrencyLockedUntil,
+                RoundingRule = rounding
+            };
+        }
+
+        public async Task UpdateCurrencySettingsAsync(int companyId, CurrencySettingsDto settings)
+        {
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            if (string.IsNullOrWhiteSpace(settings.CurrencyBase)) throw new ArgumentException("CurrencyBase is required");
+            if (!settings.EnabledCurrencies.Contains(settings.CurrencyBase)) settings.EnabledCurrencies.Add(settings.CurrencyBase);
+            if (!settings.ManualRates.ContainsKey(settings.CurrencyBase)) settings.ManualRates[settings.CurrencyBase] = 1m;
+
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+            if (company == null) throw new InvalidOperationException("Company not found");
+
+            // Persist all fields into Company
+            company.Currency = settings.CurrencyBase; // legacy field for compatibility
+            company.CurrencyBase = settings.CurrencyBase;
+            company.EnabledCurrenciesJson = JsonSerializer.Serialize(settings.EnabledCurrencies);
+            company.ManualRatesJson = JsonSerializer.Serialize(settings.ManualRates);
+            company.CurrencyLockedUntil = settings.LockedUntil;
+            company.CurrencyRoundingRuleJson = JsonSerializer.Serialize(settings.RoundingRule ?? new Dictionary<string,int>());
+            company.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
         }
 
         #region Checkout Settings Methods

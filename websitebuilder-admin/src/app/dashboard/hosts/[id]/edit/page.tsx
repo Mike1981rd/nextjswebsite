@@ -861,13 +861,13 @@ export default function EditHostPage() {
               </h3>
               <div className="space-y-4">
                 <Toggle
-                  checked={formData.isSuperhost}
+                  checked={formData.isSuperhost || false}
                   onChange={(checked) => setFormData(prev => ({ ...prev, isSuperhost: checked }))}
                   label={t('hosts.fields.isSuperhost', 'Superhost')}
                   description={t('hosts.superhostDescription', 'Special badge for exceptional hosts')}
                 />
                 <Toggle
-                  checked={formData.isActive}
+                  checked={formData.isActive || false}
                   onChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
                   label={t('hosts.fields.isActive', 'Active')}
                   description={t('hosts.activeDescription', 'Host is available for bookings')}

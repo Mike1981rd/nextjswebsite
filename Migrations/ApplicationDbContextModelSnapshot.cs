@@ -331,10 +331,22 @@ namespace WebsiteBuilderAPI.Migrations
                     b.Property<string>("Currency")
                         .HasColumnType("text");
 
+                    b.Property<string>("CurrencyBase")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CurrencyLockedUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CurrencyRoundingRuleJson")
+                        .HasColumnType("text");
+
                     b.Property<string>("CustomDomain")
                         .HasColumnType("text");
 
                     b.Property<string>("Domain")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EnabledCurrenciesJson")
                         .HasColumnType("text");
 
                     b.Property<string>("GeolocationProvider")
@@ -354,6 +366,9 @@ namespace WebsiteBuilderAPI.Migrations
 
                     b.Property<int>("LogoSize")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ManualRatesJson")
+                        .HasColumnType("text");
 
                     b.Property<string>("MetricSystem")
                         .HasColumnType("text");

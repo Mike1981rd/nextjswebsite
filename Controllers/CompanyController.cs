@@ -54,7 +54,7 @@ namespace WebsiteBuilderAPI.Controllers
         {
             try
             {
-                var company = await _companyService.GetCompanyByIdAsync(companyId);
+                var company = await _companyService.GetCompanyEntityByIdAsync(companyId);
                 if (company == null)
                 {
                     return NotFound(new { message = "Company not found" });
@@ -65,10 +65,16 @@ namespace WebsiteBuilderAPI.Controllers
                 {
                     id = company.Id,
                     name = company.Name,
-                    currency = company.Currency ?? "USD",
+                    currency = company.Currency ?? company.CurrencyBase ?? "USD",
                     logo = company.Logo,
                     primaryColor = company.PrimaryColor,
-                    secondaryColor = company.SecondaryColor
+                    secondaryColor = company.SecondaryColor,
+                    address = company.Address,
+                    city = company.City,
+                    state = company.State,
+                    postalCode = company.PostalCode,
+                    phone = company.PhoneNumber,
+                    email = company.ContactEmail
                 });
             }
             catch (Exception ex)
@@ -319,6 +325,52 @@ namespace WebsiteBuilderAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error uploading checkout logo");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        #endregion
+
+        #region Currency Settings (Manual)
+
+        /// <summary>
+        /// Obtiene configuración de moneda/tasas (manual) para una empresa
+        /// </summary>
+        [HttpGet("/api/currency/company/{companyId}/effective-settings")]
+        [AllowAnonymous]
+        public async Task<ActionResult<CurrencySettingsDto>> GetCurrencySettings([FromRoute] int companyId)
+        {
+            try
+            {
+                var settings = await _companyService.GetCurrencySettingsAsync(companyId);
+                return Ok(settings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting currency settings for company {CompanyId}", companyId);
+                return StatusCode(500, new { message = "Internal server error" });
+            }
+        }
+
+        /// <summary>
+        /// Actualiza configuración de moneda/tasas (manual) para una empresa
+        /// </summary>
+        [HttpPut("{companyId}/currency-settings")]
+        [RequirePermission("company", "update")]
+        public async Task<ActionResult> UpdateCurrencySettings([FromRoute] int companyId, [FromBody] CurrencySettingsDto request)
+        {
+            try
+            {
+                await _companyService.UpdateCurrencySettingsAsync(companyId, request);
+                return Ok(new { message = "Currency settings updated" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating currency settings for company {CompanyId}", companyId);
                 return StatusCode(500, new { message = "Internal server error" });
             }
         }

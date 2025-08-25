@@ -40,6 +40,12 @@ namespace WebsiteBuilderAPI.Models
 
         // Store Currency
         public string? Currency { get; set; }
+        // Currency Settings (Manual) - persisted as simple columns/JSON
+        public string? CurrencyBase { get; set; }
+        public string? EnabledCurrenciesJson { get; set; }
+        public string? ManualRatesJson { get; set; }
+        public DateTime? CurrencyLockedUntil { get; set; }
+        public string? CurrencyRoundingRuleJson { get; set; }
 
         // Order ID Format
         public string? OrderIdPrefix { get; set; }

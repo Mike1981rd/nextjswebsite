@@ -205,13 +205,12 @@ export default function PreviewRoomHostCard({
         {/* Top section with host card and other info cards */}
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left column - Host cards stacked */}
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {/* Host ID card */}
             <div 
-              className="shadow-xl overflow-hidden"
+              className="shadow-xl overflow-hidden flex-1"
               style={{ 
-                minHeight: '236px', 
-                maxHeight: '236px',
+                minHeight: '240px',
                 backgroundColor: styles.cardColor,
                 borderRadius: `${styles.borderRadius}px`,
                 border: `2px solid ${styles.cardBorderColor}`
@@ -287,37 +286,42 @@ export default function PreviewRoomHostCard({
               </div>
             </div>
 
-            {/* Bio Card - Same dimensions as host card */}
-            {(displayData.bio || displayData.aboutMe) && (
-              <div 
-                className="shadow-xl overflow-hidden"
-                style={{ 
-                  minHeight: '236px', 
-                  maxHeight: '236px',
-                  backgroundColor: styles.cardColor,
-                  borderRadius: `${styles.borderRadius}px`,
-                  border: `2px solid ${styles.cardBorderColor}`
-                }}>
-                <div className="p-6 h-full flex flex-col">
-                  <h3 className={`font-bold mb-3 text-lg ${styles.fontWeight}`} style={{ color: styles.cardTextColor }}>About {displayData.hostName}</h3>
-                  <div className="flex-1 overflow-y-auto">
-                    {displayData.bio && (
-                      <p className={`mb-3 leading-relaxed text-sm ${styles.fontSize}`} style={{ color: styles.cardTextColor, opacity: 0.9 }}>{displayData.bio}</p>
-                    )}
-                    {displayData.aboutMe && (
-                      <p className={`text-sm leading-relaxed ${styles.fontSize}`} style={{ color: styles.cardTextColor, opacity: 0.8 }}>{displayData.aboutMe}</p>
-                    )}
-                  </div>
+            {/* Bio Card - Matching height */}
+            <div 
+              className="shadow-xl overflow-hidden flex-1"
+              style={{ 
+                minHeight: '240px',
+                backgroundColor: styles.cardColor,
+                borderRadius: `${styles.borderRadius}px`,
+                border: `2px solid ${styles.cardBorderColor}`
+              }}>
+              <div className="p-6 h-full flex flex-col">
+                <h3 className={`font-bold mb-3 text-lg ${styles.fontWeight}`} style={{ color: styles.cardTextColor }}>About {displayData.hostName}</h3>
+                <div className="flex-1 overflow-y-auto">
+                  {(displayData.bio || displayData.aboutMe) ? (
+                    <>
+                      {displayData.bio && (
+                        <p className={`mb-3 leading-relaxed text-sm ${styles.fontSize}`} style={{ color: styles.cardTextColor, opacity: 0.9 }}>{displayData.bio}</p>
+                      )}
+                      {displayData.aboutMe && (
+                        <p className={`text-sm leading-relaxed ${styles.fontSize}`} style={{ color: styles.cardTextColor, opacity: 0.8 }}>{displayData.aboutMe}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className={`text-sm leading-relaxed ${styles.fontSize}`} style={{ color: styles.cardTextColor, opacity: 0.7 }}>
+                      {displayData.hostName} hasn't written a bio yet.
+                    </p>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Right column - Other info cards */}
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
 
           {/* Details & Stats Card */}
-          <div className="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-xl shadow-lg p-5">
+          <div className="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-xl shadow-xl p-5 flex-1" style={{ minHeight: '180px' }}>
             <div className="grid grid-cols-2 gap-4">
               {/* Left Column - Personal Info */}
               <div className="space-y-3">
@@ -376,56 +380,65 @@ export default function PreviewRoomHostCard({
           </div>
 
             {/* Attributes & Hobbies Card */}
-            {((displayData.attributes && displayData.attributes.length > 0) || 
-              (displayData.hobbies && displayData.hobbies.length > 0)) && (
-              <div className="bg-gradient-to-br from-yellow-50 via-white to-orange-50 rounded-xl shadow-lg p-5">
-                {displayData.attributes && displayData.attributes.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">Attributes</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {displayData.attributes.map((attr: string, index: number) => (
-                        <span key={index} className="px-3 py-1 bg-white/80 backdrop-blur rounded-full text-sm font-medium text-gray-700 shadow-sm">
-                          {attr}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {displayData.hobbies && displayData.hobbies.length > 0 && (
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">Hobbies</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {displayData.hobbies.map((hobby: string, index: number) => (
-                        <span key={index} className="px-3 py-1 bg-blue-100/80 backdrop-blur text-blue-700 rounded-full text-sm font-medium shadow-sm">
-                          {hobby}
-                        </span>
-                      ))}
-                    </div>
+            <div className="bg-gradient-to-br from-yellow-50 via-white to-orange-50 rounded-xl shadow-xl p-5 flex-1" style={{ minHeight: '180px' }}>
+                {(displayData.attributes && displayData.attributes.length > 0) || (displayData.hobbies && displayData.hobbies.length > 0) ? (
+                  <>
+                    {displayData.attributes && displayData.attributes.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">Attributes</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {displayData.attributes.map((attr: string, index: number) => (
+                            <span key={index} className="px-3 py-1 bg-white/80 backdrop-blur rounded-full text-sm font-medium text-gray-700 shadow-sm">
+                              {attr}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {displayData.hobbies && displayData.hobbies.length > 0 && (
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-2">Hobbies</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {displayData.hobbies.map((hobby: string, index: number) => (
+                            <span key={index} className="px-3 py-1 bg-blue-100/80 backdrop-blur text-blue-700 rounded-full text-sm font-medium shadow-sm">
+                              {hobby}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500 text-sm">No attributes or hobbies listed yet</p>
                   </div>
                 )}
               </div>
-            )}
 
-            {/* Action Buttons Card */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg p-5">
-              <button 
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 font-bold transition shadow-md"
-                style={{
-                  backgroundColor: styles.buttonColor,
-                  color: styles.buttonTextColor,
-                  borderRadius: `${Math.min(styles.borderRadius, 8)}px`
-                }}
-              >
-                <MessageSquare className="w-5 h-5" />
-                Message Host
-              </button>
-              
-              <div className="mt-4 p-3 bg-white/70 rounded-lg">
-                <p className="text-xs text-gray-600 flex items-start gap-1">
-                  <Shield className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                  <span>To protect your payment, never transfer money or communicate outside of the Airbnb website or app.</span>
-                </p>
-              </div>
+          </div>
+        </div>
+
+        {/* Message Host Button - Centered at bottom */}
+        <div className="flex justify-center mt-8">
+          <div className="w-full max-w-md">
+            <button 
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              style={{
+                backgroundColor: styles.buttonColor,
+                color: styles.buttonTextColor,
+                borderRadius: `${Math.min(styles.borderRadius, 12)}px`,
+                fontSize: '16px'
+              }}
+            >
+              <MessageSquare className="w-5 h-5" />
+              Message Host
+            </button>
+            
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <p className="text-xs text-gray-600 flex items-start gap-1 text-center">
+                <Shield className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                <span>To protect your payment, never transfer money or communicate outside of the Airbnb website or app.</span>
+              </p>
             </div>
           </div>
         </div>

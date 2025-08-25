@@ -1,5 +1,6 @@
 using WebsiteBuilderAPI.DTOs.Company;
 using WebsiteBuilderAPI.DTOs.CheckoutSettings;
+using WebsiteBuilderAPI.Models;
 
 namespace WebsiteBuilderAPI.Services
 {
@@ -7,6 +8,7 @@ namespace WebsiteBuilderAPI.Services
     {
         Task<CompanyResponseDto?> GetCurrentCompanyAsync();
         Task<CompanyResponseDto?> GetCompanyByIdAsync(int companyId);
+        Task<Company?> GetCompanyEntityByIdAsync(int companyId);
         Task<CompanyResponseDto?> UpdateCurrentCompanyAsync(UpdateCompanyRequestDto request);
         Task<string> UploadLogoAsync(IFormFile file);
         Task UpdateLogoSizeAsync(int size);
@@ -21,5 +23,9 @@ namespace WebsiteBuilderAPI.Services
 
         // Checkout Branding
         Task<string> UploadCheckoutLogoAsync(IFormFile file);
+
+        // Currency settings (manual)
+        Task<CurrencySettingsDto> GetCurrencySettingsAsync(int companyId);
+        Task UpdateCurrencySettingsAsync(int companyId, CurrencySettingsDto settings);
     }
 }

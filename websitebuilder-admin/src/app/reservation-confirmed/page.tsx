@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, Calendar, Users, MapPin, Mail, Phone, Home, Printer, Download } from 'lucide-react';
 import Link from 'next/link';
+import { generateReservationPDF } from '@/lib/utils/pdfGenerator';
+import toast from 'react-hot-toast';
 
 interface ReservationDetails {
   id: number;
@@ -30,7 +32,9 @@ export default function ReservationConfirmedPage() {
   const router = useRouter();
   const [reservation, setReservation] = useState<ReservationDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   const [primaryColor, setPrimaryColor] = useState('#22c55e');
+  const [companyCurrency, setCompanyCurrency] = useState('USD');
 
   useEffect(() => {
     // Get UI settings
@@ -44,9 +48,55 @@ export default function ReservationConfirmedPage() {
       }
     }
 
+    // Load company info (for PDF generation)
+    loadCompanyInfo();
+    
     // Load reservation details
     loadReservationDetails();
   }, []);
+
+  const loadCompanyInfo = async () => {
+    try {
+      const companyId = localStorage.getItem('companyId') || '1';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://172.25.64.1:5266/api';
+      
+      // First get the full company data
+      const response = await fetch(`${apiUrl}/companies/${companyId}/public`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Build the logo URL correctly
+        let logoUrl = '';
+        if (data.logo) {
+          // Check if it's a full URL or just a path
+          if (data.logo.startsWith('http')) {
+            logoUrl = data.logo;
+          } else if (data.logo.startsWith('/')) {
+            // It's a relative path, build the full URL
+            logoUrl = `${apiUrl.replace('/api', '')}${data.logo}`;
+          } else {
+            // Assume it's in uploads folder
+            logoUrl = `${apiUrl.replace('/api', '')}/uploads/${data.logo}`;
+          }
+        }
+        
+        const companyInfoData = {
+          name: data.name || 'Hotel & Resort',
+          address: `${data.address || ''} ${data.city || ''} ${data.state || ''} ${data.postalCode || ''}`.trim(),
+          phone: data.phone || '',
+          email: data.email || '',
+          logo: logoUrl,
+          currency: data.currency || 'USD' // Store the currency from company settings
+        };
+        
+        localStorage.setItem('companyInfo', JSON.stringify(companyInfoData));
+        setCompanyCurrency(companyInfoData.currency);
+      }
+    } catch (error) {
+      console.error('Error loading company info:', error);
+    }
+  };
 
   const loadReservationDetails = async () => {
     try {
@@ -126,9 +176,72 @@ export default function ReservationConfirmedPage() {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    // In production, this would generate and download a PDF
-    alert('La funcionalidad de descarga de PDF estará disponible pronto');
+  const handleDownloadPDF = async () => {
+    if (!reservation || generatingPDF) return;
+    
+    setGeneratingPDF(true);
+    
+    try {
+      // Get company info from localStorage or use defaults
+      const companyInfo = localStorage.getItem('companyInfo');
+      let companyData = {
+        name: 'Hotel & Resort',
+        address: '',
+        phone: '',
+        email: '',
+        logo: '',
+        currency: 'USD'
+      };
+      
+      if (companyInfo) {
+        try {
+          const parsed = JSON.parse(companyInfo);
+          companyData = {
+            name: parsed.name || companyData.name,
+            address: parsed.address || companyData.address,
+            phone: parsed.phone || companyData.phone,
+            email: parsed.email || companyData.email,
+            logo: parsed.logo || companyData.logo,
+            currency: parsed.currency || companyData.currency
+          };
+        } catch (e) {
+          console.error('Error parsing company info:', e);
+        }
+      }
+      
+      // Use the company's currency instead of the reservation currency
+      const correctCurrency = companyData.currency;
+
+      // Generate PDF with reservation data
+      await generateReservationPDF({
+        confirmationNumber: reservation.confirmationNumber,
+        customerName: reservation.customerName,
+        customerEmail: reservation.customerEmail,
+        customerPhone: reservation.customerPhone,
+        roomName: reservation.roomName,
+        roomLocation: reservation.roomLocation,
+        checkInDate: reservation.checkInDate,
+        checkOutDate: reservation.checkOutDate,
+        checkInTime: reservation.checkInTime,
+        checkOutTime: reservation.checkOutTime,
+        numberOfGuests: reservation.numberOfGuests,
+        totalAmount: reservation.totalAmount,
+        currency: correctCurrency, // Use company's currency
+        specialRequests: reservation.specialRequests,
+        companyName: companyData.name,
+        companyLogo: companyData.logo,
+        companyAddress: companyData.address,
+        companyPhone: companyData.phone,
+        companyEmail: companyData.email
+      });
+      
+      toast.success('PDF descargado exitosamente');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Error al generar el PDF. Por favor intente nuevamente.');
+    } finally {
+      setGeneratingPDF(false);
+    }
   };
 
   if (loading) {
@@ -268,7 +381,7 @@ export default function ReservationConfirmedPage() {
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium text-gray-900">Total Pagado</span>
                 <span className="text-2xl font-bold" style={{ color: primaryColor }}>
-                  {formatCurrency(reservation.totalAmount, reservation.currency)}
+                  {formatCurrency(reservation.totalAmount, companyCurrency)}
                 </span>
               </div>
             </div>
@@ -298,10 +411,20 @@ export default function ReservationConfirmedPage() {
           
           <button
             onClick={handleDownloadPDF}
-            className="px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center"
+            disabled={generatingPDF}
+            className="px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download className="w-5 h-5 mr-2" />
-            Descargar PDF
+            {generatingPDF ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-700 mr-2"></div>
+                Generando PDF...
+              </>
+            ) : (
+              <>
+                <Download className="w-5 h-5 mr-2" />
+                Descargar PDF
+              </>
+            )}
           </button>
           
           <Link

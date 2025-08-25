@@ -346,27 +346,6 @@ export default function PreviewRoomThings({
         })}
       </div>
 
-      {/* Additional info - only show if there are sections */}
-      {sections.some(s => s.items && s.items.length > 0) && (
-        <div 
-          className="mt-8 p-4 rounded-lg"
-          style={{ backgroundColor: colorScheme.foreground || '#F5F5F5' }}
-        >
-          <div className="flex items-start gap-2">
-            <Info 
-              className="w-5 h-5 mt-0.5"
-              style={{ color: colorScheme.textSecondary || '#666666' }}
-            />
-            <p 
-              className="text-sm"
-              style={{ color: colorScheme.textSecondary || '#666666' }}
-            >
-              Our community is committed to reliability. Hosts are required to disclose known cameras, 
-              and are never permitted in private spaces like bathrooms or sleeping areas.
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
