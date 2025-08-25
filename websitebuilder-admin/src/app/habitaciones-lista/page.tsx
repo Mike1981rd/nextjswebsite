@@ -35,6 +35,12 @@ export default function RoomsListPage() {
   const { company } = useCompany();
   const productCardsConfig = themeConfig?.productCards;
   
+  // Debug logging
+  console.log('Theme Config:', themeConfig);
+  console.log('Product Cards Config:', productCardsConfig);
+  console.log('Card Size:', productCardsConfig?.cardSize);
+  console.log('Image Ratio:', productCardsConfig?.image?.defaultRatio);
+  
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +65,15 @@ export default function RoomsListPage() {
     fetchRooms();
     fetchStructuralComponents();
     fetchGlobalTheme();
+    // Load theme config if not loaded
+    loadThemeConfig();
   }, []);
+  
+  const loadThemeConfig = async () => {
+    const { fetchConfig } = useThemeConfigStore.getState();
+    const companyId = parseInt(localStorage.getItem('companyId') || '1');
+    await fetchConfig(companyId);
+  };
 
   const fetchGlobalTheme = async () => {
     try {
@@ -337,9 +351,12 @@ export default function RoomsListPage() {
             ) : (
               <div className={
                 viewMode === 'grid' 
-                  ? `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${productCardsConfig?.buttons?.desktopStyle === 'icons' ? '4' : '3'} gap-6`
+                  ? 'grid gap-6'
                   : 'space-y-4'
-              }>
+              }
+              style={viewMode === 'grid' ? {
+                gridTemplateColumns: `repeat(auto-fill, minmax(${Math.max(120, 240 * (productCardsConfig?.cardSize?.scale || 1))}px, 1fr))`
+              } : undefined}>
                 {currentRooms.map(room => (
                   <RoomCard
                     key={room.id}

@@ -133,7 +133,7 @@ export default function PaymentsTab() {
 
   const handleConfigureProvider = (providerId: string) => {
     // Navigate to configuration page using Next.js router
-    router.push(`/empresa/payments/configure/${providerId}`);
+    router.push(`/dashboard/empresa/payments/configure/${providerId}`);
   };
 
   const handleDeleteProvider = async (providerId: number) => {
@@ -331,7 +331,7 @@ export default function PaymentsTab() {
           className="group relative w-[70vw] sm:w-full max-w-sm sm:max-w-none"
         >
           <button
-            onClick={() => router.push('/empresa/payments/add')}
+            onClick={() => router.push('/dashboard/empresa/payments/add')}
             className="flex h-full w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white/50 p-6 sm:p-8 transition-all hover:border-gray-400 hover:bg-white/80 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:border-gray-500 dark:hover:bg-gray-800/80"
           >
             <div className="text-center">

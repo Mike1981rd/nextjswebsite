@@ -59,28 +59,43 @@ export default function ReservationConfirmedPage() {
         return;
       }
 
-      // For now, create mock data - in production, fetch from API
-      const mockReservation: ReservationDetails = {
+      // Try to load confirmation persisted by checkout
+      const stored = localStorage.getItem('reservation_confirmation');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const details: ReservationDetails = {
+          id: parsed.id || parseInt(id || '1'),
+          confirmationNumber: parsed.confirmationNumber || confirmationNumber || 'RES000001',
+          customerName: parsed.customerName || 'Cliente',
+          customerEmail: parsed.customerEmail || 'cliente@email.com',
+          customerPhone: parsed.customerPhone,
+          roomName: parsed.roomName || 'Habitación',
+          roomImage: parsed.roomImage,
+          checkInDate: parsed.checkInDate,
+          checkOutDate: parsed.checkOutDate,
+          numberOfGuests: parsed.numberOfGuests || 1,
+          totalAmount: parsed.totalAmount || 0,
+          currency: parsed.currency || 'USD',
+          status: parsed.status || 'Confirmed',
+        };
+        setReservation(details);
+        return;
+      }
+
+      // Fallback mock if nothing stored
+      setReservation({
         id: parseInt(id || '1'),
         confirmationNumber: confirmationNumber || 'RES000001',
-        customerName: 'Juan Pérez',
-        customerEmail: 'juan@email.com',
-        customerPhone: '+503 7777-8888',
-        roomName: 'Suite Ejecutiva con Vista al Mar',
-        checkInDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        checkOutDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-        numberOfGuests: 2,
-        totalAmount: 450.00,
+        customerName: 'Cliente',
+        customerEmail: 'cliente@email.com',
+        roomName: 'Habitación',
+        checkInDate: new Date().toISOString(),
+        checkOutDate: new Date(Date.now() + 24*60*60*1000).toISOString(),
+        numberOfGuests: 1,
+        totalAmount: 0,
         currency: 'USD',
         status: 'Confirmed',
-        specialRequests: 'Late check-in requested',
-        roomImage: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800',
-        roomLocation: 'Piso 5, Habitación 502',
-        checkInTime: '15:00',
-        checkOutTime: '12:00'
-      };
-
-      setReservation(mockReservation);
+      });
     } catch (error) {
       console.error('Error loading reservation:', error);
     } finally {
@@ -100,10 +115,8 @@ export default function ReservationConfirmedPage() {
 
   const formatCurrency = (amount: number, currency: string) => {
     try {
-      return new Intl.NumberFormat('es-ES', { 
-        style: 'currency', 
-        currency: currency 
-      }).format(amount);
+      const formatted = new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+      return `${currency} ${formatted.replace(/[^0-9.,\s]/g, '').trim()}`;
     } catch {
       return `${currency} ${amount.toFixed(2)}`;
     }
@@ -292,12 +305,12 @@ export default function ReservationConfirmedPage() {
           </button>
           
           <Link
-            href="/dashboard"
+            href="/home"
             className="px-6 py-3 rounded-lg font-medium text-white transition-colors flex items-center justify-center"
             style={{ backgroundColor: primaryColor }}
           >
             <Home className="w-5 h-5 mr-2" />
-            Ir a Mi Cuenta
+            Ir al inicio
           </Link>
         </div>
 

@@ -158,6 +158,17 @@ export function CustomersList() {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const formatMoney = (amount: number, currency?: string) => {
+    try {
+      if (!currency) return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const formatted = new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+      // Convert to "CUR 1,234.56" format
+      return `${currency} ${formatted.replace(/[^0-9.,\s]/g, '').trim()}`;
+    } catch {
+      return `${currency || ''} ${amount.toFixed(2)}`.trim();
+    }
+  };
+
   return (
     <div className="w-full">
       {/* Header - Centered on Mobile */}
@@ -351,7 +362,7 @@ export function CustomersList() {
                       {customer.totalOrders}
                     </td>
                     <td className="px-6 py-4 text-gray-900 dark:text-white">
-                      ${customer.totalSpent.toFixed(2)}
+                      {formatMoney(customer.totalSpent, (customer as any).preferredCurrency || 'DOP')}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -454,7 +465,7 @@ export function CustomersList() {
                     </div>
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">{t('customers.spent')}: </span>
-                      <span className="text-gray-900 dark:text-white">${customer.totalSpent.toFixed(2)}</span>
+                      <span className="text-gray-900 dark:text-white">{formatMoney(customer.totalSpent, (customer as any).preferredCurrency || 'DOP')}</span>
                     </div>
                   </div>
                 </div>

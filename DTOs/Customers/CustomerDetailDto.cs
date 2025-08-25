@@ -16,6 +16,14 @@ namespace WebsiteBuilderAPI.DTOs.Customers
         public string? CompanyName { get; set; }
         public string? TaxId { get; set; }
         
+        // Billing Address fields
+        public string? BillingAddress { get; set; }
+        public string? BillingApartment { get; set; }
+        public string? BillingCity { get; set; }
+        public string? BillingState { get; set; }
+        public string? BillingPostalCode { get; set; }
+        public string? BillingCountry { get; set; }
+        
         // Collections
         public List<CustomerAddressDto> Addresses { get; set; }
         public List<CustomerPaymentMethodDto> PaymentMethods { get; set; }

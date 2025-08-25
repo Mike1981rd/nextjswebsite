@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { CustomerDetailDto } from '@/types/customer';
 import { AddressBillingFormData } from '../CustomerDetail';
+import { customerAPI } from '@/lib/api/customers';
 import { CountryFlag, countries } from '@/components/ui/CountryFlag';
 
 interface CustomerAddressBillingTabProps {
@@ -28,6 +29,18 @@ export default function CustomerAddressBillingTab({
   setIsEditing
 }: CustomerAddressBillingTabProps) {
   const { t } = useI18n();
+  const [useSameAddress, setUseSameAddress] = useState(false);
+  const [payments, setPayments] = useState<Array<{ reservationId: number; amount: number; method: string; status: string; date: string; transactionId?: string }>>([]);
+  const formatMoney = (amount?: number, currency?: string) => {
+    if (amount === undefined || amount === null) return '-';
+    try {
+      if (!currency) return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const formatted = new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+      return `${currency} ${formatted.replace(/[^0-9.,\s]/g, '').trim()}`;
+    } catch {
+      return `${currency || ''} ${amount.toFixed(2)}`.trim();
+    }
+  };
   
   const handleAddressChange = (field: string, value: any) => {
     // Always update the first address (primary address)
@@ -98,9 +111,81 @@ export default function CustomerAddressBillingTab({
     }
   }, []); // Empty dependency array - only run once on mount
 
+  // Load payments history for this customer (by email)
+  useEffect(() => {
+    (async () => {
+      try {
+        if (customer?.email) {
+          const list = await customerAPI.getCustomerPaymentsByEmail(customer.email);
+          setPayments(list);
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, [customer?.email]);
+
   return (
     <div className="relative min-h-screen pb-20 md:pb-6">
       <div className="p-4 md:p-6">
+        {/* Summary: Default Payment Method and Total Spent */}
+        {!isNewCustomer && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('customers.payments.defaultMethod', 'Método de pago predeterminado')}</p>
+              <p className="text-gray-900 dark:text-white font-medium">
+                {formData.paymentMethods?.find(p => p.isDefault)
+                  ? `•••• ${formData.paymentMethods.find(p => p.isDefault)!.last4} · ${t('customers.payments.expires', 'Vence')} ${formData.paymentMethods.find(p => p.isDefault)!.expiryMonth}/${formData.paymentMethods.find(p => p.isDefault)!.expiryYear}`
+                  : t('customers.payments.noDefault', 'Sin método predeterminado')}
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('customers.overview.totalSpent', 'Monto total gastado')}</p>
+              <p className="text-gray-900 dark:text-white font-medium">
+                {formatMoney(customer?.totalSpent, customer?.preferredCurrency || 'DOP')}
+              </p>
+            </div>
+          </div>
+        )}
+        {/* Payments History */}
+        {!isNewCustomer && (
+          <div className="mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('customers.payments.history', 'Historial de Pagos')}
+            </h3>
+            {payments.length === 0 ? (
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 text-sm text-gray-600 dark:text-gray-300">
+                {t('customers.payments.noHistory', 'No se encontraron pagos para este cliente')}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                    <tr>
+                      <th className="text-left px-4 py-2">{t('customers.payments.date', 'Fecha')}</th>
+                      <th className="text-left px-4 py-2">{t('customers.payments.amount', 'Monto')}</th>
+                      <th className="text-left px-4 py-2">{t('customers.payments.method', 'Método')}</th>
+                      <th className="text-left px-4 py-2">{t('customers.payments.status', 'Estado')}</th>
+                      <th className="text-left px-4 py-2">{t('customers.payments.reservation', 'Reserva')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {payments.map((p, idx) => (
+                      <tr key={idx}>
+                        <td className="px-4 py-2">{new Date(p.date).toLocaleString()}</td>
+                        <td className="px-4 py-2">{formatMoney(p.amount, customer?.preferredCurrency || 'DOP')}</td>
+                        <td className="px-4 py-2">{p.method}</td>
+                        <td className="px-4 py-2">{p.status}</td>
+                        <td className="px-4 py-2">#{p.reservationId}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Addresses Section - Always show form like in CreateCliente */}
         <div className="mb-6">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -244,6 +329,156 @@ export default function CustomerAddressBillingTab({
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Billing Address Section */}
+        <div className="mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {t('customers.billingAddress.title', 'Dirección de Facturación')}
+          </h3>
+          
+          <div className="space-y-4">
+            {/* Checkbox to use same address */}
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="useSameAddress"
+                checked={useSameAddress}
+                onChange={(e) => {
+                  setUseSameAddress(e.target.checked);
+                  if (e.target.checked && formData.addresses[0]) {
+                    // Copy shipping address to billing
+                    onFormChange({
+                      billingAddress: formData.addresses[0].addressLine1,
+                      billingApartment: formData.addresses[0].addressLine2,
+                      billingCity: formData.addresses[0].city,
+                      billingState: formData.addresses[0].state,
+                      billingPostalCode: formData.addresses[0].postalCode,
+                      billingCountry: formData.addresses[0].country
+                    });
+                  }
+                }}
+                className="h-4 w-4 rounded"
+                style={{ accentColor: primaryColor }}
+              />
+              <label htmlFor="useSameAddress" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                {t('customers.billingAddress.sameAsShipping', 'Usar la misma dirección de envío')}
+              </label>
+            </div>
+
+            {!useSameAddress && (
+              <div className="space-y-4">
+                {/* Billing Street Address */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('customers.billingAddress.street', 'Dirección de Calle')}
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={255}
+                    value={formData.billingAddress || ''}
+                    onChange={(e) => onFormChange({ billingAddress: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                    style={{ '--tw-ring-color': primaryColor } as any}
+                    placeholder={t('customers.billingAddress.streetPlaceholder', 'Calle Principal 123')}
+                  />
+                </div>
+                
+                {/* Two column grid for Apartment/Suite and City */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('customers.billingAddress.apartment', 'Apartamento/Suite')}
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={100}
+                      value={formData.billingApartment || ''}
+                      onChange={(e) => onFormChange({ billingApartment: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      placeholder={t('customers.billingAddress.apartmentPlaceholder', 'Depto 4B')}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('customers.billingAddress.city', 'Ciudad')}
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={100}
+                      value={formData.billingCity || ''}
+                      onChange={(e) => onFormChange({ billingCity: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      placeholder={t('customers.billingAddress.cityPlaceholder', 'Ciudad de México')}
+                    />
+                  </div>
+                </div>
+                
+                {/* Two column grid for State and Postal Code */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('customers.billingAddress.state', 'Estado/Provincia')}
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={100}
+                      value={formData.billingState || ''}
+                      onChange={(e) => onFormChange({ billingState: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      placeholder={t('customers.billingAddress.statePlaceholder', 'CDMX')}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('customers.billingAddress.postalCode', 'Código Postal')}
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={20}
+                      value={formData.billingPostalCode || ''}
+                      onChange={(e) => onFormChange({ billingPostalCode: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      placeholder={t('customers.billingAddress.postalCodePlaceholder', '01000')}
+                    />
+                  </div>
+                </div>
+                
+                {/* Country */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('customers.billingAddress.country', 'País')}
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={formData.billingCountry || ''}
+                      onChange={(e) => onFormChange({ billingCountry: e.target.value })}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all appearance-none"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                    >
+                      <option value="">{t('customers.billingAddress.countryPlaceholder', 'Seleccionar País')}</option>
+                      {Object.entries(countries).map(([code, country]) => (
+                        <option key={code} value={code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                    {formData.billingCountry && (
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <CountryFlag countryCode={formData.billingCountry} className="w-5 h-4" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

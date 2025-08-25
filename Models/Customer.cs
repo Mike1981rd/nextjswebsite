@@ -62,6 +62,25 @@ namespace WebsiteBuilderAPI.Models
         [StringLength(50)]
         public string? TaxId { get; set; }
         
+        // Billing Address Fields
+        [StringLength(255)]
+        public string? BillingAddress { get; set; }
+        
+        [StringLength(100)]
+        public string? BillingApartment { get; set; }
+        
+        [StringLength(100)]
+        public string? BillingCity { get; set; }
+        
+        [StringLength(100)]
+        public string? BillingState { get; set; }
+        
+        [StringLength(20)]
+        public string? BillingPostalCode { get; set; }
+        
+        [StringLength(100)]
+        public string? BillingCountry { get; set; }
+        
         // Preferences
         [StringLength(50)]
         public string PreferredLanguage { get; set; } = "English";

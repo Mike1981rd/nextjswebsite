@@ -59,26 +59,28 @@ export default function RoomCard({
     ? Math.round(((room.comparePrice - room.basePrice) / room.comparePrice) * 100)
     : 0;
 
-  // Get aspect ratio from config
-  const getAspectRatio = () => {
-    const ratio = productCardsConfig?.image?.defaultRatio || 'square-1-1-fill';
+  // Get aspect ratio style
+  const getAspectRatioStyle = () => {
+    const ratio = productCardsConfig?.image?.defaultRatio || 'default';
+    console.log('Current ratio setting:', ratio);
     const aspectMap: Record<string, string> = {
-      'square-1-1-fill': 'aspect-square',
-      'square-1-1-fit': 'aspect-square',
-      'portrait-large-2-3-fill': 'aspect-[2/3]',
-      'portrait-large-2-3-fit': 'aspect-[2/3]',
-      'portrait-3-4-fill': 'aspect-[3/4]',
-      'portrait-3-4-fit': 'aspect-[3/4]',
-      'horizontal-4-3-fill': 'aspect-[4/3]',
-      'horizontal-4-3-fit': 'aspect-[4/3]'
+      'default': '1 / 1',
+      'portrait': '3 / 4', 
+      'landscape': '4 / 3'
     };
-    return aspectMap[ratio] || 'aspect-square';
+    const aspectValue = aspectMap[ratio] || '1 / 1';
+    console.log('Applied aspect ratio:', aspectValue);
+    return { aspectRatio: aspectValue };
   };
 
   // Get object fit from config
   const getObjectFit = () => {
-    const ratio = productCardsConfig?.image?.defaultRatio || 'square-1-1-fill';
-    return ratio.includes('fill') ? 'object-cover' : 'object-contain';
+    return 'object-cover'; // Always use cover for better appearance
+  };
+  
+  // Get card scale
+  const getCardScale = () => {
+    return productCardsConfig?.cardSize?.scale || 1;
   };
 
   // Handle hover effects
@@ -162,11 +164,12 @@ export default function RoomCard({
     // List view layout
     return (
       <div 
-        className="flex gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+        className="flex gap-4 p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
         style={{ 
           backgroundColor: productCardsConfig?.visibility?.colorizeCardBackground 
             ? colorScheme?.background?.surface 
-            : 'white' 
+            : 'white',
+          borderRadius: `${productCardsConfig?.cardStyle?.borderRadius ?? 8}px`
         }}
       >
         {/* Image */}
@@ -176,14 +179,16 @@ export default function RoomCard({
               <img
                 src={getImageUrl(room.images?.[0])}
                 alt={room.name}
-                className="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                style={{ borderRadius: `${productCardsConfig?.cardStyle?.borderRadius ?? 8}px` }}
               />
             </Link>
           ) : (
             <img
               src={getImageUrl(room.images?.[0])}
               alt={room.name}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-cover"
+              style={{ borderRadius: `${productCardsConfig?.cardStyle?.borderRadius ?? 8}px` }}
             />
           )}
         </div>
@@ -267,17 +272,25 @@ export default function RoomCard({
   // Grid view layout
   return (
     <div 
-      className="group relative bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300"
+      className="group relative bg-white shadow-sm hover:shadow-lg transition-all duration-300"
       style={{ 
         backgroundColor: productCardsConfig?.visibility?.colorizeCardBackground 
           ? colorScheme?.background?.surface 
-          : 'white'
+          : 'white',
+        borderRadius: `${productCardsConfig?.cardStyle?.borderRadius ?? 8}px`
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* Image Container */}
-      <div className={`relative overflow-hidden rounded-t-lg ${getAspectRatio()}`}>
+      <div 
+        className="relative overflow-hidden"
+        style={{
+          ...getAspectRatioStyle(),
+          borderTopLeftRadius: `${productCardsConfig?.cardStyle?.borderRadius ?? 8}px`,
+          borderTopRightRadius: `${productCardsConfig?.cardStyle?.borderRadius ?? 8}px`
+        }}
+      >
         {room.slug ? (
           <Link href={`/habitaciones/${room.slug}`}>
             <img

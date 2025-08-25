@@ -280,6 +280,13 @@ namespace WebsiteBuilderAPI.Controllers
                         CompanyId = companyId,
                         CustomerId = GenerateCustomerId(),
                         PreferredCurrency = dto.Currency,
+                        // Persist billing fields if user provided an address
+                        BillingAddress = string.IsNullOrWhiteSpace(dto.Address) ? null : dto.Address,
+                        BillingApartment = string.IsNullOrWhiteSpace(dto.Apartment) ? null : dto.Apartment,
+                        BillingCity = string.IsNullOrWhiteSpace(dto.City) ? null : dto.City,
+                        BillingState = string.IsNullOrWhiteSpace(dto.State) ? null : dto.State,
+                        BillingPostalCode = string.IsNullOrWhiteSpace(dto.PostalCode) ? null : dto.PostalCode,
+                        BillingCountry = string.IsNullOrWhiteSpace(dto.Country) ? null : dto.Country,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };
@@ -289,8 +296,8 @@ namespace WebsiteBuilderAPI.Controllers
                     
                     _logger.LogInformation("Customer created with ID: {CustomerId}", customer.Id);
 
-                    // Create customer address if provided
-                    if (!string.IsNullOrEmpty(dto.Address))
+                    // Create default Billing address record if provided
+                    if (!string.IsNullOrWhiteSpace(dto.Address))
                     {
                         var address = new CustomerAddress
                         {
@@ -333,7 +340,53 @@ namespace WebsiteBuilderAPI.Controllers
                     customer.TaxId = dto.TaxId ?? customer.TaxId;
                     customer.UpdatedAt = DateTime.UtcNow;
                     
+                    // Update billing fields only if values provided (do not overwrite with empties)
+                    if (!string.IsNullOrWhiteSpace(dto.Address)) customer.BillingAddress = dto.Address;
+                    if (!string.IsNullOrWhiteSpace(dto.Apartment)) customer.BillingApartment = dto.Apartment;
+                    if (!string.IsNullOrWhiteSpace(dto.City)) customer.BillingCity = dto.City;
+                    if (!string.IsNullOrWhiteSpace(dto.State)) customer.BillingState = dto.State;
+                    if (!string.IsNullOrWhiteSpace(dto.PostalCode)) customer.BillingPostalCode = dto.PostalCode;
+                    if (!string.IsNullOrWhiteSpace(dto.Country)) customer.BillingCountry = dto.Country;
+
                     await _context.SaveChangesAsync();
+
+                    // Upsert default Billing address record if user provided address
+                    if (!string.IsNullOrWhiteSpace(dto.Address))
+                    {
+                        var existingBilling = await _context.CustomerAddresses
+                            .FirstOrDefaultAsync(a => a.CustomerId == customer.Id && a.Type == "Billing" && a.IsDefault);
+
+                        if (existingBilling != null)
+                        {
+                            existingBilling.Street = dto.Address;
+                            existingBilling.Apartment = dto.Apartment;
+                            existingBilling.City = dto.City ?? existingBilling.City;
+                            existingBilling.State = dto.State;
+                            existingBilling.PostalCode = dto.PostalCode ?? existingBilling.PostalCode;
+                            existingBilling.Country = dto.Country;
+                            existingBilling.UpdatedAt = DateTime.UtcNow;
+                            await _context.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            var address = new CustomerAddress
+                            {
+                                CustomerId = customer.Id,
+                                Type = "Billing",
+                                Label = $"{customer.FirstName} {customer.LastName} - Billing",
+                                Street = dto.Address,
+                                Apartment = dto.Apartment,
+                                City = dto.City ?? "",
+                                State = dto.State,
+                                PostalCode = dto.PostalCode ?? "",
+                                Country = dto.Country,
+                                IsDefault = true,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.CustomerAddresses.Add(address);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
                 }
 
                 // Step 2: Create reservation
@@ -359,8 +412,8 @@ namespace WebsiteBuilderAPI.Controllers
                 // Calculate number of nights
                 reservation.CalculateNights();
 
-                // Add billing address if different from default
-                if (!string.IsNullOrEmpty(dto.Address) && dto.TaxDocumentType != "consumidor_final")
+                // Add reservation custom billing snapshot if user provided billing address (regardless of tax document type)
+                if (!string.IsNullOrWhiteSpace(dto.Address))
                 {
                     reservation.CustomBillingAddress = dto.Address;
                     reservation.CustomBillingCity = dto.City;
@@ -382,6 +435,70 @@ namespace WebsiteBuilderAPI.Controllers
                     // Update reservation status to confirmed
                     reservation.Status = "Confirmed";
                     await _context.SaveChangesAsync();
+
+                    // Update customer aggregate metrics
+                    try
+                    {
+                        customer.TotalSpent = (customer.TotalSpent) + dto.TotalAmount;
+                        customer.TotalOrders = (customer.TotalOrders) + 1;
+                        customer.UpdatedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to update customer aggregates for {CustomerId}", customer.Id);
+                    }
+
+                    // Upsert customer payment method based on provided card details
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(dto.CardNumber) && !string.IsNullOrWhiteSpace(dto.ExpiryDate))
+                        {
+                            var last4 = dto.CardNumber.Length >= 4 ? dto.CardNumber[^4..] : dto.CardNumber;
+                            string cardType = DetectCardType(dto.CardNumber);
+                            // Parse MM/YY
+                            var parts = dto.ExpiryDate.Split('/');
+                            var mm = parts.Length > 0 ? parts[0] : "";
+                            var yy = parts.Length > 1 ? (parts[1].Length == 2 ? $"20{parts[1]}" : parts[1]) : "";
+
+                            // Find existing default or matching last4
+                            var existing = await _context.CustomerPaymentMethods
+                                .FirstOrDefaultAsync(p => p.CustomerId == customer.Id && p.Last4Digits == last4);
+
+                            if (existing == null)
+                            {
+                                var method = new CustomerPaymentMethod
+                                {
+                                    CustomerId = customer.Id,
+                                    CardType = cardType,
+                                    CardholderName = dto.CardholderName ?? $"{customer.FirstName} {customer.LastName}".Trim(),
+                                    Last4Digits = last4,
+                                    ExpiryMonth = mm,
+                                    ExpiryYear = yy,
+                                    BillingAddress = BuildBillingAddressSnapshot(dto),
+                                    IsPrimary = true
+                                };
+                                // If already has a primary, keep it and set this as non-primary
+                                var hasPrimary = await _context.CustomerPaymentMethods.AnyAsync(p => p.CustomerId == customer.Id && p.IsPrimary);
+                                if (hasPrimary) method.IsPrimary = false;
+                                _context.CustomerPaymentMethods.Add(method);
+                                await _context.SaveChangesAsync();
+                            }
+                            else
+                            {
+                                existing.CardType = cardType;
+                                existing.CardholderName = dto.CardholderName ?? existing.CardholderName;
+                                existing.ExpiryMonth = string.IsNullOrWhiteSpace(mm) ? existing.ExpiryMonth : mm;
+                                existing.ExpiryYear = string.IsNullOrWhiteSpace(yy) ? existing.ExpiryYear : yy;
+                                existing.BillingAddress = BuildBillingAddressSnapshot(dto) ?? existing.BillingAddress;
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to upsert customer payment method for customer {CustomerId}", customer.Id);
+                    }
 
                     // Step 4: Update room availability calendar
                     await UpdateRoomAvailability(dto.RoomId, dto.CheckInDate, dto.CheckOutDate);
@@ -439,6 +556,27 @@ namespace WebsiteBuilderAPI.Controllers
                     }
                 });
             }
+        }
+
+        private static string DetectCardType(string cardNumber)
+        {
+            if (string.IsNullOrWhiteSpace(cardNumber)) return "Card";
+            var num = cardNumber.Replace(" ", "");
+            if (System.Text.RegularExpressions.Regex.IsMatch(num, "^4[0-9]{6,}$")) return "Visa";
+            if (System.Text.RegularExpressions.Regex.IsMatch(num, "^5[1-5][0-9]{5,}$")) return "Mastercard";
+            if (System.Text.RegularExpressions.Regex.IsMatch(num, "^(34|37)[0-9]{5,}$")) return "AmericanExpress";
+            if (System.Text.RegularExpressions.Regex.IsMatch(num, "^3(?:0[0-5]|[68][0-9])[0-9]{4,}$")) return "DinersClub";
+            if (System.Text.RegularExpressions.Regex.IsMatch(num, "^6(?:011|5[0-9]{2})[0-9]{3,}$")) return "Discover";
+            if (System.Text.RegularExpressions.Regex.IsMatch(num, "^(?:2131|1800|35[0-9]{3})[0-9]{3,}$")) return "JCB";
+            return "Card";
+        }
+
+        private static string? BuildBillingAddressSnapshot(ProcessRoomReservationDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Address)) return null;
+            var parts = new[] { dto.Address, dto.Apartment, dto.City, dto.State, dto.PostalCode, dto.Country }
+                .Where(s => !string.IsNullOrWhiteSpace(s));
+            return string.Join(", ", parts!);
         }
 
         private async Task<bool> CheckRoomAvailability(int roomId, DateTime checkIn, DateTime checkOut)

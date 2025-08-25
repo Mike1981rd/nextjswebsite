@@ -5,18 +5,12 @@
  */
 
 /**
- * Image aspect ratio options (9 different ratios)
+ * Image aspect ratio options (simplified to 3 options)
  */
 export type ImageRatio =
-  | 'square-1-1-fill'
-  | 'portrait-large-2-3-fill'
-  | 'portrait-3-4-fill'
-  | 'portrait-large-2-3-fit'
-  | 'horizontal-4-3-fill'
-  | 'square-1-1-fit'
-  | 'portrait-3-4-fit'
-  | 'portrait-large-2-3-fit'
-  | 'horizontal-4-3-fit';
+  | 'default' // Square 1:1
+  | 'portrait' // Portrait 3:4
+  | 'landscape'; // Landscape 4:3
 
 /**
  * Product rating display options (6 different styles)
@@ -61,6 +55,16 @@ export interface ProductCardsConfig {
   /** Image display settings */
   image: {
     defaultRatio: ImageRatio;
+  };
+  
+  /** Card size settings */
+  cardSize?: {
+    scale: number; // 0 to 2.0 (0% to 200%)
+  };
+  
+  /** Card style settings */
+  cardStyle?: {
+    borderRadius: number; // 0 to 50 (px)
   };
   
   /** Visibility settings for various elements */
@@ -110,7 +114,13 @@ export interface ProductCardsConfig {
  */
 export const defaultProductCards: ProductCardsConfig = {
   image: {
-    defaultRatio: 'square-1-1-fill'
+    defaultRatio: 'default'
+  },
+  cardSize: {
+    scale: 1.0
+  },
+  cardStyle: {
+    borderRadius: 8
   },
   visibility: {
     showVendor: false,
@@ -147,14 +157,9 @@ export const defaultProductCards: ProductCardsConfig = {
  * Human-readable labels for image ratios
  */
 export const ImageRatioLabels: Record<ImageRatio, string> = {
-  'square-1-1-fill': 'Cuadrado (1:1) - Llenar',
-  'portrait-large-2-3-fill': 'Retrato grande (2:3) - Llenar',
-  'portrait-3-4-fill': 'Retrato (3:4) - Llenar',
-  'portrait-large-2-3-fit': 'Retrato grande (2:3) - Ajustar',
-  'horizontal-4-3-fill': 'Horizontal (4:3) - Llenar',
-  'square-1-1-fit': 'Cuadrado (1:1) - Ajustar',
-  'portrait-3-4-fit': 'Retrato (3:4) - Ajustar',
-  'horizontal-4-3-fit': 'Horizontal (4:3) - Ajustar'
+  'default': 'Default (Square)',
+  'portrait': 'Portrait',
+  'landscape': 'Landscape'
 };
 
 /**
@@ -176,14 +181,9 @@ export const RatingLabels: Record<ProductRating, string> = {
  */
 export function getAspectRatio(ratio: ImageRatio): string {
   const ratioMap: Record<ImageRatio, string> = {
-    'square-1-1-fill': '1 / 1',
-    'square-1-1-fit': '1 / 1',
-    'portrait-large-2-3-fill': '2 / 3',
-    'portrait-large-2-3-fit': '2 / 3',
-    'portrait-3-4-fill': '3 / 4',
-    'portrait-3-4-fit': '3 / 4',
-    'horizontal-4-3-fill': '4 / 3',
-    'horizontal-4-3-fit': '4 / 3'
+    'default': '1 / 1',
+    'portrait': '3 / 4',
+    'landscape': '4 / 3'
   };
   
   return ratioMap[ratio] || '1 / 1';
@@ -195,5 +195,5 @@ export function getAspectRatio(ratio: ImageRatio): string {
  * @returns CSS object-fit value
  */
 export function getObjectFit(ratio: ImageRatio): 'cover' | 'contain' {
-  return ratio.includes('fill') ? 'cover' : 'contain';
+  return 'cover'; // Always use cover for better appearance
 }

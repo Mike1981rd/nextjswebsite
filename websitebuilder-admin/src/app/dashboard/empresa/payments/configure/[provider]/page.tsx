@@ -316,7 +316,7 @@ export default function ConfigureProviderPage() {
   
   useEffect(() => {
     if (!config) {
-      router.push('/empresa/payments');
+      router.push('/dashboard/empresa/payments');
     } else {
       loadExistingProvider();
     }
@@ -429,7 +429,7 @@ export default function ConfigureProviderPage() {
       
       // Pequeño delay para que el usuario vea el mensaje
       setTimeout(() => {
-        router.push('/empresa/payments');
+        router.push('/dashboard/empresa/payments');
       }, 1000);
       
     } catch (error: any) {
@@ -463,27 +463,6 @@ export default function ConfigureProviderPage() {
   return (
     <div className="w-full min-h-screen overflow-x-hidden">
       <div className="max-w-6xl mx-auto px-2 sm:px-4 lg:px-6">
-        {/* Breadcrumbs */}
-        <nav className="flex mb-4 text-xs sm:text-sm overflow-x-auto" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 whitespace-nowrap">
-            <li>
-              <a href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                {t('navigation.dashboard')}
-              </a>
-            </li>
-            <li className="text-gray-400 dark:text-gray-500">/</li>
-            <li>
-              <a href="/empresa/payments" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                {t('navigation.payments')}
-              </a>
-            </li>
-            <li className="text-gray-400 dark:text-gray-500">/</li>
-            <li className="text-gray-700 font-medium dark:text-gray-300">
-              Configurar {config.name}
-            </li>
-          </ol>
-        </nav>
-        
         {/* Tabs Navigation */}
         <TabsNavigation />
         
@@ -493,30 +472,22 @@ export default function ConfigureProviderPage() {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <div className="px-3 sm:px-6 lg:px-8">
               <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between py-4 gap-4">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => router.push('/empresa/payments')}
-                    className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-10 w-20">
-                      <Image
-                        src={config.logo}
-                        alt={config.name}
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <div>
-                      <h1 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white">
-                        Configurar {config.name}
-                      </h1>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                        Configure las credenciales y ajustes del proveedor
-                      </p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative h-10 w-20">
+                    <Image
+                      src={config.logo}
+                      alt={config.name}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h1 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white">
+                      Configurar {config.name}
+                    </h1>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                      Configure las credenciales y ajustes del proveedor
+                    </p>
                   </div>
                 </div>
                 

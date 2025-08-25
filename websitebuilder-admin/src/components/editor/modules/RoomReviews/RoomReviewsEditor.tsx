@@ -13,12 +13,16 @@ interface RoomReviewsConfig {
   ratingIconColor: string;
   bodyType: 'standard' | 'rounded-grid' | 'list-grid' | 'square-grid';
   // New styling fields
-  cardStyle?: 'modern' | 'loox' | 'lai' | 'bordered' | 'minimal';
+  cardStyle?: 'elegant' | 'glassmorphic' | 'gradient' | 'material' | 'neumorphic';
   cardBackgroundColor?: string;
   cardBorderColor?: string;
   headerSize: number;
   topPadding: number;
   bottomPadding: number;
+  showBusinessReplies?: boolean; // New field to control business reply visibility
+  headerStyle?: 'style1' | 'style2'; // Header design style
+  headerBackgroundColor?: string; // Background color for header style
+  cardBorderRadius?: number; // Border radius for cards
 }
 
 interface RoomReviewsEditorProps {
@@ -31,12 +35,16 @@ const getDefaultConfig = (): RoomReviewsConfig => ({
   ratingIcon: 'star',
   ratingIconColor: '#FFB800',
   bodyType: 'standard',
-  cardStyle: 'modern',
+  cardStyle: 'elegant',
   cardBackgroundColor: '#FFFFFF',
   cardBorderColor: '#E5E7EB',
   headerSize: 32,
   topPadding: 40,
-  bottomPadding: 40
+  bottomPadding: 40,
+  showBusinessReplies: true,
+  headerStyle: 'style1',
+  headerBackgroundColor: '#FACC15',
+  cardBorderRadius: 8
 });
 
 export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps) {
@@ -186,6 +194,41 @@ export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps)
             )}
           </div>
 
+          {/* Header Style Selector */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Header Style
+            </label>
+            <select
+              value={localConfig.headerStyle || 'style1'}
+              onChange={(e) => handleChange('headerStyle', e.target.value)}
+              className="w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700 mb-3"
+            >
+              <option value="style1">Style 1 - Trophy Design</option>
+              <option value="style2">Style 2 - Box Rating</option>
+            </select>
+            
+            {/* Header Background Color */}
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Header Background Color
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={localConfig.headerBackgroundColor || '#FACC15'}
+                onChange={(e) => handleChange('headerBackgroundColor', e.target.value)}
+                className="w-10 h-10 border rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={localConfig.headerBackgroundColor || '#FACC15'}
+                onChange={(e) => handleChange('headerBackgroundColor', e.target.value)}
+                className="flex-1 px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
+                placeholder="#FACC15"
+              />
+            </div>
+          </div>
+
           {/* Rating Icon */}
           <div>
             <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
@@ -256,65 +299,164 @@ export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps)
             </select>
           </div>
 
-          {/* Card Style (Modern presets like Loox/LAI) */}
+          {/* Card Style (Modern presets) */}
           <div>
             <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
               Card Style
             </label>
-            <select
-              value={localConfig.cardStyle}
-              onChange={(e) => handleChange('cardStyle', e.target.value)}
-              className="w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
-            >
-              <option value="modern">Modern (shadow)</option>
-              <option value="loox">Loox-like</option>
-              <option value="lai">LAI-like</option>
-              <option value="bordered">Bordered</option>
-              <option value="minimal">Minimal</option>
-            </select>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'elegant', label: 'Elegant', desc: 'Clean with subtle shadows' },
+                { value: 'glassmorphic', label: 'Glass', desc: 'Frosted glass effect' },
+                { value: 'gradient', label: 'Gradient', desc: 'Modern gradient borders' },
+                { value: 'material', label: 'Material', desc: 'Google Material style' },
+                { value: 'neumorphic', label: 'Neumorphic', desc: 'Soft 3D appearance' }
+              ].map(style => (
+                <button
+                  key={style.value}
+                  onClick={() => handleChange('cardStyle', style.value)}
+                  className={`p-3 border rounded-lg text-left transition-all ${
+                    localConfig.cardStyle === style.value
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <div className="font-medium text-sm">{style.label}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{style.desc}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Card Colors */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Card Colors - Improved Visual Selector */}
+          <div className="space-y-3">
             <div>
               <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
-                Card Background Color
+                Card Colors
               </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={localConfig.cardBackgroundColor || '#FFFFFF'}
-                  onChange={(e) => handleChange('cardBackgroundColor', e.target.value)}
-                  className="w-10 h-10 border rounded cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={localConfig.cardBackgroundColor || '#FFFFFF'}
-                  onChange={(e) => handleChange('cardBackgroundColor', e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
-                  placeholder="#FFFFFF"
-                />
+              <div className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                {/* Visual Preview Card */}
+                <div 
+                  className="p-4 rounded-lg mb-3 border-2 transition-all"
+                  style={{ 
+                    backgroundColor: localConfig.cardBackgroundColor || '#FFFFFF',
+                    borderColor: localConfig.cardBorderColor || '#E5E7EB'
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600" />
+                    <div>
+                      <div className="h-2 w-20 bg-gray-400 rounded mb-1" />
+                      <div className="h-2 w-16 bg-gray-300 rounded" />
+                    </div>
+                  </div>
+                  <div className="flex gap-1 mb-2">
+                    {[1,2,3,4,5].map(i => (
+                      <div 
+                        key={i}
+                        className="w-3 h-3"
+                        style={{ color: localConfig.ratingIconColor }}
+                      >
+                        <RatingIconPreview />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="h-2 w-full bg-gray-200 rounded" />
+                    <div className="h-2 w-4/5 bg-gray-200 rounded" />
+                  </div>
+                </div>
+
+                {/* Color Controls - Stacked layout */}
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-gray-600 dark:text-gray-400 block mb-1">
+                      Background
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={localConfig.cardBackgroundColor || '#FFFFFF'}
+                        onChange={(e) => handleChange('cardBackgroundColor', e.target.value)}
+                        className="w-10 h-10 border rounded cursor-pointer flex-shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={localConfig.cardBackgroundColor || '#FFFFFF'}
+                        onChange={(e) => handleChange('cardBackgroundColor', e.target.value)}
+                        className="flex-1 px-2 py-1.5 text-xs border rounded-md dark:bg-gray-800 dark:border-gray-700 font-mono"
+                        placeholder="#FFFFFF"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600 dark:text-gray-400 block mb-1">
+                      Border
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={localConfig.cardBorderColor || '#E5E7EB'}
+                        onChange={(e) => handleChange('cardBorderColor', e.target.value)}
+                        className="w-10 h-10 border rounded cursor-pointer flex-shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={localConfig.cardBorderColor || '#E5E7EB'}
+                        onChange={(e) => handleChange('cardBorderColor', e.target.value)}
+                        className="flex-1 px-2 py-1.5 text-xs border rounded-md dark:bg-gray-800 dark:border-gray-700 font-mono"
+                        placeholder="#E5E7EB"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
-                Card Border Color
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={localConfig.cardBorderColor || '#E5E7EB'}
-                  onChange={(e) => handleChange('cardBorderColor', e.target.value)}
-                  className="w-10 h-10 border rounded cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={localConfig.cardBorderColor || '#E5E7EB'}
-                  onChange={(e) => handleChange('cardBorderColor', e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700"
-                  placeholder="#E5E7EB"
-                />
-              </div>
+          </div>
+
+          {/* Card Border Radius */}
+          <div>
+            <label className="text-xs text-gray-600 dark:text-gray-400 block mb-2">
+              Card Border Radius: {localConfig.cardBorderRadius || 8}px
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="40"
+              value={localConfig.cardBorderRadius || 8}
+              onChange={(e) => handleChange('cardBorderRadius', parseInt(e.target.value))}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Square (0px)</span>
+              <span>Very Rounded (40px)</span>
+            </div>
+            {/* Visual preview of border radius */}
+            <div className="mt-2 flex gap-2">
+              <div 
+                className="w-16 h-12 border-2"
+                style={{ 
+                  backgroundColor: localConfig.cardBackgroundColor || '#FFFFFF',
+                  borderColor: localConfig.cardBorderColor || '#E5E7EB',
+                  borderRadius: '0px'
+                }}
+              />
+              <div 
+                className="w-16 h-12 border-2"
+                style={{ 
+                  backgroundColor: localConfig.cardBackgroundColor || '#FFFFFF',
+                  borderColor: localConfig.cardBorderColor || '#E5E7EB',
+                  borderRadius: `${localConfig.cardBorderRadius || 8}px`
+                }}
+              />
+              <div 
+                className="w-16 h-12 border-2"
+                style={{ 
+                  backgroundColor: localConfig.cardBackgroundColor || '#FFFFFF',
+                  borderColor: localConfig.cardBorderColor || '#E5E7EB',
+                  borderRadius: '40px'
+                }}
+              />
             </div>
           </div>
 
@@ -372,6 +514,40 @@ export default function RoomReviewsEditor({ sectionId }: RoomReviewsEditorProps)
             <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>0px</span>
               <span>100px</span>
+            </div>
+          </div>
+
+          {/* Show Business Replies Toggle */}
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Show Business Replies
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Display owner responses to reviews
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={localConfig.showBusinessReplies}
+                onClick={() => handleChange('showBusinessReplies', !localConfig.showBusinessReplies)}
+                className={`
+                  relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                  ${localConfig.showBusinessReplies 
+                    ? 'bg-blue-600' 
+                    : 'bg-gray-200 dark:bg-gray-700'
+                  }
+                `}
+              >
+                <span
+                  className={`
+                    inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                    ${localConfig.showBusinessReplies ? 'translate-x-6' : 'translate-x-1'}
+                  `}
+                />
+              </button>
             </div>
           </div>
         </div>

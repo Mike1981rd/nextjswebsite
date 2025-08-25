@@ -86,7 +86,7 @@ export default function AddPaymentProviderPage() {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => router.push('/empresa/payments')}
+                onClick={() => router.push('/dashboard/empresa/payments')}
                 className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />

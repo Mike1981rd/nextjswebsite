@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { countries } from '@/components/ui/CountryFlag';
 import { useI18n } from '@/contexts/I18nContext';
 import { customerAPI } from '@/lib/api/customers';
 import { CustomerDetailDto } from '@/types/customer';
@@ -70,6 +71,13 @@ export interface AddressBillingFormData {
     autoCharge: boolean;
     paperlessBilling: boolean;
   };
+  // Billing Address fields
+  billingAddress?: string;
+  billingApartment?: string;
+  billingCity?: string;
+  billingState?: string;
+  billingPostalCode?: string;
+  billingCountry?: string;
 }
 
 export interface NotificationsFormData {
@@ -151,7 +159,13 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
         invoiceEmail: '',
         autoCharge: false,
         paperlessBilling: true
-      }
+      },
+      billingAddress: '',
+      billingApartment: '',
+      billingCity: '',
+      billingState: '',
+      billingPostalCode: '',
+      billingCountry: ''
     },
     notifications: {
       emailNotifications: {
@@ -257,23 +271,121 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           sessionTimeout: data.sessionTimeoutMinutes || data.sessionTimeout || 30
         },
         addressBilling: {
-          addresses: data.addresses?.map((addr: any) => ({
-            id: addr.id,
-            type: addr.type?.toLowerCase() || 'billing',
-            addressLine1: addr.street || addr.addressLine1 || '',
-            addressLine2: addr.apartment || addr.addressLine2 || '',
-            city: addr.city || '',
-            state: addr.state || '',
-            postalCode: addr.postalCode || '',
-            country: addr.country || '',
-            isDefault: addr.isDefault || false
-          })) || [],
-          paymentMethods: data.paymentMethods || [],
+          addresses: (() => {
+            const all = (data.addresses || []) as any[];
+            const isBilling = (a: any) => {
+              const t = (a.type || '').toString().toLowerCase();
+              const lbl = (a.label || '').toString().toLowerCase();
+              // Heurística: considerar billing si type es billing/office o label contiene billing
+              return t === 'billing' || t === 'office' || lbl.includes('billing');
+            };
+            const contact = all.filter(a => !isBilling(a));
+            let mapped = contact.map((addr: any) => ({
+              id: addr.id,
+              type: (addr.type?.toLowerCase() || 'shipping'),
+              addressLine1: addr.street || addr.addressLine1 || '',
+              addressLine2: addr.apartment || addr.addressLine2 || '',
+              city: addr.city || '',
+              state: addr.state || '',
+              postalCode: addr.postalCode || '',
+              country: mapCountryNameToIso(addr.country || ''),
+              isDefault: addr.isDefault || false
+            }));
+            // UX fallback: si no hay dirección de contacto, prellenar con la de facturación para edición
+            if (mapped.length === 0) {
+              const b = (data.addresses || []).find((a: any) => {
+                const t = (a.type || '').toString().toLowerCase();
+                const lbl = (a.label || '').toString().toLowerCase();
+                return t === 'billing' || t === 'office' || lbl.includes('billing');
+              });
+              const fallbackStreet = data.billingAddress || b?.street || b?.addressLine1 || '';
+              const fallbackCity = data.billingCity || b?.city || '';
+              const fallbackCountry = mapCountryNameToIso(data.billingCountry || b?.country || '');
+              if (fallbackStreet && fallbackCity && fallbackCountry) {
+                mapped = [{
+                  id: undefined,
+                  type: 'shipping',
+                  addressLine1: fallbackStreet,
+                  addressLine2: data.billingApartment || b?.apartment || b?.addressLine2 || '',
+                  city: fallbackCity,
+                  state: data.billingState || b?.state || '',
+                  postalCode: data.billingPostalCode || b?.postalCode || '',
+                  country: fallbackCountry,
+                  isDefault: true
+                }];
+              }
+            }
+            return mapped;
+          })(),
+          paymentMethods: (data.paymentMethods || []).map((pm: any) => ({
+            id: pm.id,
+            type: pm.cardType || pm.type || 'Card',
+            last4: pm.lastFourDigits || pm.last4Digits || pm.last4 || '',
+            expiryMonth: typeof pm.expiryMonth === 'string' ? parseInt(pm.expiryMonth) : (pm.expiryMonth || 0),
+            expiryYear: typeof pm.expiryYear === 'string' ? parseInt(pm.expiryYear) : (pm.expiryYear || 0),
+            isDefault: pm.isDefault || pm.isPrimary || false
+          })),
           billingPreferences: {
             invoiceEmail: data.billingEmail || data.email || '',
             autoCharge: data.autoCharge || false,
             paperlessBilling: data.paperlessBilling !== false
-          }
+          },
+          billingAddress: (() => {
+            if (data.billingAddress) return data.billingAddress;
+            const b = (data.addresses || []).find((a: any) => {
+              const t = (a.type || '').toString().toLowerCase();
+              const lbl = (a.label || '').toString().toLowerCase();
+              return t === 'billing' || t === 'office' || lbl.includes('billing');
+            });
+            return b?.street || b?.addressLine1 || '';
+          })(),
+          billingApartment: (() => {
+            if (data.billingApartment) return data.billingApartment;
+            const b = (data.addresses || []).find((a: any) => {
+              const t = (a.type || '').toString().toLowerCase();
+              const lbl = (a.label || '').toString().toLowerCase();
+              return t === 'billing' || t === 'office' || lbl.includes('billing');
+            });
+            return b?.apartment || b?.addressLine2 || '';
+          })(),
+          billingCity: (() => {
+            if (data.billingCity) return data.billingCity;
+            const b = (data.addresses || []).find((a: any) => {
+              const t = (a.type || '').toString().toLowerCase();
+              const lbl = (a.label || '').toString().toLowerCase();
+              return t === 'billing' || t === 'office' || lbl.includes('billing');
+            });
+            return b?.city || '';
+          })(),
+          billingState: (() => {
+            if (data.billingState) return data.billingState;
+            const b = (data.addresses || []).find((a: any) => {
+              const t = (a.type || '').toString().toLowerCase();
+              const lbl = (a.label || '').toString().toLowerCase();
+              return t === 'billing' || t === 'office' || lbl.includes('billing');
+            });
+            return b?.state || '';
+          })(),
+          billingPostalCode: (() => {
+            if (data.billingPostalCode) return data.billingPostalCode;
+            const b = (data.addresses || []).find((a: any) => {
+              const t = (a.type || '').toString().toLowerCase();
+              const lbl = (a.label || '').toString().toLowerCase();
+              return t === 'billing' || t === 'office' || lbl.includes('billing');
+            });
+            return b?.postalCode || '';
+          })(),
+          billingCountry: (() => {
+            const name = data.billingCountry || (() => {
+              const b = (data.addresses || []).find((a: any) => {
+                const t = (a.type || '').toString().toLowerCase();
+                const lbl = (a.label || '').toString().toLowerCase();
+                return t === 'billing' || t === 'office' || lbl.includes('billing');
+              });
+              return b?.country || '';
+            })();
+            return mapCountryNameToIso(name);
+          })()
         },
         notifications: {
           emailNotifications: {
@@ -305,6 +417,20 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Country mapping helpers
+  const mapCountryNameToIso = (input: string): string => {
+    if (!input) return '';
+    const isoFromDirect = Object.entries(countries).find(([iso, c]) => iso.toLowerCase() === input.toLowerCase());
+    if (isoFromDirect) return isoFromDirect[0];
+    const found = Object.entries(countries).find(([, c]) => c.name.toLowerCase() === input.toLowerCase());
+    return found ? found[0] : input; // return input if already ISO
+  };
+  const mapIsoToCountryName = (iso: string): string => {
+    if (!iso) return '';
+    const entry = (countries as any)[iso];
+    return entry?.name || iso;
   };
   
   // Handler functions for updating form data from child tabs
@@ -348,7 +474,7 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           email: formData.overview.email,
           password: formData.security.newPassword || 'TempPassword123!',
           phone: formData.overview.phoneNumber || undefined,
-          country: formData.overview.country,
+          country: mapIsoToCountryName(formData.overview.country),
           status: formData.overview.status || 'Active',
           initialBalance: 0,
           initialLoyaltyPoints: 0,
@@ -405,7 +531,7 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
             city: firstAddress.city.trim(),
             state: firstAddress.state?.trim() || null,
             postalCode: firstAddress.postalCode?.trim() || null,
-            country: firstAddress.country.trim(),
+            country: mapIsoToCountryName(firstAddress.country.trim()),
             isDefault: true
           };
           
@@ -471,7 +597,7 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           username: formData.overview.username,
           email: formData.overview.email,
           phone: formData.overview.phoneNumber || undefined,
-          country: formData.overview.country,
+          country: mapIsoToCountryName(formData.overview.country),
           status: formData.overview.status,
           avatar: formData.overview.avatarUrl || undefined,
           twoFactorEnabled: formData.security.isTwoFactorEnabled,
@@ -482,7 +608,14 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
           preferredCurrency: formData.overview.preferredCurrency || undefined,
           companyName: formData.overview.companyName || undefined,
           taxId: formData.overview.taxId || undefined,
-          loyaltyTier: formData.overview.loyaltyTier || undefined
+          loyaltyTier: formData.overview.loyaltyTier || undefined,
+          // Billing Address fields
+          billingAddress: formData.addressBilling.billingAddress || undefined,
+          billingApartment: formData.addressBilling.billingApartment || undefined,
+          billingCity: formData.addressBilling.billingCity || undefined,
+          billingState: formData.addressBilling.billingState || undefined,
+          billingPostalCode: formData.addressBilling.billingPostalCode || undefined,
+          billingCountry: formData.addressBilling.billingCountry ? mapIsoToCountryName(formData.addressBilling.billingCountry) : undefined
         };
         
         // Remove undefined values
@@ -515,7 +648,7 @@ export default function CustomerDetail({ customerId }: CustomerDetailProps) {
             city: formData.addressBilling.addresses[0].city || '',
             state: formData.addressBilling.addresses[0].state || null,
             postalCode: formData.addressBilling.addresses[0].postalCode || null,
-            country: formData.addressBilling.addresses[0].country || '',
+            country: mapIsoToCountryName(formData.addressBilling.addresses[0].country || ''),
             isDefault: formData.addressBilling.addresses[0].isDefault !== false
           };
           

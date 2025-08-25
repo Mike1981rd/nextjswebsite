@@ -4,67 +4,68 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 
 interface CountrySelectProps {
+  // value is ISO code (e.g., 'SV')
   value: string;
-  onChange: (value: string) => void;
+  onChange: (iso: string) => void;
   error?: string;
 }
 
 const countries = [
   // América del Norte
-  { value: 'Estados Unidos', label: 'Estados Unidos', region: 'América del Norte' },
-  { value: 'Canadá', label: 'Canadá', region: 'América del Norte' },
-  { value: 'México', label: 'México', region: 'América del Norte' },
+  { iso: 'US', value: 'Estados Unidos', label: 'Estados Unidos', region: 'América del Norte' },
+  { iso: 'CA', value: 'Canadá', label: 'Canadá', region: 'América del Norte' },
+  { iso: 'MX', value: 'México', label: 'México', region: 'América del Norte' },
   
   // Centroamérica
-  { value: 'Guatemala', label: 'Guatemala', region: 'Centroamérica' },
-  { value: 'El Salvador', label: 'El Salvador', region: 'Centroamérica' },
-  { value: 'Honduras', label: 'Honduras', region: 'Centroamérica' },
-  { value: 'Nicaragua', label: 'Nicaragua', region: 'Centroamérica' },
-  { value: 'Costa Rica', label: 'Costa Rica', region: 'Centroamérica' },
-  { value: 'Panamá', label: 'Panamá', region: 'Centroamérica' },
-  { value: 'Belice', label: 'Belice', region: 'Centroamérica' },
+  { iso: 'GT', value: 'Guatemala', label: 'Guatemala', region: 'Centroamérica' },
+  { iso: 'SV', value: 'El Salvador', label: 'El Salvador', region: 'Centroamérica' },
+  { iso: 'HN', value: 'Honduras', label: 'Honduras', region: 'Centroamérica' },
+  { iso: 'NI', value: 'Nicaragua', label: 'Nicaragua', region: 'Centroamérica' },
+  { iso: 'CR', value: 'Costa Rica', label: 'Costa Rica', region: 'Centroamérica' },
+  { iso: 'PA', value: 'Panamá', label: 'Panamá', region: 'Centroamérica' },
+  { iso: 'BZ', value: 'Belice', label: 'Belice', region: 'Centroamérica' },
   
   // Caribe
-  { value: 'Cuba', label: 'Cuba', region: 'Caribe' },
-  { value: 'República Dominicana', label: 'República Dominicana', region: 'Caribe' },
-  { value: 'Puerto Rico', label: 'Puerto Rico', region: 'Caribe' },
-  { value: 'Jamaica', label: 'Jamaica', region: 'Caribe' },
-  { value: 'Haití', label: 'Haití', region: 'Caribe' },
-  { value: 'Trinidad y Tobago', label: 'Trinidad y Tobago', region: 'Caribe' },
-  { value: 'Barbados', label: 'Barbados', region: 'Caribe' },
+  { iso: 'CU', value: 'Cuba', label: 'Cuba', region: 'Caribe' },
+  { iso: 'DO', value: 'República Dominicana', label: 'República Dominicana', region: 'Caribe' },
+  { iso: 'PR', value: 'Puerto Rico', label: 'Puerto Rico', region: 'Caribe' },
+  { iso: 'JM', value: 'Jamaica', label: 'Jamaica', region: 'Caribe' },
+  { iso: 'HT', value: 'Haití', label: 'Haití', region: 'Caribe' },
+  { iso: 'TT', value: 'Trinidad y Tobago', label: 'Trinidad y Tobago', region: 'Caribe' },
+  { iso: 'BB', value: 'Barbados', label: 'Barbados', region: 'Caribe' },
   
   // Sudamérica
-  { value: 'Argentina', label: 'Argentina', region: 'Sudamérica' },
-  { value: 'Bolivia', label: 'Bolivia', region: 'Sudamérica' },
-  { value: 'Brasil', label: 'Brasil', region: 'Sudamérica' },
-  { value: 'Chile', label: 'Chile', region: 'Sudamérica' },
-  { value: 'Colombia', label: 'Colombia', region: 'Sudamérica' },
-  { value: 'Ecuador', label: 'Ecuador', region: 'Sudamérica' },
-  { value: 'Guyana', label: 'Guyana', region: 'Sudamérica' },
-  { value: 'Paraguay', label: 'Paraguay', region: 'Sudamérica' },
-  { value: 'Perú', label: 'Perú', region: 'Sudamérica' },
-  { value: 'Surinam', label: 'Surinam', region: 'Sudamérica' },
-  { value: 'Uruguay', label: 'Uruguay', region: 'Sudamérica' },
-  { value: 'Venezuela', label: 'Venezuela', region: 'Sudamérica' },
+  { iso: 'AR', value: 'Argentina', label: 'Argentina', region: 'Sudamérica' },
+  { iso: 'BO', value: 'Bolivia', label: 'Bolivia', region: 'Sudamérica' },
+  { iso: 'BR', value: 'Brasil', label: 'Brasil', region: 'Sudamérica' },
+  { iso: 'CL', value: 'Chile', label: 'Chile', region: 'Sudamérica' },
+  { iso: 'CO', value: 'Colombia', label: 'Colombia', region: 'Sudamérica' },
+  { iso: 'EC', value: 'Ecuador', label: 'Ecuador', region: 'Sudamérica' },
+  { iso: 'GY', value: 'Guyana', label: 'Guyana', region: 'Sudamérica' },
+  { iso: 'PY', value: 'Paraguay', label: 'Paraguay', region: 'Sudamérica' },
+  { iso: 'PE', value: 'Perú', label: 'Perú', region: 'Sudamérica' },
+  { iso: 'SR', value: 'Surinam', label: 'Surinam', region: 'Sudamérica' },
+  { iso: 'UY', value: 'Uruguay', label: 'Uruguay', region: 'Sudamérica' },
+  { iso: 'VE', value: 'Venezuela', label: 'Venezuela', region: 'Sudamérica' },
   
   // Europa (principales)
-  { value: 'España', label: 'España', region: 'Europa' },
-  { value: 'Portugal', label: 'Portugal', region: 'Europa' },
-  { value: 'Francia', label: 'Francia', region: 'Europa' },
-  { value: 'Italia', label: 'Italia', region: 'Europa' },
-  { value: 'Alemania', label: 'Alemania', region: 'Europa' },
-  { value: 'Reino Unido', label: 'Reino Unido', region: 'Europa' },
-  { value: 'Países Bajos', label: 'Países Bajos', region: 'Europa' },
-  { value: 'Bélgica', label: 'Bélgica', region: 'Europa' },
-  { value: 'Suiza', label: 'Suiza', region: 'Europa' },
-  { value: 'Austria', label: 'Austria', region: 'Europa' },
-  { value: 'Polonia', label: 'Polonia', region: 'Europa' },
-  { value: 'Grecia', label: 'Grecia', region: 'Europa' },
-  { value: 'Suecia', label: 'Suecia', region: 'Europa' },
-  { value: 'Noruega', label: 'Noruega', region: 'Europa' },
-  { value: 'Dinamarca', label: 'Dinamarca', region: 'Europa' },
-  { value: 'Finlandia', label: 'Finlandia', region: 'Europa' },
-  { value: 'Irlanda', label: 'Irlanda', region: 'Europa' },
+  { iso: 'ES', value: 'España', label: 'España', region: 'Europa' },
+  { iso: 'PT', value: 'Portugal', label: 'Portugal', region: 'Europa' },
+  { iso: 'FR', value: 'Francia', label: 'Francia', region: 'Europa' },
+  { iso: 'IT', value: 'Italia', label: 'Italia', region: 'Europa' },
+  { iso: 'DE', value: 'Alemania', label: 'Alemania', region: 'Europa' },
+  { iso: 'GB', value: 'Reino Unido', label: 'Reino Unido', region: 'Europa' },
+  { iso: 'NL', value: 'Países Bajos', label: 'Países Bajos', region: 'Europa' },
+  { iso: 'BE', value: 'Bélgica', label: 'Bélgica', region: 'Europa' },
+  { iso: 'CH', value: 'Suiza', label: 'Suiza', region: 'Europa' },
+  { iso: 'AT', value: 'Austria', label: 'Austria', region: 'Europa' },
+  { iso: 'PL', value: 'Polonia', label: 'Polonia', region: 'Europa' },
+  { iso: 'GR', value: 'Grecia', label: 'Grecia', region: 'Europa' },
+  { iso: 'SE', value: 'Suecia', label: 'Suecia', region: 'Europa' },
+  { iso: 'NO', value: 'Noruega', label: 'Noruega', region: 'Europa' },
+  { iso: 'DK', value: 'Dinamarca', label: 'Dinamarca', region: 'Europa' },
+  { iso: 'FI', value: 'Finlandia', label: 'Finlandia', region: 'Europa' },
+  { iso: 'IE', value: 'Irlanda', label: 'Irlanda', region: 'Europa' },
 ];
 
 export default function CountrySelect({ value, onChange, error }: CountrySelectProps) {
@@ -107,13 +108,13 @@ export default function CountrySelect({ value, onChange, error }: CountrySelectP
     }
   }, [isOpen]);
 
-  const handleSelect = (countryValue: string) => {
-    onChange(countryValue);
+  const handleSelect = (countryIso: string) => {
+    onChange(countryIso);
     setIsOpen(false);
     setSearchTerm('');
   };
 
-  const selectedCountry = countries.find(c => c.value === value);
+  const selectedCountry = countries.find(c => c.iso === value);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -163,9 +164,9 @@ export default function CountrySelect({ value, onChange, error }: CountrySelectP
                     <button
                       key={country.value}
                       type="button"
-                      onClick={() => handleSelect(country.value)}
+                      onClick={() => handleSelect(country.iso)}
                       className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-50 focus:bg-blue-50 focus:outline-none transition-colors ${
-                        value === country.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                        value === country.iso ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
                       }`}
                     >
                       {country.label}

@@ -4,7 +4,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, ChevronDown, Lock, CreditCard, Info, User, MapPin, Calendar, Users, Star, Shield, CheckCircle, Eye, EyeOff, Mail, Phone, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ErrorModal from '@/components/ui/ErrorModal';
 import CountrySelect from './CountrySelect';
+import PhoneCountryCodeSelect, { getDialCodeForCountry } from './PhoneCountryCodeSelect';
 
 interface CompanyConfig {
   name?: string;
@@ -70,8 +72,9 @@ export default function RoomCheckoutPageV2() {
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [phoneCountryCode, setPhoneCountryCode] = useState('+1');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [country, setCountry] = useState('El Salvador'); // Always visible and required
+  const [country, setCountry] = useState('SV'); // ISO country code
   const [companyName, setCompanyName] = useState('');
   
   // Address fields
@@ -80,6 +83,12 @@ export default function RoomCheckoutPageV2() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [postalCode, setPostalCode] = useState('');
+  // Contact address fields (separate from billing)
+  const [contactAddress, setContactAddress] = useState('');
+  const [contactApartment, setContactApartment] = useState('');
+  const [contactCity, setContactCity] = useState('');
+  const [contactState, setContactState] = useState('');
+  const [contactPostalCode, setContactPostalCode] = useState('');
   
   // Account creation
   const [createAccount, setCreateAccount] = useState(false);
@@ -99,6 +108,7 @@ export default function RoomCheckoutPageV2() {
   const [taxId, setTaxId] = useState('');
   const [discountCode, setDiscountCode] = useState('');
   const [showDiscount, setShowDiscount] = useState(false);
+  const [billingDifferent, setBillingDifferent] = useState(false);
   
   // Special requests
   const [specialRequests, setSpecialRequests] = useState('');
@@ -107,11 +117,20 @@ export default function RoomCheckoutPageV2() {
   
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessages, setModalMessages] = useState<string[]>([]);
 
   useEffect(() => {
     loadCompanyAndSettings();
     loadReservation();
   }, []);
+
+  // Auto-set dial code from selected country
+  useEffect(() => {
+    if (country) {
+      setPhoneCountryCode(getDialCodeForCountry(country));
+    }
+  }, [country]);
 
   const loadCompanyAndSettings = async () => {
     try {
@@ -211,12 +230,12 @@ export default function RoomCheckoutPageV2() {
       newErrors.companyName = 'Nombre de empresa es requerido';
     }
     
-    // Address validation (if not consumidor_final)
-    if (taxDocumentType !== 'consumidor_final') {
-      if (!address) newErrors.address = 'Dirección es requerida';
-      if (!city) newErrors.city = 'Ciudad es requerida';
-      if (!state) newErrors.state = 'Estado/Provincia es requerido';
-      if (!postalCode) newErrors.postalCode = 'Código postal es requerido';
+    // Billing address validation: ONLY when user marked different billing address
+    if (billingDifferent) {
+      if (!address) newErrors.address = 'Dirección de facturación es requerida';
+      if (!city) newErrors.city = 'Ciudad de facturación es requerida';
+      if (!state) newErrors.state = 'Estado/Provincia de facturación es requerido';
+      if (!postalCode) newErrors.postalCode = 'Código postal de facturación es requerido';
     }
     
     // Account creation validation
@@ -270,8 +289,24 @@ export default function RoomCheckoutPageV2() {
         email,
         firstName,
         lastName: lastName || firstName, // Use firstName as fallback if lastOnly
-        phone: phoneNumber || undefined,
-        country,
+        phone: `${phoneCountryCode} ${formatPhoneForPayload(phoneNumber)}`.trim(),
+        // Map ISO to display country name for backend storage
+        country: ((): string => {
+          try {
+            // lightweight mapping using the options from CountrySelect
+            const map: Record<string, string> = {
+              SV: 'El Salvador', US: 'Estados Unidos', DO: 'República Dominicana', PR: 'Puerto Rico',
+              GT: 'Guatemala', HN: 'Honduras', NI: 'Nicaragua', CR: 'Costa Rica', PA: 'Panamá', MX: 'México',
+              CO: 'Colombia', PE: 'Perú', CL: 'Chile', AR: 'Argentina', ES: 'España', CA: 'Canadá', BZ: 'Belice',
+              CU: 'Cuba', JM: 'Jamaica', HT: 'Haití', TT: 'Trinidad y Tobago', BB: 'Barbados', EC: 'Ecuador',
+              GY: 'Guyana', PY: 'Paraguay', SR: 'Surinam', UY: 'Uruguay', VE: 'Venezuela', PT: 'Portugal',
+              FR: 'Francia', IT: 'Italia', DE: 'Alemania', GB: 'Reino Unido', NL: 'Países Bajos', BE: 'Bélgica',
+              CH: 'Suiza', AT: 'Austria', PL: 'Polonia', GR: 'Grecia', SE: 'Suecia', NO: 'Noruega', DK: 'Dinamarca',
+              FI: 'Finlandia', IE: 'Irlanda'
+            };
+            return map[country] || country;
+          } catch { return country; }
+        })(),
         companyName: companyName || undefined,
         
         // Account Creation
@@ -279,12 +314,12 @@ export default function RoomCheckoutPageV2() {
         password: createAccount ? password : undefined,
         subscribeToNewsletter: subscribeNewsletter,
         
-        // Billing Address
-        address: taxDocumentType !== 'consumidor_final' ? address : undefined,
-        city: taxDocumentType !== 'consumidor_final' ? city : undefined,
-        state: taxDocumentType !== 'consumidor_final' ? state : undefined,
-        postalCode: taxDocumentType !== 'consumidor_final' ? postalCode : undefined,
-        apartment: apartment || undefined,
+        // Address in DTO: billing when billingDifferent, otherwise contact address
+        address: billingDifferent ? (address || undefined) : (contactAddress || undefined),
+        city: billingDifferent ? (city || undefined) : (contactCity || undefined),
+        state: billingDifferent ? (state || undefined) : (contactState || undefined),
+        postalCode: billingDifferent ? (postalCode || undefined) : (contactPostalCode || undefined),
+        apartment: billingDifferent ? (apartment || undefined) : (contactApartment || undefined),
         
         // Tax Document
         taxDocumentType,
@@ -336,26 +371,20 @@ export default function RoomCheckoutPageV2() {
 
       // Handle automatic 400 responses from [ApiController] (ProblemDetails with errors)
       if (!response.ok) {
-        const validationMessage = result?.errors
-          ? (() => {
-              try {
-                const all = Object.values(result.errors as Record<string, string[]>)
-                  .flat()
-                  .filter(Boolean);
-                return all.length > 0 ? (all[0] as string) : undefined;
-              } catch {
-                return undefined;
-              }
-            })()
-          : undefined;
+        const messages: string[] = [];
+        if (result?.errors) {
+          try {
+            const map = result.errors as Record<string, string[]>;
+            Object.values(map).forEach(arr => arr.forEach(m => m && messages.push(m)));
+          } catch {
+            // ignore
+          }
+        }
+        const fallback = result?.error?.description || result?.message || 'Error al procesar la reservación';
+        if (messages.length === 0 && fallback) messages.push(fallback);
 
-        const msg = validationMessage || result?.error?.description || result?.message || 'Error al procesar la reservación';
-        console.error('=== CHECKOUT ERROR DETAILS (ProblemDetails) ===');
-        console.error('Status:', response.status);
-        console.error('Errors:', result?.errors || null);
-        console.error('Message:', msg);
-        console.error('=============================================');
-        toast.error(msg);
+        setModalMessages(messages);
+        setModalOpen(true);
         return;
       }
 
@@ -365,6 +394,25 @@ export default function RoomCheckoutPageV2() {
         // Clear checkout data
         localStorage.removeItem('room_checkout_payload');
         sessionStorage.removeItem('roomReservation');
+        // Store confirmation data for receipt page
+        try {
+          const confirmation = {
+            id: result.reservationId,
+            confirmationNumber: result.confirmationNumber,
+            customerName: `${firstName} ${lastName || ''}`.trim(),
+            customerEmail: email,
+            customerPhone: `${phoneCountryCode} ${formatPhoneForPayload(phoneNumber)}`.trim(),
+            roomName: reservation.roomName,
+            roomImage: reservation.imageUrl || undefined,
+            checkInDate: new Date(reservation.checkIn).toISOString(),
+            checkOutDate: new Date(reservation.checkOut).toISOString(),
+            numberOfGuests: reservation.guests,
+            totalAmount: calculateTotal(),
+            currency: reservation.currency || company?.currency || 'USD',
+            status: 'Confirmed',
+          };
+          localStorage.setItem('reservation_confirmation', JSON.stringify(confirmation));
+        } catch {}
         
         // Redirect to confirmation page
         router.push(`/reservation-confirmed?id=${result.reservationId}&confirmation=${result.confirmationNumber}`);
@@ -377,7 +425,9 @@ export default function RoomCheckoutPageV2() {
         console.error('Error Code:', result.error?.code);
         console.error('==============================');
         
-        toast.error(result.error?.description || result.message || 'Error al procesar la reservación');
+        const msg = result.error?.description || result.message || 'Error al procesar la reservación';
+        setModalMessages([msg]);
+        setModalOpen(true);
       }
     } catch (error) {
       console.error('Error processing checkout:', error);
@@ -414,8 +464,43 @@ export default function RoomCheckoutPageV2() {
   const showApartmentField = checkoutSettings?.addressLine2Field !== 'hidden';
   const allowGuestCheckout = checkoutSettings?.allowGuestCheckout !== false;
 
+  // Phone helpers
+  const formatPhoneLive = (val: string) => {
+    const d = val.replace(/\D/g, '').slice(0, 15);
+    if (d.length <= 7) {
+      // 3-4
+      return [d.slice(0, 3), d.slice(3, 7)].filter(Boolean).join('-');
+    }
+    if (d.length === 8) {
+      // 4-4 common in LATAM
+      return [d.slice(0, 4), d.slice(4, 8)].join('-');
+    }
+    if (d.length === 9) {
+      // 3-3-3
+      return [d.slice(0, 3), d.slice(3, 6), d.slice(6, 9)].join('-');
+    }
+    if (d.length === 10) {
+      // 3-3-4 (US style)
+      return [d.slice(0, 3), d.slice(3, 6), d.slice(6, 10)].join('-');
+    }
+    if (d.length >= 11) {
+      // 3-4-4
+      return [d.slice(0, 3), d.slice(3, 7), d.slice(7, 11)].join('-');
+    }
+    return d;
+  };
+
+  const formatPhoneForPayload = (val: string) => val.replace(/\D/g, '');
+
   return (
     <div className="bg-gray-50" style={{ minHeight: '100vh' }}>
+      <ErrorModal
+        open={modalOpen}
+        title="No pudimos procesar tu pago"
+        messages={modalMessages}
+        primaryColor={company?.primaryColor || '#ef4444'}
+        onClose={() => setModalOpen(false)}
+      />
       {/* Logo Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <div className={`flex items-center ${
@@ -465,6 +550,59 @@ export default function RoomCheckoutPageV2() {
                     <div className="font-medium text-gray-900">Huéspedes</div>
                     <div className="text-gray-600">{reservation?.guests || 1} huésped{(reservation?.guests || 1) > 1 ? 's' : ''}</div>
                   </div>
+                </div>
+              </div>
+              {/* Contact Address */}
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Dirección (contacto)</label>
+                  <input
+                    type="text"
+                    value={contactAddress}
+                    onChange={(e) => setContactAddress(e.target.value)}
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Calle y número"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Apartamento (opcional)</label>
+                  <input
+                    type="text"
+                    value={contactApartment}
+                    onChange={(e) => setContactApartment(e.target.value)}
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Apto 4B"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Ciudad</label>
+                  <input
+                    type="text"
+                    value={contactCity}
+                    onChange={(e) => setContactCity(e.target.value)}
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="San Salvador"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Estado/Departamento</label>
+                  <input
+                    type="text"
+                    value={contactState}
+                    onChange={(e) => setContactState(e.target.value)}
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="San Salvador"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Código postal</label>
+                  <input
+                    type="text"
+                    value={contactPostalCode}
+                    onChange={(e) => setContactPostalCode(e.target.value)}
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="01101"
+                  />
                 </div>
               </div>
             </div>
@@ -543,16 +681,23 @@ export default function RoomCheckoutPageV2() {
                       <Phone className="inline w-3 h-3 mr-1" />
                       Teléfono {phoneRequired ? '*' : '(opcional)'}
                     </label>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
-                        errors.phoneNumber ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                      }`}
-                      placeholder="+503 7777-8888"
-                    />
+                    <div className="flex gap-2">
+                      <PhoneCountryCodeSelect
+                        value={phoneCountryCode}
+                        onChange={setPhoneCountryCode}
+                        error={!!errors.phoneNumber}
+                      />
+                      <input
+                        type="tel"
+                        id="phoneNumber"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(formatPhoneLive(e.target.value))}
+                        className={`flex-1 px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
+                          errors.phoneNumber ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                        }`}
+                        placeholder="7777-8888"
+                      />
+                    </div>
                     {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
                   </div>
                 )}
@@ -592,6 +737,108 @@ export default function RoomCheckoutPageV2() {
                 )}
               </div>
               
+              {/* Billing toggle and fields under Contact */}
+              <div className="mt-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={billingDifferent}
+                    onChange={(e) => setBillingDifferent(e.target.checked)}
+                    className="mt-1"
+                    style={{ accentColor: primaryColor }}
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">Usar dirección de facturación diferente</span>
+                    <p className="text-xs text-gray-600 mt-1">Si está desmarcado, usaremos la dirección de contacto.</p>
+                  </div>
+                </label>
+                {billingDifferent && (
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <label htmlFor="address" className="block text-xs font-medium text-gray-700 mb-1">
+                        Dirección de facturación *
+                      </label>
+                      <input
+                        type="text"
+                        id="address"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
+                          errors.address ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                        }`}
+                        placeholder="Calle y número"
+                      />
+                      {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+                    </div>
+                    {showApartmentField && (
+                      <div>
+                        <label htmlFor="apartment" className="block text-xs font-medium text-gray-700 mb-1">
+                          Apartamento, suite, etc. (opcional)
+                        </label>
+                        <input
+                          type="text"
+                          id="apartment"
+                          value={apartment}
+                          onChange={(e) => setApartment(e.target.value)}
+                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          placeholder="Apto 4B"
+                        />
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="city" className="block text-xs font-medium text-gray-700 mb-1">
+                          Ciudad *
+                        </label>
+                        <input
+                          type="text"
+                          id="city"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
+                            errors.city ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          placeholder="San Salvador"
+                        />
+                        {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="state" className="block text-xs font-medium text-gray-700 mb-1">
+                          Estado/Departamento *
+                        </label>
+                        <input
+                          type="text"
+                          id="state"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                          className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
+                            errors.state ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                          placeholder="San Salvador"
+                        />
+                        {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="postalCode" className="block text-xs font-medium text-gray-700 mb-1">
+                        Código postal *
+                      </label>
+                      <input
+                        type="text"
+                        id="postalCode"
+                        value={postalCode}
+                        onChange={(e) => setPostalCode(e.target.value)}
+                        className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
+                          errors.postalCode ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                        }`}
+                        placeholder="01101"
+                      />
+                      {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Account Creation Option */}
               {allowGuestCheckout && (
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
@@ -679,7 +926,7 @@ export default function RoomCheckoutPageV2() {
               )}
             </div>
 
-            {/* Tax Document & Billing Address */}
+            {/* Tax Document */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-3">Datos fiscales</h2>
               <div className="space-y-3">
@@ -704,111 +951,20 @@ export default function RoomCheckoutPageV2() {
                     </p>
                   )}
                 </div>
-
-                {/* Show address fields only when needed for tax purposes */}
+                {/* Tax ID shown only when not consumidor_final */}
                 {taxDocumentType !== 'consumidor_final' && (
-                  <div className="space-y-3">
-                    {taxDocumentType !== 'consumidor_final' && (
-                      <div>
+                  <div>
                         <label htmlFor="taxId" className="block text-xs font-medium text-gray-700 mb-1">
-                          NIT / Registro Fiscal
-                        </label>
-                        <input
-                          type="text"
-                          id="taxId"
-                          value={taxId}
-                          onChange={(e) => setTaxId(e.target.value)}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          placeholder="0000-000000-000-0"
-                        />
-                      </div>
-                    )}
-                    
-                    <div>
-                      <label htmlFor="address" className="block text-xs font-medium text-gray-700 mb-1">
-                        Dirección *
-                      </label>
-                      <input
-                        type="text"
-                        id="address"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
-                          errors.address ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                        }`}
-                        placeholder="Calle y número"
-                      />
-                      {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
-                    </div>
-                    
-                    {showApartmentField && (
-                      <div>
-                        <label htmlFor="apartment" className="block text-xs font-medium text-gray-700 mb-1">
-                          Apartamento, suite, etc. (opcional)
-                        </label>
-                        <input
-                          type="text"
-                          id="apartment"
-                          value={apartment}
-                          onChange={(e) => setApartment(e.target.value)}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          placeholder="Apto 4B"
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label htmlFor="city" className="block text-xs font-medium text-gray-700 mb-1">
-                          Ciudad *
-                        </label>
-                        <input
-                          type="text"
-                          id="city"
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
-                            errors.city ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                          }`}
-                          placeholder="San Salvador"
-                        />
-                        {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
-                      </div>
-                      
-                      <div>
-                        <label htmlFor="state" className="block text-xs font-medium text-gray-700 mb-1">
-                          Estado/Departamento *
-                        </label>
-                        <input
-                          type="text"
-                          id="state"
-                          value={state}
-                          onChange={(e) => setState(e.target.value)}
-                          className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
-                            errors.state ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                          }`}
-                          placeholder="San Salvador"
-                        />
-                        {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="postalCode" className="block text-xs font-medium text-gray-700 mb-1">
-                        Código postal *
-                      </label>
-                      <input
-                        type="text"
-                        id="postalCode"
-                        value={postalCode}
-                        onChange={(e) => setPostalCode(e.target.value)}
-                        className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-opacity-50 ${
-                          errors.postalCode ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                        }`}
-                        placeholder="01101"
-                      />
-                      {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>}
-                    </div>
+                      # Documento Fiscal
+                    </label>
+                    <input
+                      type="text"
+                      id="taxId"
+                      value={taxId}
+                      onChange={(e) => setTaxId(e.target.value)}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="0000-000000-000-0"
+                    />
                   </div>
                 )}
               </div>

@@ -442,9 +442,9 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
             }}
           >
             <div className="py-2">
-              {item.subItems.map((child: any) => (
+              {item.subItems.map((child: any, childIndex: number) => (
                 <Link
-                  key={child.id}
+                  key={child.id || `submenu-${item.id || item.label}-${childIndex}`}
                   href={child.url || '#'}
                   className="block px-4 py-2 hover:bg-gray-50 transition-colors"
                   style={{ ...menuTypographyStyles, color: colorScheme?.text?.default || '#000000' }}
@@ -872,9 +872,9 @@ export default function PreviewHeader({ config, theme, deviceView, isEditor = fa
                   <nav className="space-y-2">
                     {menuItems
                       .find((item: any) => item.label === activeDrawerSubmenu)
-                      ?.subItems?.map((subItem: any) => (
+                      ?.subItems?.map((subItem: any, subIndex: number) => (
                         <a
-                          key={subItem.label}
+                          key={subItem.id || `drawer-submenu-${activeDrawerSubmenu}-${subIndex}`}
                           href={subItem.url || '#'}
                           className="block px-4 py-3 rounded transition-colors"
                           style={{ 

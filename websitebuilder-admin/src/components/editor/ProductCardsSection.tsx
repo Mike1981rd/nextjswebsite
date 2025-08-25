@@ -17,7 +17,7 @@ export function ProductCardsSection({ localProductCards, setLocalProductCards, s
         </label>
         <select 
           className="w-full px-2 py-1.5 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
-          value={localProductCards?.image?.defaultRatio || 'square-1-1-fill'}
+          value={localProductCards?.image?.defaultRatio || 'default'}
           onChange={(e) => {
             setIsEditing?.(true);
             setLocalProductCards(prev => ({
@@ -26,15 +26,72 @@ export function ProductCardsSection({ localProductCards, setLocalProductCards, s
             }));
           }}
         >
-          <option value="square-1-1-fill">Cuadrado (1:1) - Llenar</option>
-          <option value="portrait-large-2-3-fill">Retrato grande (2:3) - Llenar</option>
-          <option value="portrait-3-4-fill">Retrato (3:4) - Llenar</option>
-          <option value="portrait-large-2-3-fit">Retrato grande (2:3) - Ajustar</option>
-          <option value="horizontal-4-3-fill">Horizontal (4:3) - Llenar</option>
-          <option value="square-1-1-fit">Cuadrado (1:1) - Ajustar</option>
-          <option value="portrait-3-4-fit">Retrato (3:4) - Ajustar</option>
-          <option value="horizontal-4-3-fit">Horizontal (4:3) - Ajustar</option>
+          <option value="default">Default (Square)</option>
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
         </select>
+      </div>
+
+      {/* Card Size Slider */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+          Tamaño de las tarjetas: {Math.round((localProductCards?.cardSize?.scale ?? 1) * 100)}%
+        </label>
+        <input
+          type="range"
+          min="0"
+          max="200"
+          step="5"
+          value={(localProductCards?.cardSize?.scale ?? 1) * 100}
+          onChange={(e) => {
+            setIsEditing?.(true);
+            const scaleValue = parseInt(e.target.value) / 100;
+            setLocalProductCards(prev => ({
+              ...prev,
+              cardSize: { 
+                ...prev.cardSize,
+                scale: scaleValue 
+              }
+            }));
+          }}
+          className="w-full"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0%</span>
+          <span>100%</span>
+          <span>200%</span>
+        </div>
+      </div>
+
+      {/* Card Border Radius Slider */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+          Radio del borde: {localProductCards?.cardStyle?.borderRadius ?? 8}px
+        </label>
+        <input
+          type="range"
+          min="0"
+          max="50"
+          step="1"
+          value={localProductCards?.cardStyle?.borderRadius ?? 8}
+          onChange={(e) => {
+            setIsEditing?.(true);
+            const radiusValue = parseInt(e.target.value);
+            setLocalProductCards(prev => ({
+              ...prev,
+              cardStyle: { 
+                ...prev.cardStyle,
+                borderRadius: radiusValue 
+              }
+            }));
+          }}
+          className="w-full"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0px</span>
+          <span>25px</span>
+          <span>50px</span>
+        </div>
       </div>
 
       {/* Toggles de visibilidad */}

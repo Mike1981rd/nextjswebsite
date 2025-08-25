@@ -231,7 +231,11 @@ export function GlobalSettingsPanel() {
 
   useEffect(() => {
     if (!isInitialized && productCards) {
-      setLocalProductCards(productCards);
+      setLocalProductCards({
+        ...defaultProductCards,
+        ...productCards,
+        cardSize: productCards.cardSize || defaultProductCards.cardSize
+      });
     }
   }, [productCards, isInitialized]);
 
@@ -391,7 +395,11 @@ export function GlobalSettingsPanel() {
       if (appearance) setLocalAppearance(appearance);
       if (typography) setLocalTypography(typography);
       if (colorSchemes) setLocalColorSchemes(colorSchemes);
-      if (productCards) setLocalProductCards(productCards);
+      if (productCards) setLocalProductCards({
+        ...defaultProductCards,
+        ...productCards,
+        cardSize: productCards.cardSize || defaultProductCards.cardSize
+      });
       if (productBadges) setLocalProductBadges(productBadges);
       if (cart) setLocalCart(cart);
       if (favicon) setLocalFavicon(favicon);

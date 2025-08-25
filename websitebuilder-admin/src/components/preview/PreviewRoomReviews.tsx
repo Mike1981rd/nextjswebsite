@@ -14,12 +14,16 @@ interface RoomReviewsConfig {
   ratingIcon?: 'star' | 'heart' | 'smile' | 'like';
   ratingIconColor?: string;
   bodyType?: 'standard' | 'rounded-grid' | 'list-grid' | 'square-grid';
-  cardStyle?: 'modern' | 'loox' | 'lai' | 'bordered' | 'minimal';
+  cardStyle?: 'elegant' | 'glassmorphic' | 'gradient' | 'material' | 'neumorphic';
   cardBackgroundColor?: string;
   cardBorderColor?: string;
   headerSize?: number;
   topPadding?: number;
   bottomPadding?: number;
+  showBusinessReplies?: boolean;
+  headerStyle?: 'style1' | 'style2';
+  headerBackgroundColor?: string;
+  cardBorderRadius?: number;
 }
 
 interface PreviewRoomReviewsProps {
@@ -161,7 +165,7 @@ export default function PreviewRoomReviews({
   const ratingIcon = config.ratingIcon || 'star';
   const ratingIconColor = config.ratingIconColor || '#FFB800';
   const bodyType = config.bodyType || 'standard';
-  const cardStyle = config.cardStyle || 'modern';
+  const cardStyle = config.cardStyle || 'elegant';
   const headerSize = config.headerSize || 32;
   const topPadding = config.topPadding || 40;
   const bottomPadding = config.bottomPadding || 40;
@@ -227,13 +231,80 @@ export default function PreviewRoomReviews({
   };
 
   const bodyClasses = getBodyClasses();
-  const styleClassesByPreset: Record<string, string> = {
-    modern: 'shadow-md hover:shadow-lg transition-shadow',
-    loox: 'rounded-2xl shadow-sm border',
-    lai: 'rounded-xl border',
-    bordered: 'border',
-    minimal: ''
+  
+  // Get card style classes and inline styles based on selected style
+  const getCardStyles = () => {
+    const borderRadius = config.cardBorderRadius || 8;
+    
+    switch(cardStyle) {
+      case 'elegant':
+        // Clean, minimalist design like Airbnb
+        return {
+          className: '',
+          wrapperStyle: {
+            borderRadius: `${borderRadius}px`
+          },
+          containerStyle: {}
+        };
+      case 'glassmorphic':
+        // Modern glass effect with blur
+        return {
+          className: 'p-6 backdrop-blur-md border',
+          wrapperStyle: {
+            background: `${cardBg}CC`,
+            backdropFilter: 'blur(16px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+            borderColor: `${cardBorder}30`,
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.12)',
+            borderRadius: `${borderRadius}px`
+          },
+          containerStyle: {}
+        };
+      case 'gradient':
+        // Subtle gradient background with color accents
+        return {
+          className: 'p-6 border',
+          wrapperStyle: {
+            background: `linear-gradient(135deg, ${cardBg} 0%, ${cardBg}F5 100%)`,
+            borderColor: `${cardBorder}20`,
+            boxShadow: '0 4px 20px -2px rgba(0,0,0,0.08)',
+            borderRadius: `${borderRadius}px`
+          },
+          containerStyle: {}
+        };
+      case 'material':
+        // Google Material Design inspired
+        return {
+          className: 'p-6 hover:shadow-lg transition-shadow duration-300',
+          wrapperStyle: {
+            backgroundColor: cardBg,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)',
+            borderRadius: `${borderRadius}px`
+          },
+          containerStyle: {}
+        };
+      case 'neumorphic':
+        // Soft UI with embossed effect
+        return {
+          className: 'p-6',
+          wrapperStyle: {
+            background: cardBg,
+            boxShadow: `6px 6px 12px ${cardBorder}25, -6px -6px 12px ${cardBg}`,
+            border: `1px solid ${cardBorder}15`,
+            borderRadius: `${borderRadius}px`
+          },
+          containerStyle: {}
+        };
+      default:
+        return {
+          className: '',
+          wrapperStyle: {},
+          containerStyle: {}
+        };
+    }
   };
+  
+  const cardStyles = getCardStyles();
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -275,37 +346,148 @@ export default function PreviewRoomReviews({
         backgroundColor: bgColor
       }}
     >
-      {/* Header with average rating and Write Review button */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          {totalReviews > 0 && <RatingIcon filled={true} size="lg" />}
-          <h2 
-            className="font-semibold"
-            style={{ 
-              fontSize: `${headerSize}px`,
-              color: textColor
-            }}
-          >
-            {totalReviews > 0 ? (
-              `${averageRating.toFixed(2)} · ${totalReviews} ${totalReviews === 1 ? 'review' : 'reviews'}`
-            ) : (
-              'No reviews yet'
-            )}
-          </h2>
+      {/* Header Design Based on Style */}
+      {config.headerStyle === 'style2' ? (
+        // Style 2 - Box Rating Design
+        <div className="mb-8">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div 
+                className="px-4 py-3 rounded-lg text-center"
+                style={{ backgroundColor: config.headerBackgroundColor || '#FACC15' }}
+              >
+                <div className="text-3xl font-bold text-white">
+                  {averageRating.toFixed(1)}
+                </div>
+                <div className="text-xs text-white/90 mt-1">
+                  de 5
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium mb-3" style={{ color: textColor }}>
+                  Residencia en {totalReviews} reseñas
+                </p>
+                {/* Rating distribution bars */}
+                <div className="space-y-1">
+                  {[5, 4, 3, 2, 1].map((rating) => {
+                    const count = statistics?.[`${['one', 'two', 'three', 'four', 'five'][rating - 1]}StarCount` as keyof ReviewStatisticsDto] as number || 0;
+                    const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+                    return (
+                      <div key={rating} className="flex items-center gap-2">
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className="w-3 h-3"
+                              style={{ 
+                                color: i < rating ? ratingIconColor : '#E5E7EB',
+                                fill: i < rating ? ratingIconColor : '#E5E7EB'
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full transition-all duration-300"
+                            style={{ 
+                              width: `${percentage}%`,
+                              backgroundColor: config.headerBackgroundColor || '#FACC15'
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-500 w-8 text-right">
+                          ({count})
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowWriteReview(true)}
+              className="px-4 py-2 rounded-lg font-medium transition hover:opacity-90 text-sm"
+              style={{ 
+                border: `1px solid ${outlineButtonColor}`,
+                color: outlineButtonText,
+                backgroundColor: 'transparent'
+              }}
+            >
+              Write a review
+            </button>
+          </div>
         </div>
-        {/* Show button in editor for preview purposes, functional on live site */}
-        <button
-          onClick={() => setShowWriteReview(true)}
-          className="px-4 py-2 rounded-lg font-medium transition hover:opacity-90 text-sm"
-          style={{ 
-            border: `1px solid ${outlineButtonColor}`,
-            color: outlineButtonText,
-            backgroundColor: 'transparent'
-          }}
-        >
-          Write a review
-        </button>
-      </div>
+      ) : (
+        // Style 1 - Trophy Design (Default)
+        <div className="mb-8">
+          {/* Trophy Rating Display */}
+          <div className="text-center mb-6">
+            <div className="flex justify-center items-center gap-3 mb-4">
+              {/* Left laurel */}
+              <div className="text-5xl">🌿</div>
+              <div className="text-6xl font-bold" style={{ color: textColor }}>
+                {averageRating.toFixed(1)}
+              </div>
+              {/* Right laurel */}
+              <div className="text-5xl scale-x-[-1]">🌿</div>
+            </div>
+          </div>
+          
+          {/* Results Box - Star Distribution */}
+          <div className="max-w-md mx-auto mb-6">
+            <p className="text-sm font-medium mb-3" style={{ color: textColor }}>
+              Residencia en {totalReviews} reseñas
+            </p>
+            <div className="space-y-2">
+              {[5, 4, 3, 2, 1].map((rating) => {
+                const count = statistics?.[`${['one', 'two', 'three', 'four', 'five'][rating - 1]}StarCount` as keyof ReviewStatisticsDto] as number || 0;
+                const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+                return (
+                  <div key={rating} className="flex items-center gap-3">
+                    <div className="flex gap-0.5 w-24">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className="w-4 h-4"
+                          style={{ 
+                            color: i < rating ? config.headerBackgroundColor || '#FACC15' : '#E5E7EB',
+                            fill: i < rating ? config.headerBackgroundColor || '#FACC15' : '#E5E7EB'
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full transition-all duration-500 rounded-full"
+                        style={{ 
+                          width: `${percentage}%`,
+                          backgroundColor: config.headerBackgroundColor || '#FACC15'
+                        }}
+                      />
+                    </div>
+                    <span className="text-sm text-gray-500 w-10 text-right">
+                      ({count})
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <button
+              onClick={() => setShowWriteReview(true)}
+              className="px-6 py-3 rounded-lg font-medium transition hover:opacity-90"
+              style={{ 
+                backgroundColor: config.headerBackgroundColor || '#FACC15',
+                color: '#FFFFFF'
+              }}
+            >
+              Write a review
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Loading State */}
       {isLoading && (
@@ -324,97 +506,199 @@ export default function PreviewRoomReviews({
       {/* Reviews Grid */}
       {!isLoading && !error && reviews.length > 0 && (
         <>
-          <div className={`grid ${isMobile ? 'grid-cols-1' : bodyType === 'list-grid' ? 'grid-cols-1' : 'grid-cols-2'} gap-x-12 gap-y-6 mb-6`}>
-            {displayedReviews.map((review) => (
-              <div 
-                key={review.id} 
-                className={`space-y-3 ${bodyClasses.wrapper} ${styleClassesByPreset[cardStyle]}`}
-                style={bodyClasses.style}
-              >
-                <div className="flex items-center gap-3">
-                  {review.customer?.avatarUrl ? (
-                    <img
-                      src={resolveImageUrl(review.customer.avatarUrl)}
-                      alt={review.authorName}
-                      className="w-10 h-10 rounded-full object-cover"
-                      style={{ border: `1px solid ${cardBorder}` }}
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  ) : review.media && review.media.length > 0 ? (
-                    <img
-                      src={resolveImageUrl(review.media[0].thumbnailUrl || review.media[0].mediaUrl)}
-                      alt={review.authorName}
-                      className="w-10 h-10 rounded-full object-cover"
-                      style={{ border: `1px solid ${cardBorder}` }}
-                    />
-                  ) : (
-                    <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm"
-                      style={{ 
-                        backgroundColor: ratingIconColor + '20',
-                        color: ratingIconColor
-                      }}
-                    >
-                      {getInitials(review.authorName)}
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-6 mb-8`}>
+            {displayedReviews.map((review) => {
+              // Render based on card style
+              if (cardStyle === 'elegant') {
+                // Clean Airbnb-style design
+                return (
+                  <div key={review.id} className="p-6 mb-4 border" style={{ 
+                    borderColor: cardBorder, 
+                    backgroundColor: cardBg,
+                    borderRadius: `${config.cardBorderRadius || 8}px`
+                  }}>
+                    <div className="flex gap-4 mb-3">
+                      {/* Avatar */}
+                      <div className="flex-shrink-0">
+                        {(review.customer?.avatarUrl || (review.media && review.media.length > 0)) ? (
+                          <img
+                            src={resolveImageUrl(
+                              review.customer?.avatarUrl || 
+                              (review.media && review.media[0] && (review.media[0].thumbnailUrl || review.media[0].mediaUrl))
+                            )}
+                            alt={review.authorName}
+                            className="w-12 h-12 rounded-full object-cover"
+                            onError={(e) => {
+                              const imgElement = e.currentTarget as HTMLImageElement;
+                              imgElement.style.display = 'none';
+                              // Create and insert initials div
+                              const wrapper = imgElement.parentElement;
+                              if (wrapper && !wrapper.querySelector('.initials-fallback')) {
+                                const initialsDiv = document.createElement('div');
+                                initialsDiv.className = 'initials-fallback w-12 h-12 rounded-full flex items-center justify-center font-semibold';
+                                initialsDiv.style.backgroundColor = '#F0F0F0';
+                                initialsDiv.style.color = '#717171';
+                                initialsDiv.textContent = getInitials(review.authorName);
+                                wrapper.appendChild(initialsDiv);
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div 
+                            className="w-12 h-12 rounded-full flex items-center justify-center font-semibold"
+                            style={{ 
+                              backgroundColor: '#F0F0F0',
+                              color: '#717171'
+                            }}
+                          >
+                            {getInitials(review.authorName)}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Author info and content */}
+                      <div className="flex-1">
+                        <div className="mb-1">
+                          <p className="font-semibold text-base" style={{ color: textColor }}>
+                            {review.authorName}
+                          </p>
+                          <p className="text-sm" style={{ color: '#717171' }}>
+                            {review.country || 'Guest'}
+                          </p>
+                        </div>
+                        
+                        {/* Rating and date */}
+                        <div className="flex items-center gap-1 mb-3">
+                          {[...Array(5)].map((_, i) => (
+                            <RatingIcon key={i} filled={i < review.rating} />
+                          ))}
+                          <span className="ml-2 text-sm" style={{ color: '#717171' }}>
+                            · {formatDate(review.createdAt)} · Stayed a few nights
+                          </span>
+                        </div>
+                        
+                        {/* Review content */}
+                        <p className="text-base leading-relaxed" style={{ color: textColor }}>
+                          {review.content}
+                        </p>
+                        
+                        {/* Show more link if content is long */}
+                        {review.content.length > 200 && (
+                          <button className="mt-2 font-semibold underline text-sm" style={{ color: textColor }}>
+                            Show more
+                          </button>
+                        )}
+                        
+                        {/* Business Reply */}
+                        {review.businessReply && (config.showBusinessReplies !== false) && (
+                          <div className="mt-4 pl-4 border-l-2" style={{ borderColor: borderColor }}>
+                            <p className="text-sm font-semibold mb-1" style={{ color: textColor }}>
+                              Response from owner
+                            </p>
+                            <p className="text-sm" style={{ color: '#717171' }}>
+                              {review.businessReply}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div>
-                    <p className="font-medium text-sm" style={{ color: textColor }}>
-                      {review.authorName}
-                    </p>
-                    <p className="text-xs opacity-70" style={{ color: textColor }}>
-                      {formatDate(review.createdAt)}
-                    </p>
                   </div>
-                </div>
-                
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <RatingIcon key={i} filled={i < review.rating} />
-                  ))}
-                </div>
-
-                {review.title && (
-                  <p className="font-medium text-sm" style={{ color: textColor }}>
-                    {review.title}
-                  </p>
-                )}
-
-                <p className="text-sm line-clamp-3 opacity-90" style={{ color: textColor }}>
-                  {review.content}
-                </p>
-
-                {/* Display review images if any */}
-                {review.media && review.media.length > 0 && (
-                  <div className="flex gap-2 mt-2">
-                    {review.media.slice(0, 3).map((media) => (
-                      <img
-                        key={media.id}
-                        src={resolveImageUrl(media.thumbnailUrl || media.mediaUrl)}
-                        alt={media.caption || 'Review image'}
-                        className="w-16 h-16 object-cover rounded"
-                        style={{ border: `1px solid ${borderColor}` }}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Business Reply */}
-                {review.businessReply && (
+                );
+              } else {
+                // Other card styles
+                return (
                   <div 
-                    className="mt-3 p-3 rounded-lg"
-                    style={{ backgroundColor: `${borderColor}10` }}
+                    key={review.id} 
+                    className={`${cardStyles.className}`}
+                    style={cardStyles.wrapperStyle}
                   >
-                    <p className="text-xs font-medium mb-1" style={{ color: textColor }}>
-                      Response from the owner
+                    <div className="flex items-start gap-3 mb-3">
+                      {review.customer?.avatarUrl ? (
+                        <img
+                          src={resolveImageUrl(review.customer.avatarUrl)}
+                          alt={review.authorName}
+                          className="w-10 h-10 rounded-full object-cover"
+                          onError={(e) => {
+                            const imgElement = e.currentTarget as HTMLImageElement;
+                            // If image fails to load, replace with initials div
+                            const initialsDiv = document.createElement('div');
+                            initialsDiv.className = 'w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm';
+                            initialsDiv.style.backgroundColor = ratingIconColor + '20';
+                            initialsDiv.style.color = ratingIconColor;
+                            initialsDiv.textContent = getInitials(review.authorName);
+                            imgElement.parentNode?.replaceChild(initialsDiv, imgElement);
+                          }}
+                        />
+                      ) : (
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm"
+                          style={{ 
+                            backgroundColor: ratingIconColor + '20',
+                            color: ratingIconColor
+                          }}
+                        >
+                          {getInitials(review.authorName)}
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm" style={{ color: textColor }}>
+                          {review.authorName}
+                        </p>
+                        <p className="text-xs" style={{ color: textColor, opacity: 0.7 }}>
+                          {formatDate(review.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-0.5 mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <RatingIcon key={i} filled={i < review.rating} />
+                      ))}
+                    </div>
+
+                    {review.title && (
+                      <p className="font-semibold text-sm mb-2" style={{ color: textColor }}>
+                        {review.title}
+                      </p>
+                    )}
+
+                    <p className="text-sm leading-relaxed" style={{ color: textColor, opacity: 0.9 }}>
+                      {review.content}
                     </p>
-                    <p className="text-sm opacity-90" style={{ color: textColor }}>
-                      {review.businessReply}
-                    </p>
+
+                    {/* Display review images if any */}
+                    {review.media && review.media.length > 0 && (
+                      <div className="flex gap-2 mt-3">
+                        {review.media.slice(0, 3).map((media) => (
+                          <img
+                            key={media.id}
+                            src={resolveImageUrl(media.thumbnailUrl || media.mediaUrl)}
+                            alt={media.caption || 'Review image'}
+                            className="w-16 h-16 object-cover rounded"
+                            style={{ border: `1px solid ${borderColor}` }}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Business Reply */}
+                    {review.businessReply && (config.showBusinessReplies !== false) && (
+                      <div 
+                        className="mt-3 p-3 rounded-lg"
+                        style={{ backgroundColor: `${borderColor}20` }}
+                      >
+                        <p className="text-xs font-semibold mb-1" style={{ color: textColor }}>
+                          Response from the owner
+                        </p>
+                        <p className="text-sm" style={{ color: textColor, opacity: 0.9 }}>
+                          {review.businessReply}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                );
+              }
+            })}
           </div>
 
           {/* Show all button */}

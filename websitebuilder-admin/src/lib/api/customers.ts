@@ -487,6 +487,43 @@ class CustomerAPI {
     return response.json();
   }
 
+  // Payments history (aggregated via reservations → payments)
+  async getCustomerPaymentsByEmail(email: string): Promise<Array<{ reservationId: number; amount: number; method: string; status: string; date: string; transactionId?: string }>> {
+    // 1) Fetch all reservations for the company, then filter by guest email
+    const reservationsResp = await fetch(`${API_URL}/reservations`, { headers: this.getHeaders() });
+    if (!reservationsResp.ok) {
+      throw new Error('Failed to fetch reservations');
+    }
+    const reservations = await reservationsResp.json(); // Expect ReservationListDto[]
+    const mine = (reservations || []).filter((r: any) => (r.guestEmail || '').toLowerCase() === email.toLowerCase());
+
+    // 2) For each reservation, fetch payments
+    const results: Array<{ reservationId: number; amount: number; method: string; status: string; date: string; transactionId?: string }> = [];
+    for (const r of mine) {
+      try {
+        const payResp = await fetch(`${API_URL}/reservations/${r.id}/payments`, { headers: this.getHeaders() });
+        if (!payResp.ok) continue;
+        const payload = await payResp.json();
+        const payments = payload?.data || payload || [];
+        for (const p of payments) {
+          results.push({
+            reservationId: r.id,
+            amount: p.amount ?? p.Amount ?? 0,
+            method: p.paymentMethod ?? p.PaymentMethod ?? 'Card',
+            status: p.status ?? p.Status ?? 'Completed',
+            date: p.paymentDate ?? p.PaymentDate ?? new Date().toISOString(),
+            transactionId: p.transactionId ?? p.TransactionId
+          });
+        }
+      } catch {
+        // ignore
+      }
+    }
+    // Sort by date desc
+    results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return results;
+  }
+
   async deletePaymentMethod(customerId: number, paymentMethodId: number): Promise<void> {
     const response = await fetch(`${API_URL}/customers/${customerId}/payment-methods/${paymentMethodId}`, {
       method: 'DELETE',
